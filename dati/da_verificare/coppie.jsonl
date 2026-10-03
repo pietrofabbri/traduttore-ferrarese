@@ -1,0 +1,17 @@
+// Coppie in attesa di verifica della licenza. Non le usa nessuno: vedi README.md
+// in questa cartella e il controllo D1.
+//
+// id     coppie di F0006, F0007: dalla traduzione ferrarese della Dichiarazione
+//        universale dei diritti umani, art. 1 (S003, licenza non verificata)
+//
+// Sono le due frasi piu' utili del corpus, perche' sono una traduzione
+// parallela di un testo italiano che tutti conoscono e quindi si puo'
+// controllare parola per parola senza sapere il ferrarese. E sono anche le
+// due che non si possono pubblicare: un testo di traduzione anonima puo'
+// essere la copia di un altro, e finche' la fonte primaria non e' stata
+// rintracciata la licenza resta sconosciuta.
+//
+// F0008, F0009 e F0010 restano nel corpus attivo: vengono da Biondelli
+// (pubblico dominio) e non hanno a che fare con S003.
+{"id":"F0006","varieta":"cittadino","italiano":"Tutti gli esseri umani nascono liberi e uguali in dignità e diritti.","ferrarese":"Tuti j'èssar umanh i nass lìbar e cumpagna in dgnità e dirit.","tipo":"attestato","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","nota":"Traduzione integrale di un testo noto: il glossario delle parole piu' frequenti e' tutto qui dentro, e mette in evidenza che alcune parole restano uguali all'italiano («umanh» vicino a «umano», «dirit» vicino a «diritti»).","attendibilita":"D","ricorrenze":1}
+{"id":"F0007","varieta":"cittadino","italiano":"Essi hanno diritti e doveri","ferrarese":"Lor i gh'ha scrimia e cussiença e i gh'ha da purtarass tra ad lor com i fradié.","tipo":"attestato","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","nota":"Mostra «gh'ha» per il possessivo avere e «da purtarass» per il futuro prossimo obbligatorio. Nessuna delle due forme si ricava dagli infiniti presenti nel glossario.","attendibilita":"D","ricorrenze":1}

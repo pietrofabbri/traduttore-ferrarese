@@ -50,6 +50,15 @@ PERCORSI = {
     "audio": os.path.join(DATI, "audio.jsonl"),
 }
 
+# La fila d'attesa: materiale raccolto ma non ancora pubblicabile. Non entra
+# nel motore e non entra nella pagina, e il controllo D1 verifica che non ci
+# finisca per sbaglio.
+IN_ATTESA = {
+    "glossario": os.path.join(DATI, "da_verificare", "glossario.jsonl"),
+    "coppie": os.path.join(DATI, "da_verificare", "coppie.jsonl"),
+    "fonetica": os.path.join(DATI, "da_verificare", "fonetica.jsonl"),
+}
+
 
 def carica(modello_attivo: bool = False):
     """Carica il motore. Un posto solo in cui si fanno queste cose."""
@@ -152,11 +161,15 @@ def comando_verifica(args) -> int:
     varieta = Varieta.da_file(PERCORSI["varieta"])
     fonetica = Fonetica.da_file(PERCORSI["fonetica"])
     archivio = Archivio.da_file(PERCORSI["audio"])
+    in_attesa_glossario = Glossario.da_file(IN_ATTESA["glossario"])
+    in_attesa_corpus = Corpus.da_file(IN_ATTESA["coppie"])
     problemi = (verifica_dati.controlla_varieta(varieta)
                 + verifica_dati.controlla_glossario(glossario)
                 + verifica_dati.controlla_corpora(corpus)
                 + verifica_dati.controlla_fonetica(fonetica, glossario, corpus, varieta)
                 + controlla_archivo(archivio, AUDIO)
+                + verifica_dati.controlla_tenuta(glossario, corpus,
+                                                in_attesa_glossario, in_attesa_corpus)
                 + verifica_dati.controlla_regole(regole))
     if args.json:
         print(json.dumps({
@@ -217,6 +230,8 @@ def comando_varieta(args) -> int:
               "quello che ha dentro, e quello che ha dentro e' tutto cittadino.")
     else:
         print("nessuna varieta' vuota")
+    print()
+    _stampa_attesa()
     return 0
 
 
@@ -261,6 +276,28 @@ def comando_pronuncia(args) -> int:
     return 0
 
 
+def _stampa_attesa() -> None:
+    """La fila d'attesa, dichiarata anche lei.
+
+    Un dato che aspetta la verifica della licenza e' un dato che il progetto
+    possiede e non usa. Se non lo si stampa da nessuna parte, fra sei mesi
+    sembra materiale dimenticato, e un materiale dimenticato non torna piu'.
+    """
+    in_attesa = Glossario.da_file(IN_ATTESA["glossario"])
+    coppie_attesa = Corpus.da_file(IN_ATTESA["coppie"])
+    if not in_attesa.voci and not coppie_attesa.coppie:
+        return
+    print("in attesa di licenza verificata (dati/da_verificare/):")
+    for voce in in_attesa.voci:
+        print("  %-7s %-22s %s" % (voce.id, voce.ferrarese,
+                                    voce.fonte or "senza fonte"))
+    for coppia in coppie_attesa.coppie:
+        print("  %-7s %-22s %s" % (coppia.id, (coppia.ferrarese or "")[:22],
+                                   coppia.fonte or "senza fonte"))
+    print("  non le usa nessuno, e tornano nel glossario quando la fonte "
+          "sar' verificata.")
+
+
 def comando_audio(args) -> int:
     """Che cosa si puo' ascoltare, e che cosa non si puo'.
 
@@ -278,6 +315,7 @@ def comando_audio(args) -> int:
     for chiave, valore in stato.items():
         print("%-16s %s" % (chiave, valore))
     print()
+    _stampa_attesa()
     if not archivio.brani:
         print("non c'e' nessun brano registrato.")
         print("non e' un difetto del progetto: e' il punto in cui siamo. Il "

@@ -34,6 +34,7 @@ in un gioco didattico diventa una nota che si legge come un fatto.
 | `dati/varieta.json` | **Le cinque varieta'** e i loro territori | chi tiene la fonte delle varieta' |
 | `dati/fonetica.jsonl` | **Le trascrizioni IPA**, con il sistema dichiarato | chi ha ascoltato la parola |
 | `dati/audio.jsonl` + `audio/` | **Le voci**, con consenso | la persona che ha parlato, o chi esercita la responsabilita' |
+| `dati/da_verificare/` | **Quello che non si puo' ancora pubblicare**, con le sue fonti | chi verifica la licenza della fonte |
 
 E ci sono due registri che non sono contenuti ma che li tengono in ordine:
 
@@ -204,6 +205,12 @@ puo' fingere che ci sia e non si puo' costruire per download. Si costruisce
 registrando.
 
 ## Come si aggiunge qualcosa, in pratica
+
+0. **Qualcosa che non si puo' ancora pubblicare** → in
+   `dati/da_verificare/`, non nei file attivi. Il caso di oggi e' la traduzione
+   ferrarese della Dichiarazione universale (S003): il testo e' utilissimo e la
+   licenza non e' verificata, quindi sta in fila e il motore non lo vede. Il
+   controllo **D1** fa fallire la CI se le due copie si sovrappongono.
 
 1. **Una parola** → una riga in `dati/glossario.jsonl`, con `id` nuovo
    (`V0312`, mai riutilizzato), la `varieta`, la fonte, e `attendibilita`

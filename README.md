@@ -12,8 +12,9 @@ Un traduttore fra l'italiano e il **ferrarese**, costruito per il gioco
 
 La caratteristica di questo progetto non e' che traduce bene. E' che **quando
 non sa, dice che non sa**, e dice anche *perche'* non lo sa e *che cosa
-servirebbe* per saperlo. Con ventisei voci in un glossario, questa e' la
-proprieta' piu' importante che ha.
+servirebbe* per saperlo. Con ventiquattro voci in un glossario, tutte di una
+sola varieta' e tutte da due fonti, questa e' la proprieta' piu' importante che
+ha.
 
 ## Come si usa
 
@@ -69,7 +70,7 @@ python3 -m traduttore.cli varieta
 ```
 
 ```
-cittadino    cittadino                       26 voci   10 coppie, 0 brani
+cittadino    cittadino                       24 voci   8 coppie, 0 brani
 centrale     centrale, detto anche arioso    VUOTA     0 coppie, 0 brani
 occidentale  occidentale                     VUOTA     0 coppie, 0 brani
 orientale    orientale                       VUOTA     0 coppie, 0 brani
@@ -90,7 +91,7 @@ non vengono arbitrariamente separati.
 
 Due cose, distinte, che non si confondono:
 
-- **`dati/fonetica.jsonl` — come si scrive il suono.** 30 trascrizioni per
+- **`dati/fonetica.jsonl` — come si scrive il suono.** 28 trascrizioni per
   ora. Il campo `fonte` dice da dove viene la **scrittura**, non il suono, e
   ogni riga porta `attendibilita: "I"` e `da_verificare: true`, perche' una
   trascrizione scritta qui dentro e' una lettura della grafia, non un ascolto.
@@ -190,6 +191,9 @@ traduttore-ferrarese/
     regole.json        generato da `impara`, non si modifica a mano
     fonti.json         il registro delle fonti e delle loro licenze
     audio.jsonl        il manifesto dei brani, con il consenso
+    da_verificare/     i dati con la licenza non ancora verificata: li
+                       possediamo, non li pubblichiamo, e il controllo D1
+                       controlla che non vengano usati per errore
   audio/               i brani registrati: adesso c'e' solo il README
   sorgenti/
     traduttore/        il pacchetto
@@ -229,6 +233,9 @@ ferrarese. In breve:
 - il glossario accetta solo voci con la fonte, e il controllo **G4** fa
   fallire la CI se una voce si dichiara documentata senza nominare libro e
   pagina;
+- **una fonte con licenza non verificata non si pubblica**: le voci e le coppie
+  che ne derivano stanno in `dati/da_verificare/`, fuori dai dati attivi, e
+  il controllo **D1** verifica che non vengano usate per errore;
 - l'audio senza consenso scritto non si pubblica, e i dati degli studenti non
   entrano nel repository.
 
@@ -249,17 +256,22 @@ ferrarese. In breve:
   usare **registrazioni vere**, non voci sintetiche, e dichiarare che sono
   vere.
 - **Non c'e' nessuna registrazione**: `dati/audio.jsonl` e' vuoto e
-  `audio/` contiene solo il protocollo. Le 30 trascrizioni IPA ci sono, ma
+  `audio/` contiene solo il protocollo. Le 28 trascrizioni IPA ci sono, ma
   nessuna e' verificata da un parlante (`attendibilita D`): finche' vale
   zero, la pronuncia non e' documentata da nessuna parte e la pagina lo dice.
-- Il glossario ha **26 voci**, tutte da due fonti e **tutte di una sola
-  varieta'**, il cittadino. Quattro varieta' su cinque sono vuote dichiarate.
-  Non e' un dizionario e non si presenta come tale.
+- **Quattro voci e due frasi sono in una fila d'attesa**,
+  `dati/da_verificare/`: vengono dalla traduzione ferrarese della
+  Dichiarazione universale dei diritti umani (S003), e la licenza di quella
+  fonte non e' verificata. Non le usa nessuno, non sono nella pagina e il
+  controllo **D1** fallisce se finiscono nei file attivi. Il glossario ha
+  quindi **24 voci**, tutte da due fonti e **tutte di una sola varieta'**, il
+  cittadino. Quattro varieta' su cinque sono vuote dichiarate. Non e' un
+  dizionario e non si presenta come tale.
 
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 45 test
+python3 prove/test_traduttore.py     # 48 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

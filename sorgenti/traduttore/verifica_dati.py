@@ -327,6 +327,55 @@ def controlla_regole(regole, soglia: float = 0.70) -> list:
     return problemi
 
 
+def controlla_tenuta(glossario, corpus, in_attesa_glossario=None,
+                     in_attesa_corpus=None) -> list:
+    """I dati in attesa non entrano e non restano dentro.
+
+    `dati/da_verificare/` e' la fila d'attesa del materiale che non ha ancora
+    il diritto di essere pubblicato. Il controllo fa due cose, e sono le due
+    sole che contano:
+
+    - **D1**: un id che e' in attesa e anche nel glossario attivo e' un
+      errore. Una voce che aspetta la verifica della licenza e che intanto
+      viene usata e' il modo piu' economico di pubblicare dati di provenienza
+      ignota, e nessuna intenzione cosi' finisce bene;
+    - **D2**: una voce in attesa che si dichiara `D` con la sua fonte non
+      e' un errore - e' il caso normale, perche' la fonte c'e' ed e' proprio
+      quella che non e' verificata - ma e' un avviso, perche' finche' quel
+      avviso sta li' nessuno deve crederla documentata.
+
+    Il controllo e' volutamente noioso: due righe di confronto e nient'altro.
+    """
+    problemi = []
+    attese_glossario = {v.id: v for v in (in_attesa_glossario.voci
+                                          if in_attesa_glossario else [])}
+    attese_corpus = {c.id: c for c in (in_attesa_corpus.coppie
+                                      if in_attesa_corpus else [])}
+    attive = {v.id for v in glossario.voci} | {c.id for c in corpus.coppie}
+    for identificatore in sorted(set(attese_glossario) | set(attese_corpus)):
+        if identificatore not in attive:
+            continue
+        problema = Problema(
+            "D1", identificatore,
+            "id in attesa di verifica e anche nei dati attivi: si sceglie. O "
+            "esce dalla fila d'attesa, o si verifica la licenza della fonte")
+        if identificatore in attese_glossario:
+            voce = attese_glossario[identificatore]
+            if voce.attendibilita == "D" and voce.fonte:
+                problema.messaggio += (
+                    " (fonte dichiarata: %s, attendibilita %s)"
+                    % (voce.fonte, voce.attendibilita))
+        problemi.append(problema)
+    for voce in (in_attesa_glossario.voci if in_attesa_glossario else []):
+        if voce.attendibilita == "D":
+            problemi.append(Problema(
+                "D2", voce.id,
+                "in attesa di licenza verificata e dichiarata documentata "
+                "(%s): la riga non si usa, quindi l'attendibilita non conta "
+                "ancora" % (voce.fonte or "senza fonte"), gravita="avviso"))
+    return problemi
+
+
 def riepilogo(problemi: list) -> dict:
     errori = [p for p in problemi if p.gravita == "errore"]
     return {

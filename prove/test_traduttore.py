@@ -255,11 +255,14 @@ class TestControlli(unittest.TestCase):
         # Il controllo che conta: i dati che ci sono adesso, non quelli di una
         # prova. Se fallisce, il CI fallisce.
         glossario, corpus, varieta, fonetica, archivio = _dati_del_repository()
+        attesa_glossario, attesa_corpus = _dati_in_attesa()
         problemi = (verifica_dati.controlla_varieta(varieta)
                     + verifica_dati.controlla_glossario(glossario)
                     + verifica_dati.controlla_corpora(corpus)
                     + verifica_dati.controlla_fonetica(fonetica, glossario, corpus, varieta)
-                    + controlla_archivo(archivio))
+                    + controlla_archivo(archivio)
+                    + verifica_dati.controlla_tenuta(glossario, corpus,
+                                                    attesa_glossario, attesa_corpus))
         errori = [p for p in problemi if p.gravita == "errore"]
         self.assertEqual([p.riga() for p in errori], [], "i dati del repository hanno errori")
 
@@ -274,6 +277,56 @@ def _dati_del_repository():
         Fonetica.da_file(os.path.join(dati, "fonetica.jsonl")),
         Archivio.da_file(os.path.join(dati, "audio.jsonl")),
     )
+
+
+def _dati_in_attesa():
+    dati = os.path.join(RADICE, "dati", "da_verificare")
+    return (
+        Glossario.da_file(os.path.join(dati, "glossario.jsonl")),
+        Corpus.da_file(os.path.join(dati, "coppie.jsonl")),
+    )
+
+
+class TestFilaDAttesa(unittest.TestCase):
+    """I dati che il progetto possiede e non usa.
+
+    Il motivo e' dichiarato in `dati/da_verificare/README.md`: la traduzione
+    ferrarese della Dichiarazione universale dei diritti umani non ha una
+    fonte primaria rintracciata, quindi la sua licenza non e' verificata, quindi
+    non si pubblica. La fila d'attesa e' il posto giusto per tenerla senza
+    dimenticarla.
+    """
+
+    def test_un_id_in_attesa_che_e_anche_attivo_e_un_errore(self):
+        # Il caso da cui nasce tutto: una voce che aspetta la verifica della
+        # licenza e che intanto viene usata. E' il modo piu' economico di
+        # pubblicare dati di provenienza ignora.
+        attesa = Glossario([_voce("V1", "pan", "pane", "fonte di prova")])
+        attivo = Glossario([_voce("V1", "pan", "pane", "fonte di prova")])
+        codici = [p.codice for p in verifica_dati.controlla_tenuta(
+            attivo, corpus_di_prova(), attesa)]
+        self.assertIn("D1", codici)
+
+    def test_una_voce_in_attesa_che_si_dichiara_documentata_e_un_avviso(self):
+        attesa = Glossario([_voce("V9", "nass", "nasceri",
+                                 "traduzione anonima, art. 1")])
+        problemi = [p for p in verifica_dati.controlla_tenuta(
+            glossario_di_prova(), corpus_di_prova(), attesa)
+            if p.codice == "D2"]
+        self.assertEqual(len(problemi), 1)
+        self.assertEqual(problemi[0].gravita, "avviso")
+
+    def test_la_fila_d_attesa_del_repository_non_sovrappone_il_glossario(self):
+        attesa_glossario, attesa_corpus = _dati_in_attesa()
+        glossario, corpus, varieta, fonetica, archivio = _dati_del_repository()
+        problemi = verifica_dati.controlla_tenuta(glossario, corpus,
+                                                 attesa_glossario, attesa_corpus)
+        errori = [p for p in problemi if p.gravita == "errore"]
+        self.assertEqual([p.riga() for p in errori], [],
+                         "un id in attesa e' anche nei dati attivi")
+        # E la fila non e' vuota: se si svuotasse, il controllo D1 non
+        # controllerebbe piu' niente e sembrerebbe che il progetto sia a posto.
+        self.assertTrue(attesa_glossario.voci or attesa_corpus.coppie)
 
 
 class TestVarieta(unittest.TestCase):

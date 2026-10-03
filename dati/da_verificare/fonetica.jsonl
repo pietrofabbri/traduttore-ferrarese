@@ -1,0 +1,10 @@
+// Trascrizioni in attesa di verifica della licenza. Non le usa nessuno: vedi
+// README.md in questa cartella.
+//
+// id     T0027 e T0028: le due trascrizioni delle voci V0023 e V0024, che
+//        vengono dalla traduzione della Dichiarazione (S003, licenza non
+//        verificata). Vanno spostate con loro: una trascrizione che resta
+//        attaccata a una voce che non c'e' piu' descrive niente, e il
+//        controllo F7 lo segnalerebbe come riferimento ignoto.
+{"id":"T0027","riferimento":"V0023","forma":"nass","ipa":"/nas/","varieta":"cittadino","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","attendibilita":"I","nota":"`ss` = /s/. La fonte di questa voce non ha licenza verificata: la trascrizione vale come lettura, e la pubblicazione dipende dalla fonte della voce, non da qui.","da_verificare":true}
+{"id":"T0028","riferimento":"V0024","forma":"tutti","ipa":"/tuti/","varieta":"cittadino","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","attendibilita":"I","nota":"La forma coincide con l'italiano e non insegna niente: si trascrive per poter dire che il gioco la riconosce come la stessa parola, che e' un'informazione utile per chi impara.","da_verificare":true}

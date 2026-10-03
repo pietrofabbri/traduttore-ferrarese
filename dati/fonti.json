@@ -57,8 +57,8 @@
       "stato": "acquisita",
       "licenza": "da verificare",
       "licenza_verificata": false,
-      "uso": "Coppie F0006, F0007 e voci V0023, V0024.",
-      "nota": "Il testo e' utile perche' e' una traduzione parallela di un testo italiano noto, e quindi si puo' controllare parola per parola. Ma l'autore e' ignoto e la fonte primaria non e' stata rintracciata: chi puo' risalire alla fonte va dichiarato, perche' un testo di traduzione anonima puo' essere una copia di un altro. Finche' la licenza non e' verificata questa fonte non puo' passare in pubblico dominio con il glossario."
+      "uso": "Non alimenta i dati attivi. Coppie F0006, F0007 e voci V0023, V0024 sono in `dati/da_verificare/` in attesa della verifica della licenza.",
+      "nota": "Il testo e' utile perche' e' una traduzione parallela di un testo italiano noto, e quindi si puo' controllare parola per parola. Ma l'autore e' ignoto e la fonte primaria non e' stata rintracciata: chi puo' risalire alla fonte va dichiarato, perche' un testo di traduzione anonima puo' essere una copia di un altro. Finche' la licenza non e' verificata questa fonte non puo' passare in pubblico dominio con il glossario, e infatti dal 2026-10-03 le sue voci e coppie stanno in `dati/da_verificare/` invece che nei file attivi."
     },
     {
       "id": "S004",

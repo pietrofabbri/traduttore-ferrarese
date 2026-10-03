@@ -42,11 +42,18 @@ Le fonti attualmente nel registro (`dati/fonti.json`):
 1. **Solo lo stato `acquisita` alimenta il glossario.** Una fonte `reperto` o
    `esaminata` puo' essere citata in una nota, non puo' diventare una voce.
 2. **Una fonte con licenza non verificata non si pubblica.** Questo vale
-   oggi per la traduzione della Dichiarazione: e' una fonte utilissima, e
-   finche' la sua provenienza non e' stata rintracciata le voci che ne
-   derivano restano fuori dalla pubblicazione. Il che vuol dire anche che chi
-   scarica il repository deve saperlo: e' dichiarato qui e nel campo `fonte`
-   di ogni voce interessata.
+   oggi per la traduzione della Dichiarazione (S003): e' una fonte
+   utilissima, e finche' la sua provenienza non e' stata rintracciata le voci
+   e le coppie che ne derivano stanno in `dati/da_verificare/`, fuori dai
+   dati che il motore usa e dalla pagina. Il repository contiene quel
+   materiale — e' dichiarato qui, in `dati/fonti.json` e in
+   `dati/da_verificare/README.md` — ma non lo pubblica, e il controllo **D1**
+   verifica che non venga usato per errore.
+
+   Nota bene la differenza con la regola 1: S003 e' `acquisita` (il testo
+   l'abbiamo, e sappiamo dove l'abbiamo preso) ma ha
+   `licenza_verificata: false`. Essere in `acquisita` non vuol dire «libero»,
+   vuol dire «dentro, con la provenienza dichiarata».
 
 ## Audio e immagini
 

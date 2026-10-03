@@ -48,7 +48,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py     # 45 test
+python3 prove/test_traduttore.py     # 48 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 
@@ -95,6 +95,8 @@ I codici da conoscere:
 | R1, R2 | regole sotto soglia, regole con un solo esempio |
 | F1&ndash;F14 | IPA: id, forma, vuoto, simboli che non sono IPA, riferimento ignoto, attendibilita, `D` senza fonte, varieta' discordi dalla voce, due trascrizioni della stessa scrittura, varieta' con parole e senza suoni |
 | A1&ndash;A10 | audio: id, file, `pubblicabile` senza consenso o senza licenza, varieta', contesto, livello CEFR, consenso senza voce dichiarata, file che non c'e' |
+| **D1** | **id in `dati/da_verificare/` che compare anche nei dati attivi** |
+| D2 | voce in attesa che si dichiara documentata (avviso) |
 
 ## 5. Le cose che non si fanno
 
@@ -103,6 +105,11 @@ I codici da conoscere:
   senza accordo non viene salvata.
 - **Non si aggiunge una voce al glossario senza la fonte.** Se la fonte non si
   conosce, la voce non entra. Punto.
+- **Non si tira fuori niente da `dati/da_verificare/` per usarlo.** Quel
+  materiale e' nostro e non pubblicabile finche' la licenza della sua fonte
+  non e' verificata. Il posto giusto di una voce con licazi non verificata e'
+  quella fila, non il glossario: «lo metto su e poi se ne parla» e' il modo in
+  cui una fonte non verificata finisce pubblicata.
 - **Non si tira a indovinare.** Se una parola non si trova, il motore restituisce
   la parola di partenza e un buco, ed e' il comportamento giusto.
 - **Non si registra audio senza consenso scritto.** E non si pubblica un brano

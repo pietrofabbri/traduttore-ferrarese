@@ -1,0 +1,11 @@
+// Voci in attesa di verifica della licenza. Non le usa nessuno: vedi README.md
+// in questa cartella e il controllo D1.
+//
+// Le righe sono identiche a quelle che erano nel glossario attivo, con la
+// stessa fonte e gli stessi metadati: quando la licenza della fonte sara'
+// verificata si spostano indietro senza riscriverle.
+//
+// id     voce di V0023, V0024: dalla traduzione ferrarese della Dichiarazione
+//        universale dei diritti umani, art. 1 (S003, licenza non verificata)
+{"id":"V0023","varieta":"cittadino","ferrarese":"nass","italiano":"nasceri","varianti":[],"campo":"verbo","note":"Dalla traduzione della Dichiarazione universale dei diritti umani, art. 1.","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","attendibilita":"D","da_verificare":false}
+{"id":"V0024","varieta":"cittadino","ferrarese":"tutti","italiano":"tutti (pronome, forma ridotta)","varianti":["tutt","tùtti"],"campo":"pronome","note":"Nell'art. 1 della traduzione compare «Tuti j'èssar umanh», con forma quasi identica all'italiano: e' un caso in cui la traduzione coincide e non insegna niente sulla differenza fra le due lingue.","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","attendibilita":"D","da_verificare":false}

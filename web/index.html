@@ -127,6 +127,19 @@
   <h2>Le coppie parallele</h2>
   <div id="tabellaCoppie"></div>
 
+  <h2>I proverbi</h2>
+  <p class="occhiello" style="margin:.4rem 0 1rem">
+    Un proverbio non e' una parola e non si traduce parola per parola: ha la
+    forma dei libri, la forma che si dice — che qui non e' ancora stata
+    nessuno a dirla — e il significato, che non coincide mai con l'italiano
+    letterale. La colonna «popolare» vuota e' un buco dichiarato, non una
+    dimenticanza.
+  </p>
+  <div class="riga">
+    <input type="search" id="cercaProverbi" placeholder="cerca fra i proverbi (ferrarese o italiano)" size="40">
+  </div>
+  <div id="tabellaProverbi"></div>
+
   <h2>Le cinque varieta' del ferrarese</h2>
   <p class="occhiello" style="margin:.4rem 0 1rem">
     Non e' una sola lingua. Ogni voce del glossario dichiara in quale di queste
@@ -4691,10 +4704,14 @@
     return 1 - prev[n] / Math.max(m, n);
   }
 
-  function tokenizza(t) {
+  // L'apostrofo interno resta dentro la parola, come in `normalizza.py`:
+// `d'avril` e' una parola sola, non due. Nel ferrarese l'apostrofo e'
+// grammaticale (`l'a`, `gh'e`, `doman l'a`), e spezzarlo produceva due
+// parole che il glossario non conosce e una locuzione che non combacia.
+function tokenizza(t) {
     return String(t).toLowerCase().trim()
       .replace(/[’ʼ´`]/g, "'").replace(/gh'/g, "g").replace(/ch'/g, "c")
-      .split(/[^0-9a-z\u00c0-\u024f]+/).filter(function (x) { return x.length; });
+      .match(/[0-9a-z\u00c0-\u024f]+(?:'[0-9a-z\u00c0-\u024f]+)*/g) || [];
   }
 
   // Una regola morfologica applicata dal basso: si prova dalla piu' lunga.
@@ -4727,6 +4744,33 @@
     if (!k) return null;
     var lista = verso === "it-fe" ? IDX.coppieIt : IDX.coppieFe;
     return lista[k] || null;
+  }
+
+  // Il glossario contiene locuzioni: «a brazz avèrti» e' una voce sola, non
+  // tre. Smembrate, darebbero tre buchi dove c'e' una risposta, cioe' una
+  // traduzione peggiore di non tradurre. Il passaggio e' avido — prova la
+  // frase piu' lunga e, se il glossario non la conosce, accorcia di una
+  // parola. Corrisponde a `_accorpa` di `motore.py`, e se le due copie
+  // divergono la pagina mente.
+  var LUNGHEZZA_MAX_LOCUZIONE = 6;
+
+  function accorpa(token, i, verso) {
+    var indice = verso === "it-fe" ? IDX.perIt : IDX.perFe;
+    for (var quante = Math.min(LUNGHEZZA_MAX_LOCUZIONE, token.length - i); quante > 1; quante--) {
+      var testo = token.slice(i, i + quante).join(" ");
+      if ((indice[chiave(testo)] || []).length) return { testo: testo, quante: quante };
+    }
+    return null;
+  }
+
+  function accorpaTutto(token, verso) {
+    var unita = [], i = 0;
+    while (i < token.length) {
+      var a = accorpa(token, i, verso);
+      if (a) { unita.push(a.testo); i += a.quante; }
+      else { unita.push(token[i]); i += 1; }
+    }
+    return unita;
   }
 
   function risolvi(parola, verso, frase) {
@@ -4769,30 +4813,47 @@
         risultato.ipa = ipaDi(v.id, parola);
       }
       return risultato;
-    }
-
-    // Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
-    // se il frammento non combacia, la coppia resta un esempio e non una
-    // traduzione.
+    }// Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
+// se il frammento non combacia, la coppia resta un esempio e non una
+// traduzione.
+//
+// Il confronto e' in due tempi, e i due tempi guardano **lati opposti**:
+// prima si cerca la parola nel lato da cui si e' partiti, poi si va a
+// prendere il pezzo corrispondente nell'altro lato. Se si confrontassero
+// due parole dello stesso lato, una parola italiana che somiglia a una
+// parola italiana della coppia risponderebbe «dal corpus» senza che il
+// corpus abbia detto niente: la coppia avrebbe tradotto se stessa. E' la
+// stessa cosa che dice `corpora.py` nella docstring di `frammento`.
+    var latoCercato = verso === "it-fe" ? "it" : "fe";
+    var latoRisposto = verso === "it-fe" ? "fe" : "it";
+    var kCercato = chiave(parola);
     var migliore = null;
     DATI.coppie.forEach(function (c) {
-      var lato = verso === "it-fe" ? c.it : c.fe;
-      var frammento = null, punteggio = 0;
-      tokenizza(lato).forEach(function (t) {
-        var s = somiglianza(chiave(parola), chiave(t));
-        if (s > punteggio) { punteggio = s; frammento = t; }
+      var punteggio = 0;
+      tokenizza(c[latoCercato]).forEach(function (t) {
+        var s = somiglianza(kCercato, chiave(t));
+        if (s > punteggio) punteggio = s;
       });
-      if (punteggio >= 0.75 && (!migliore || punteggio > migliore.p)) {
-        migliore = { p: punteggio, frammento: frammento, c: c };
+      if (punteggio < 0.62) return;
+      if (!migliore || punteggio > migliore.p ||
+          (punteggio === migliore.p && c.id < migliore.c.id)) {
+        migliore = { p: punteggio, c: c };
       }
     });
     if (migliore) {
-      return {
-        testo: migliore.frammento,
-        origine: "corpo",
-        confidenza: DATI.origine.corpo * Math.min(1, migliore.p + 0.15),
-        dettaglio: migliore.c.id + ", frammento \"" + migliore.frammento + "\": " + (migliore.c.fonte || "senza fonte")
-      };
+      var pezzo = null, punteggioPezzo = 0;
+      tokenizza(migliore.c[latoRisposto]).forEach(function (t) {
+        var s = somiglianza(kCercato, t);
+        if (s > punteggioPezzo) { punteggioPezzo = s; pezzo = t; }
+      });
+      if (pezzo && punteggioPezzo >= 0.75) {
+        return {
+          testo: pezzo,
+          origine: "corpo",
+          confidenza: DATI.origine.corpo * Math.min(1, punteggioPezzo + 0.15),
+          dettaglio: migliore.c.id + ", frammento \"" + pezzo + "\": " + (migliore.c.fonte || "senza fonte")
+        };
+      }
     }
 
     var r = perRegola(parola, verso);
@@ -4837,7 +4898,7 @@
       return;
     }
 
-    var risultati = token.map(function (t) { return risolvi(t, direzione, testo); });
+    var risultati = accorpaTutto(token, direzione).map(function (t) { return risolvi(t, direzione, testo); });
     var peso = 0, totale = 0, buchi = 0;
     risultati.forEach(function (r, i) {
       var n = Math.max(1, chiave(token[i]).length);
@@ -5074,6 +5135,37 @@
       righe + "</tbody></table>";
   }
 
+  function tabellaProverbi(filtro) {
+    var testo = (filtro || "").toLowerCase();
+    var proverbi = DATI.proverbi.filter(function (p) {
+      if (!testo) return true;
+      return [p.id, p.fe, p.it, p.letterario, p.popolare, p.significato]
+        .filter(function (x) { return x; })
+        .some(function (x) { return String(x).toLowerCase().indexOf(testo) >= 0; });
+    });
+    if (!proverbi.length) {
+      document.getElementById("tabellaProverbi").innerHTML =
+        '<p class="vuoto">Nessun proverbio corrisponde a questa ricerca.</p>';
+      return;
+    }
+    var righe = proverbi.map(function (p) {
+      var popolare = p.popolare
+        ? scappa(p.popolare)
+        : '<span class="varieta vuota">non ancora documentata</span>';
+      return "<tr><td><code>" + scappa(p.id) + "</code></td>" +
+        "<td>" + scappa(p.it || "") + "</td>" +
+        "<td>" + scappa(p.fe || "") + "</td>" +
+        "<td>" + scappa(p.letterario || "") + "</td>" +
+        "<td>" + popolare + "</td>" +
+        "<td>" + scappa(p.significato || "") + "</td>" +
+        "<td>" + scappa(p.fonte || "senza fonte") + "</td></tr>";
+    }).join("");
+    document.getElementById("tabellaProverbi").innerHTML =
+      '<table><thead><tr><th>id</th><th>italiano</th><th>ferrarese</th>' +
+      '<th>letterario</th><th>popolare</th><th>significato</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table>";
+  }
+
   function pannello() {
     var conFonte = DATI.glossario.filter(function (v) { return v.fonte; }).length;
     var daVerificare = DATI.glossario.filter(function (v) { return v.da_verificare; }).length;
@@ -5111,6 +5203,9 @@
   });
   document.getElementById("cercaGlossario").addEventListener("input", function () {
     tabellaGlossario(this.value.trim());
+  });
+  document.getElementById("cercaProverbi").addEventListener("input", function () {
+    tabellaProverbi(this.value.trim());
   });
 
   // I due filtri per varieta' hanno le stesse opzioni e le stesse parole:
@@ -5151,6 +5246,7 @@
 
   tabellaGlossario("");
   tabellaCoppie();
+  tabellaProverbi("");
   elencoVarieta();
   riproduttore("");
   pannello();

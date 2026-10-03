@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.4
+versione: 0.5
 data: 2026-10-03
 ---
 
@@ -23,6 +23,49 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.5 — 2026-10-03 · Le locuzioni diventano usabili, e si controlla che la pagina dica come il motore
+
+**Perché.** La versione 0.4 aveva portato dentro 210 locuzioni e aveva
+dichiarato il buco che ne nasceva: `cerca` le trovava, `traduci` no. Un
+glossario che non si puo' usare e' un elenco, e un elenco e' una promessa non
+mantenuta. E mentre si chiudeva quel buco, un controllo nuovo ha trovato che
+le due copie della logica non dicevano la stessa cosa da prima.
+
+- il motore **accorpa le locuzioni** prima di tradurre parola per parola, in
+  modo avido — dalla frase piu' lunga a piu' parole, fino a due — nelle due
+  direzioni (`motore.py`, `_accorpa`). «a braccia aperte» adesso diventa
+  `a brazz avèrti` invece di tre buchi, ed e' la stessa cosa che fa chi
+  guarda la voce nel vocabolario;
+- nasce **`prove/controlla_equivalenza.py`**: esegue la pagina con Node e
+  confronta le risposte con quelle del motore Python, frase per frase, sulle
+  stesse dodici frasi in entrambe le direzioni. Confronta le risposte e non
+  il codice, perche' le due copie possono essere scritte diversamente e
+  vanno bene finche' dicono la stessa cosa. Va nel workflow `Verifica`;
+- **la regola che era scritta e non controllata ora e' un controllo.** Il
+  primo giro del confronto ha trovato due difetti veri nella copia
+  JavaScript: il tokenizzatore **spezzava l'apostrofo**, cosi' `pesce d'aprile`
+  diventava due parole e la locuzione non combaciava piu'; e il livello 2 del
+  corpus **confrontava un lato con se stesso**, cosi' una parola italiana che
+  somigliava a una parola italiana di una coppia rispondeva «dal corpus»
+  senza che il corpus avesse detto niente. Entrambi corretti nella pagina e
+  verificati dal confronto;
+- **`cerca` trova anche i proverbi**, e stampa la forma dei libri, quella che
+  si dice e il significato insieme al fonte. Il confronto e' a finestre di
+  parole, non sul testo intero: nessuno cerca «non tutte le ciambelle» e si
+  aspetta la traduzione ferrarese di un proverbio italiano di quindici
+  parole. Fino a ieri i 28 proverbi erano un file che nessuno poteva aprire;
+- la pagina ha una **tabella dei proverbi** con ricerca, e accanto la colonna
+  `popolare` che riporta la scritta «non ancora documentata» per tutti e
+  ventotto. Il vuoto e' dichiarato anche in pagina, non solo nel file;
+- i documenti sono allineati: `LICENZE.md` riportava Ferri 1885 e Nannini
+  senza anno, `RACCOLTA.md` citava un id che non esiste.
+
+**Cosa è rimasto fuori, dichiarato.** L'accorpamento guarda il lato da cui si
+parte: se il glossato italiano di una voce e' una parola sola, quella voce si
+trova dalla parte ferrarese e non dall'italiana. Non e' un difetto da
+correggere: e' quello che c'e' nel vocabolario. Nessuna delle 210 voci ha una
+trascrizione IPA, e nessuno dei 28 proverbi ha la forma `popolare`.
 
 ## 0.4 — 2026-10-03 · Il vocabolario del 1889 entra, e con lui le locuzioni
 

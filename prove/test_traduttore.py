@@ -53,9 +53,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from traduttore import morfologia, normalizza, verifica_dati  # noqa: E402
 from traduttore.audio import Archivio, Brano, controlla_archivo  # noqa: E402
-from traduttore.corpora import Coppia, Corpus  # noqa: E402
+from traduttore.corpora import Coppia, Corpus, Proverbio  # noqa: E402
 from traduttore.fonetica import Fonetica, Trascrizione, ipa_valida  # noqa: E402
-from traduttore.glossario import IT_FE, Glossario, Voce  # noqa: E402
+from traduttore.glossario import FE_IT, IT_FE, Glossario, Voce  # noqa: E402
 from traduttore.motore import Motore  # noqa: E402
 from traduttore import proposte  # noqa: E402
 from traduttore.varieta import VARIETA, Varieta, _nome_valido  # noqa: E402
@@ -70,6 +70,9 @@ def glossario_di_prova():
         _voce("V3", "brisa", "niente", "Wikipedia, sezione Caratteristiche"),
         # V4 ha la fonte vuota di proposito: serve al test 2.
         _voce("V4", "stanza", "camera", ""),
+        # V5 e' una locuzione: serve al test di accorpamento.
+        _voce("V5", "a brazz avèrti", "a braccia aperte", "Ferri 1889, pag. 8"),
+        _voce("V6", "a man salva", "sicuramente", "Ferri 1889, pag. 20"),
     ])
 
 
@@ -168,6 +171,38 @@ class TestMotore(unittest.TestCase):
         self.assertEqual(len(risposta.per_corrispondenza), 1)
         self.assertEqual(risposta.per_corrispondenza[0][2], "corpo")
 
+    def test_una_locuzione_non_viene_smembrata(self):
+        # «a braccia aperte» e' una voce sola nel glossario. Smembrata in tre
+        # parole darebbe tre buchi dove c'e' una risposta, cioe' una traduzione
+        # peggiore di non tradurre.
+        risposta = self.motore.traduci("a braccia aperte", IT_FE)
+        self.assertEqual(risposta.testo, "a brazz avèrti")
+        self.assertEqual(len(risposta.per_corrispondenza), 1)
+        self.assertEqual(risposta.per_corrispondenza[0][0], "a braccia aperte")
+        self.assertEqual(risposta.per_corrispondenza[0][2], "glossario")
+        self.assertEqual(risposta.buchi, [])
+
+    def test_la_locuzione_viene_accordata_nella_due_direzioni(self):
+        risposta = self.motore.traduci("a brazz avèrti", FE_IT)
+        self.assertEqual(risposta.testo, "a braccia aperte")
+        self.assertEqual(len(risposta.per_corrispondenza), 1)
+
+    def test_l_accorpamento_e_avido_e_non_mangia_troppo(self):
+        # «voglio a braccia aperte»: l'accorpamento parte dalla parola piu'
+        # lunga e torna indietro finche' non trova. «a braccia» da sola non e'
+        # nel glossario e non deve diventare una risposta.
+        risposta = self.motore.traduci("voglio a braccia aperte", IT_FE)
+        testi = [c[0] for c in risposta.per_corrispondenza]
+        self.assertEqual(testi, ["voglio", "a braccia aperte"])
+        self.assertEqual(risposta.testo, "voglio a brazz avèrti")
+
+    def test_una_parola_sola_non_e_mai_un_accorpamento(self):
+        # «mangiare» e' una voce da sola: l'accorpamento comincia da due
+        # parole e non deve trasformare una parola in due pezzi.
+        risposta = self.motore.traduci("mangiare", IT_FE)
+        self.assertEqual(len(risposta.per_corrispondenza), 1)
+        self.assertEqual(risposta.per_corrispondenza[0][0], "mangiare")
+
     def test_il_corpus_risponde_col_frammento_e_non_con_la_frase(self):
         # «pane» e' nel glossario di prova, quindi il livello 2 si controlla
         # chiamando il corpus direttamente, senza passare dal motore.
@@ -200,6 +235,47 @@ class TestMotore(unittest.TestCase):
     def test_direzione_inversa(self):
         risposta = self.motore.traduci("magnàr", "fe-it")
         self.assertIn("mangiare", risposta.testo)
+
+
+class TestProverbi(unittest.TestCase):
+    """La ricerca nei proverbi, che e' quello che c'era dietro il vuoto.
+
+    Un proverbio si cerca su pezzi, non sul testo intero, e dalla parte
+    giusta: `letterario` e `popolare` sono forme ferraresi, e cercarle dalla
+    parte italiana faceva comparire proverbi che non c'entravano.
+    """
+    def setUp(self):
+        self.corpus = Corpus(proverbi=[
+            Proverbio(id="P1", italiano="Non tutte le ciambelle riescono col buco.",
+                      ferrarese="la n' è minga sèmpar cumpàgna",
+                      letterario="La n' è minga sèmpar cumpàgna",
+                      fonte="Ferri 1889, pag. 102", attendibilita="D"),
+            Proverbio(id="P2", italiano="Lupo non mangia di lupo.",
+                      ferrarese="can an magna ad can",
+                      letterario="Can an magna ad can",
+                      fonte="Ferri 1889, pag. 73", attendibilita="D"),
+        ])
+
+    def test_cerca_un_pezzo_e_trova_il_proverbio(self):
+        trovati = self.corpus.cerca_proverbio("non tutte le ciambelle", IT_FE)
+        self.assertEqual([p.id for _, p, _ in trovati], ["P1"])
+
+    def test_cerca_un_proverbio_intero(self):
+        trovati = self.corpus.cerca_proverbio("lupo non mangia di lupo", IT_FE)
+        self.assertEqual([p.id for _, p, _ in trovati], ["P2"])
+
+    def test_la_forma_dei_libri_si_cerca_solo_dalla_parte_ferrarese(self):
+        # «magnàr» contro «magna» della forma ferrarese del P2. Dall'altra
+        # parte non deve comparire niente: e' la forma dei libri, non quella
+        # italiana, e cercarla li' faceva rispondere il proverbio del lupo a
+        # una domanda su «mangiare».
+        self.assertEqual(self.corpus.cerca_proverbio("magnàr", IT_FE), [])
+        trovati = self.corpus.cerca_proverbio("can an magna ad can", FE_IT)
+        self.assertEqual([p.id for _, p, _ in trovati], ["P2"])
+
+    def test_una_ricerca_senza_risposta_e_una_ricerca_vuota(self):
+        self.assertEqual(self.corpus.cerca_proverbio("gatti e cavalli", IT_FE), [])
+        self.assertEqual(self.corpus.cerca_proverbio("", IT_FE), [])
 
 
 class TestMorfologia(unittest.TestCase):

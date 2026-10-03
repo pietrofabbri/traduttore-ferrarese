@@ -1,6 +1,6 @@
 ---
 titolo: Istruzioni per chi lavora al progetto
-versione: 0.4
+versione: 0.5
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -38,7 +38,10 @@ un dizionario che non esiste.
   (`sorgenti/modello.html`). Non e' una duplicazione tollerata: e' un rischio
   dichiarato. Se le due divergono la pagina mente, e chi legge la pagina ha
   ragione di crederle. Se cambi un livello, cambi entrambi, nello stesso
-  commit.
+  commit, e poi lanci `prove/controlla_equivalenza.py`, che confronta le
+  risposte delle due copie frase per frase sulle stesse frasi. Il confronto
+  e' sulle risposte e non sul codice: le due copie possono essere scritte
+  diversamente e vanno bene finche' dicono la stessa cosa.
 - **Il livello IA non e' una fonte.** Non entra nel glossario, non entra nel
   corpus, e non si usa senza chiave. Se qualcuno lo toglie, il progetto
   funziona lo stesso: e' il test che garantisce che sia davvero facoltativo.
@@ -51,11 +54,12 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py     # 59 test
-python3 -m traduttore.cli verifica   # i controlli sui dati
+python3 prove/test_traduttore.py           # 67 test
+python3 -m traduttore.cli verifica         # i controlli sui dati
+python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
 ```
 
-I due devono uscire senza errori. Se hai toccato `dati/`, aggiungi anche:
+I tre devono uscire senza errori. Se hai toccato `dati/`, aggiungi anche:
 
 ```bash
 python3 -m traduttore.cli impara     # rigenera dati/regole.json

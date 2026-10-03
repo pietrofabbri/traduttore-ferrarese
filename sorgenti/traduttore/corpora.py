@@ -188,6 +188,49 @@ class Corpus:
                 return coppia
         return None
 
+    def cerca_proverbio(self, frase: str, direzione: str = IT_FE,
+                        soglia: float = 0.62) -> list:
+        """Proverbi in cui un pezzo di un lato somiglia alla frase data.
+
+        Dal lato italiano si cerca solo nel glossato italiano. Dal lato
+        ferrarese si cercano tutte e tre le forme, perche' tutte e tre sono
+        ferraresi: `ferrarese` e' la forma unica quando c'e' una sola,
+        `letterario` e' quella dei libri, `popolare` quella che si dice — e le
+        due ultime non coincidono quasi mai. Mettere `letterario` dalla parte
+        italiana faceva trovare «magnàr» nel proverbio *lupo non mangia di
+        lupo*, perche' l'unico pezzo che combaciava era «magna» della forma
+        ferrarese.
+
+        Il confronto e' a **finestre**, non sul testo intero: nessuno cerca
+        «non tutte le ciambelle» e si aspetta di ricevere la traduzione
+        ferrarese di un proverbio italiano di quindici parole. Si prende la
+        finestra di parole che meglio combacia con quello che e' stato
+        scritto, che e' anche quello che fa una persona che sfoglia
+        l'elenco. Il ritorno e' (punteggio, proverbio, pezzo), dalla piu'
+        somigliante alla meno.
+        """
+        k = normalizza.chiave(frase)
+        risultati = []
+        if not k:
+            return risultati
+        for proverbio in self.proverbi:
+            if direzione == IT_FE:
+                lati = [proverbio.italiano]
+            else:
+                lati = [proverbio.ferrarese, proverbio.letterario,
+                        proverbio.popolare]
+            punteggio, pezzo = 0.0, ""
+            for lato in lati:
+                if not lato:
+                    continue
+                p, t = _migliora_finestra(k, lato)
+                if p > punteggio:
+                    punteggio, pezzo = p, t
+            if punteggio >= soglia:
+                risultati.append((punteggio, proverbio, pezzo))
+        risultati.sort(key=lambda p: (-p[0], p[1].id))
+        return risultati
+
     def frase_gemella(self, frase: str, direzione: str = IT_FE):
         """La coppia che contiene la frase data, per esteso.
 
@@ -233,6 +276,27 @@ class Corpus:
         if migliore[1] is None or migliore[0] < soglia:
             return None
         return migliore[1], migliore[0]
+
+
+def _migliora_finestra(k: str, testo: str, parole_max: int = 12):
+    """La sequenza di parole di `testo` che meglio combacia con `k`.
+
+    Torna `(punteggio, pezzo)`. Il confronto parte dalla finestra piu' lunga
+    e scende: una finestra lunga che combacia dice «e' questo proverbio», una
+    finestra corta che combacia dice solo «c'e' una parola in comune», e il
+    progetto non confonde le due cose.
+    """
+    token = normalizza.tokenizza(testo)
+    migliore = (0.0, "")
+    for quante in range(min(parole_max, len(token)), 0, -1):
+        for inizio in range(0, len(token) - quante + 1):
+            pezzo = " ".join(token[inizio:inizio + quante])
+            punteggio = normalizza.somiglianza(k, normalizza.chiave(pezzo))
+            if punteggio > migliore[0]:
+                migliore = (punteggio, pezzo)
+        if migliore[0] >= 1.0:
+            break
+    return migliore
 
 
 def _leggi_jsonl(percorso: str, costruttore):

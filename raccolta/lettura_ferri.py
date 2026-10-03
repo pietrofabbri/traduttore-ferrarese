@@ -9,7 +9,7 @@ persona che ha guardato la voce una per una.
 
 Ogni riga e' una tupla:
 
-    (chiave, ferrarese, italiano, campo, attendibilita, nota)
+    (chiave, ferrarese, italiano, campo, attendibilita, nota[, varianti])
 
 `chiave`       come la voce compare nel file dei candidati, serve a trovare
                il numero di pagina. Non finisce nei dati.
@@ -24,6 +24,10 @@ Ogni riga e' una tupla:
                non e' un compromesso: e' la differenza fra quello che si puo'
                controllare aprendo il libro e quello che no.
 `nota`         quello che il glossario non ha un campo dove mettere.
+`varianti`    facoltativo, e solo quando il libro dà due forme della stessa
+               voce. Vanno in `varianti` e non dentro `ferrarese`: il campo
+               `ferrarese` e' una chiave di ricerca, e «gabanina, gabanin»
+               non si puo' cercare.
 
 Il gloss del Ferri e' italiano del 1889, non italiano di oggi: «brisa», «sarvamento»,
 «ciclone». Non si corregge perche' correggerlo sarebbe tradurre la fonte invece

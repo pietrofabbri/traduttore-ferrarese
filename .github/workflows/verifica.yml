@@ -103,9 +103,26 @@ jobs:
           if not dati["glossario"]:
               print("ERRORE: il glossario incorporato e' vuoto")
               sys.exit(1)
-          print("glossario: %d voci, coppie: %d, regole: %d"
-                % (len(dati["glossario"]), len(dati["coppie"]), len(dati["regole"])))
+          print("glossario: %d voci, coppie: %d, proverbi: %d, regole: %d"
+                % (len(dati["glossario"]), len(dati["coppie"]),
+                   len(dati.get("proverbi", [])), len(dati["regole"])))
           PY
+
+      - name: La pagina e il motore dicono la stessa cosa
+        # Il motore esiste due volte: in Python e in JavaScript dentro la
+        # pagina. `AGENTS.md` lo dichiara un rischio e fin qui non era
+        # controllato da niente: era una regola scritta, non un controllo.
+        # Questo passo confronta le risposte, frase per frase, sulle stesse
+        # dodici frasi in entrambe le direzioni. Se le due copie divergono,
+        # la pagina mente a chi la guarda, e il workflow fallisce.
+        #
+        # Gira su Node, che `ubuntu-latest` ha gia'. Su una macchina senza
+        # Node il confronto si salta e lo dice: un controllo che non puo'
+        # girare non deve far fallire niente, ma non deve nemmeno fingere
+        # di essere passato.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 prove/controlla_equivalenza.py
 
       - name: Ogni voce dichiara la sua varieta'
         # Il controllo che tiene insieme la parte geografica e quella lessicale.

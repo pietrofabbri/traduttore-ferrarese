@@ -42,8 +42,10 @@ Le fonti attualmente nel registro (`dati/fonti.json`):
 | «Dialetto ferrarese», Wikipedia in italiano | CC BY-SA 4.0 | acquisita |
 | — di cui la **tassonomia delle cinque varieta'**, in `dati/varieta.json` | CC BY-SA 4.0 | acquisita |
 | Traduzione ferrarese della Dichiarazione universale dei diritti umani, art. 1 | **da verificare** | acquisita |
-| Luigi Ferri, *Vocabolario ferrarese-italiano*, 1885 | pubblico dominio | esaminata |
-| Francesco Nannini, *Vocabolario portatile ferrarese-italiano* | pubblico dominio | reperto |
+| Luigi Ferri (1826-1895), *Vocabolario ferrarese-italiano*, 1889 | pubblico dominio | acquisita |
+| Francesco Nannini, *Vocabolario portatile ferrarese-italiano*, 1805 | pubblico dominio | esaminata |
+| *Vocabolario domestico ferrarese-italiano*, copia su blog | pubblico dominio dichiarato dalla copia, non dall'autore | esaminata |
+| «Scrìvar e l'èàr al frarés», opuscolo su Aruba | nessuna dichiarata | **esclusa** |
 | Vocabolario online di Roberto Bigoni | da chiedere | reperto |
 | Portale dei dialetti della Regione Emilia-Romagna | da verificare | reperto |
 | Glossario di uno stabilimento di Ferrara | nessuna dichiarata | **esclusa** |

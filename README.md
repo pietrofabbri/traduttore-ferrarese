@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.4
+versione: 0.5
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -44,6 +44,15 @@ trovato la parola. Serve a due persone diverse: a chi scrive una frase e cerca
 la parola italiana, e a chi ha davanti un vocabolario dell'Ottocento e cerca
 cosa vuol dire una parola ferrarese. Con `--direzione it-fe` o `--direzione
 fe-it` si guarda un lato solo.
+
+E se non e' una parola ma un **proverbio**, `cerca` lo trova lo stesso: prova
+la forma dei libri, quella che si dice e il significato, e stampa le tre cose
+insieme al fonte. Un proverbio non e' una voce e non si presenta come tale.
+
+```bash
+python3 -m traduttore.cli cerca "lupo non mangia di lupo"
+python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
+```
 
 ## I quattro livelli, e il quinto
 
@@ -323,12 +332,17 @@ ferrarese. In breve:
   quindi **234 voci**, tutte da tre fonti e **tutte di una sola varieta'**, il
   cittadino. Quattro varieta' su cinque sono vuote dichiarate. Non e' un
   dizionario e non si presenta come tale.
-- **Le locuzioni ci sono, ma il motore non le usa ancora in una frase.**
-  Duecentodieci delle voci hanno piu' di una parola, e sono la parte piu'
-  interessante del lotto: `cerca "a brazz avèrti"` risponde, ma `traduci`
-  smembra ancora il testo parola per parola e su «a braccia aperte» non
-  trova niente. Il glossario le contiene e il traduttore non le sa usare:
-  e' un buco dichiarato, non una scelta.
+- **Le locuzioni si cercano solo dalla parte che le contiene.** Duecentodieci
+  delle voci hanno piu' di una parola, e il motore le accorpa prima di
+  tradurre parola per parola: «a braccia aperte» diventa `a brazz avèrti` e
+  non tre buchi. Ma l'accorpamento guarda il lato da cui si parte: se scrivi
+  in italiano «a braccia aperte» trova la voce, e se scrivi in italiano
+  «sicuramente» per la voce che il Ferri traduce `a man salva`, non la
+  trova, perche' in quel glossato l'italiano e' una parola sola. Non e' un
+  difetto da correggere: e' quello che c'e' nel vocabolario.
+- **I proverbi sono in pagina e si cercano**, e `popolare` e' vuoto per tutti
+  e ventotto. La forma che si dice non l'ha ancora detta nessuno, e un campo
+  vuoto dichiarato vale piu' di una forma inventata per simmetria.
 - **La grafia e' del 1889.** Le 210 voci prese dal vocabolario di Ferri sono
   nella grafia del libro, con l'accento sui toni come il Ferri lo intendeva.
   Non e' la grafia di oggi e non e' quella che si sente: le forme sono

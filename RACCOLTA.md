@@ -1,6 +1,6 @@
 ---
 titolo: Raccolta dei materiali ferraresi
-versione: 0.4
+versione: 0.5
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -100,9 +100,9 @@ riga e pesa 35 megabyte.
 Come si riempie il glossario da un vocabolario:
 
 ```json
-{"id":"V0312","varieta":"cittadino","ferrarese":"…","italiano":"…","campo":"verbo",
+{"id":"V0237","varieta":"cittadino","ferrarese":"…","italiano":"…","campo":"verbo",
  "note":"voce 47 del vocabolario; il libro dà anche la forma breve «…»",
- "fonte":"Ferri, Vocabolario ferrarese-italiano, 1885, p. 47",
+ "fonte":"Luigi Ferri, Vocabolario ferrarese-italiano, 1889, pag. 47",
  "attendibilita":"D","da_verificare":false}
 ```
 

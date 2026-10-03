@@ -193,6 +193,7 @@ def comando_cerca(args) -> int:
     capire se una parola e' gia' stata presa in italiano).
     """
     glossario = Glossario.da_file(PERCORSI["glossario"])
+    corpus = Corpus.da_file(PERCORSI["coppie"], PERCORSI["proverbi"])
     # La fonetica si carica una volta sola, prima di tutto: leggere il file
     # dentro il ciclo e' sprezzo di disco, e in un comando che si usa spesso si
     # sente. Non e' un difetto che si vede, e' un difetto che costa.
@@ -204,6 +205,27 @@ def comando_cerca(args) -> int:
         for voce in glossario.cerca(args.forma, direzione):
             trovate.append((direzione, voce))
     if not trovate:
+        # Un proverbio non e' una voce e non si presenta come tale: ha due
+        # forme, ha una fonte, e sta in un file suo. Prima di dire «nessuna
+        # voce» si guarda li', perche' chi cerca «lupo non mangia di lupo» ha
+        # diritto a una risposta vera anche se non e' una parola del
+        # glossario.
+        # Un proverbio non e' una voce e non si presenta come tale: ha due
+        # forme, ha una fonte, e sta in un file suo. Prima di dire «nessuna
+        # voce» si guarda li', perche' chi cerca «lupo non mangia di lupo» ha
+        # diritto a una risposta vera anche se non e' una parola del
+        # glossario. Con `--direzione entrambe` lo stesso proverbio viene
+        # trovato due volte: si tiene quello col punteggio migliore.
+        proverbi = {}
+        for direzione in cercate:
+            for punteggio, proverbio, pezzo in corpus.cerca_proverbio(args.forma, direzione):
+                if proverbio.id not in proverbi or punteggio > proverbi[proverbio.id][0]:
+                    proverbi[proverbio.id] = (punteggio, direzione, pezzo, proverbio)
+        if proverbi:
+            for punteggio, direzione, pezzo, proverbio in sorted(
+                    proverbi.values(), key=lambda p: (-p[0], p[3].id)):
+                _stampa_proverbio(proverbio, direzione, punteggio, pezzo)
+            return 0
         print("nessuna voce per %r" % args.forma)
         vicine = []
         for direzione in cercate:
@@ -241,6 +263,30 @@ def comando_cerca(args) -> int:
         if voce.note:
             print("         nota: %s" % voce.note)
     return 0
+
+
+def _stampa_proverbio(proverbio, direzione, punteggio=None, pezzo=None) -> None:
+    """Un proverbio, con le tre cose che rendono una risposta controllabile.
+
+    La forma dei libri, la forma che si dice e il significato. Il campo
+    `popolare` vuoto si dichiara come vuoto: nessuno ci ha ancora detto come
+    si dice questo proverbio, e una forma inventata per simmetria sembrerebbe
+    una voce mentre non lo e'.
+    """
+    prefisso = "%0.2f  " % punteggio if punteggio is not None else ""
+    print("%s%-8s %s = %s  (dal lato %s)"
+          % (prefisso, proverbio.id, proverbio.ferrarese or "(senza forma)",
+             proverbio.italiano or "(senza italiano)",
+             "italiano" if direzione == IT_FE else "ferrarese"))
+    if pezzo and pezzo.lower() not in (proverbio.italiano or "").lower():
+        print("         trovato su: %r" % pezzo)
+    print("         letterario: %s" % (proverbio.letterario or "non documentato"))
+    print("         popolare:   %s"
+          % (proverbio.popolare or "non documentato: nessuno l'ha ancora detto"))
+    print("         attendibilita: %s" % proverbio.attendibilita)
+    print("         fonte: %s" % (proverbio.fonte or "SENZA FONTE"))
+    if proverbio.significato:
+        print("         significato: %s" % proverbio.significato)
 
 
 def comando_impara(args) -> int:

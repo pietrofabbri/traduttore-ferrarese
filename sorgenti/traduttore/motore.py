@@ -52,6 +52,14 @@ ORIGINE = {
 SOGLIA_PULITA = 0.90
 SOGLIA_RIFIUTO = 0.50
 
+# Quanto lunga puo' essere una locuzione che il glossario riconosce tutta
+# insieme. Sei parole e' il massimo reale del glossario attuale: la piu'
+# lunga, «esser tr al lancùzan el martèl», ne ha cinque, e il numero e'
+# dichiarato perche' un limite piu' alto costa un confronto in piu' per ogni
+# parola di ogni frase, e un limite piu' basso lascerebbe fuori delle voci
+# che ci sono.
+LUNGHEZZA_MAX_LOCUZIONE = 6
+
 
 @dataclass
 class Risposta:
@@ -169,17 +177,48 @@ class Motore:
         scende, e si smette al primo livello che risponde. Il livello 4 e'
         costoso e fallibile, quindi non lo si usa mai quando gli altri tre
         hanno gia' detto.
+
+        Prima di tutto pero' si accorpa: il glossario contiene locuzioni
+        («a brazz avèrti» e' una voce sola, non tre), e smembrarle farebbe
+        peggio di non tradurre. Il passaggio e' avido — prova la frase piu'
+        lunga e, se il glossario non la conosce, accorcia di una parola — e
+        questa e' la stessa cosa che fa chi legge il vocabolario: cerca
+        l'espressione intera prima delle parole che la compongono.
         """
         risultati = []
         # Il contesto di frase serve al livello 2 e al 4: e' la frase intera,
         # non il token, e per questo si calcola una volta sola.
         frase = " ".join(token)
         contesto = self._contesto_modello(frase, direzione)
-        for parola in token:
+        i = 0
+        while i < len(token):
+            accorpata = self._accorpa(token, i, direzione)
+            if accorpata is not None:
+                testo, quante = accorpata
+                tradotto, origine, confidenza, dettaglio = self._risolvi_una(
+                    testo, frase, direzione, contesto)
+                risultati.append((testo, tradotto, origine, confidenza, dettaglio))
+                i += quante
+                continue
+            parola = token[i]
             tradotto, origine, confidenza, dettaglio = self._risolvi_una(
                 parola, frase, direzione, contesto)
             risultati.append((parola, tradotto, origine, confidenza, dettaglio))
+            i += 1
         return risultati
+
+    def _accorpa(self, token: list, i: int, direzione: str):
+        """La locuzione piu' lunga che comincia in `token[i]`, se c'e'.
+
+        Torna `(testo, quante_parole)` o `None`. Una parola sola non e' mai
+        un accorpamento: sotto i due token si comincia al livello 1 normale,
+        che e' gia' il caso piu' forte.
+        """
+        for quante in range(min(LUNGHEZZA_MAX_LOCUZIONE, len(token) - i), 1, -1):
+            testo = " ".join(token[i:i + quante])
+            if self.glossario.cerca(testo, direzione):
+                return testo, quante
+        return None
 
     def _risolvi_una(self, parola: str, frase: str, direzione: str, contesto) -> tuple:
         """Risolve un token e restituisce (tradotto, origine, confidenza, dettaglio)."""

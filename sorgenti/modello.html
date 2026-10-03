@@ -173,6 +173,15 @@
   <h2>Che cosa sa il motore</h2>
   <div class="pannello" id="pannello"></div>
 
+  <h3>E che cosa non sa</h3>
+  <p class="occhiello" style="margin:.4rem 0 1rem">
+    I buchi sono cose che il progetto sa di non sapere, non errori. Ogni numero
+    e' quello che si puo' correggere: una riga in piu' in un file, mezz'ora con
+    una persona che parla ferrarese, un informatore che dica un proverbio come
+    si dice.
+  </p>
+  <div id="buchi"></div>
+
   <footer>
     Progetto di &laquo;I cinque duchi&raquo;. Nessun account, nessun server, nessuna richiesta di rete:
     la pagina funziona anche senza connessione.
@@ -751,6 +760,23 @@ function tokenizza(t) {
     document.getElementById("pannello").innerHTML = voci.map(function (p) {
       return "<div>" + p[1] + "<span>" + p[0] + "</span></div>";
     }).join("");
+
+    // I buchi, sotto i numeri di quello che il motore sa. Non sono errori e
+    // non hanno una correzione automatica: sono le cose che il progetto sa di
+    // non sapere. Senza il numero accanto sarebbero un'oblazione, e
+    // un'oblazione non si riduce da sola.
+    var buchi = DATI.buchi || [];
+    var elenco = document.getElementById("buchi");
+    if (!elenco) return;
+    if (!buchi.length) {
+      elenco.innerHTML = '<p class="vuoto">Nessun buco dichiarato.</p>';
+      return;
+    }
+    elenco.innerHTML = "<ul>" + buchi.map(function (b) {
+      var conta = (b.totale !== undefined) ? (b.quanti + " su " + b.totale) : String(b.quanti);
+      return "<li><strong>" + conta + "</strong> — " + scappa(b.nome) +
+        "<br><span class=\"occhiello\">" + scappa(b.nota) + "</span></li>";
+    }).join("") + "</ul>";
   }
 
   document.getElementById("traduci").addEventListener("click", traduci);

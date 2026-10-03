@@ -233,3 +233,14 @@ jobs:
           else:
               print("ogni voce ha la sua fonte")
           PY
+
+      - name: I buchi dichiarati hanno un numero
+        # Non e' un controllo e non fallisce: qui non c'e' niente da
+        # correggere, c'e' solo da sapere. Il passo serve per un altro
+        # motivo: i numeri restano nel log di ogni esecuzione, e un numero che
+        # si vede solo quando qualcuno si ricorda di chiederlo non e' un
+        # numero che nessuno lavora. Se una riga chiude un buco, qui il
+        # numero deve scendere, e si vede che e' successo.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli buchi

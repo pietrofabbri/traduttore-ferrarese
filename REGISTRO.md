@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.5
+versione: 0.6
 data: 2026-10-03
 ---
 
@@ -23,6 +23,47 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.6 — 2026-10-03 · I buchi prendono un numero
+
+**Perché.** Il progetto sapeva cosa non sapeva, ma lo sapeva a parole: «non
+abbiamo le trascrizioni IPA», «la forma popolare dei proverbi non e' ancora
+documentata». Sono frasi vere e utili, ma non si possono correggere: nessuno
+lavorava una frase che non ha un numero dentro. Il giorno in cui qualcuno
+aggiunge una riga, la frase non cambia e il lavoro sembra non essere stato
+riconosciuto. Un buco senza numero è un'oblazione, e un'oblazione non si
+riduce da sola.
+
+- nasce **`verifica_dati.buchi_dichiarati()`**: non un controllo e non un
+  errore, una funzione che conta quello che manca e **scrive perché**
+  manca. Ogni riga porta `nome`, `quanti`, `totale` (quando ha senso) e `nota`;
+  una riga senza nota non dice niente e sta peggio che non esserci;
+- nasce il **comando `buchi`** (con `--json`), che stampa quei numeri dal
+  terminale e non fallisce mai: qui non c'è niente da correggere, c'è solo
+  da sapere. I cinque numeri di adesso sono 206 locuzioni, 210 voci su 234
+  senza IPA, 28 trascrizioni su 28 non verificate da un parlante, 28 proverbi
+  su 28 senza forma `popolare`, 3 voci su 234 dichiarate da verificare;
+- la **pagina** ha la sezione «E che cosa non sa», subito sotto il pannello,
+  con gli stessi numeri e le stesse note. I numeri non sono ricalcolati in
+  JavaScript: arrivano da `buchi_dichiarati()` insieme al resto dei dati, perché
+  un numero calcolato in due posti è un numero che dopo un mese non è più vero
+  per nessuno;
+- **due numeri scritti a mano erano sbagliati** e il comando li ha smascherati:
+  le locuzioni erano 206 e non 210 (il conto guarda il lato ferrarese, che è
+  quello che il motore accorpa), e in fila d'attesa ci sono due voci e due
+  frasi, non quattro voci. Il `README` li corregge. Il numero dei proverbi
+  coincideva già, ed è l'unico modo che si aggiorni da solo.
+
+**Difetto trovato e corretto scrivendo i test.** Il conto delle coppie senza
+fonte guardava `Coppia.valida()`, che controlla anche i due lati, mentre il
+controllo **C4** guarda solo la fonte: i due numeri potevano divergere senza
+che nessuno se ne accorgesse. Ora la funzione conta come C4, e un test
+(`test_le_coppie_senza_fonte_sono_quelle_che_il_controllo_C4_conta`) mette le
+due cose nello stesso test, così se un giorno divergono fallisce.
+
+**Cosa è rimasto fuori, dichiarato.** `buchi` non corregge niente e non lo
+promette: chiude il conto, non il buco. Le 210 voci senza IPA e i 28 proverbi
+senza `popolare` aspettano una persona, non una funzione.
 
 ## 0.5 — 2026-10-03 · Le locuzioni diventano usabili, e si controlla che la pagina dica come il motore
 
@@ -64,8 +105,11 @@ le due copie della logica non dicevano la stessa cosa da prima.
 **Cosa è rimasto fuori, dichiarato.** L'accorpamento guarda il lato da cui si
 parte: se il glossato italiano di una voce e' una parola sola, quella voce si
 trova dalla parte ferrarese e non dall'italiana. Non e' un difetto da
-correggere: e' quello che c'e' nel vocabolario. Nessuna delle 210 voci ha una
-trascrizione IPA, e nessuno dei 28 proverbi ha la forma `popolare`.
+correggere: e' quello che c'e' nel vocabolario. Nessuna delle 234 voci ha una
+trascrizione **verificata** da un parlante, e 210 non hanno neanche una
+trascrizione; nessuno dei 28 proverbi ha la forma `popolare`. (Il numero delle
+voci senza IPA e' entrato nel comando `buchi` nella 0.6: prima qui era
+scritto 210 accanto a «nessuna delle 210», che era tautologico.)
 
 ## 0.4 — 2026-10-03 · Il vocabolario del 1889 entra, e con lui le locuzioni
 

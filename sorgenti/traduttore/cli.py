@@ -9,6 +9,7 @@ programma che sistema un glossario senza chiedere lo rovina.
     impara        impara le regole morfologiche dal corpus e le scrive
     verifica      i controlli sui dati
     stato         che cosa sa il motore, in numeri
+    buchi         quello che il motore non sa, in numeri, e perche'
     varieta       le cinque varieta' del ferrarese, e quante voci ha ciascuna
     pronuncia     la trascrizione IPA di una parola, e quanto e' sicura
     audio         che brani audio ci sono, e quali si possono pubblicare
@@ -262,6 +263,38 @@ def comando_cerca(args) -> int:
         print("         fonte: %s" % (voce.fonte or "SENZA FONTE"))
         if voce.note:
             print("         nota: %s" % voce.note)
+    return 0
+
+
+def comando_buchi(args) -> int:
+    """Quello che manca, in numeri, con il motivo per cui manca.
+
+    Il comando esiste perche' «non abbiamo le trascrizioni IPA» e' una frase
+    che resta vera per sempre, e «ne abbiamo 210 su 234» e' una frase che si
+    puo' correggere luned'i. Un buco dichiarato che non ha un numero accanto
+    e' un buco che nessuno lavora.
+
+    Non fallisce mai: qui non c'e' niente da correggere, c'e' solo da sapere.
+    """
+    glossario = Glossario.da_file(PERCORSI["glossario"])
+    corpus = Corpus.da_file(PERCORSI["coppie"], PERCORSI["proverbi"])
+    fonetica = Fonetica.da_file(PERCORSI["fonetica"])
+    buchi = verifica_dati.buchi_dichiarati(glossario, corpus, fonetica)
+    if args.json:
+        print(json.dumps(buchi, ensure_ascii=False, indent=2))
+        return 0
+    if not buchi:
+        print("nessun buco dichiarato")
+        return 0
+    larghezza = max(len(b["nome"]) for b in buchi)
+    for buco in buchi:
+        conta = ("%d su %d" % (buco["quanti"], buco["totale"])
+                 if "totale" in buco else str(buco["quanti"]))
+        print("%-*s  %-12s  %s" % (larghezza, buco["nome"], conta, buco["nota"]))
+    print()
+    print("%d buchi dichiarati. Non sono errori: sono cose che il progetto "
+          "sa di non sapere, e finche' stanno qui scritti nessuno li prende "
+          "per fatti." % len(buchi))
     return 0
 
 
@@ -557,6 +590,10 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p = sotto.add_parser("stato", help="che cosa sa il motore")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_stato)
+
+    p = sotto.add_parser("buchi", help="quello che il motore non sa, e perche'")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_buchi)
 
     p = sotto.add_parser("varieta", help="le cinque varieta' e quello che c'e' dentro")
     p.add_argument("--json", action="store_true")

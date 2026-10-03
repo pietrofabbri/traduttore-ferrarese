@@ -41,6 +41,7 @@ from traduttore import morfologia  # noqa: E402
 from traduttore.audio import Archivio  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
 from traduttore.fonetica import Fonetica  # noqa: E402
+from traduttore import verifica_dati  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
 from traduttore.motore import ORIGINE  # noqa: E402
 from traduttore.varieta import NOMI, Varieta  # noqa: E402
@@ -58,6 +59,10 @@ def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
     audio_disponibili = set(audio_disponibili or [])
     conteggi = varieta.conteggi(glossario=glossario, coppie=corpus.coppie,
                                 audio=list(archivio))
+    # I buchi dichiarati entrano nei dati della pagina e non sono calcolati in
+    # JavaScript: se la pagina e il terminale contassero gli stessi numeri per
+    # conto loro, un giorno avrebbero detto cose diverse e nessuno avrebbe la
+    # certezza di quale delle due quella giusta.
     return {
         "glossario": [
             {
@@ -128,6 +133,7 @@ def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
         ],
         "nomi_varieta": NOMI,
         "origine": ORIGINE,
+        "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
     }
 
 

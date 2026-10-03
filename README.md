@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.5
+versione: 0.6
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -29,6 +29,7 @@ python3 -m traduttore.cli pronuncia magnar
 python3 -m traduttore.cli audio
 python3 -m traduttore.cli proposte
 python3 -m traduttore.cli stato
+python3 -m traduttore.cli buchi
 python3 -m traduttore.cli verifica
 python3 -m traduttore.cli impara
 python3 -m traduttore.cli web
@@ -38,6 +39,14 @@ E la pagina: `python3 -m traduttore.cli web` scrive `web/index.html`, che si
 apre con un doppio clic e funziona **senza connessione**. Nessun account,
 nessun server, nessuna richiesta di rete. Su GitHub la pubblica il workflow
 `pagine.yml`.
+
+`buchi` non e' un controllo e non fallisce mai: qui non c'e' niente da
+correggere, c'e' solo da sapere. Stampa quello che il progetto **sa di non
+sapere**, con il numero accanto e il motivo per cui quel numero non si riduce
+da solo — «210 voci su 234 senza trascrizione IPA» e' una frase che qualcuno
+puo' correggere lunedi', «non abbiamo le trascrizioni IPA» e' una frase che
+resta vera per sempre. Gli stessi numeri compaiono sotto «E che cosa non sa»
+nella pagina.
 
 `cerca` guarda **in entrambi i lati** per default, e dice da quale lato ha
 trovato la parola. Serve a due persone diverse: a chi scrive una frase e cerca
@@ -320,26 +329,30 @@ ferrarese. In breve:
 - **Non c'e' nessuna registrazione**: `dati/audio.jsonl` e' vuoto e
   `audio/` contiene il protocollo e il modello di consenso, non un brano. Le
   28 trascrizioni IPA ci sono, ma nessuna e' verificata da un parlante
-  (`attendibilita D`): finche' vale zero, la pronuncia non e' documentata da
+  (`attendibilita D`), e le altre **210 voci su 234 non hanno nessuna
+  trascrizione**: `buchi` stampa i due numeri. Finche' il secondo vale zero,
+  la pronuncia non e' documentata da
   nessuna parte e la pagina lo dice. Quanto tempo ci vuole davvero e' in
   `STIMA-AUDIO.md`: quindici ore di registrazione per tutta la progressione,
   e il vincolo non sono le ore, sono le persone.
-- **Quattro voci e due frasi sono in una fila d'attesa**,
+- **Due voci, due frasi e due trascrizioni sono in una fila d'attesa**,
   `dati/da_verificare/`: vengono dalla traduzione ferrarese della
   Dichiarazione universale dei diritti umani (S003), e la licenza di quella
   fonte non e' verificata. Non le usa nessuno, non sono nella pagina e il
   controllo **D1** fallisce se finiscono nei file attivi. Il glossario ha
   quindi **234 voci**, tutte da tre fonti e **tutte di una sola varieta'**, il
-  cittadino. Quattro varieta' su cinque sono vuote dichiarate. Non e' un
-  dizionario e non si presenta come tale.
-- **Le locuzioni si cercano solo dalla parte che le contiene.** Duecentodieci
-  delle voci hanno piu' di una parola, e il motore le accorpa prima di
-  tradurre parola per parola: «a braccia aperte» diventa `a brazz avèrti` e
-  non tre buchi. Ma l'accorpamento guarda il lato da cui si parte: se scrivi
-  in italiano «a braccia aperte» trova la voce, e se scrivi in italiano
-  «sicuramente» per la voce che il Ferri traduce `a man salva`, non la
-  trova, perche' in quel glossato l'italiano e' una parola sola. Non e' un
-  difetto da correggere: e' quello che c'e' nel vocabolario.
+  cittadino. Quattro varieta' su cinque sono vuote dichiarate, e tre voci
+  sulle 234 hanno `da_verificare` perche' nessuno le ha ancora controllate
+  con un informatore. Non e' un dizionario e non si presenta come tale.
+- **Le locuzioni si cercano solo dalla parte che le contiene.** Duecentosei
+  delle 234 voci hanno piu' di una parola **dal lato ferrarese**, e il motore
+  le accorpa prima di tradurre parola per parola: «a braccia aperte» diventa
+  `a brazz avèrti` e non tre buchi. Ma l'accorpamento guarda il lato da cui
+  si parte: se scrivi in italiano «a braccia aperte» trova la voce, e se
+  scrivi in italiano «sicuramente» per la voce che il Ferri traduce
+  `a man salva`, non la trova, perche' in quel glossato l'italiano e' una
+  parola sola. Non e' un difetto da correggere: e' quello che c'e' nel
+  vocabolario. Il conto lo stampa `buchi`.
 - **I proverbi sono in pagina e si cercano**, e `popolare` e' vuoto per tutti
   e ventotto. La forma che si dice non l'ha ancora detta nessuno, e un campo
   vuoto dichiarato vale piu' di una forma inventata per simmetria.

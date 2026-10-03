@@ -383,3 +383,76 @@ def riepilogo(problemi: list) -> dict:
         "avvisi": len(problemi) - len(errori),
         "ok": not errori,
     }
+
+
+def buchi_dichiarati(glossario, corpus, fonetica=None) -> list:
+    """Quello che manca, in numeri, con il motivo per cui manca.
+
+    Non e' un controllo e non lo e' diventato: un controllo che segnala un
+    buco che il progetto ha dichiarato fa fallire la CI per sempre, e il
+    progetto non vuole fallire, vuole dire. Quello che vuole e' che il buco sia
+    **un numero che si aggiorna**, perche' «non abbiamo le trascrizioni IPA» e'
+    un fatto e «ne abbiamo 28 su 234» e' un fatto che si puo' correggere.
+
+    Ogni riga porta `nome`, `quanti`, `totale` (quando ha senso) e `nota`:
+    il motivo per cui quel numero non si riduce da solo. Una riga senza nota
+    non dice niente e sta peggio che non esserci.
+
+    La stessa funzione alimenta il comando `buchi` e il pannello della pagina:
+    un numero che ognuno calcola per conto suo e' un numero che dopo un mese
+    non e' piu' vero per nessuno.
+    """
+    buchi = []
+
+    def aggiungi(nome, quanti, nota, totale=None):
+        if not quanti:
+            return
+        riga = {"nome": nome, "quanti": quanti, "nota": nota}
+        if totale is not None:
+            riga["totale"] = totale
+        buchi.append(riga)
+
+    voci = glossario.voci
+    locuzioni = [v for v in voci if " " in (v.ferrarese or "")]
+    aggiungi("locuzioni nel glossario", len(locuzioni),
+             "una voce di piu' parole: il motore le accorpa prima di tradurre, "
+             "ma restano piu' difficili da mettere in un livello di gioco")
+
+    if fonetica is not None:
+        con_suono = {t.riferimento for t in fonetica.trascrizioni}
+        senza = [v for v in voci if v.id not in con_suono]
+        aggiungi("voci senza trascrizione IPA", len(senza),
+                 "si aggiunge una riga in dati/fonetica.jsonl; senza un "
+                 "parlante non si puo' fare, e la pagina lo dice accanto "
+                 "alla parola", totale=len(voci))
+        verificate = fonetica.quante_verificate()
+        aggiungi("trascrizioni non verificate da un parlante",
+                 len(fonetica.trascrizioni) - verificate,
+                 "attendibilita I con da_verificare: sono una lettura della "
+                 "grafia, non un ascolto", totale=len(fonetica.trascrizioni))
+
+    senza_popolare = [p for p in corpus.proverbi if not p.popolare]
+    aggiungi("proverbi senza la forma che si dice", len(senza_popolare),
+             "il campo `popolare`: serve qualcuno che dica come li si dice, "
+             "e finche' quel campo e' vuoto il proverbio ha una forma sola",
+             totale=len(corpus.proverbi))
+
+    aggiungi("proverbi senza significato",
+             sum(1 for p in corpus.proverbi if not p.significato),
+             "il significato e' la parte che il motore non sa tradurre: "
+             "senza, il proverbio e' una frase con due lati e nessun ponte")
+
+    # La stessa condizione del controllo C4, non quella di `Coppia.valida()`:
+    # C4 conta le coppie senza fonte, e un numero che non coincide con il
+    # controllo che lo nomina e' un numero che non si puo' correggere.
+    coppie_senza_fonte = [c for c in corpus.coppie if not (c.fonte or "").strip()]
+    aggiungi("coppie senza fonte", len(coppie_senza_fonte),
+             "restano nel file ma il motore non le usa: il controllo C4 lo dice",
+             totale=len(corpus.coppie))
+
+    da_verificare = [v for v in voci if v.da_verificare]
+    aggiungi("voci dichiarate da verificare", len(da_verificare),
+             "attendibilita I: la scrittura c'e' ma nessuno l'ha ancora "
+             "controllata con un informatore", totale=len(voci))
+
+    return buchi

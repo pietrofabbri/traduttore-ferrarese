@@ -475,6 +475,32 @@ class TestLineaDiComando(unittest.TestCase):
         stato, _ = self._esegui(["pronuncia"])
         self.assertEqual(stato, 1)
 
+    def test_buchi_stampa_un_numero_e_il_motivo_per_ogni_buco(self):
+        # Il comando non fallisce mai e non e' un controllo: qui non c'e'
+        # niente da correggere, c'e' solo da sapere. Quindi esce 0 anche se
+        # i buchi sono cinque, e ogni riga porta il numero E il motivo: una
+        # riga che porta solo il numero non dice a nessuno cosa fare.
+        stato, testo = self._esegui(["buchi"])
+        self.assertEqual(stato, 0, testo)
+        self.assertIn("proverbi senza la forma che si dice", testo)
+        self.assertIn("su 234", testo)
+        self.assertIn("il campo `popolare`", testo)
+        self.assertIn("Non sono errori", testo)
+
+    def test_buchi_json_e_json_legibile_e_non_un_testo(self):
+        # Il JSON serve a un altro programma, quindi non puo' contenere le
+        # righe di spiegazione: se lo mescoli col testo, un utente che lo
+        # passa a `jq` ottiene un errore invece dei numeri.
+        import json as _json
+        stato, testo = self._esegui(["buchi", "--json"])
+        self.assertEqual(stato, 0, testo)
+        dati = _json.loads(testo)
+        self.assertTrue(dati)
+        for riga in dati:
+            self.assertIn("nome", riga)
+            self.assertIn("quanti", riga)
+            self.assertIn("nota", riga)
+
 
 class TestProposte(unittest.TestCase):
     """La coda di revisione del livello IA.
@@ -689,6 +715,93 @@ class TestFonetica(unittest.TestCase):
         _, _, _, fonetica, _ = _dati_del_repository()
         self.assertGreater(len(fonetica), 0)
         self.assertEqual(fonetica.quante_verificate(), 0)
+
+
+class TestBuchiDichiarati(unittest.TestCase):
+    """Le cose che il progetto sa di non sapere, con un numero accanto.
+
+    «Non abbiamo le trascrizioni IPA» resta vero per sempre. «Ne abbiamo
+    210 su 234» e' una frase che qualcuno puo' correggere lunedi'. Il
+    difetto che questi test prendono e' gia' successo per meta': i numeri
+    che non hanno un nome accanto smettono di essere numeri e diventano
+    un'oblazione, e un'oblazione non si riduce da sola.
+    """
+
+    def test_ogni_buco_ha_il_motivo_per_cui_manca(self):
+        # Una riga senza nota non dice niente e sta peggio che non esserci:
+        # il lettore non puo' azzardare se sia un difetto o una scelta.
+        glossario, corpus, _, fonetica, _ = _dati_del_repository()
+        buchi = verifica_dati.buchi_dichiarati(glossario, corpus, fonetica)
+        self.assertGreater(len(buchi), 0)
+        for buco in buchi:
+            self.assertTrue(buco["nome"], "un buco senza nome")
+            self.assertGreater(buco["quanti"], 0, buco["nome"])
+            self.assertTrue(buco["nota"], "un buco senza nota: %s" % buco["nome"])
+
+    def test_una_trascrizione_per_voce_azzera_il_conto_delle_voci_senza_suono(self):
+        # Il numero deve dipendere dai dati e non da un totale scritto a mano:
+        # e' l'unico modo che si aggiorni da solo quando arriva una parola nuova.
+        glossario = glossario_di_prova()
+        suono = [Trascrizione(id="T" + v.id, riferimento=v.id,
+                              forma=v.ferrarese, ipa="/pan/", varieta="cittadino")
+                 for v in glossario.voci]
+        buchi = verifica_dati.buchi_dichiarati(glossario, corpus_di_prova(),
+                                               Fonetica(suono))
+        senza = [b for b in buchi if b["nome"] == "voci senza trascrizione IPA"]
+        self.assertEqual(senza, [])
+
+        solo_una = Fonetica(suono[:1])
+        senza = [b for b in verifica_dati.buchi_dichiarati(
+            glossario, corpus_di_prova(), solo_una)
+            if b["nome"] == "voci senza trascrizione IPA"]
+        self.assertEqual(len(senza), 1)
+        self.assertEqual(senza[0]["quanti"], len(glossario.voci) - 1)
+        self.assertEqual(senza[0]["totale"], len(glossario.voci))
+
+    def test_senza_il_file_dei_suoni_i_buchi_del_suono_non_compaiono(self):
+        # La funzione accetta `fonetica=None`: quando non c'e' il file non si
+        # deve scrivere «0 voci senza IPA», che e' un'affermazione, non un
+        # vuoto. Il vuoto vero non si dichiara.
+        glossario = glossario_di_prova()
+        buchi = verifica_dati.buchi_dichiarati(glossario, corpus_di_prova(), None)
+        nomi = [b["nome"] for b in buchi]
+        self.assertNotIn("voci senza trascrizione IPA", nomi)
+        self.assertNotIn("trascrizioni non verificate da un parlante", nomi)
+
+    def test_i_proverbi_senza_la_forma_popolare_sono_contati_uno_per_uno(self):
+        # Il campo `popolare` e' quello che aspetta la voce di qualcuno. Se il
+        # conto e' sbagliato, nessuno sa di doverlo riempire.
+        proverbi = [
+            Proverbio(id="P1", italiano="uno", ferrarese="un",
+                      letterario="un", popolare="un", fonte="Ferri 1889"),
+            Proverbio(id="P2", italiano="due", ferrarese="doi",
+                      letterario="doi", popolare="", fonte="Ferri 1889"),
+        ]
+        corpus = Corpus([], proverbi=proverbi)
+        buchi = verifica_dati.buchi_dichiarati(glossario_di_prova(), corpus, None)
+        senza = [b for b in buchi if b["nome"] == "proverbi senza la forma che si dice"]
+        self.assertEqual(len(senza), 1)
+        self.assertEqual(senza[0]["quanti"], 1)
+        self.assertEqual(senza[0]["totale"], 2)
+
+    def test_le_coppie_senza_fonte_sono_quelle_che_il_controllo_C4_conta(self):
+        # Il numero e' solo utile se coincide con il controllo che lo nomina.
+        # Qui una coppia ha i due lati e nessuna fonte, e una ha la fonte ma
+        # un lato solo: il conto deve guardare alla fonte, come guarda C4, e
+        # non a `Coppia.valida()`, che guarda anche ai lati.
+        coppie = [
+            _coppia("F1", "uno", "un", fonte="Ferri 1889"),
+            _coppia("F2", "due", "doi", fonte=""),
+            _coppia("F3", "", "tre", fonte="Ferri 1889"),
+        ]
+        corpus = Corpus(coppie)
+        problemi = verifica_dati.controlla_corpora(corpus)
+        attesi = len([p for p in problemi if p.codice == "C4"])
+        buchi = verifica_dati.buchi_dichiarati(glossario_di_prova(), corpus, None)
+        senza_fonte = [b for b in buchi if b["nome"] == "coppie senza fonte"]
+        self.assertEqual(len(senza_fonte), 1)
+        self.assertEqual(senza_fonte[0]["quanti"], attesi)
+        self.assertEqual(senza_fonte[0]["totale"], len(coppie))
 
 
 class TestAudio(unittest.TestCase):

@@ -5,7 +5,7 @@ Ogni traduzione che esce da qui porta da dove viene e quanto e' sicura, e
 quando non sa qualcosa lo dichiara invece di riempire.
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .glossario import Glossario, Voce, IT_FE, FE_IT
 from .corpora import Corpus, Coppia, Proverbio

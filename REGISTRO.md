@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.9
+versione: 0.10
 data: 2026-10-03
 ---
 
@@ -85,6 +85,54 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.10 — 2026-10-03 · Le parole trovate online esistono davvero in un file
+
+**Perché.** La 0.9 aveva scritto che cinque parole trovate online «vanno in
+attesa, nessuna entra nel glossario attivo» — e non le aveva messe in
+attesa. Le parole erano **sparite fra la lista e i dati**: `lacune.md` diceva
+«trovata» e nessun file del repository le conteneva. Il progetto aveva
+imparato a misurare le proprie lacune e proprio li' aveva scritto una frase
+che nessuno aveva controllato. È la versione che chiude quel buco.
+
+- **V10400-V10404** sono in `dati/da_verificare/glossario.jsonl`, con la fonte
+  dichiarata e `attendibilita D`: `Furzina` = forchetta (S014), `Guciara` =
+  cucchiaio (S014), `Piron` = coltello (S014), `Capunàra` = testa (S013),
+  `Barsacca` = borsa (S013). Sono le parole del quotidiano che il vocabolario
+  del 1889 non ha e che un gioco usa subito. Il controllo **D1** le tiene
+  fuori dai dati attivi: escono quando la fonte si chiarisce, non prima;
+- `lacune.md` ora porta l'id accanto a ogni parola «trovata», cosi' il
+  documento e i dati si controllano a vicenda;
+- l'intestazione di `da_verificare/glossario.jsonl` diceva ancora solo di
+  V0023/V0024: il file documentava una cosa diversa da quello che conteneva.
+  Aggiornata;
+- **`TestAtteseOnline`** collega il documento ai dati: ogni parola che
+  `lacune.md` chiama «trovata» deve esistere o nel glossario attivo o fra
+  quelle in attesa. Se un giorno sparisce di nuovo, il test lo dice e dice
+  quale. E controlla che ogni riga in attesa dichiari da dove viene, e che
+  nessuna sia anche nei dati attivi.
+
+**Il difetto è il tipo che questo progetto ha il dovere di trovare.** Una riga
+in attesa che non riporta la fonte non dice a nessuno cosa aspettare, e una
+lista che promette una riga che nessun file ha fa credere che il lavoro sia
+fatto. Non è un errore che rompesse qualcosa: è un errore che faceva
+credere. Sono i peggiori.
+
+**Cosa ha tirato fuori il test sui file di dati.** Scrivendo il primo ho
+controllato, per abitudine, che ogni `.jsonl` finisca con un a capo — e **cinque
+non lo facevano**: `da_verificare/glossario`, `da_verificare/coppie`,
+`da_verificare/fonetica`, `audio`, `fonetica` e `proposte/proposte`. Non è un
+dettaglio: appendere a un file che non finisce con l'a capo attacca la nuova
+riga alla precedente e il file diventa **una riga sola lunghissima**. Nessun
+controllo di sintassi lo dice, perché `json.loads` su una riga sola è
+valido. `TestFileDati` guarda l'ultimo carattere di ogni file di dati, e
+l'ho verificato togliendo un a capo di proposito: il test lo prende e dice
+quale file.
+
+**Verifiche.** 92 test (erano 88). `verifica`: 0 errori, **7 avvisi** (erano 2:
+le cinque nuove voci in attesa sono un avviso D2 ciascuna, ed è il
+comportamento giusto — finche' l'avviso c'è, nessuno deve crederle
+documentate). Equivalenza Python/JavaScript: 12 frasi, 0 divergenze.
 
 ## 0.9 — 2026-10-03 · Misurare quanto italiano copre il glossario, e dire quali parole mancano
 

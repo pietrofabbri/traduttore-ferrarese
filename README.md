@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.9
+versione: 0.10
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---

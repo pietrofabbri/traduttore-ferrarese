@@ -34,8 +34,9 @@ altro lavoro, e va detto.
   fonte. Quando la fonte ha una **licenza verificata**, la riga entra nel
   glossario attivo; quando non ce l'ha, la riga va in
   `dati/da_verificare/` e il controllo **D1** le tiene fuori dai dati attivi
-  finche' la fonte non e' chiara. Nessuna di queste parole e' entrata cosi:
-  sono tutte in attesa.
+  finche' la fonte non e' chiara. Le cinque attestazioni online sono
+  **V10400-V10404** e sono tutte in attesa: nessuna entra nei dati attivi e
+  nessuna e' usata dal motore.
 - **non trovata** — la ricerca online non ha dato niente di utilizzabile, e
   la parola resta un buco dichiarato. Un buco dichiarato vale piu' di una
   parola inventata.
@@ -46,7 +47,7 @@ altro lavoro, e va detto.
 
 | italiano | situazione | nota |
 |---|---|---|
-| testa | **trovata** | `capunàra`, dizionariopopolare.blogspot.com (2011) |
+| testa | **trovata** | `capunàra` = **V10403**, in attesa (S013) |
 | braccio | non trovata | |
 | spalla | non trovata | |
 | gamba | non trovata | |
@@ -75,9 +76,9 @@ altro lavoro, e va detto.
 
 | italiano | situazione | nota |
 |---|---|---|
-| forchetta | **trovata** | `furzina`, listone.it (commenti, 2014) |
-| cucchiaio | **trovata** | `guciara`, listone.it (commenti, 2014) |
-| coltello | **trovata** | `piron`, listone.it (commenti, 2014) |
+| forchetta | **trovata** | `furzina` = **V10400**, in attesa (S014) |
+| cucchiaio | **trovata** | `guciara` = **V10401**, in attesa (S014) |
+| coltello | **trovata** | `piron` = **V10402**, in attesa (S014) |
 | bicchiere | non trovata | |
 | tazza | non trovata | |
 | padella | non trovata | |
@@ -107,7 +108,7 @@ altro lavoro, e va detto.
 | italiano | situazione | nota |
 |---|---|---|
 | chiave | non trovata | |
-| borsa | **trovata** | `barsacca`, dizionariopopolare.blogspot.com (2011) |
+| borsa | **trovata** | `barsacca` = **V10404**, in attesa (S013) |
 | carta | non trovata | |
 | penna | non trovata | |
 | telefono | non trovata | |

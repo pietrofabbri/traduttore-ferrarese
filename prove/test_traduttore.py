@@ -748,6 +748,108 @@ class TestFonetica(unittest.TestCase):
         self.assertEqual(fonetica.quante_verificate(), 0)
 
 
+class TestFileDati(unittest.TestCase):
+    """I file di dati sono leggibili anche per chi li legge a mano.
+
+    Il difetto che questi test prendono e' gia' successo quattro volte, ed e'
+    la classe di difetto piu' noiosa e piu' insidiosa del progetto: **una riga
+    senza newline finale**. Quando si appende a un file che non finisce con
+    l'a capo, la nuova riga si attacca alla precedente e il file diventa una
+    riga sola lunghissima: non e' JSON valido, il lettore umano non capisce
+    niente, e il danno e' invisibile finche' qualcuno non prova ad aprirlo.
+
+    Nessun controllo di sintassi lo diceva, perche' `json.loads` su una riga
+    sola e` valido. Ci voleva un test che guardasse l'ultimo carattere.
+    """
+
+    def test_ogni_file_di_dati_finisce_con_un_a_capo(self):
+        cartella = os.path.join(RADICE, "dati")
+        trovati = []
+        for radice, _, file in os.walk(cartella):
+            for nome in file:
+                if nome.endswith(".jsonl"):
+                    trovati.append(os.path.join(radice, nome))
+        self.assertGreater(len(trovati), 5, "non ho trovato i file di dati")
+        senza = []
+        for percorso in trovati:
+            with open(percorso, encoding="utf-8") as f:
+                contenuto = f.read()
+            if contenuto and not contenuto.endswith("\n"):
+                senza.append(os.path.relpath(percorso, RADICE))
+        self.assertEqual(senza, [],
+                         "file senza newline finale, la riga dopo si attacca: %s"
+                         % ", ".join(senza))
+
+
+class TestAtteseOnline(unittest.TestCase):
+    """Le attestazioni trovate online non possono sparire.
+
+    Il difetto che questi test prendono e' gia' successo: la versione 0.9
+    aveva scritto in `lacune.md` che cinque parole erano «trovata» online e
+    che «nessuna entra nel glossario attivo e vanno in attesa» — e non le
+    aveva messe in attesa. Le parole erano sparite fra la lista e i dati:
+    la lista diceva trovata, nessun file le conteneva. Un documento che
+    promette una riga che nessun file ha e' peggio di una lista che dice
+    «non trovata», perche' fa credere che il lavoro sia fatto.
+    """
+
+    def _in_attesa(self):
+        return Glossario.da_file(os.path.join(
+            RADICE, "dati", "da_verificare", "glossario.jsonl"))
+
+    def test_una_parola_dichiarata_trovata_esiste_in_un_file(self):
+        # Il collegamento fra il documento e i dati: ogni parola che
+        # `lacune.md` chiama «trovata» deve esistere o nel glossario attivo o
+        # fra quelle in attesa. Se non e' da nessuna parte, il documento mente.
+        attesa = self._in_attesa()
+        chiavi_attesa = set()
+        for voce in attesa.voci:
+            chiavi_attesa.add(voce.italiano.strip().lower())
+        attivo, _, _, _, _ = _dati_del_repository()
+        documento = os.path.join(RADICE, "dati", "da_verificare", "lacune.md")
+        if not os.path.exists(documento):
+            self.skipTest("lacune.md non c'e'")
+        with open(documento, encoding="utf-8") as f:
+            testo = f.read()
+        dichiarate = []
+        for riga in testo.splitlines():
+            if "| **trovata** |" not in riga:
+                continue
+            prima = riga.split("|")[1].strip().strip("`*")
+            if prima:
+                dichiarate.append(prima)
+        self.assertGreater(len(dichiarate), 0,
+                           "lacune.md non dichiara nessuna parola trovata")
+        for parola in dichiarate:
+            if parola.startswith("gia'"):
+                continue
+            trovata = bool(attivo.cerca_italiano(parola)) or (
+                parola.lower() in chiavi_attesa)
+            self.assertTrue(trovata,
+                            "lacune.md dice «trovata» per %r ma non e' in nessun file"
+                            % parola)
+
+    def test_una_voce_in_attesa_dichiara_where_venuta(self):
+        # Ogni riga in attesa porta la fonte per cui aspetta. Una riga in
+        # attesa senza fonte non dice a nessuno cosa aspettare, e quando la
+        # licenza si chiarisce nessuno sa di quale fonte si trattasse.
+        attesa = self._in_attesa()
+        self.assertGreater(len(attesa.voci), 0)
+        for voce in attesa.voci:
+            self.assertTrue(voce.fonte.strip(),
+                            "%s e' in attesa senza dire da dove viene" % voce.id)
+
+    def test_una_voce_in_attesa_non_e_anche_nei_dati_attivi(self):
+        # Il controllo D1 in forma di test: la regola vale per qualunque
+        # fonte, non solo per quelle che sono state in attesa per prime.
+        attesa = self._in_attesa()
+        attivo, _, _, _, _ = _dati_del_repository()
+        attivi = {v.id for v in attivo.voci}
+        for voce in attesa.voci:
+            self.assertNotIn(voce.id, attivi,
+                             "%s e' in attesa e anche nei dati attivi" % voce.id)
+
+
 class TestCopertura(unittest.TestCase):
     """La misura di quanto italiano copre il glossario.
 

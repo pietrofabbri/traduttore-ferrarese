@@ -89,6 +89,14 @@ DOPPIE = set("bcdflmnprstvz")
 # I digrammi che la fonte dichiara senza eccezioni (regola 2).
 DIGR = {"gh": "g", "ch": "k"}
 
+# Le vocali **anteriori**, cioe' quelle che rendono palatali `c` e `g`
+# (regola 4). Sono un insieme e non una stringa perche' una stringa si
+# scrive a occhio e si dimentica: la lista era "eieèi" e **mancavano `ì` e
+# `í`**, quindi `gì` leggeva /g/ invece di /dʒ/. Difetto trovato facendo il
+# viaggio di andata e ritorno della grafia in un altro repository, non leggendo
+# qui: una regola che funziona per tre casi su quattro sembza funzionare.
+ANTERIORI = frozenset("eiéèíì")
+
 
 def _scansiona(parola: str) -> tuple:
     """La parola in pezzi, con l'accento tonico gia' segnato.
@@ -116,17 +124,23 @@ def _scansiona(parola: str) -> tuple:
             continue
         # `gn` davanti a vocale anteriore: /ɲ/ (regola 3).
         if (c == "g" and i + 1 < n and parola[i + 1] == "n"
-                and i + 2 < n and parola[i + 2].lower() in "eiéèi"):
+                and i + 2 < n and parola[i + 2].lower() in ANTERIORI):
             pezzi.append(("ɲ", ""))
             i += 2
             continue
         # `c` e `g` palatali davanti a e, i (regola 4).
         vocale = parola[i + 1].lower() if i + 1 < n else ""
-        if c == "c" and vocale in "eiéèi":
+        # `vocale and` non e' piu' zelo di quanto sembri: in Python la
+        # stringa vuota e' sottostringa di qualunque stringa, quindi
+        # `"" in "eie"` e' vero e una `c` **finale di parola** diventava
+        # /tʃ/. Il sintomo era `nag` = /nadʒ/ e `mang` = /mandʒ/, parole che
+        # si cercano ogni giorno. Trovato facendo il viaggio di andata e
+        # ritorno della grafia, non leggendo il codice.
+        if c == "c" and vocale and vocale in ANTERIORI:
             pezzi.append(("tʃ", ""))
             i += 1
             continue
-        if c == "g" and vocale in "eiéèi":
+        if c == "g" and vocale and vocale in ANTERIORI:
             pezzi.append(("dʒ", ""))
             i += 1
             continue

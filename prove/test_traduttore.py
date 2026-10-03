@@ -1259,6 +1259,32 @@ class TestLetturaGrafia(unittest.TestCase):
         dubbi = leggi("magnàr")["dubbi"]
         self.assertTrue(any("gn" in d for d in dubbi), dubbi)
 
+    def test_una_vocale_accentata_anteriore_rende_palatale_anche_lei(self):
+        # Secondo difetto della stessa misura: la lista delle vocali
+        # anteriori era la stringa "eieèi", e mancavano `ì` e `í`. Quindi
+        # `gì` leggeva /g/ invece di /dʒ/. Un insieme non si scrive a occhio,
+        # e una regola che funziona per tre casi su quattro sembra funzionare.
+        for parola, atteso in (("cì", "/tʃˈi/"), ("gì", "/dʒˈi/"),
+                               ("cí", "/tʃˈi/"), ("ghì", "/gˈi/"),
+                               ("ghè", "/gˈɛ/")):
+            got = leggi(parola)["ipa"]
+            self.assertEqual(got, atteso, "%s: %s" % (parola, got))
+
+    def test_una_c_o_g_a_fine_parola_non_e_palatale(self):
+        # Difetto trovato facendo il viaggio di andata e ritorno della grafia,
+        # in un altro repository: in Python la stringa vuota e' sottostringa di
+        # qualunque stringa, quindi `"" in "eie"` e' vero, e ogni `c` o `g`
+        # finale di parola diventava affricata. `nag` = /nadʒ/, `mang` =
+        # /mandʒ/: parole che si cercano ogni giorno, e la voce le diceva
+        # sbagliate senza dichiararlo.
+        for parola, atteso in (("nag", "/nag/"), ("nac", "/nak/"),
+                               ("mang", "/mang/"), ("gh", "/g/"),
+                               ("ghè", "/gˈɛ/")):
+            got = leggi(parola)["ipa"]
+            self.assertEqual(got, atteso, "%s: %s" % (parola, got))
+        # E il caso palatale vero non deve essere perso togliendo la guardia.
+        self.assertEqual(leggi("cena")["ipa"], "/tʃena/")
+
     def test_una_lettera_ignosta_si_dichiara_e_non_si_indovina(self):
         esito = leggi("qqq")
         self.assertIn("lettera sconosciuta", esito["nota"])

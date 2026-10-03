@@ -47,8 +47,11 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 import sys
+import tempfile
 import unittest
+import unittest.mock
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sorgenti"))
 
@@ -57,9 +60,12 @@ from traduttore.audio import Archivio, Brano, controlla_archivo  # noqa: E402
 from traduttore.corpora import Coppia, Corpus, Proverbio  # noqa: E402
 from traduttore.fonetica import Fonetica, Trascrizione, ipa_valida  # noqa: E402
 from traduttore.glossario import FE_IT, IT_FE, Glossario, Voce  # noqa: E402
+from traduttore.legge import leggi  # noqa: E402
 from traduttore.motore import Motore  # noqa: E402
 from traduttore import proposte  # noqa: E402
 from traduttore.varieta import VARIETA, Varieta, _nome_valido  # noqa: E402
+from traduttore.voce import (ipa_a_fonemi, percorso_espeak,  # noqa: E402
+                             scrivi_wav, voce)
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -1200,6 +1206,154 @@ class TestAudio(unittest.TestCase):
         # nessuna registrazione, e che nessuno la può fare passare per vera.
         _, _, _, _, archivio = _dati_del_repository()
         self.assertEqual(len(archivio), 0)
+
+
+class TestLetturaGrafia(unittest.TestCase):
+    """Le regole dichiarate in `dati/fonetica.jsonl`, applicate una per una."""
+
+    def test_la_grafia_si_legge_secondo_le_regole_dichiarate(self):
+        # I sei casi che le regole coprono, uno per uno.
+        self.assertEqual(leggi("magnàr")["ipa"], "/magnˈar/")
+        self.assertEqual(leggi("majàl")["ipa"], "/majˈal/")     # regola 5
+        self.assertEqual(leggi("gh'è")["ipa"], "/gˈɛ/")      # regola 2
+        self.assertEqual(leggi("casa")["ipa"].count("k"), 1)   # regola 4
+        self.assertEqual(leggi("ved")["ipa"], "/ved/")
+
+    def test_la_g_vela_non_e_una_lettera_ignota(self):
+        # Difetto vero, trovato misurando: senza il ramo velare della regola
+        # 4, `magnar` diventava `/ma/` e la parola veniva persa a meta'.
+        for parola, atteso in (("magnàr", "/magnˈar/"), ("mancà", "/mankˈa/"),
+                               ("ghe", "/ge/")):
+            got = leggi(parola)["ipa"]
+            self.assertEqual(got, atteso, "%s: %s" % (parola, got))
+
+    def test_l_apostrofo_non_tronna_la_parola(self):
+        # Difetto vero: `gh'e'` finiva a `/g/`, cioe' un terzo della parola e
+        # nessun avviso. Le elisioni sono frequenti in ferrarese.
+        for parola, atteso in (("gh'è", "/gˈɛ/"), ("n'è", "/nˈɛ/"),
+                               ("n'agh", "/nag/"), ("dint'", "/dint/")):
+            got = leggi(parola)["ipa"]
+            self.assertEqual(got, atteso, "%s: %s" % (parola, got))
+
+    def test_la_e_accentata_e_aperta_e_quella_senza_accento_e_chiusa(self):
+        # Non e' una scelta di questo modulo: e' quello che il file dice in
+        # quattro righe contro due. Se si capovolgesse, /e/ e /ɛ/ non sarebbero
+        # piu' due suoni distinti e la regola 1 perderebbe il senso.
+        self.assertEqual(leggi("gh'è")["ipa"], "/gˈɛ/")
+        self.assertEqual(leggi("frarés")["ipa"], "/frarˈɛs/")
+        self.assertEqual(leggi("ghe")["ipa"], "/ge/")
+        self.assertEqual(leggi("ved")["ipa"], "/ved/")
+
+    def test_il_segno_di_accento_entra_nella_trascrizione(self):
+        # Una IPA senza `ˈ` non dice quale sillaba e' tonica, e il motore di
+        # sintesi la legge male: l'accento costruito e poi scartato era un
+        # difetto che non si vedeva da nessuna parte.
+        self.assertIn("ˈ", leggi("magnàr")["ipa"])
+        self.assertEqual(leggi("magnàr")["accento"], "ˈ")
+
+    def test_dove_la_regola_tace_il_modulo_dichiara_il_dubbio(self):
+        # La regola 3 dice /ɲ/ solo davanti a vocale anteriore e **tace** davanti
+        # ad `a`, `o`, `u`. Tacer non e' aver verificato: e il file dà /ɲ/
+        # anche li'. Il dubbio deve esserci.
+        dubbi = leggi("magnàr")["dubbi"]
+        self.assertTrue(any("gn" in d for d in dubbi), dubbi)
+
+    def test_una_lettera_ignosta_si_dichiara_e_non_si_indovina(self):
+        esito = leggi("qqq")
+        self.assertIn("lettera sconosciuta", esito["nota"])
+        # E non si finge di aver letto tutto: la risposta e' troncata e lo dice.
+        self.assertTrue(esito["dubbi"])
+
+    def test_la_s_intervocale_e_un_vuoto_dichiarato(self):
+        # Regola 6: non e' una regola, e' una scelta che puo' essere sbagliata.
+        self.assertTrue(any("intervocalica" in d for d in leggi("rosa")["dubbi"]))
+
+    def test_la_versione_generata_e_sempre_da_verificare(self):
+        # Il punto che tiene insieme tutto: qui non si ascolta nessuno, e
+        # nessuna funzione puo' farlo credere.
+        for parola in ("magnàr", "scaranna", "piron", "xyz"):
+            esito = leggi(parola)
+            self.assertEqual(esito["attendibilita"], "I", parola)
+            self.assertTrue(esito["da_verificare"], parola)
+
+
+class TestVoceSintetica(unittest.TestCase):
+    """La voce: che cosa sa dire, e soprattutto che cosa rifiuta di dire."""
+
+    def test_i_simboli_che_espeak_non_accetta_non_vengono_tradotti_a_caso(self):
+        # `tʃ` e `ɲ` non sono nell'alfabeto del programma: se si passassero
+        # come sono, lui **taglierebbe la parola** e produrrebbe un wav che
+        # sembra parlato ma sta zoppicando.
+        for ipa, atteso in (("/prinˈtʃipar/", "printS'ipar"),
+                            ("/maˈɲnar/", "maNn'ar"),
+                            ("/aˈma/", "am'a"),
+                            ("/dʒɛˈsper/", "dZEsp'er")):
+            got, problema = ipa_a_fonemi(ipa)
+            self.assertEqual(problema, "", ipa)
+            self.assertEqual(got, atteso, ipa)
+
+    def test_l_accento_va_sulla_vocale_della_sillaba_accentata(self):
+        # In `/maˈɲnar/` il segno e' sulla sillaba, e la sua vocale arriva
+        # DOPO la `ɲ`. Un accento messo sul segno andrebbe perso, e la parola
+        # si direbbe con l'accento nel posto sbagliato.
+        self.assertEqual(ipa_a_fonemi("/maˈɲnar/")[0], "maNn'ar")
+        self.assertEqual(ipa_a_fonemi("/magnˈar/")[0], "magn'ar")
+
+    def test_un_simbolo_senza_corrispondenza_ferma_la_trascrizione(self):
+        got, problema = ipa_a_fonemi("/sɑmɛ/")   # `ɑ` non c'e' nel sistema
+        self.assertIsNone(got)
+        self.assertIn("simbolo IPA", problema)
+
+    def test_la_voce_dichiara_sempre_che_e_sintetica(self):
+        # Un wav generato da una riga non verificata resta non verificato: si
+        # propaga il dubbio, non si lava via.
+        esito = voce("magnàr")
+        self.assertEqual(esito["attendibilita"], "I")
+        self.assertTrue(esito["da_verificare"])
+        self.assertTrue(any("gn" in d for d in esito["dubbi"]))
+
+    def test_la_voce_non_promette_un_file_che_non_ha_scritto(self):
+        esito = voce("magnàr")
+        self.assertEqual(esito["wav"], "")
+        self.assertNotIn("wav", [k for k in esito if esito[k] is None])
+
+    @unittest.skipUnless(percorso_espeak(), "espeak-ng non e' installato")
+    def test_il_wav_prodotto_esiste_e_non_e_vuoto(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as dove:
+            percorso = os.path.join(dove, "prova.wav")
+            esito = scrivi_wav("magnàr", percorso)
+            self.assertEqual(esito["problema"], "", esito.get("problema"))
+            self.assertTrue(os.path.isfile(percorso))
+            self.assertGreater(os.path.getsize(percorso), 1000)
+            self.assertIn("sintetica", esito["nota"])
+
+    @unittest.skipUnless(percorso_espeak(), "espeak-ng non e' installato")
+    def test_il_programma_riceve_i_fonemi_e_non_le_lettere(self):
+        # La verifica che conta: `espeak-ng` accetta i fonemi fra `[[ ]]` e
+        # salta la traslazione della grafia. Se gli arrivassero le lettere,
+        # il wav sarebbe italiano e sembrerebbe funzionare.
+        from traduttore.voce import scrivi_wav
+        with tempfile.TemporaryDirectory() as dove:
+            con_fonemi = os.path.join(dove, "fonemi.wav")
+            scrivi_wav("magnàr", con_fonemi)
+            fatto = subprocess.run(
+                [percorso_espeak(), "-v", "it", "-q", "-X", "--sep=",
+                 "[[magn'ar]]"], stdout=subprocess.PIPE)
+            uscita = fatto.stdout.decode("utf-8", "replace")
+        self.assertNotIn("Translate", uscita)
+
+    def test_senza_espeak_il_comando_dice_che_manca(self):
+        # Il progetto non ha dipendenze: si controlla e si dice, non si importa
+        # e si spera. Un suono prodotto da un programma non dichiarato non
+        # sarebbe verificabile.
+        import tempfile
+        with tempfile.TemporaryDirectory() as dove:
+            with unittest.mock.patch("traduttore.voce.percorso_espeak",
+                                    return_value=""):
+                esito = scrivi_wav("magnàr", os.path.join(dove, "x.wav"))
+        self.assertIn("espeak-ng non e' installato", esito["problema"])
+        self.assertEqual(esito["wav"], "")
 
 
 if __name__ == "__main__":

@@ -56,6 +56,42 @@
 // che l'accento non e' dichiarato dalla fonte. Mettere l'accento per conto
 // proprio sarebbe stato il modo piu' economico di sbagliare.
 //
+// **ATTENZIONE: qui sotto l'accento non e' come nelle regole 1-6.**
+//
+// Le righe di questo file citano Biondelli 1853, e Biondelli ha un sistema
+// suo: segna l'accento sulla vocale finale **non** tonica e ritira la tonica
+// sulla penultima (`magnàr` = /maˈɲnar/, non /magnˈar/). Riduce inoltre la
+// vocale finale atonica (`principiar` = /-jar/, `desideràr` = /-d-/) e rende
+// /ɲ/ la `gn` anche davanti a vocale non anteriore, dove la regola 3 tace.
+//
+// Il modulo `legge` applica le regole 1-6 **alla lettera**, quindi non puo'
+// riprodurre queste righe. Non e' un difetto da correggere: e' una scelta, e
+// le due non si possono fondere senza attribuire a Biondelli un sistema che
+// non e' il suo. Il controllo **F14** misura la distanza e la dichiara.
+//
+// Finche' la questione non e' chiusa, la voce sintetica segue le regole
+// dichiarate e dice il dubbio; le righe qui sotto restano la trascrizione
+// dell' fonte. Sono due risposte a due domande diverse, e si deve sapere
+// quale si sta leggendo.
+//
+// **LA VOCE.** Il comando `voce` trasforma la grafia in suono con
+// `espeak-ng`, in locale e senza rete:
+//
+//   python3 -m traduttore.cli voce magnàr            # legge, non scrive
+//   python3 -m traduttore.cli voce magnàr --suona    # scrive il wav
+//
+// Quello che il suono **non** e', e va detto perche' e' la cosa che conta:
+// non e' un parlante ferrarese. Una voce sintetica conosce le regole di
+// *lettura* di una grafia, e il parlato non le segue: non sa che la `s`
+// intervocalica si dice come si vuole, e non sa come suona `scaranna` detta
+// da chi e' nato a Ferrara. Il wav che ne esce **non verifica niente**: le
+// righe sotto restano `attendibilita: I` e `da_verificare: true`.
+//
+// Per questo i file generati finiscono in `raccolta/lavorato/voci/`, che non
+// e' tracciata, e **non** in `web/audio/`: copiare li' significa pubblicarli,
+// e la regola A1-A10 vuole consenso, licenza e `pubblicabile`, e qui nessuna
+// persona ha parlato, quindi nessuno ha acconsentito a nulla.
+//
 // **Cosa non c'e'.** Nessuna frase intera e' trascritta. Una frase e' piu'
 // difficile da trascrivere di una parola, e sbagliata suona peggio: quindi si
 // comincia dalle parole, che sono le uniche che il gioco fa ripetere.

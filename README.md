@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.10
+versione: 0.11
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -12,7 +12,7 @@ Un traduttore fra l'italiano e il **ferrarese**, costruito per il gioco
 
 La caratteristica di questo progetto non e' che traduce bene. E' che **quando
 non sa, dice che non sa**, e dice anche *perche'* non lo sa e *che cosa
-servirebbe* per saperlo. Con duecentotrentaquattro voci in un glossario,
+servirebbe* per saperlo. Con diecimilatrecentoottantasette voci in un glossario,
 tutte di una sola varieta' e tutte da tre fonti, questa e' la proprieta' piu'
 importante che ha.
 
@@ -26,6 +26,7 @@ python3 -m traduttore.cli traduci "brisa" --direzione fe-it
 python3 -m traduttore.cli cerca magnar
 python3 -m traduttore.cli varieta
 python3 -m traduttore.cli pronuncia magnar
+python3 -m traduttore.cli voce magnàr
 python3 -m traduttore.cli audio
 python3 -m traduttore.cli proposte
 python3 -m traduttore.cli stato
@@ -173,6 +174,31 @@ tasto per far leggere l'italiano con la voce del browser, e sta **spento**:
 non e' una voce ferrarese, in alcuni browser usa una connessione, e serve solo
 a sentire il ritmo dell'italiano mentre si guarda il ferrarese. Il gioco deve
 usare registrazioni vere e dichiarare che sono vere.
+
+Il comando `voce` produce un suono **sintetico in locale** con `espeak-ng`, e
+qui va detto che cosa sia e che cosa non sia:
+
+```bash
+python3 -m traduttore.cli voce magnàr            # legge, non scrive nulla
+python3 -m traduttore.cli voce magnàr --suona    # scrive il wav
+```
+
+```
+magnàr       /magnˈar/
+fonemi per il sintetizzatore: magn'ar
+da chiarire prima di fidarsi:
+  - `gn` davanti a `à`: la regola 3 dice /ɲ/ solo davanti a vocale anteriore
+attendibilita I | da verificare: si
+questa e' una voce sintetica: non e' un parlante ferrarese, e non verifica la trascrizione.
+```
+
+Una voce sintetica conosce le regole di **lettura** di una grafia, e il
+parlato non le segue: non sa che la `s` intervocalica si dice come si vuole,
+e non sa come suona `scaranna` detta da chi e' nato a Ferrara. Per questo il
+wav non verifica niente, e i file escono in `raccolta/lavorato/voci/` che non
+e' tracciata, **mai** in `web/audio/`: copiare li' significa pubblicarli, e la
+regola A1-A10 vuole consenso, licenza e `pubblicabile`, e qui nessuna persona
+ha parlato, quindi nessuno ha acconsentito a nulla.
 
 ## Le regole morfologiche si imparano, non si scrivono
 
@@ -382,7 +408,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 55 test
+python3 prove/test_traduttore.py     # 109 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

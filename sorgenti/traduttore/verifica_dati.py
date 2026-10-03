@@ -224,7 +224,89 @@ def controlla_fonetica(fonetica, glossario, corpus, varieta=None) -> list:
                 gravita="avviso"))
     if varieta is not None:
         problemi += _controlla_varieta_delle_trascrizioni(fonetica, glossario, varieta)
+    problemi += _controlla_grafia_contro_trascrizione(fonetica)
     return problemi
+
+
+def _controlla_grafia_contro_trascrizione(fonetica) -> list:
+    """Le regole dichiarate che non riproducono le trascrizioni gia' nel file.
+
+    Il file `dati/fonetica.jsonl` porta in testa un sistema di regole di
+    lettura, e il modulo `legge` lo applica. Se il sistema fosse giusto,
+    ogni riga del file uscirebbe fuori da `legge.leggi` senza differenze. Non
+    e' cosi', e la ragione non e' un errore di programmazione: **le due cose
+    seguono due convenzioni diverse**.
+
+    Le righe citano Biondelli 1853, che scrive l'accento sulla vocale finale
+    **non** tonica e ritira la tonica sulla penultima: `magnar` = /maˈɲnar/.
+    Le regole in testa al file dicono che l'accento scritto e' tonico, e
+    allora `magnar` = /magnˈar/. Non si puo' correggere nessuna delle due
+    senza scegliere, e scegliere qui significa attribuire a Biondelli una
+    convenzione che non e' la sua.
+
+    Quindi questo controllo **segnala e non corregge**: dice quante righe
+    discordano, dice se la differenza e' solo dove cade l'accento, e lascia
+    la decisione a chi conosce la fonte. Un avviso che sparisce da solo
+    sarebbe peggio di nessun avviso.
+    """
+    from .legge import leggi
+    problemi = []
+    discordi = []
+    for t in fonetica.trascrizioni:
+        if not (t.forma and t.ipa):
+            continue
+        ottenuta = leggi(t.forma)["ipa"]
+        if ottenuta == t.ipa:
+            continue
+        # Il confronto e' fatto sui simboli, ignorando il segno di accento:
+        # cosi' il controllo distingue "detto diversamente" da "detto in
+        # modo diverso", e il primo caso non viene mascherato dal secondo.
+        if _senza_accento(ottenuta) == _senza_accento(t.ipa):
+            motivo = "solo l'accento cade sulla sillaba diversa"
+        else:
+            motivo = "anche i suoni sono diversi"
+        discordi.append((t.id or "(senza id)", t.forma, t.ipa, ottenuta,
+                         motivo))
+    if not discordi:
+        return problemi
+    per_motivo = {}
+    for _, _, _, _, motivo in discordi:
+        per_motivo[motivo] = per_motivo.get(motivo, 0) + 1
+    dettaglio = ", ".join(
+        "%s (%d su %d)" % (motivo, quante, len(discordi))
+        for motivo, quante in sorted(per_motivo.items()))
+    esempi = "; ".join(
+        "%s %s: nel file %s, dalle regole %s"
+        % (ident, forma, ipa, ottenuta)
+        for ident, forma, ipa, ottenuta, _ in discordi[:3])
+    problemi.append(Problema(
+        "F14", "dati/fonetica.jsonl",
+        "%d trascrizioni su %d non coincidono con le regole dichiarate in "
+        "testa al file (%s). Esempi: %s. Le righe citano Biondelli 1853, "
+        "e il suo sistema differisce dalle regole qui dichiarate per tre "
+        "motivi noti: (1) segna l'accento sulla vocale finale **non** tonica "
+        "e ritira la tonica sulla penultima; (2) riduce la vocale finale "
+        "atonica, che diventa semivocale (`principiar` = /-jar/) o sparisce "
+        "(`desideràr` = /-d-/); (3) rende /ɲ/ la `gn` anche davanti a vocale "
+        "non anteriore, dove la regola 3 dice che resta /gn/. Nessuna delle "
+        "tre si puo' correggiere qui senza scegliere quale delle due fonti "
+        "vale, e il controllo segnala: scegliere significa attribuire a "
+        "Biondelli una convenzione che non e' la sua."
+        % (len(discordi), len(fonetica.trascrizioni), dettaglio, esempi),
+        gravita="avviso"))
+    return problemi
+
+
+def _senza_accento(ipa: str) -> str:
+    """La IPA pronta per il confronto: senza accento e senza varieta' di carta.
+
+    Il carattere `ɡ` (U+0261, «script g») e la `g` (U+0067) sono lo stesso
+    suono scritti in due modi, e in un file di trascrizioni di centottocento
+    anni e' normale che le due forme convivano. Senza questa normalizzazione
+    il controllo direbbe «suono diverso» dove il suono e' lo stesso, e un
+    avviso che grida per niente smette di essere letto.
+    """
+    return ipa.replace("ˈ", "").replace("'", "").replace("ɡ", "g").strip("/")
 
 
 def _controlla_varieta_delle_trascrizioni(fonetica, glossario, varieta) -> list:

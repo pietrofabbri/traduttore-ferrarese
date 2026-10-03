@@ -31,6 +31,7 @@ import subprocess
 import sys
 
 from . import morfologia, verifica_dati
+from . import voce as voce_modulo
 from .audio import Archivio, controlla_archivo
 from .corpora import Corpus
 from .fonetica import Fonetica
@@ -454,6 +455,62 @@ def comando_varieta(args) -> int:
     return 0
 
 
+def comando_voce(args) -> int:
+    """Fa suonare una parola ferrarese, e dice subito che non e' un parlante.
+
+    Il comando esiste perche' il gioco ha bisogno di far ascoltare, e perche'
+    non si puo' fingere che una voce sintetica sia quella di chi e' nato a
+    Ferrara. Quindi la riga piu' importante di questo comando non e' la
+    trascrizione: e' l'ultima, che dice che il suono e' di una macchina.
+
+    Senza `--suona` non scrive nessun file: il comando e' una lettura, e
+    leggere non pubblica niente. Con `--suona` il wav va in
+    `raccolta/lavorato/voci/`, che non e' tracciata: copiare in `web/audio/`
+    sarebbe pubblicarlo, e la regola A1-A10 chiede consenso, licenza e
+    `pubblicabile`, e qui nessuna persona ha parlato e quindi nessuno ha
+    acconsentito a nulla.
+    """
+    if not args.forma:
+        print("dimmi una parola ferrarese da far suonare.")
+        print("esempio: python3 -m traduttore.cli voce magnàr --suona")
+        return 1
+
+    if args.suona:
+        nome = "".join(c if c.isalnum() else "_" for c in args.forma.strip())
+        percorso = os.path.join(RADICE, "raccolta", "lavorato", "voci",
+                                "%s.wav" % nome)
+        esito = voce_modulo.scrivi_wav(args.forma, percorso,
+                                       velocita=args.velocita,
+                                       lingua=args.lingua)
+    else:
+        esito = voce_modulo.voce(args.forma, velocita=args.velocita,
+                                 lingua=args.lingua)
+
+    if args.json:
+        print(json.dumps(esito, ensure_ascii=False, indent=2))
+        return 1 if esito["problema"] else 0
+
+    print("%-12s %s" % (esito["forma"], esito["ipa"] or "(nessuna IPA)"))
+    if esito["problema"]:
+        print("non suona: %s" % esito["problema"])
+        return 1
+    print("fonemi per il sintetizzatore: %s" % esito["fonemi"])
+    if esito["wav"]:
+        print("suono scritto in: %s" % esito["wav"])
+    else:
+        print("nessun file scritto: usa --suona se lo vuoi sentire.")
+    if esito["dubbi"]:
+        print("da chiarire prima di fidarsi:")
+        for dubbio in esito["dubbi"]:
+            print("  - %s" % dubbio)
+    print("attendibilita %s | da verificare: %s"
+          % (esito["attendibilita"],
+             "si" if esito["da_verificare"] else "no"))
+    print("questa e' una voce sintetica: non e' un parlante ferrarese, e non "
+          "verifica la trascrizione.")
+    return 0
+
+
 def comando_pronuncia(args) -> int:
     """Come suona una parola, e quanto quella risposta e' sicura.
 
@@ -643,6 +700,18 @@ def costruisci_parser() -> argparse.ArgumentParser:
                    help="la parola, in italiano o in ferrarese")
     p.add_argument("--tutte", action="store_true", help="elenca tutte le trascrizioni")
     p.set_defaults(func=comando_pronuncia)
+
+    p = sotto.add_parser("voce", help="fa suonare una parola ferrarese")
+    p.add_argument("forma", nargs="?", default="",
+                   help="la parola, in ferrarese")
+    p.add_argument("--suona", action="store_true",
+                   help="scrive il wav e dice dove (non va in web/audio/)")
+    p.add_argument("--velocita", type=int, default=voce_modulo.VELOCITA_DEFAULT,
+                   help="parole al minuto (%d)" % voce_modulo.VELOCITA_DEFAULT)
+    p.add_argument("--lingua", default=voce_modulo.VOCE_DEFAULT,
+                   help="voce del sintetizzatore (%s)" % voce_modulo.VOCE_DEFAULT)
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_voce)
 
     p = sotto.add_parser("audio", help="che brani audio ci sono e quali si pubblicano")
     p.add_argument("--json", action="store_true")

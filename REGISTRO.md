@@ -86,6 +86,62 @@ copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
+## 0.11 — 2026-10-03 · Una voce che sa dire la grafia e non finge di sapere il parlato
+
+**Perché.** Il gioco ha bisogno di far ascoltare, e il progetto non aveva
+nessuno strumento per passare dalla grafia al suono. Il file
+`dati/fonetica.jsonl` dichiarava un sistema di regole di lettura e nessuno lo
+applicava: le regole erano scritte per essere controllate a mano, e la prima
+misura che le ha usate davvero ha trovato tre difetti.
+
+**Cosa c'è.** Il modulo `legge` applica le regole dichiarate e, dove nessuna
+fonte dichiara niente, **si ferma e lo dichiara**; il modulo `voce` le passa
+nell'alfabeto di `espeak-ng` e produce un wav in locale. Il comando
+`voce magnàr --suona` scrive il suono. Nessuna rete, nessuna dipendenza nel
+pacchetto: se `espeak-ng` non è installato il comando **dice che manca** e non
+inventa un suono.
+
+**I tre difetti trovati misurando, non ragionando.**
+
+1. *La `g` e la `c` velari mancavano.* La regola 4 copriva solo il caso
+   palatale (`gh'è` → /dʒ/), e ogni `g` o `c` finale cadeva nell'«ignota»:
+   `magnàr` diventava `/ma/`, un terzo della parola, senza avviso.
+2. *L'apostrofo troncava.* `gh'è` finiva a `/g/`, `n'è` a `/n/`, `n'agh` a
+   `/n/`. Le elisioni sono frequenti in ferrarese, e il modulo si fermava
+   sull'apostrofo come se fosse una lettera ignota.
+3. *Il segno di accento non entrava nella IPA.* Era costruito, contato,
+   dichiarato nel campo `accento` — e poi scartato: la stringa finale era senza
+   `ˈ`. Una IPA senza accento non dice quale sillaba è tonica.
+
+**Una cosa che ho deciso con la prova, non con l'opinione.** Il modulo scriveva
+`è` → /e/, e il file lo scrive /ɛ/ in quattro righe contro due (`ghe` = /ge/,
+`ved` = /ved/). Se la marcatura accentata cambiasse la vocale, /e/ e /ɛ/ non
+sarebbero due suoni distinti e la regola 1 perderebbe il senso. Quindi la `e`
+accentata è aperta e quella senza accento è chiusa, che è l'opposto di come si
+scrive di solito, ed è per questo che il criterio è dichiarato a carattere.
+
+**Il difetto che resta aperto e dichiarato: l'accento.** 20 delle 28
+trascrizioni non coincidono con le regole dichiarate. Non è un difetto del
+programma: le righe citano Biondelli 1853, che ha un sistema suo — l'accento
+sulla vocale finale **non** tonica con la tonica ritirata sulla penultima
+(`/maˈɲnar/`), la vocale finale atonica ridotta (`principiar` = /-jar/) e il
+/ɲ/ anche davanti a vocale non anteriore. Non si possono fondere le due cose
+senza attribuire a Biondelli un sistema che non è il suo, quindi il controllo
+**F14** misura la distanza e la dichiara senza correggere. È un avviso che
+resta finché la questione non è chiusa.
+
+**La cosa che la voce non è.** Non è un parlante ferrarese, e il wav non
+verifica niente: le righe restano `attendibilita: "I"` e `da_verificare: true`.
+Il suono esce in `raccolta/lavorato/voci/`, che non è tracciata, e **non** in
+`web/audio/`, perché copiare lì significa pubblicare e la regola A1-A10 vuole
+consenso, licenza e `pubblicabile` — e qui nessuna persona ha parlato.
+
+**Il punto in cui `espeak-ng` è più pericoloso di quanto sembri.** Accetta
+fonemi in ingresso, ma con il *proprio* alfabeto: `tʃ` e `ɲ` non esistono, e
+non danno errore — **tagliano la parola** e producono un wav che sembra
+parlato e sta zoppicando. Per questo la traduzione non prova e basta: ogni
+simbolo che non sa tradurre ferma la generazione e lo dichiara. È un test.
+
 ## 0.10 — 2026-10-03 · Le parole trovate online esistono davvero in un file
 
 **Perché.** La 0.9 aveva scritto che cinque parole trovate online «vanno in

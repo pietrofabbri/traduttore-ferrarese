@@ -157,6 +157,58 @@
       "nota": "La prima pagina e' la nota legale di Google: «a book that was never the subject of copyright ... enter the public domain». La dichiarazione e' della copia digitale, non dell'autore, e per questo la licenza resta non verificata finche' non si risale all'originale a stampa con data e autore. Il testo si e' aperto con l'estrattore minimo del progetto e non e' utilizzabile cosi': l'OCR tiene le coordinate dei glifi ma il file non le conserva, quindi le parole risultano incollate («Informazionsuquestolibro»). Per tirarlo fuori serve un lettore che usi le posizioni dei glifi, oppure il testo di archive.org di questo stesso volume, se esiste. Il libro resta il piu' grande dei quattro e quello che vale la pena di recuperare per primo: 9,4 milioni di caratteri, contro le poche decine di voci che S004 ha reso fin qui."
     },
     {
+      "id": "S013",
+      "titolo": "Dizionario ferrarese (raccolta popolare)",
+      "autore": "non identificato (blog)",
+      "anno": 2011,
+      "tipo": "glossario online",
+      "luogo": "http://dizionariopopolare.blogspot.com/p/dizionario-ferrarese.html",
+      "stato": "esaminata",
+      "licenza": "nessuna dichiarata",
+      "licenza_verificata": false,
+      "uso": "Solo in dati/da_verificare/. Nessuna voce di questa fonte e' nel glossario attivo.",
+      "nota": "Dizionario ferrarese raccolto da un appassionato (2011): modi di dire e lessico di casa, di bottega, di scuola. Attesta parole che il Ferri non ha (scarana/sedia, capunara/testa, furzina/forchetta). Il valore e' reale, la provenienza no: e' un blog personale, nessuna licenza, e non e' possibile sapere se l'autore ha raccolto parole scritte da altri o le ha sentite lui. Va in attesa, non nel glossario. Se l'autore e' Pietro, o se le parole sono verificabili con un informatore, le voci escono."
+    },
+    {
+      "id": "S014",
+      "titolo": "Col dialetto sono un brozzo (elenco di parole nei commenti)",
+      "autore": "Eugenio Ciccone e i lettori",
+      "anno": 2014,
+      "tipo": "articolo online con commenti",
+      "luogo": "https://www.listonemag.it/2014/01/17/col-dialetto-sono-un-brozzo-merito-di-stare-nel-canton-di-stick/",
+      "stato": "esaminata",
+      "licenza": "nessuna dichiarata",
+      "licenza_verificata": false,
+      "uso": "Solo in dati/da_verificare/.",
+      "nota": "Invito pubblico a raccogliere parole ferraresi con la glossa; le risposte sono nei commenti. Attesta forchetta=furzina, cucchiaio=guciara, coltello=piron, e altre. E' la prova che il dialetto e' vivo e scritto, ma un commento non e' una fonte citabile: chi scrive puo' sbagliare la glossa e non c'e' modo di saperlo. Per questo esce in attesa. Nei commenti si cita anche il Vocabolario Italiano-Ferrarese (Vincenzi, Ridolfi, Guidetti, 2007) e l'AR.PA.DIA. del Comune di Ferrara: sono le fonti serie, non questo articolo."
+    },
+    {
+      "id": "S015",
+      "titolo": "Il Ferrarese — note linguistiche",
+      "autore": "Roberto Bigoni",
+      "anno": 0,
+      "tipo": "nota linguistica online",
+      "luogo": "https://www.robertobigoni.it/Servizi/Ferrarese/ilFerrarese.html",
+      "stato": "esaminata",
+      "licenza": "nessuna dichiarata",
+      "licenza_verificata": false,
+      "uso": "Solo come appoggio a voci che hanno gia' una fonte. Non genera voci da solo.",
+      "nota": "Note linguistiche sul ferrarese: fonetica (con un sistema di trascrizione proprio), etimologia longobarda, e storia del dialetto. Dice esplicitamente «la sedia per i Ferraresi e' la skaràna», che e' l'attestazione che chiude il dubbio su scarana (V7636). Non genera voci da solo perche' non e' un vocabolario: e' uno studio. Serve a dare la spiegazione a una voce che gia' c'e', e per le trascrizioni IPA, dove il sistema di Bigoni e' confrontabile con quello di IPA anche se diverso."
+    },
+    {
+      "id": "S016",
+      "titolo": "Vocabolario Italiano-Ferrarese e Vocabolario Ferrarese-Italiano",
+      "autore": "Luigi Vincenzi, Alberto Ridolfi, Floriana Guidetti; AR.PA.DIA. (Archivio Padano dei Dialetti, Comune di Ferrara)",
+      "anno": 2007,
+      "tipo": "vocabolario e grammatica",
+      "luogo": "biblioteca (non online)",
+      "stato": "esaminata",
+      "licenza": "tutti i diritti riservati",
+      "licenza_verificata": true,
+      "uso": "Non copiabile. Va citato e consultato in biblioteca.",
+      "nota": "La fonte che chiuderebbe meta' delle lacune ancora aperte (televisione, telefono, chiave: il lessico contemporaneo che il Ferri del 1889 non puo' avere). Due opere: il «Vocabolario Italiano-Ferrarese» (Vincenzi, Ridolfi, Guidetti, Edizioni Cartografica, 2007) e, promossi dall'AR.PA.DIA. del Comune di Ferrara con i centri del territorio, il «Vocabolario Ferrarese-Italiano» e la «Grammatica ragionata del dialetto ferrarese». E' un'istituzione pubblica e lavoro di specialisti: e' la fonte con la provenienza piu' chiara di tutte quelle che il progetto conosce. Non e' nel pubblico dominio e non si copia: si consulta, si cita, e le voci che se ne ricavano entrano con la fonte dichiarata e attendibilita alta. Non e' ancora acquisita perche' nessuno l'ha consultato."
+    },
+    {
       "id": "S012",
       "titolo": "Vocabolario domestico ferrarese-italiano",
       "autore": "Carlo Azzi",

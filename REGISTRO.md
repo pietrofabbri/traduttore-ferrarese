@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.8
+versione: 0.9
 data: 2026-10-03
 ---
 
@@ -85,6 +85,67 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.9 — 2026-10-03 · Misurare quanto italiano copre il glossario, e dire quali parole mancano
+
+**Perché.** Il glossario era passato a 10387 voci e sembrava, per il numero,
+un vocabolario. Non lo era: era un vocabolario **di una stanza sola**. Nessuno
+poteva dirlo, perché il numero delle voci non dice quanto italiano copre, e il
+progetto non aveva nessuno strumento che lo dicesse. Il primo tentativo di
+misurarlo ha prodotto un numero **falso**, ed è la parte instructive di questa
+versione.
+
+- **`copertura.py` confronta il glossario con i lemmi dell'ItWaC** (Baroni,
+  Bernardini, Ferraresi, Zanchetta 2009, via `franfranz/Word_Frequency_Lists_ITA`,
+  licenza MIT): **23,7% dei lemmi italiani frequenti sono coperti**, 8197 da
+  cercare. Il comando è `traduttore.cli copertura`, anche lui con `--json`;
+- **la prima versione dava 10,8% e il numero era falso.** Usava una lista di
+  frequenza ricavata dai *sottititoli*, e le parole più frequenti «mancanti»
+  erano `sono`, `ho`, `stato`, `mangi`. Il glossario non le contiene perché
+  contiene `essere`, `avere`, `stato`, `mangiare`: un vocabolario è fatto di
+  **lemmi**, e confrontare un lemma con una coniugazione è come concludere che
+  manca «cane» perché nella lista c'era «cani». Il metro è passato agli elenchi
+  **già lemmatizzati**, dove la riga `"anni"` porta il lemma `anno`;
+- `TestCopertura` blocca il metro al suo posto: se la copertura scende sotto il
+  20% il test fallisce, perché a quel punto o il metro è rotto o il glossario
+  ha perso voci. E c'è il test sulla **codifica**: i CSV dell'ItWaC sono in
+  **latin-1**, non UTF-8, e leggerli in UTF-8 fa cadere lo script a metà elenco
+  su una riga che sembra normale (`attività` = due byte `0xe0`);
+- **`dati/da_verificare/lacune.md`** è la lista documentata delle parole
+  importanti che mancano, divisa per corpo, casa, cucina, abbigliamento,
+  oggetti e scuola, con per ogni riga lo stato: trovata online, non trovata, o
+  **già nel glossario**. Non è un calcolo: è un documento, perché il calcolo
+  dice *quante* mancano e il documento dice *quali* e *perché quelle contano*;
+- **ricerca online**. Le attestazioni trovate sono poche e tutte con fonti
+  senza licenza verificabile, quindi **nessuna entra nel glossario attivo** e
+  vanno in attesa (regola D1, come per S003): `furzina` = forchetta,
+  `guciara` = cucchiaio, `piron` = coltello (listone.it, 2014);
+  `capunàra` = testa, `barsacca` = borsa (dizionariopopolare.blogspot.com,
+  2011). La `scarana` = sedia era già dentro (V7636) e la ricerca online l'ha
+  **confermata**: robertobigoni.it scrive testualmente «la sedia per i Ferraresi
+  è la skaràna». Quattro fonti nuove in `fonti.json`: **S013** (il dizionario
+  del blog), **S014** (l'articolo con i commenti), **S015** (le note linguistiche
+  di Bigoni), tutte con licenza non verificata;
+- **S016** è la fonte che chiuderebbe metà della lista: il *Vocabolario
+  Italiano-Ferrarese* (Vincenzi, Ridolfi, Guidetti, 2007) e il *Vocabolario
+  Ferrarese-Italiano* dell'**AR.PA.DIA.**, l'archivio del Comune di Ferrara.
+  È un'istituzione pubblica: la fonte con la provenienza più chiara di tutte
+  quelle che il progetto conosce. Non è copiabile e non si copia, ma si
+  **consulta in biblioteca** e le voci che se ne ricavano entrano con la fonte
+  dichiarata. Copre il lessico contemporaneo — `televisione`, `telefono`,
+  `chiave` — che il Ferri del 1889 non può avere.
+
+**Perché la copertura è bassa e non è un difetto del vocabolario.** Il Ferri
+(1889) è un libro di casa e di bottega: pane, mestiere, arredi, animali, modi
+di dire. Non copre `anno`, `numero`, `risposta`, `televisione`, e non
+potrebbe: sono le parole che nel 1889 o non esistevano o non si scrivevano
+così. Coprirle non è attingere al vocabolario del Ferri, è un altro lavoro, e
+la metà delle frequenze alte è anche la meno urgente: `decreto` e `regionale`
+non sono le parole di cui si accorge chi sta giocando.
+
+**Verifiche.** 88 test (erano 83). `verifica`: 0 errori, 2 avvisi D2.
+Equivalenza Python/JavaScript: 12 frasi, 0 divergenze. Nessuna risorsa esterna,
+nessun carattere fuori dal latino.
 
 ## 0.8 — 2026-10-03 · Una voce con piu' resi si trova da ciascuno dei suoi resi
 

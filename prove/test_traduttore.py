@@ -476,6 +476,20 @@ class TestLineaDiComando(unittest.TestCase):
         stato, _ = self._esegui(["pronuncia"])
         self.assertEqual(stato, 1)
 
+    def test_copertura_senza_i_file_ItWaC_lo_dice_e_non_indovina(self):
+        # Il comando non deve mai produrre un numero con un metro che non ha:
+        # 23,7% con i lemmi e 10,8% con le forme sono due numeri diversi, e
+        # quello senza i file e' semplicemente falso. Meglio nessun numero.
+        import os as _os
+        grezzi = _os.path.join(RADICE, "raccolta", "grezzi")
+        if not _os.path.exists(_os.path.join(grezzi, "itwac_noun.csv")):
+            stato, testo = self._esegui(["copertura"])
+            # `copertura.py` esce con 1 quando gli elenchi mancano.
+            self.assertEqual(stato, 1, testo)
+            self.assertIn("Mancano questi elenchi", testo)
+            self.assertNotIn("23.7", testo)
+            self.assertNotIn("10.8", testo)
+
     def test_buchi_stampa_un_numero_e_il_motivo_per_ogni_buco(self):
         # Il comando non fallisce mai e non e' un controllo: qui non c'e'
         # niente da correggere, c'e' solo da sapere. Quindi esce 0 anche se
@@ -721,6 +735,92 @@ class TestFonetica(unittest.TestCase):
         _, _, _, fonetica, _ = _dati_del_repository()
         self.assertGreater(len(fonetica), 0)
         self.assertEqual(fonetica.quante_verificate(), 0)
+
+
+class TestCopertura(unittest.TestCase):
+    """La misura di quanto italiano copre il glossario.
+
+    Il difetto che questi test prendono e' gia' successo ed e' il motivo per
+    cui questa classe esiste. La prima versione di `copertura.py` misurava
+    la copertura con una lista di frequenza presa dai **sottotitoli**, e
+    diceva che al glossario mancava l'89% dell'italiano. Il numero era falso
+    e per un motivo preciso: la lista conteneva forme **coniugate** — `sono`,
+    `ho`, `stato`, `mangi` — mentre il glossario contiene **lemmi**
+    (`essere`, `avere`, `stato`, `mangiare`). Confrontare un lemma con una
+    coniugazione e' come concludere che al vocabolario manca «cane» perche'
+    nella lista c'era «cani».
+
+    Un numero di copertura che dice il contrario della verita' e' peggio di
+    nessun numero: fa sembrare il progetto molto piu' vuoto di quanto sia, e
+    fa lavorare qualcuno sulle parole sbagliate.
+    """
+
+    def _copertura(self):
+        sys.path.insert(0, os.path.join(RADICE, "raccolta"))
+        try:
+            import copertura
+        finally:
+            sys.path.pop(0)
+        return copertura
+
+    def test_una_forma_coniugata_non_e_un_lemma_e_non_si_conta(self):
+        # Il caso che ha fatto il numero falso. Se il metro torna a forme
+        # coniugate, `mangi` non e' piu' coperto dal fatto che `mangiare` lo
+        # sia, e la copertura crolla di nuovo senza che nessuno se ne accorga.
+        glossario = Glossario([_voce("V1", "magnàr", "mangiare", "Ferri 1889")])
+        c = self._copertura()
+        for forma in ("mangi", "mangiamo", "mangeranno", "mangiava"):
+            chiave = forma.lower()
+            if chiave in c.FUNZIONALI:
+                continue
+            # Il lemma c'e'; la forma no. E' cosi' che deve restare: la
+            # copertura si misura sui lemmi, e la coniugazione e' un altro
+            # problema, dichiarato altrove.
+            self.assertTrue(glossario.cerca_italiano("mangiare"))
+            self.assertFalse(glossario.cerca_italiano(forma),
+                             "%s e' una forma, non un lemma" % forma)
+
+    def test_una_parola_funzionale_non_e_una_lacuna(self):
+        # Contare `il`, `di`, `che` fra le mancanze direbbe che il glossario
+        # e' piu' vuoto di quanto sia: sono in `morfologia.py`.
+        c = self._copertura()
+        for funzionale in ("il", "di", "che", "per", "con", "sono", "gli"):
+            if funzionale in c.FUNZIONALI:
+                continue
+            self.fail("%s dovrebbe stare nell'elenco delle funzionali" % funzionale)
+
+    def test_il_glossario_copre_almeno_un_quarto_dei_lemmi_frequenti(self):
+        # Il numero che il progetto puo' dichiarare, con il metro giusto.
+        # Non e' un test di qualita': e' il test che il metro non e' rotto.
+        # Se questo numero crolla, o il metro e' sbagliato (per colpa dei
+        # CSV non scaricati, o della codifica) o il glossario ha perso voci.
+        c = self._copertura()
+        percorso = os.path.join(RADICE, "raccolta", "grezzi", "itwac_noun.csv")
+        if not os.path.exists(percorso):
+            self.skipTest("gli elenchi ItWaC non sono in raccolta/grezzi/ (MIT, si scaricano)")
+        glossario, _, _, _, _ = _dati_del_repository()
+        coppie = c.leggi_elenco(percorso, "lemma")
+        esito = c.analizza(glossario, {"sostantivi": coppie})
+        totale = len(esito["coperte"]) + len(esito["mancanti"])
+        percentuale = 100.0 * len(esito["coperte"]) / max(totale, 1)
+        self.assertGreater(totale, 1000, "l'elenco e' troppo piccolo per essere il metro")
+        self.assertGreater(percentuale, 20.0,
+                           "copertura %0.1f%%: metro rotto o glossario vuoto?" % percentuale)
+
+    def test_il_elenco_si_legge_in_latin1_e_non_in_utf8(self):
+        # Dettaglio che ha fatto fallire lo script a meta' elenco: i CSV
+        # dell'ItWaC sono in latin-1 (`attività` = due byte 0xe0). Leggerli
+        # in UTF-8 solleva `UnicodeDecodeError` su una riga che sembra
+        # normale. Il test fissa la codifica giusta.
+        c = self._copertura()
+        percorso = os.path.join(RADICE, "raccolta", "grezzi", "itwac_noun.csv")
+        if not os.path.exists(percorso):
+            self.skipTest("gli elenchi ItWaC non sono in raccolta/grezzi/")
+        coppie = c.leggi_elenco(percorso, "lemma")
+        self.assertGreater(len(coppie), 100)
+        accenti = [p for p, _ in coppie if p.endswith("à")]
+        self.assertGreater(len(accenti), 10,
+                           "gli accenti non arrivano: la codifica non e' quella giusta")
 
 
 class TestVociMeccaniche(unittest.TestCase):

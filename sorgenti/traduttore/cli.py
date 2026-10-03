@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 
 from . import morfologia, verifica_dati
@@ -264,6 +265,37 @@ def comando_cerca(args) -> int:
         if voce.note:
             print("         nota: %s" % voce.note)
     return 0
+
+
+def comando_copertura(args) -> int:
+    """Quanto italiano copre il glossario, e quali parole mancano.
+
+    `buchi` dice quello che il progetto **sa** di non sapere (i proverbi
+    senza la forma che si dice, le voci senza IPA). Questo comando dice
+    quello che il progetto **non sa di non sapere**: l'italiano che chi
+    scrive una frase usa e che il glossario non trova.
+
+    Il metro e' fatto di lemmi, non di forme. La differenza non e' accademica:
+    con un metro di forme coniugate il numero diceva che al glossario
+    mancava l'89% dell'italiano, e le parole piu' frequenti «mancanti» erano
+    `sono`, `ho`, `stato`. Il glossario contiene `essere`, `avere`, `stato`:
+    un vocabolario e' fatto di lemmi, e un numero di copertura che dice il
+    contrario della verita' fa lavorare qualcuno sulle parole sbagliate.
+
+    Lo strumento sta in `raccolta/copertura.py` e dipende dagli elenchi
+    lemmatizzati dell'ItWaC, che si scaricano (licenza MIT). Senza quei
+    file il comando lo dice e non indovina un numero.
+    """
+    script = os.path.join(RADICE, "raccolta", "copertura.py")
+    if not os.path.exists(script):
+        print("manca %s" % script)
+        return 1
+    argv = [sys.executable, script]
+    if args.limite:
+        argv += ["--limite", str(args.limite)]
+    if args.json:
+        argv.append("--json")
+    return subprocess.call(argv)
 
 
 def comando_buchi(args) -> int:
@@ -590,6 +622,13 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p = sotto.add_parser("stato", help="che cosa sa il motore")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_stato)
+
+    p = sotto.add_parser("copertura",
+                         help="quanto italiano copre il glossario, e che manca")
+    p.add_argument("--limite", type=int, default=None,
+                   help="quante parole mancanti elencare")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_copertura)
 
     p = sotto.add_parser("buchi", help="quello che il motore non sa, e perche'")
     p.add_argument("--json", action="store_true")

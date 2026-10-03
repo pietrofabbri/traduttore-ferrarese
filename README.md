@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.8
+versione: 0.9
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -30,6 +30,7 @@ python3 -m traduttore.cli audio
 python3 -m traduttore.cli proposte
 python3 -m traduttore.cli stato
 python3 -m traduttore.cli buchi
+python3 -m traduttore.cli copertura
 python3 -m traduttore.cli verifica
 python3 -m traduttore.cli impara
 python3 -m traduttore.cli web
@@ -47,6 +48,15 @@ da solo — «10363 voci su 10387 senza trascrizione IPA» e' una frase che qual
 puo' correggere lunedi', «non abbiamo le trascrizioni IPA» e' una frase che
 resta vera per sempre. Gli stessi numeri compaiono sotto «E che cosa non sa»
 nella pagina.
+
+`copertura` dice **quanto italiano copre il glossario**: è il numero che
+`buchi` non dà, perché `buchi` sa quello che il progetto *sa* di non sapere,
+mentre `copertura` sa quello che il progetto *non sapeva di non sapere*. Il
+metro sono i **lemmi** dell'ItWaC (Baroni 2009, licenza MIT): oggi **23,7%**
+dei lemmi italiani frequenti sono coperti. Le parole mancanti sono elencate in
+`dati/da_verificare/lacune.md`, con quello che la ricerca online ha trovato e
+quello che non ha trovato. Senza quei file il comando dice che mancano e non
+stampa un numero: meglio nessun numero che un numero sbagliato.
 
 Una voce con piu' resi si trova da **ciascuno** dei suoi resi: il Ferri scrive
 «Maladir → Maledire, esacràre», e chi cerca «maledire» trova la voce, come chi

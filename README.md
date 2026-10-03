@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.3
+versione: 0.4
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -12,9 +12,9 @@ Un traduttore fra l'italiano e il **ferrarese**, costruito per il gioco
 
 La caratteristica di questo progetto non e' che traduce bene. E' che **quando
 non sa, dice che non sa**, e dice anche *perche'* non lo sa e *che cosa
-servirebbe* per saperlo. Con ventiquattro voci in un glossario, tutte di una
-sola varieta' e tutte da due fonti, questa e' la proprieta' piu' importante che
-ha.
+servirebbe* per saperlo. Con duecentotrentaquattro voci in un glossario,
+tutte di una sola varieta' e tutte da tre fonti, questa e' la proprieta' piu'
+importante che ha.
 
 ## Come si usa
 
@@ -77,7 +77,7 @@ python3 -m traduttore.cli varieta
 ```
 
 ```
-cittadino    cittadino                       24 voci   8 coppie, 0 brani
+cittadino    cittadino                      234 voci  16 coppie, 0 brani
 centrale     centrale, detto anche arioso    VUOTA     0 coppie, 0 brani
 occidentale  occidentale                     VUOTA     0 coppie, 0 brani
 orientale    orientale                       VUOTA     0 coppie, 0 brani
@@ -224,7 +224,7 @@ traduttore-ferrarese/
   dati/
     glossario.jsonl    le parole, con la fonte e la varieta'
     coppie.jsonl       le frasi parallele, con la fonte e la varieta'
-    proverbi.jsonl     i proverbi, modello commentato e vuoto
+    proverbi.jsonl     i proverbi, con la forma dei libri e quella che si dice
     varieta.json       le cinque varieta' del ferrarese, con i territori
     fonetica.jsonl     le trascrizioni IPA, con il sistema dichiarato
     regole.json        generato da `impara`, non si modifica a mano
@@ -253,6 +253,14 @@ traduttore-ferrarese/
     modello.html       il modello della pagina
     costruisci_web.py  la generazione della pagina
   prove/               i test
+  raccolta/            gli strumenti per passare da un libro a dei dati:
+                         pdf_testo.py     l'estrattore di PDF senza librerie
+                         estrai_ferri.py  stacca le voci dall'OCR di Ferri
+                         filtra_candidati.py  tiene solo quello che si legge
+                         lettura_ferri.py la lista scelta a mano, voce per voce
+                         costruisci_da_ferri.py  la porta dentro `dati/`
+                       `grezzi/` e `lavorato/` non sono nel repository: sono
+                       i libri e il mezzo, entrambi ricreabili con una riga
   web/                 la pagina generata
   .github/workflows/   verifica continua e pubblicazione
 ```
@@ -312,9 +320,20 @@ ferrarese. In breve:
   Dichiarazione universale dei diritti umani (S003), e la licenza di quella
   fonte non e' verificata. Non le usa nessuno, non sono nella pagina e il
   controllo **D1** fallisce se finiscono nei file attivi. Il glossario ha
-  quindi **24 voci**, tutte da due fonti e **tutte di una sola varieta'**, il
+  quindi **234 voci**, tutte da tre fonti e **tutte di una sola varieta'**, il
   cittadino. Quattro varieta' su cinque sono vuote dichiarate. Non e' un
   dizionario e non si presenta come tale.
+- **Le locuzioni ci sono, ma il motore non le usa ancora in una frase.**
+  Duecentodieci delle voci hanno piu' di una parola, e sono la parte piu'
+  interessante del lotto: `cerca "a brazz avèrti"` risponde, ma `traduci`
+  smembra ancora il testo parola per parola e su «a braccia aperte» non
+  trova niente. Il glossario le contiene e il traduttore non le sa usare:
+  e' un buco dichiarato, non una scelta.
+- **La grafia e' del 1889.** Le 210 voci prese dal vocabolario di Ferri sono
+  nella grafia del libro, con l'accento sui toni come il Ferri lo intendeva.
+  Non e' la grafia di oggi e non e' quella che si sente: le forme sono
+  verificabili aprendo il libro alla pagina indicata, non ascoltando un
+  parlante.
 
 ## I controlli
 

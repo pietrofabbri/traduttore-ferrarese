@@ -53,6 +53,18 @@
       "varieta": "cittadino",
       "attendibilita": "M",
       "motivo": "Una traduzione parallela anonima non dichiara dove e' stata scritta. Si assume il cittadino e si dichiara l'assunzione."
+    },
+    {
+      "fonte": "S004",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Il Ferri non scrive la parola «cittadino», ma il libro e' costruito come i vocabolari di citta' che lui stesso elenca nella prefazione («Le principali regioni e citta' italiane possiedono il proprio Vocabolario»), e il lessico e' di uso urbano. La scelta e' quindi nostra, e viene dichiarata come memoria e non come fatto documentato: e' S005, che dichiara per iscritto il proprio territorio, a poterla promuovere a documentata quando le sue voci entreranno."
+    },
+    {
+      "fonte": "S005",
+      "varieta": "cittadino",
+      "attendibilita": "D",
+      "motivo": "Il Nannini scrive: «Quando dico raccolta di voci ferraresi intendo di parlare di quelle che formano il Dialetto della Citta' di Ferrara». E' l'unica fonte del progetto che dichiara il proprio territorio in modo esplicito, e questa riga e' quella che regge la scelta `cittadino` per tutto il resto."
     }
   ],
   "altre_zone": [
@@ -67,12 +79,14 @@
     {
       "codice": "cittadino",
       "nome": "cittadino",
-      "territori": ["Ferrara, dentro le mura"],
+      "territori": [
+        "Ferrara, dentro le mura"
+      ],
       "descrizione": "Il ferrarese di dentro le mura storiche. E' la varieta' che il gioco usa perche' e' quella che si sente in citta', ed e' anche quella che oggi e' parlata da poche persone, quasi tutte di eta' alta.",
       "confine": "",
       "fonte": "S002, sezione sulle varieta' territoriali",
       "attendibilita": "D",
-      "nota": "Unica varieta' con voci nel glossario. Tutte le fonti disponibili documentano il cittadino: e' un vuoto delle fonti, non una scelta del progetto."
+      "nota": "Unica varieta' con voci nel glossario, e da questa versione e' l'unica con una fonte che dichiari il territorio. Tutte le fonti disponibili documentano il cittadino: e' un vuoto delle fonti, non una scelta del progetto."
     },
     {
       "codice": "centrale",

@@ -20,3 +20,13 @@ audio/*.mov
 audio/*.wav
 audio/*grezzo*
 web/audio/
+
+# La raccolta grezza non entra. Sono libri dell'Ottocento in formato intero:
+# quasi 35 megabyte di PDF e di OCR, che sono copiabili dal sito da cui vengono
+# e che occupano il repository per sempre senza aggiungere niente. Quello che
+# conta del lavoro — gli script che estraggono, il filtro e la lista di voci
+# scelte a mano — resta tracciato, e da quegli script il grezzo si ricrea con
+# una riga. `raccolta/lavorato/` e' lo stesso ragionamento: e' il mezzo, non
+# il risultato, e il risultato e' `dati/`.
+raccolta/grezzi/
+raccolta/lavorato/

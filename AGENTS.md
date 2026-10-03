@@ -1,6 +1,6 @@
 ---
 titolo: Istruzioni per chi lavora al progetto
-versione: 0.3
+versione: 0.4
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -51,7 +51,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py     # 55 test
+python3 prove/test_traduttore.py     # 59 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

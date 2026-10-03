@@ -18,7 +18,12 @@
     "come puo' essere una ristampa del Novecento, e la differenza si scopre solo",
     "guardando la pagina di copyright."
   ],
-  "stati": ["reperto", "esaminata", "acquisita", "esclusa"],
+  "stati": [
+    "reperto",
+    "esaminata",
+    "acquisita",
+    "esclusa"
+  ],
   "fonti": [
     {
       "id": "S001",
@@ -63,28 +68,28 @@
     {
       "id": "S004",
       "titolo": "Vocabolario ferrarese-italiano",
-      "autore": "Luigi Ferri",
-      "anno": 1885,
+      "autore": "Luigi Ferri (1826-1895)",
+      "anno": 1889,
       "tipo": "vocabolario",
       "luogo": "https://archive.org/details/vocabolarioferr00ferrgoog",
-      "stato": "esaminata",
+      "stato": "acquisita",
       "licenza": "public domain",
-      "licenza_verificata": false,
-      "uso": "Non ancora usato nel glossario.",
-      "nota": "Il libro e' interamente in pubblico dominio perche' l'autore e' morto nel 1895. Occorre una trascrizione: la copia digitalizzata e' testo-immagine, quindi va digitata. E' la fonte piu' preziosa del elenco e la prima da affrontare, perche' un vocabolario dell'Ottocento e' contemporaneo ai suoi informatori, mentre Biondelli del 1853 descrive senza dizionario."
+      "licenza_verificata": true,
+      "uso": "Duecentodieci voci del glossario (V0027-V0236), otto coppie (F0011-F0018) e ventotto proverbi (P0001-P00028).",
+      "nota": "Il titolo porta il nome del compilatore, Luigi Ferri, e la prefazione e' firmata: il nome e' confermato sia dalla scheda di archive.org sia dalla firma in fondo all'appendice. L'OCR del frontespizio legge «Enrico Ferri» ed e' una lettura sbagliata. Il libro e' del 1889, l'autore e' morto nel 1895: in Italia e negli Stati Uniti il diritto d'autore e' scaduto da decenni, quindi la licenza e' verificata e non dichiarata. Sul sito di archive.org il testo non e' immagine ma trascrizione OCR: si puo' quindi leggere tutto, e la trascrizione e' quella che si e' usata, con i numeri di pagina ricostruiti dagli originali a stampa. Il numero di pagina puo' essere sbagliato di una pagina: e' dichiarato qui e non si nasconde. Due limiti che restano: la grafia e' del 1889 e non quella di oggi, e il libro finisce con un'appendice di correzioni e aggiunte dove l'Ferri lascia il significato in bianco, che per questo non alimenta il glossario."
     },
     {
       "id": "S005",
       "titolo": "Vocabolario portatile ferrarese-italiano",
       "autore": "Francesco Nannini",
-      "anno": 1880,
+      "anno": 1805,
       "tipo": "vocabolario",
       "luogo": "https://archive.org/details/vocabolarioporta00nannuoft",
-      "stato": "reperto",
+      "stato": "esaminata",
       "licenza": "public domain",
-      "licenza_verificata": false,
-      "uso": "Non ancora usato.",
-      "nota": "Secondo vocabolario ottocentesco, utile come confronto: dove Ferri e Nannini concordano la voce e' solida, dove discordano c'e' una varieta' e va dichiarata. La data di stampa va controllata sull'edizione: le edizioni riportano anni diversi."
+      "licenza_verificata": true,
+      "uso": "Non ancora usato nel glossario. Serve da confronto con S004.",
+      "nota": "Il frontespizio porta «In Ferrara MDCCCV», cioe' 1805, e la data della scheda di archive.org concorda. Il libro si dichiara esplicitamente cittadino: «Quando dico raccolta di voci ferraresi intendo di parlare di quelle che formano il Dialetto della Citta' di Ferrara». E' la voce piu' antica e la piu' dichiarata, e per questo e' la prova che la scelta `cittadino` di S004 non e' un'assunzione. Non e' ancora `acquisita` perche' l'estrazione non e' finita: il testo e' un OCR del 1805, con il carattere lungo e i corsivi resi in modo irregolare, e le voci non sono separate da un segnale che le distingua dal glossario italiano come in S004."
     },
     {
       "id": "S006",
@@ -137,6 +142,32 @@
       "licenza_verificata": false,
       "uso": "Non esiste.",
       "nota": "Non esiste un corpus di parlato spontaneo ferrarese consultabile, per quanto cercato. Il progetto non puo' fingerne uno e non puo' costruirlo per download: si costruisce registrando persone, con il consenso, che e' la parte piu' lenta e piu' importante di tutto il lavoro. Fino ad allora il motore ha parole e frasi scritte, e lo dichiara."
+    },
+    {
+      "id": "S010",
+      "titolo": "Vocabolario domestico ferrarese-italiano",
+      "autore": "non verificato nel documento",
+      "anno": 0,
+      "tipo": "vocabolario (copia digitale di un libro a stampa)",
+      "luogo": "https://gaialodovica.wordpress.com/wp-content/uploads/2011/10/vocabolario_domestico_ferrarese_italiano.pdf",
+      "stato": "esaminata",
+      "licenza": "public domain (dichiarato nella prima pagina della copia)",
+      "licenza_verificata": false,
+      "uso": "Non alimenta i dati.",
+      "nota": "La prima pagina e' la nota legale di Google: «a book that was never the subject of copyright ... enter the public domain». La dichiarazione e' della copia digitale, non dell'autore, e per questo la licenza resta non verificata finche' non si risale all'originale a stampa con data e autore. Il testo si e' aperto con l'estrattore minimo del progetto e non e' utilizzabile cosi': l'OCR tiene le coordinate dei glifi ma il file non le conserva, quindi le parole risultano incollate («Informazionsuquestolibro»). Per tirarlo fuori serve un lettore che usi le posizioni dei glifi, oppure il testo di archive.org di questo stesso volume, se esiste. Il libro resta il piu' grande dei quattro e quello che vale la pena di recuperare per primo: 9,4 milioni di caratteri, contro le poche decine di voci che S004 ha reso fin qui."
+    },
+    {
+      "id": "S011",
+      "titolo": "«Scrìvar e l'èàr al frarés»",
+      "autore": "non identificato",
+      "anno": 0,
+      "tipo": "opuscolo",
+      "luogo": "https://files.supersite.aruba.it/media/3538_b165a2bcee0c219fcc85ca29eb23a5c0786b996a.pdf",
+      "stato": "esclusa",
+      "licenza": "nessuna dichiarata",
+      "licenza_verificata": false,
+      "uso": "Esclusa dal glossario.",
+      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra."
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 titolo: Raccolta dei materiali ferraresi
-versione: 0.3
+versione: 0.4
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -71,20 +71,31 @@ pubblico dominio dal Novecento e nessuno li ha digitalizzati.
 
 I due da cominciare, gia' identificati in `dati/fonti.json`:
 
-- **Luigi Ferri, *Vocabolario ferrarese-italiano*, 1885.** Scaricabile da
+- **Luigi Ferri, *Vocabolario ferrarese-italiano*, 1889.** Scaricabile da
   archive.org. Intero in pubblico dominio (l'autore e' morto nel 1895). E'
   un vocabolario di fine Ottocento, quindi le sue forme sono **contemporanee
   a chi le ha raccolte**: e' il problema dei vocabolari moderni non si pone.
-- **Francesco Nannini, *Vocabolario portatile ferrarese-italiano*.** Secondo
-  vocabolario della stessa epoca. Serve come confronto: dove Ferri e Nannini
-  concordano la voce e' solida, dove discordano c'e' una varieta' e va
-  dichiarata come tale.
+  **Dal 2026-10-03 e' `acquisita`** (S004) e ha gia' dato 210 voci, 8 coppie
+  e 28 proverbi. Le voci si prendono con gli script di `raccolta/`: non serve
+  digitare niente a mano, serve scegliere.
+- **Francesco Nannini, *Vocabolario portatile ferrarese-italiano*, 1805.**
+  Secondo vocabolario della stessa epoca, e il piu' antico dei due. Serve
+  come confronto: dove Ferri e Nannini concordano la voce e' solida, dove
+  discordano c'e' una varieta' e va dichiarata come tale. E' l'unica fonte
+  che dichiara per iscritto il proprio territorio — «il Dialetto della Citta'
+  di Ferrara» — e quindi e' quella che regge la scelta `cittadino` per tutto
+  il glossario. Stato `esaminata` (S005): il testo e' un OCR del 1805 col
+  carattere lungo, e le voci non sono separate da un segnale che le
+  distingua dal glossato italiano.
 
-**Il lavoro che manca e' la trascrizione.** Le copie su archive.org sono
-testo-immagine, quindi vanno digitate. E' la parte piu' noiosa e piu'
- importante del progetto, e si puo' dividere: una pagina per volta, con un
-volontario per volta, in un repository pubblico, e ogni pagina con il nome
-di chi l'ha fatta.
+**Il lavoro che manca non e' piu' la trascrizione.** Le copie su archive.org
+non sono testo-immagine: ne pubblicano l'OCR, che si legge. Il lavoro che
+manca e' **la scelta**: 23.000 voci sono state estratte, e 210 sono state
+guardate una per una. Il filtro che le butta via e' `filtra_candidati.py`,
+la lista di quelle che restano e' `lettura_ferri.py`, e il passaggio da una
+all'altra e' `costruisci_da_ferri.py`, che si ferma se non trova la pagina.
+Il resto di `raccolta/grezzi/` non e' tracciato perche' e' ricreabile con una
+riga e pesa 35 megabyte.
 
 Come si riempie il glossario da un vocabolario:
 
@@ -272,13 +283,17 @@ python3 -m traduttore.cli proposte    # la coda di revisione del livello IA
 
 ## L'ordine in cui conviene procedere
 
-1. **Ferri 1885**, pagina per pagina. E' la fonte piu' grande e piu' facile da
-   usare, e senza il vocabolario non c'e' glossario.
-2. **Nannini**, per il confronto e per le varieta'.
-3. **Le frasi** del quotidiano, raccolte parlando con chi lo parla ancora.
-4. **L'audio**, che richiede tempo e persone, e va avviato per primo fra
+1. **Ferri 1889**, voce per voce. Le 23.000 voci estratte sono ancora li': la
+   parte noiosa e' gia' fatta e quella che conta no.
+2. **Il vocabolario domestico (S010)**, che e' il piu' grande dei quattro
+   (9,4 milioni di caratteri) e non e' ancora leggibile. Recuperarlo richiede
+   un lettore di PDF che usi le coordinate dei glifi, oppure l'OCR di
+   archive.org dello stesso volume.
+3. **Nannini 1805**, per il confronto e per le varieta'.
+4. **Le frasi** del quotidiano, raccolte parlando con chi lo parla ancora.
+5. **L'audio**, che richiede tempo e persone, e va avviato per primo fra
    tutti perche' e' quello che non si puo' accelerare.
-5. **Una mezz'ora con un parlante** per portare le prime trascrizioni IPA da
+6. **Una mezz'ora con un parlante** per portare le prime trascrizioni IPA da
    `I` a `D`. Costa poco ed e' la cosa che rende vera la parte fonetica.
 
 Il primo, il quarto e il quinto si possono fare in parallelo, e il quarto e'

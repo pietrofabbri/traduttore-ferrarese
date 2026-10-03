@@ -1,0 +1,39 @@
+// Le proposte del livello IA. Un file per riga, piu' commenti che righe.
+//
+// **Adesso e' vuoto**, e vuoto e' il numero giusto: senza chiave il livello 4
+// non esiste, e anche con la chiave finche' nessuno ha scritto una parola nuova
+// non c'e' niente da proporre. Il file si riempie da solo quando si lancia:
+//
+//     python3 -m traduttore.cli traduci "parola nuova" --ia
+//
+// e si svuota **mai**: una proposta respinta resta qui con il suo stato, e il
+// file racconta anche i tentativi falliti.
+//
+// Il protocollo, i campi e chi approva sono in `README.md` in questa cartella.
+//
+// I campi:
+//
+//   data          il giorno della risposta (ISO)
+//   direzione     it-fe o fe-it
+//   parola        la parola da tradurre
+//   traduzione    la risposta del modello
+//   confidenza    da 0 a 1: la confidenza del modello, non la nostra
+//   dettaglio     la riga di spiegazione che il modello e' obbligato a dare
+//   fonti_citate  gli id di voci o coppie che il modello ha detto di usare.
+//                 NON sono fonti della proposta: sono i suoi riferimenti, e il
+//                 controllo M3 verifica che esistano davvero
+//   stato         da rivedere, approvata, respinta
+//   promossa_a    l'id della voce nata da questa proposta, quando c'e'
+//
+// Quello che **non** c'e' e non ci deve mai essere:
+//
+//   fonte              assente, e il controllo M2 fallisce se qualcuno lo mette
+//   attendibilita      assente, e M2 fallisce se vale "D"
+//
+// Il modello non e' una fonte. Non lo diventa scrivendo il suo nome in un
+// campo: diventa una voce solo se una persona ha aperto il vocabolario, e in
+// quel caso la voce si scrive dal vocabolario.
+//
+// Righe d'esempio, da togliere:
+//
+// {"data":"2026-10-03","direzione":"it-fe","parola":"","traduzione":"","confidenza":0,"dettaglio":"","fonti_citate":[],"stato":"da rivedere","promossa_a":""}

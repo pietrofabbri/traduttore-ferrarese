@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.2
+versione: 0.3
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -27,6 +27,7 @@ python3 -m traduttore.cli cerca magnar
 python3 -m traduttore.cli varieta
 python3 -m traduttore.cli pronuncia magnar
 python3 -m traduttore.cli audio
+python3 -m traduttore.cli proposte
 python3 -m traduttore.cli stato
 python3 -m traduttore.cli verifica
 python3 -m traduttore.cli impara
@@ -168,12 +169,24 @@ python3 -m traduttore.cli traduci "qualcosa di nuovo" --ia
 
 Tre regole, che il codice fa rispettare:
 
-- il modello **non e' una fonte**: non entra mai nel glossario ne' nel corpus,
-  e quello che produce resta in `dati/proposte/`;
+- il modello **non e' una fonte**: non entra mai nel glossario ne' nel corpus, e
+  quello che produce viene scritto in `dati/proposte/`, la coda di revisione;
 - riceve il contesto (glossario vicino, coppie simili, regole) e gli si chiede
   esplicitamente di rispondere `non_so` quando non sa;
 - una risposta sotto la soglia **non viene usata**: il motore torna al livello
   3, che e' quello verificato.
+
+```bash
+python3 -m traduttore.cli proposte
+```
+
+La coda si riempie da sola quando si usa `--ia` (e non si scrive con
+`--no-proposte`). Il file si **append-e**, quindi non si perde niente, e i
+controlli **M1&ndash;M4** fanno fallire la CI se una proposta si dichiara
+documentata o si porta dentro un campo `fonte`: la risposta di un modello non
+diventa una fonte scrivendogli il nome in un campo, e a farlo deve essere una
+persona che ha aperto il vocabolario. Il protocollo e' in
+[dati/proposte/README.md](dati/proposte/README.md).
 
 ## Struttura
 
@@ -194,6 +207,7 @@ traduttore-ferrarese/
     da_verificare/     i dati con la licenza non ancora verificata: li
                        possediamo, non li pubblichiamo, e il controllo D1
                        controlla che non vengano usati per errore
+    proposte/          la coda di revisione delle risposte del livello IA
   audio/               i brani registrati: adesso c'e' solo il README
   sorgenti/
     traduttore/        il pacchetto
@@ -206,6 +220,7 @@ traduttore-ferrarese/
       morfologia.py    l'apprendimento delle regole
       motore.py        i quattro livelli, il buco, la confidenza
       modello.py       il livello IA, facoltativo
+      proposte.py      la coda di revisione del livello IA
       verifica_dati.py i controlli sui dati
       cli.py           la riga di comando
     modello.html       il modello della pagina
@@ -271,7 +286,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 48 test
+python3 prove/test_traduttore.py     # 55 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 
@@ -280,6 +295,6 @@ perche' il glossario e' un fatto e i fatti non si correggono in automatico.
 
 ## License
 
-- codice: MIT, vedi `LICENZE.md`;
+- codice: MIT, testo in `LICENSE`, spiegazione in `LICENZE.md`;
 - dati: la licenza e' **per voce**, e la dichiara il campo `fonte` di ogni
   voce. Una voce la cui fonte non e' in pubblico dominio non si pubblica.

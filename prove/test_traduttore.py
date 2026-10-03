@@ -35,6 +35,7 @@ from traduttore.corpora import Coppia, Corpus  # noqa: E402
 from traduttore.fonetica import Fonetica, Trascrizione, ipa_valida  # noqa: E402
 from traduttore.glossario import IT_FE, Glossario, Voce  # noqa: E402
 from traduttore.motore import Motore  # noqa: E402
+from traduttore import proposte  # noqa: E402
 from traduttore.varieta import VARIETA, Varieta, _nome_valido  # noqa: E402
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -257,6 +258,9 @@ class TestControlli(unittest.TestCase):
         glossario, corpus, varieta, fonetica, archivio = _dati_del_repository()
         attesa_glossario, attesa_corpus = _dati_in_attesa()
         problemi = (verifica_dati.controlla_varieta(varieta)
+                    + proposte.controlla_proposte(
+                        proposte.leggi(os.path.join(RADICE, "dati", "proposte",
+                                                    "proposte.jsonl")))
                     + verifica_dati.controlla_glossario(glossario)
                     + verifica_dati.controlla_corpora(corpus)
                     + verifica_dati.controlla_fonetica(fonetica, glossario, corpus, varieta)
@@ -327,6 +331,73 @@ class TestFilaDAttesa(unittest.TestCase):
         # E la fila non e' vuota: se si svuotasse, il controllo D1 non
         # controllerebbe piu' niente e sembrerebbe che il progetto sia a posto.
         self.assertTrue(attesa_glossario.voci or attesa_corpus.coppie)
+
+
+class TestProposte(unittest.TestCase):
+    """La coda di revisione del livello IA.
+
+    Il test che conta e' il secondo: una risposta del modello che si porta
+    dentro un campo `fonte` e' il modo in cui il livello 4 diventa una fonte
+    senza che nessuno lo decida, e la coda deve impedirlo meccanicamente.
+    """
+
+    def _proposta(self, **kwargs):
+        risposta = {"traduzione": "magnar", "confidenza": 0.6,
+                    "dettaglio": "nessuna voce nel contesto",
+                    "sources": ["V0001"]}
+        risposta.update(kwargs)
+        return proposte.da_risposta("mangiare", IT_FE, risposta, quando="2026-10-03")
+
+    def test_salva_e_legge_e_appende(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "sotto", "proposte.jsonl")
+            proposte.salva(self._proposta(), percorso)
+            proposte.salva(self._proposta(), percorso)
+            lette = proposte.leggi(percorso)
+            self.assertEqual(len(lette), 2, "la seconda scrittura ha sovrascritto la prima")
+            self.assertEqual(lette[0].parola, "mangiare")
+            self.assertEqual(lette[0].stato, "da rivedere")
+            self.assertEqual(lette[0].fonti_citate, ["V0001"])
+
+    def test_una_proposta_con_una_fonte_e_un_errore(self):
+        # Il controllo che tiene separate le due cose: il modello dice, la
+        # persona documenta. Una riga che fa le due e' una riga che ha gia'
+        # deciso al posto di qualcun altro.
+        p = self._proposta()
+        p.grezzo["fonte"] = "Wikipedia, sezione Caratteristiche"
+        codici = [x.codice for x in proposte.controlla_proposte([p])]
+        self.assertIn("M2", codici)
+
+    def test_una_proposta_documentata_e_un_errore(self):
+        p = self._proposta()
+        p.grezzo["attendibilita"] = "D"
+        self.assertIn("M2", [x.codice for x in proposte.controlla_proposte([p])])
+
+    def test_uno_stato_inventato_e_un_errore(self):
+        p = self._proposta()
+        p.stato = "probabilmente giusta"
+        self.assertIn("M1", [x.codice for x in proposte.controlla_proposte([p])])
+
+    def test_una_citazione_inesistente_e_un_avviso(self):
+        # Il modello che cita una voce che non esiste ha risposto inventando, e
+        # va detto: e' un avviso, non un errore, perche' resta una proposta.
+        p = self._proposta(sources=["V9999"])
+        problemi = proposte.controlla_proposte([p], conosciute={"V0001"})
+        self.assertEqual([x.codice for x in problemi], ["M3"])
+        self.assertEqual(problemi[0].gravita, "avviso")
+
+    def test_una_promozione_che_non_esiste_e_un_avviso(self):
+        p = self._proposta()
+        p.promossa_a = "V0100"
+        problemi = proposte.controlla_proposte([p], conosciute={"V0001"})
+        self.assertEqual([x.codice for x in problemi], ["M4"])
+
+    def test_la_coda_del_repository_e_vuota(self):
+        percorso = os.path.join(RADICE, "dati", "proposte", "proposte.jsonl")
+        self.assertTrue(os.path.exists(percorso),
+                        "la coda di revisione dev'essere dichiarata anche vuota")
+        self.assertEqual(proposte.leggi(percorso), [])
 
 
 class TestVarieta(unittest.TestCase):

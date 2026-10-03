@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from . import morfologia, normalizza
-from .glossario import FE_IT, IT_FE
+from .glossario import IT_FE
 
 # Le quattro origini, e la confidenza che portano con se'.
 ORIGINE = {
@@ -282,8 +282,8 @@ class Motore:
             "coppie_senza_fonte": sum(1 for c in self.corpus.coppie if not c.valida()),
             "proverbi": len(self.corpus.proverbi),
             "regole": len(self.regole),
-            # Le varieta' coperte: un numero solo che dica «26 voci» mente per
-            # omissione, perche' nasconde che sono tutte di un posto solo.
+            # Le varieta' coperte: un numero solo che dica «tutte le voci» mente
+            # per omissione, perche' nasconde che sono tutte di un posto solo.
             "varieta_coperte": ", ".join(sorted({v.varieta for v in self.glossario.voci if v.varieta})),
             "con_modello": self.modello is not None,
         }

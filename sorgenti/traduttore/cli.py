@@ -12,6 +12,7 @@ programma che sistema un glossario senza chiedere lo rovina.
     varieta       le cinque varieta' del ferrarese, e quante voci ha ciascuna
     pronuncia     la trascrizione IPA di una parola, e quanto e' sicura
     audio         che brani audio ci sono, e quali si possono pubblicare
+    proposte      la coda di revisione delle risposte del modello
     web           genera il sito statico
 
 Il comando `traduci` e' l'unico che esce dal terminale e va progettato per
@@ -27,13 +28,14 @@ import json
 import os
 import sys
 
-from . import morfologia, normalizza, verifica_dati
+from . import morfologia, verifica_dati
 from .audio import Archivio, controlla_archivo
 from .corpora import Corpus
 from .fonetica import Fonetica
 from .glossario import FE_IT, IT_FE, Glossario
 from .modello import costruisci_modello
 from .motore import Motore
+from .proposte import controlla_proposte, conta_stati, da_risposta, leggi, salva
 from .varieta import NOMI, VARIETA, Varieta
 
 RADICE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -58,6 +60,10 @@ IN_ATTESA = {
     "coppie": os.path.join(DATI, "da_verificare", "coppie.jsonl"),
     "fonetica": os.path.join(DATI, "da_verificare", "fonetica.jsonl"),
 }
+
+# La coda di revisione del livello IA. Non e' un glossario e non e' un corpus:
+# e' il posto dove le risposte del modello aspettano che qualcuno le guardi.
+PERCORSO_PROPOSTE = os.path.join(DATI, "proposte", "proposte.jsonl")
 
 
 def carica(modello_attivo: bool = False):
@@ -96,6 +102,7 @@ def comando_traduci(args) -> int:
     motore = carica(modello_attivo=args.ia)
     direzione = FE_IT if args.direzione == "fe-it" else IT_FE
     risposta = motore.traduci(" ".join(args.testo), direzione)
+    salvate = _salva_proposte(risposta, direzione, args)
     if args.json:
         print(json.dumps(risposta.come_json(), ensure_ascii=False, indent=2))
         return 0 if risposta.da_pubblicare else 1
@@ -103,7 +110,73 @@ def comando_traduci(args) -> int:
     print(risposta.spiega())
     print()
     print("%-10s %s" % (etichetta + ":", risposta.testo))
+    for riga in salvate:
+        print("           proposta salvata in dati/proposte/: %s -> %s "
+              "(%0.2f), da rivedere" % (riga["parola"], riga["traduzione"],
+                                        riga["confidenza"]))
     return 0 if risposta.da_pubblicare else 1
+
+
+def _salva_proposte(risposta, direzione: str, args) -> list:
+    """Mette in coda di revisione quello che ha risposto il modello.
+
+    Solo quando il livello 4 e' attivo (`--ia`) e solo per le risposte che il
+    motore ha **accettato**: i buchi non si salvano, perche' il buco e' gia'
+    dichiarato a schermo e nella coda non aggiunge niente.
+
+    La scrittura c'è anche con `--no-proposte` disattivato, e cioè si puo'
+    spegnerla: la coda di revisione e' un file del repository e scriverci
+    mentre si fa una prova e' rumore. Il default e' perche' la promessa scritta
+    nel README e nel modulo `modello.py` e' che le risposte del modello non
+    vengono perse.
+    """
+    if not args.ia or getattr(args, "no_proposte", False):
+        return []
+    salvate = []
+    for originale, tradotto, origine, confidenza, dettaglio in risposta.per_corrispondenza:
+        if origine != "modello":
+            continue
+        proposta = da_risposta(originale, direzione, {
+            "traduzione": tradotto,
+            "confidenza": confidenza,
+            "dettaglio": dettaglio,
+        })
+        salva(proposta, PERCORSO_PROPOSTE)
+        salvate.append(proposta.come_dict())
+    return salvate
+
+
+def comando_proposte(args) -> int:
+    """La coda di revisione, e i numeri che dicono se sta servendo a qualcosa.
+
+    Il comando esiste perche' una coda di revisione che nessuno guarda e' un
+    posto dove le risposte del modello marcano `da rivedere` per sempre. Il
+    numero che conta e' `approvate`: se resta a zero per mesi, o non c'e' niente
+    da approvare, o nessuno approva, e le due cose si confondono.
+    """
+    proposte = leggi(PERCORSO_PROPOSTE)
+    if args.json:
+        print(json.dumps({"proposte": proposte and [p.come_dict() for p in proposte],
+                          "stati": conta_stati(proposte)},
+                         ensure_ascii=False, indent=2))
+        return 0
+    for stato, numero in conta_stati(proposte).items():
+        print("%-12s %d" % (stato, numero))
+    print()
+    if not proposte:
+        print("la coda e' vuota.")
+        print("non e' un difetto: senza chiave il livello 4 non esiste, e con "
+              "la chiave la coda si riempie da sola quando si usa `--ia`.")
+        print("Il protocollo, i campi e chi approva sono in "
+              "dati/proposte/README.md.")
+        return 0
+    for p in proposte[-20:]:
+        print("%-10s %-16s %-22s %0.2f  %s"
+              % (p.data, p.parola, (p.traduzione or "")[:22], p.confidenza,
+                 p.stato + (" -> " + p.promossa_a if p.promossa_a else "")))
+    if len(proposte) > 20:
+        print("... prime %d di %d" % (len(proposte) - 20, len(proposte)))
+    return 0
 
 
 def comando_cerca(args) -> int:
@@ -170,6 +243,9 @@ def comando_verifica(args) -> int:
                 + controlla_archivo(archivio, AUDIO)
                 + verifica_dati.controlla_tenuta(glossario, corpus,
                                                 in_attesa_glossario, in_attesa_corpus)
+                + controlla_proposte(
+                    leggi(PERCORSO_PROPOSTE),
+                    {v.id for v in glossario.voci} | {c.id for c in corpus.coppie})
                 + verifica_dati.controlla_regole(regole))
     if args.json:
         print(json.dumps({
@@ -190,8 +266,8 @@ def comando_varieta(args) -> int:
 
     Il comando esiste perche' la domanda «il glossario copre il ferrarese?»
     ha due risposte diverse a seconda di chi la fa, e solo una e' vera: un
-    glossario di 26 voci tutte cittadine non copre il ferrarese. Qui la
-    risposta si vede in cinque righe.
+    glossario interamente cittadino non copre il ferrarese. Qui la risposta
+    si vede in cinque righe.
     """
     glossario = Glossario.da_file(PERCORSI["glossario"])
     corpus = Corpus.da_file(PERCORSI["coppie"], PERCORSI["proverbi"])
@@ -370,6 +446,9 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p.add_argument("--direzione", choices=["it-fe", "fe-it"], default="it-fe")
     p.add_argument("--ia", action="store_true",
                    help="attiva il livello 4 se c'e' la chiave")
+    p.add_argument("--no-proposte", action="store_true",
+                   help="non scrivere le risposte del modello in "
+                        "dati/proposte/ (la coda di revisione)")
     p.add_argument("--json", action="store_true", help="esce in JSON")
     p.set_defaults(func=comando_traduci)
 
@@ -404,6 +483,10 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p = sotto.add_parser("audio", help="che brani audio ci sono e quali si pubblicano")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_audio)
+
+    p = sotto.add_parser("proposte", help="la coda di revisione del livello IA")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_proposte)
 
     p = sotto.add_parser("web", help="genera il sito statico")
     p.set_defaults(func=comando_web)

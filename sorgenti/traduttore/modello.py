@@ -4,8 +4,11 @@ Il livello 4 e' quello per cui si paga una chiave, e per questa ragione e'
 anche quello che va costruito con piu' cura. Tre regole, in quest'ordine:
 
 1. **Il modello non e' una fonte.** Non entra mai nel glossario e non entra
-   mai nel corpus. Quello che produce resta in `dati/proposte/`, dove puo'
-   diventare una voce solo se una persona la guarda e la approva.
+   mai nel corpus. Quello che produce viene scritto in `dati/proposte/`, dove
+   puo' diventare una voce solo se una persona la guarda, la approva e trova
+   la parola in un vocabolario stampato. Il modulo che scrive e' `proposte.py`,
+   e la coda ha i suoi controlli (M1&ndash;M4) che vietano a una proposta di
+   portarsi dentro un campo `fonte`.
 2. **Il modello non puo' rispondere da solo.** Riceve il contesto (le voci
    vicine, le coppie simili, le regole) e gli si chiede esplicitamente di
    dichiarare quando non sa. Una risposta senza `confidenza` non viene usata.

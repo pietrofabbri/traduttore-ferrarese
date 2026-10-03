@@ -10,8 +10,13 @@ data: 2026-10-03
 
 MIT. Il codice di `sorgenti/` e di `prove/` puo' essere ripreso, modificato e
 usato, anche dentro un altro progetto, anche commerciale. Un progetto che
-inseigna una lingua che sta morendo non ha interesse a trattenere il codice
+insegna una lingua che sta morendo non ha interesse a trattenere il codice
 che lo fa funzionare.
+
+Il testo della licenza e' nel file `LICENSE` in radice, e fin li' che GitHub
+lo riconosca da solo e lo mostri accanto al codice. Vale per `sorgenti/`,
+`prove/`, `web/` e `.github/`; **non** vale per i dati, che hanno licenze
+diverse e le dichiarano uno per uno.
 
 ## Dati
 
@@ -77,7 +82,7 @@ non copiano niente. La licenza e' quindi quella del progetto e non c'e' nessuna
 attribuzione da fare a terzi.
 
 Una cosa pero' va dichiarata, perche' riguarda chi potrebbe usarle per
-insegnare: **nessuna di quelle 30 trascrizioni e' stata verificata da un
+insegnare: **nessuna di quelle 28 trascrizioni e' stata verificata da un
 parlante.** Sono tutte `attendibilita: "I"`, che vuol dire «l'ho ricavato da
 una grafia, non l'ho ascoltato». Un'insegnante che le usa come riferimento di
 pronuncia deve saperlo, quindi la pagina lo dichiara accanto a ogni
@@ -85,6 +90,16 @@ trascrizione e non in una nota a pie' di pagina.
 
 Passare a `D` non e' un problema di licenza ma di verita': serve una persona
 che dica «si' e' cosi'», con nome, luogo e data nel campo `fonte`.
+
+## Le proposte del livello IA
+
+Le risposte del modello in `dati/proposte/` sono **opere nostre** e non hanno
+licenza propria: sono cio' che esce da un servizio, e vengono tenute in
+chiaro perche' una risposta di un modello che non si puo' riprendere come
+fonte e' inutile. Il punto della cartella non e' la licenza: e' che sono
+**proposte**, e i controlli M1&ndash;M4 impediscono che una di loro si porti
+dentro un campo `fonte` e diventi, senza nessuna decisione, una voce del
+glossario.
 
 ## Perche' tutto questo per ventisei voci
 

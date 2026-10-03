@@ -152,6 +152,18 @@ jobs:
                 % (len(f), f.quante_verificate()))
           PY
 
+      - name: Le proposte del livello IA non sono fonti
+        # La coda di revisione e' un file che qualcuno deve guardare, e una coda
+        # che nessuno guarda si riempie di `da rivedere` per sempre. Il
+        # conteggio nel log rende visibile il numero che conta: `approvata`.
+        # E il controllo e' qui perche' l'unico modo che ha una proposta di
+        # diventare una voce e' che qualcuno apra il vocabolario e scriva la
+        # fonte: se la riga puo' portarsi dentro un campo `fonte`, non serve
+        # nessuno.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli proposte
+
       - name: Nessuna registrazione senza consenso
         # Il controllo che non si puo' saltare. Copiare un brano in
         # `web/audio/` e' pubblicarlo: quindi nessun file audio deve trovarsi

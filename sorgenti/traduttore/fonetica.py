@@ -37,11 +37,8 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import unicodedata
 from dataclasses import dataclass, field
-
-from .glossario import ATTENDIBILITA
 
 # I simboli ammessi in una trascrizione. E' un insieme chiuso perche' una
 # trascrizione con le vocali accentate italiane (`magnàr` dentro il campo IPA)

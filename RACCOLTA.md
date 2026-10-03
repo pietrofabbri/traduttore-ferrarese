@@ -1,6 +1,6 @@
 ---
 titolo: Raccolta dei materiali ferraresi
-versione: 0.2
+versione: 0.3
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -35,6 +35,7 @@ in un gioco didattico diventa una nota che si legge come un fatto.
 | `dati/fonetica.jsonl` | **Le trascrizioni IPA**, con il sistema dichiarato | chi ha ascoltato la parola |
 | `dati/audio.jsonl` + `audio/` | **Le voci**, con consenso | la persona che ha parlato, o chi esercita la responsabilita' |
 | `dati/da_verificare/` | **Quello che non si puo' ancora pubblicare**, con le sue fonti | chi verifica la licenza della fonte |
+| `dati/proposte/` | **Le risposte del modello**, in attesa di revisione | chi verifica la parola in un vocabolario |
 
 E ci sono due registri che non sono contenuti ma che li tengono in ordine:
 
@@ -51,7 +52,7 @@ Una voce nuova senza `varieta` **non entra**: il controllo **G8** lo blocca,
 ed e' un blocco giusto, perche' una parola che non si sa a chi serve e' una
 parola che si rischia di dare al posto sbagliato.
 
-Gli attuali 26 voci sono tutte `cittadino`, perche' e' l'unica varieta' che
+Gli attuali 24 voci sono tutte `cittadino`, perche' e' l'unica varieta' che
 le fonti disponibili documentano davvero: non e' che le altre non esistano, e'
 che le fonti non le raggiungono. Le altre quattro sono **vuote dichiarate** e
 `python3 -m traduttore.cli varieta` le stampa come `VUOTA`.
@@ -154,8 +155,17 @@ strada e' registrare persone, e farlo bene.
 possibile, mezz'ora di conversazione libera (non una lista di parole: il
 parlato spontaneo e' quello che serve e l'unico che non si sa produrre). Poi
 una lista di venti parole, perche' la lista allinea l'audio al glossario.
-`ffmpeg -i grezzo.m4a -ac 1 -ar 44100 -c:a libmp3lame -b:a 64k brano.mp3`
-basta ed e' abbondante.
+
+Il comando che trasforma il grezzo in un brano e' **uno solo**, ed e' quello
+di `audio/README.md`, perche' due versioni diverse in due documenti diversi
+sono due modi di ottenere file diversi:
+
+```bash
+ffmpeg -i grezzo.m4a -ac 1 -ar 22050 -b:a 48k -af "highpass=f=80, loudnorm" A0001.mp3
+```
+
+Mono, 22 kHz, e il ronzio tolto: tre scelte, ognuna con il suo motivo, e il
+motivo e' scritto accanto al comando.
 
 **Le quattro cose che ogni brano deve dichiarare**, in `dati/audio.jsonl`:
 
@@ -235,6 +245,11 @@ registrando.
    `reperto`. Non nel glossario: nel registro. Il glossario riceve solo
    quello che e' `acquisita`.
 
+Una cosa che **non** si fa: prendere una risposta del livello IA e metterla
+come voce. Le risposte stanno in `dati/proposte/`, e una proposta diventa una
+voce solo cercando la parola in un vocabolario stampato — se la fonte non c'e',
+la proposta si marca `respinta` e la parola resta un buco dichiarato.
+
 Dopo aver toccato i dati:
 
 ```bash
@@ -252,6 +267,7 @@ errori. Per la parte audio e la fonetica si guarda anche:
 python3 -m traduttore.cli varieta     # le cinque, e quante voci ha ciascuna
 python3 -m traduttore.cli pronuncia --tutte   # le trascrizioni e il loro stato
 python3 -m traduttore.cli audio       # i brani e quelli pubblicabili
+python3 -m traduttore.cli proposte    # la coda di revisione del livello IA
 ```
 
 ## L'ordine in cui conviene procedere

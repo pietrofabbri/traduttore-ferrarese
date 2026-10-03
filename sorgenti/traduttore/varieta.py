@@ -104,10 +104,10 @@ class Varieta:
         """Quante voci ha ogni varieta'.
 
         Il risultato serve al pannello della pagina e al comando `varieta`,
-        e serve a una cosa sola: far vedere che tre varieta' su cinque sono
-        ancora vuote. Un pannello che dice solo «26 voci» mente per omissione,
-        perche' lascia credere che il glossario copra la varieta' del
-        ragazzo che sta dall'altra parte della provincia.
+        e serve a una cosa sola: far vedere che quattro varieta' su cinque
+        sono ancora vuote. Un pannello che dice solo «tutte le voci» mente per
+        omissione, perche' lascia credere che il glossario copra la varieta'
+        del ragazzo che sta dall'altra parte della provincia.
         """
         conto = {c: {"glossario": 0, "coppie": 0, "audio": 0} for c in VARIETA}
         if glossario is not None:

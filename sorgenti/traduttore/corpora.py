@@ -21,10 +21,10 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from . import normalizza
-from .glossario import IT_FE, FE_IT
+from .glossario import IT_FE
 from .varieta import codice_valido
 
 # I tipi di coppia, in ordine di utilita' per il motore.

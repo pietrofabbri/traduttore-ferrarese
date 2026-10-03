@@ -1,6 +1,6 @@
 ---
 titolo: Istruzioni per chi lavora al progetto
-versione: 0.2
+versione: 0.3
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -42,13 +42,16 @@ un dizionario che non esiste.
 - **Il livello IA non e' una fonte.** Non entra nel glossario, non entra nel
   corpus, e non si usa senza chiave. Se qualcuno lo toglie, il progetto
   funziona lo stesso: e' il test che garantisce che sia davvero facoltativo.
+  Quello che produce viene scritto in `dati/proposte/` e li resta finche' una
+  persona non lo verifica: **una proposta non si dichiara documentata**, e i
+  controlli M1 e M2 falliscono se qualcuno le mette dentro un `fonte`.
 
 ## 3. Prima di dichiarare finito
 
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py     # 48 test
+python3 prove/test_traduttore.py     # 55 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 
@@ -97,6 +100,7 @@ I codici da conoscere:
 | A1&ndash;A10 | audio: id, file, `pubblicabile` senza consenso o senza licenza, varieta', contesto, livello CEFR, consenso senza voce dichiarata, file che non c'e' |
 | **D1** | **id in `dati/da_verificare/` che compare anche nei dati attivi** |
 | D2 | voce in attesa che si dichiara documentata (avviso) |
+| M1&ndash;M4 | proposte IA: stato fuori dall'insieme, **campo `fonte` o `attendibilita D` su una proposta**, id citato inesistente, promozione che non esiste |
 
 ## 5. Le cose che non si fanno
 
@@ -145,9 +149,12 @@ lavorare:
    e la fonte, e quattro varieta' su cinque sono **vuote dichiarate**. La
    domanda che resta e' chi le riempi e come: comincia dall'occidentale, dove
    la differenza dal cittadino si sente di piu'.
-3. **Dove finiscono le proposte del livello IA.** `dati/proposte/` e' la
-   destinazione dichiarata ma la cartella non esiste ancora, e va creata con un
-   criterio di revisione che nomini chi approva.
+3. **Chi approva le proposte del livello IA.** La destinazione esiste e
+   funziona: `dati/proposte/proposte.jsonl`, con il modulo `proposte.py`, i
+   controlli M1&ndash;M4 e il comando `proposte`. Resta aperto **chi** approva e
+   con quale criterio: fino a che non e' deciso, la regola e' la piu'
+   conservatrice possibile — una proposta resta `da rivedere` e nessuno la
+   tocca.
 4. **Chi verifica le trascrizioni IPA e con quale criterio di pagamento.** Le
    30 righe di `dati/fonetica.jsonl` sono tutte `I` e `da_verificare`: sono
    una lettura della grafia, non un ascolto. Passarle a `D` richiede un

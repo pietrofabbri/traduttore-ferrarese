@@ -1,0 +1,62 @@
+// Manifest dei brani audio. Un file per riga, piu' commenti che righe.
+//
+// **Adesso e' vuoto, e vuoto e' il numero giusto.** Non e' un posto da
+// riempire: e' un elenco di persone che hanno parlato e di che cosa hanno
+// detto. Il protocollo, i formati e la sequenza da seguere sono in
+// `audio/README.md`, e la situazione si stampa con:
+//
+//     python3 -m traduttore.cli audio
+//
+// Un brano entra qui solo dopo che la registrazione esiste davvero e il
+// consenso e' scritto. Non si prenota: si registra, e si registra con chi ha
+// detto di sì per iscritto e per voce.
+//
+// I campi:
+//
+//   id            identificativo stabile, tipo A0001
+//   riferimento   l'id della voce (V0001) o della coppia (F0001) che il brano
+//                 contiene. Serve a farlo trovare dal riproduttore; se manca il
+//                 brano si sente ma non si cerca
+//   file          percorso relativo in audio/ (mp3 o ogg, nient'altro)
+//   testo         trascrizione in ferrarese
+//   italiano      traduzione, se c'e'; se non c'e' si scrive "" e resta un buco
+//   voce          chi ha parlato, con l'eta' e il luogo. Non il nome anagrafico
+//                 del file audio, ma come la persona si fa chiamare e come si
+//                 vuole essere citata
+//   luogo         dove e' stato registrato, e in che anno
+//   varieta       una delle cinque: cittadino, centrale, occidentale,
+//                 orientale, transpadano
+//   contesto      racconto, lettura, dialogo, lista di parole
+//   licenza       CC0, CC BY 4.0, CC BY-SA 4.0, o "solo uso interno"
+//   consenso      "scritto", "verbale", oppure "" se non c'e'. Se manca, il
+//                 brano non si pubblica
+//   pubblicabile  true o false. Un brano registrato in casa di qualcuno, senza
+//                 consenso scritto, resta false per sempre
+//   lettibilita   A1, A2, B1, B2 (CEFR, qui livello reale e non metafora)
+//   durata        secondi, se qualcuno l'ha misurata. Facoltativa
+//   nota          dove, con che microfono, con quale rumore di sotto
+//
+// La regola che tiene insieme tutto: **nessun brano di una persona che non ha
+// detto di sì**. Per i minori il consenso e' di chi esercita la responsabilita'
+// e va messo per iscritto; nel repository i dati degli studenti non entrano, e
+// questo vale anche per le voci dei compagni di classe.
+//
+// I tre controlli che decidono se un brano arriva alla pagina sono i campi
+// `consenso`, `licenza` e `pubblicabile`: devono esserci tutti e tre, e i
+// controlli A4, A5 e A10 falliscono se ne manca uno. Il `pubblicabile: true`
+// da solo non fa niente.
+//
+// Sul volume: il gioco non ha account e non ha server, e un brano di trenta
+// secondi pesa poco. Ma i brani non si mettono in un pacchetto senza chiedere
+// a chi ha parlato, perche' una voce e' una persona.
+//
+// Sul rapporto con la trascrizione IPA: le due cose sono parenti stretti ma
+// non uguali. `dati/fonetica.jsonl` dice **come si scrive il suono** e puo'
+// essere compilato da chiunque, perche' e' una lettura dichiarata. Qui si
+// mette **la voce**, e solo la voce di chi ha detto di sì. Una riga di IPA
+// senza registrazione e' un documento; una registrazione senza IPA e' un
+// archivio che nessuno puo' cercare.
+//
+// Righe d'esempio, da togliere:
+//
+// {"id":"A0001","riferimento":"V0001","file":"A0001.mp3","testo":"","italiano":"","voce":"","luogo":"","varieta":"","contesto":"","licenza":"","consenso":"","pubblicabile":false,"lettibilita":"A1","durata":0,"nota":""}

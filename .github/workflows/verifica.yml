@@ -1,0 +1,189 @@
+name: Verifica
+
+# Il controllo continuo e' la parte del progetto che non si vede e che vale di
+# piu'. Un glossario si rovina in silenzio: si aggiunge una voce con l'id
+# sbagliato, si cancella una fonte, si duplica una riga. Nessuno se ne accorge
+# perche' il motore continua a rispondere, solo un po' peggio.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  controlli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: I test
+        run: python3 prove/test_traduttore.py
+
+      - name: I controlli sui dati
+        # Escono diversamente da zero se c'e' un errore. E' voluto: il
+        # workflow deve fallire quando i dati sono rotti, altrimenti e' un
+        # documento che non dice niente.
+        run: python3 -m traduttore.cli verifica
+
+      - name: Le regole apprese sono coerenti col glossario
+        # Il file delle regole e' generato. Se qualcuno lo ha modificato a mano,
+        # questo controllo lo nota, perche' il file non combacia con quello che
+        # `impara` produrrebbe adesso.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 - <<'PY'
+          import json, sys
+          sys.path.insert(0, "sorgenti")
+          from traduttore import morfologia
+          from traduttore.corpora import Corpus
+          from traduttore.glossario import Glossario
+
+          glossario = Glossario.da_file("dati/glossario.jsonl")
+          corpus = Corpus.da_file("dati/coppie.jsonl", "dati/proverbi.jsonl")
+          attese = morfologia.impara(corpus, glossario)
+          try:
+              conosciute = json.load(open("dati/regole.json", encoding="utf-8"))["regole"]
+          except FileNotFoundError:
+              conosciute = []
+          if len(attese) != len(conosciute):
+              print("ATTENZIONE: %d regole attese, %d nel file. Rigenera con `impara`."
+                    % (len(attese), len(conosciute)))
+          else:
+              print("regole coerenti: %d" % len(attese))
+          PY
+
+      - name: Il sito si genera e non contiene richieste di rete
+        # La pagina non deve mai chiamare fuori: e' la condizione che la rende
+        # apribile da un file, senza connessione e senza server.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli web
+          if grep -nE '(src|href)="https?://' web/index.html; then
+            echo "ERRORE: la pagina punta a una risorsa esterna"
+            exit 1
+          fi
+          echo "nessuna risorsa esterna"
+
+      - name: Il sito contiene i dati
+        run: |
+          python3 - <<'PY'
+          import json, re, sys
+          pagina = open("web/index.html", encoding="utf-8").read()
+          m = re.search(r'<script id="dati" type="application/json">(.*?)</script>', pagina, re.S)
+          if not m:
+              print("ERRORE: il blocco dati non c'e' nella pagina")
+              sys.exit(1)
+          grezzo = m.group(1).replace("<\\/", "</")
+          dati = json.loads(grezzo)
+          if not dati["glossario"]:
+              print("ERRORE: il glossario incorporato e' vuoto")
+              sys.exit(1)
+          print("glossario: %d voci, coppie: %d, regole: %d"
+                % (len(dati["glossario"]), len(dati["coppie"]), len(dati["regole"])))
+          PY
+
+      - name: Ogni voce dichiara la sua varieta'
+        # Il controllo che tiene insieme la parte geografica e quella lessicale.
+        # Una voce senza varieta' e' una parola che non si sa a chi servire, e
+        # il pannello continuerebbe a dire «tutto cittadino» senza accorgersene.
+        # Il conteggio delle varieta' vuote resta nel log: e' il numero che
+        # dice quanto copre davvero il glossario.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli varieta
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "sorgenti")
+          from traduttore.glossario import Glossario
+          from traduttore.varieta import VARIETA
+          g = Glossario.da_file("dati/glossario.jsonl")
+          senza = [v.id for v in g.voci if v.varieta not in VARIETA]
+          if senza:
+              print("ERRORE: voci con varieta' assente o inesistente: %s" % ", ".join(senza))
+              sys.exit(1)
+          print("ogni voce dichiara una delle cinque varieta'")
+          PY
+
+      - name: Le trascrizioni IPA sono trascrizioni
+        # Il controllo meccanico della parte fonetica: nel campo IPA non ci
+        # devono finire le vocali accentate italiane, che sono la grafia
+        # rimessa al suo posto. Non decide se una trascrizione e' giusta -
+        # quello e' affare di un parlante - ma decide se e' una trascrizione.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli pronuncia --tutte
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "sorgenti")
+          from traduttore.fonetica import Fonetica, ipa_valida
+          f = Fonetica.da_file("dati/fonetica.jsonl")
+          sbagliate = [(t.id, t.ipa, ipa_valida(t.ipa)[1])
+                       for t in f.trascrizioni if not ipa_valida(t.ipa)[0]]
+          if sbagliate:
+              for ident, ipa, caratteri in sbagliate:
+                  print("ERRORE: %s ha %r in IPA: %s" % (ident, ipa, " ".join(caratteri)))
+              sys.exit(1)
+          print("%d trascrizioni, %d verificate da un parlante"
+                % (len(f), f.quante_verificate()))
+          PY
+
+      - name: Nessuna registrazione senza consenso
+        # Il controllo che non si puo' saltare. Copiare un brano in
+        # `web/audio/` e' pubblicarlo: quindi nessun file audio deve trovarsi
+        # nella pagina se non ha consenso, licenza e `pubblicabile`. Non si
+        # controlla solo il manifesto: si controlla anche la cartella, perche'
+        # un file dimenticato li' finirebbe in `web/audio/` al prossimo build.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli audio
+          python3 - <<'PY'
+          import os, shutil, sys
+          sys.path.insert(0, "sorgenti")
+          from traduttore.audio import Archivio
+          archivio = Archivio.da_file("dati/audio.jsonl")
+          pronti = {os.path.basename(b.file) for b in archivio
+                    if b.publicabile() and b.esiste("audio")}
+          trovati = set()
+          for radice, _, file in os.walk("audio"):
+              for nome in file:
+                  if nome.lower().endswith((".mp3", ".ogg", ".m4a", ".oga", ".wav", ".webm")):
+                  trovati.add(nome)
+          estranei = trovati - pronti
+          if estranei:
+              print("ERRORE: file audio in audio/ che nessun brano dichiara "
+                    "pubblicabile: %s" % ", ".join(sorted(estranei)))
+              print("        oppure il brano ha consenso, licenza e pubblicabile: "
+                    "senza le tre non si pubblica.")
+              sys.exit(1)
+          copia = os.path.join("web", "audio")
+          if os.path.isdir(copia):
+              shutil.rmtree(copia)
+          print("nessuna registrazione pubblicata senza consenso: %d pronti" % len(pronti))
+          PY
+
+      - name: Ogni voce ha la sua fonte
+        # Il controllo che il progetto considera non negoziabile. Una voce senza
+        # fonte non blocca, ma il conto si stampa e resta nel log, cosi' non
+        # si perde e non si dimentica.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli stato
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "sorgenti")
+          from traduttore.glossario import Glossario
+          g = Glossario.da_file("dati/glossario.jsonl")
+          senza = [v.id for v in g.voci if not v.fonte]
+          if senza:
+              print("voci senza fonte: %d -> %s" % (len(senza), ", ".join(senza)))
+          else:
+              print("ogni voce ha la sua fonte")
+          PY

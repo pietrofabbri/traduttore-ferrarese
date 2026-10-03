@@ -1,0 +1,64 @@
+name: Pagine
+
+# La pagina e' statica e si genera nel workflow. Il ramo `main` e' la fonte:
+# ogni push pubblica, e la pagina non dipende da nessun servizio.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pagine
+  cancel-in-progress: true
+
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Genera la pagina
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli web
+
+      - name: Controlla prima di pubblicare
+        # Non si pubblica una pagina che ha i test rotti. Il controllo dei dati
+        # e' un avviso e non blocca, perche' il repository puo' avere voci in
+        # attesa di verifica: sono dichiarate, e vanno dichiarate anche a chi
+        # visita la pagina.
+        run: |
+          python3 prove/test_traduttore.py
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli verifica
+
+      - name: Copertura dichiarata nel log di pubblicazione
+        # La pagina dice quali varieta' sono vuote. Anche il log del workflow
+        # lo dice, cosi' chi non apre la pagina sa lo stesso. Un numero che
+        # esiste solo nella pagina e' un numero che nessuno controlla.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli varieta
+          python3 -m traduttore.cli audio
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

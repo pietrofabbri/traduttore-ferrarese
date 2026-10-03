@@ -1,0 +1,27 @@
+// Questo file e' un MODELLO. Le righe che cominciano con // non vengono lette.
+//
+// I proverbi ferraresi si raccolgono, non si scrivono. Un elenco compilato da
+// una sola persona non e' un proverbio ferrarese: e' la voce di quella
+// persona, e va detto quale. Per questo ogni riga porta:
+//
+//   id           identificativo stabile, non si riusa
+//   italiano      il lato italiano, quando il proverbio ha un equivalente
+//   ferrarese     la forma unica, quando c'e' una sola
+//   letterario    la forma dei libri
+//   popolare      la forma che si dice
+//   fonte         dove e' stato sentito: chi, quando, dove
+//   significato   quando i due lati non coincidono, che cosa vuol dire
+//   attendibilita D se c'e' un libro, I se e' ricavato da un contesto,
+//                M se e' memoria di chi scrive, C se piu' informatori concordano
+//
+// `letterario` e `popolare` sono due campi e non uno perche' nel ferrarese non
+// coincidono quasi mai: la forma del dizionario non e' quella che si usa. Un
+// proverbio con una forma sola e' un proverbio a meta'.
+//
+// Se una riga ha `letterario` e `popolare` uguali, il controllo P4 segnala il
+// problema: una delle due forme e' messa a torto, e il fatto che non si sappia
+// quale e' il motivo per cui va segnalato.
+//
+// Righe d'esempio, da togliere quando si comincia:
+//
+// {"id":"P0001","italiano":"","ferrarese":"","letterario":"","popolare":"","fonte":"","significato":"","attendibilita":"M"}

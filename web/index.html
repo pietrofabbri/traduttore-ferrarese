@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traduttore italiano &ndash; ferrarese</title>
+<style>
+  :root {
+    --fondo: #fbf8f2;
+    --inchiostro: #1f1c17;
+    --tacchino: #6b6455;
+    --bordo: #ded5c4;
+    --glossario: #1d6b4f;
+    --corpus: #7a5a12;
+    --regola: #4a4a8f;
+    --modello: #8a4a1d;
+    --nessuna: #a02020;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--fondo); color: var(--inchiostro);
+    line-height: 1.55;
+  }
+  main { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  h1 { font-size: 1.6rem; margin: 0 0 .2rem; }
+  h2 { font-size: 1.05rem; margin: 2rem 0 .5rem; border-bottom: 1px solid var(--bordo); padding-bottom: .2rem; }
+  .occhiello { color: var(--tacchino); font-size: .9rem; margin: 0 0 1.5rem; }
+  textarea {
+    width: 100%; min-height: 5.5rem; padding: .6rem;
+    border: 1px solid var(--bordo); border-radius: 4px;
+    font-family: inherit; font-size: 1rem; background: #fff; color: inherit;
+  }
+  .riga { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .6rem 0 1rem; }
+  button, select, input[type="search"] {
+    font-family: inherit; font-size: .95rem; padding: .4rem .7rem;
+    border: 1px solid var(--bordo); border-radius: 4px;
+    background: #fff; color: inherit; cursor: pointer;
+  }
+  button:hover { background: #f0ead9; }
+  button[aria-pressed="true"] { background: var(--inchiostro); color: #fff; border-color: var(--inchiostro); }
+  .risposta {
+    border: 1px solid var(--bordo); border-radius: 4px;
+    padding: .8rem; background: #fff; min-height: 3rem;
+  }
+  .riga-parola { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+  .parola { border-bottom: 3px solid; padding-bottom: 1px; cursor: help; }
+  .parola.glossario { border-color: var(--glossario); }
+  .parola.corpo { border-color: var(--corpus); }
+  .parola.regola { border-color: var(--regola); border-bottom-style: dotted; }
+  .parola.modello { border-color: var(--modello); border-bottom-style: dashed; }
+  .parola.nessuna { border-color: var(--nessuna); background: #fdf0f0; }
+  .originale { color: var(--tacchino); font-size: .85rem; }
+  .dettaglio {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .8rem; color: var(--tacchino);
+    background: #f5f1e6; padding: .4rem .6rem; border-radius: 4px;
+    white-space: pre-wrap; margin-top: .6rem;
+  }
+  .avviso { border-left: 4px solid var(--nessuna); background: #fdf3f3; padding: .5rem .8rem; margin-top: .8rem; font-size: .95rem; }
+  .avviso.ok { border-color: var(--glossario); background: #f1f8f4; }
+  .legenda { display: flex; flex-wrap: wrap; gap: .8rem; margin: .8rem 0; font-size: .85rem; }
+  .legenda span { display: inline-flex; align-items: center; gap: .3rem; }
+  .pastiglia { width: .8rem; height: 0; border-bottom-width: 3px; display: inline-block; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .35rem .4rem; border-bottom: 1px solid var(--bordo); vertical-align: top; }
+  th { color: var(--tacchino); font-weight: normal; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .85rem; }
+  .vuoto { color: var(--tacchino); font-style: italic; }
+  .pannello { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: .9rem; }
+  .pannello div strong { display: block; font-size: 1.3rem; }
+  /* La trascrizione IPA e' monospaziata e senza maiuscolette ambigue: si
+     guarda, non si decora. */
+  .ipa { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .varieta {
+    display: inline-block; font-size: .72rem; letter-spacing: .03em;
+    text-transform: uppercase; color: var(--tacchino);
+    border: 1px solid var(--bordo); border-radius: 3px;
+    padding: 0 .3rem; white-space: nowrap;
+  }
+  .varieta.vuota { color: var(--nessuna); border-color: #e6c4c4; }
+  .scheda {
+    border: 1px solid var(--bordo); border-radius: 4px; background: #fff;
+    padding: .7rem .8rem; margin-bottom: .6rem;
+  }
+  .scheda h3 { margin: 0 0 .2rem; font-size: 1rem; }
+  .scheda .riga-sotto { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+  audio { width: 100%; margin-top: .4rem; }
+  .vuoto-varieta { border-left: 4px solid var(--tacchino); padding: .5rem .8rem; background: #f5f1e6; margin-bottom: .6rem; }
+  select { font-family: inherit; font-size: .9rem; padding: .35rem; border: 1px solid var(--bordo); border-radius: 4px; background: #fff; }
+  label.scelta { font-size: .85rem; color: var(--tacchino); display: inline-flex; gap: .3rem; align-items: center; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--bordo); font-size: .85rem; color: var(--tacchino); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Traduttore italiano &ndash; ferrarese</h1>
+  <p class="occhiello">Ogni parola dice da dove viene. Quello che il glossario non sa resta scritto, non viene inventato.</p>
+
+  <textarea id="testo" placeholder="Scrivi una frase in italiano o in ferrarese"></textarea>
+  <div class="riga">
+    <button id="traduci" type="button">Traduci</button>
+    <button id="direzione" type="button" aria-pressed="false">Direzione: italiano &rarr; ferrarese</button>
+  </div>
+
+  <div class="legenda">
+    <span><i class="pastiglia" style="border-color:var(--glossario)"></i>glossario</span>
+    <span><i class="pastiglia" style="border-color:var(--corpus)"></i>corpus</span>
+    <span><i class="pastiglia" style="border-color:var(--regola);border-bottom-style:dotted"></i>regola</span>
+    <span><i class="pastiglia" style="border-color:var(--modello);border-bottom-style:dashed"></i>modello</span>
+    <span><i class="pastiglia" style="border-color:var(--nessuna);background:#fdf0f0"></i>non lo so</span>
+  </div>
+
+  <div class="risposta" id="risposta"><span class="vuoto">Scrivi qualcosa e premi «Traduci».</span></div>
+  <div id="avviso"></div>
+
+  <h2>Il glossario</h2>
+  <div class="riga">
+    <input type="search" id="cercaGlossario" placeholder="cerca nel glossario (ferrarese o italiano)" size="40">
+    <select id="filtroVarietaGlossario">
+      <option value="">tutte le varieta'</option>
+    </select>
+  </div>
+  <div id="tabellaGlossario"></div>
+
+  <h2>Le coppie parallele</h2>
+  <div id="tabellaCoppie"></div>
+
+  <h2>Le cinque varieta' del ferrarese</h2>
+  <p class="occhiello" style="margin:.4rem 0 1rem">
+    Non e' una sola lingua. Ogni voce del glossario dichiara in quale di queste
+    e' attestata, e una varieta' senza voci e' un buco dichiarato, non una
+    varieta' che non esiste.
+  </p>
+  <div id="elencoVarieta"></div>
+
+  <h2>Il riproduttore</h2>
+  <p class="occhiello" style="margin:.4rem 0 1rem">
+    La trascrizione IPA dice <em>come si scrive il suono</em>. L'audio, quando
+    ci sara', sara' la voce di una persona che ha detto di sì: nessuna voce
+    sintetica puo' fare da ferrarese, e questo progetto non lo prova.
+  </p>
+  <div class="riga">
+    <input type="search" id="cercaSuono" placeholder="cerca una parola da ascoltare" size="30">
+    <select id="filtroVarietaSuono">
+      <option value="">tutte le varieta'</option>
+    </select>
+    <label class="scelta"><input type="checkbox" id="mostraIpa" checked> mostra la trascrizione</label>
+    <label class="scelta"><input type="checkbox" id="voceItaliana"> leggi l'italiano (voce del browser)</label>
+  </div>
+  <p class="vuoto" id="notaVoceItaliana" style="display:none">
+    La voce del browser non e' una voce ferrarese e non e' una voce italiana di
+   Ferrara: e' la sintesi del computer. Serve per sentire il ritmo dell'italiano
+    mentre si guarda il ferrarese, e in alcuni browser usa una connessione.
+    Tienila spenta se la pagina deve restare chiusa e muta.
+  </p>
+  <div id="riproduttore"></div>
+
+  <h2>Che cosa sa il motore</h2>
+  <div class="pannello" id="pannello"></div>
+
+  <footer>
+    Progetto di &laquo;I cinque duchi&raquo;. Nessun account, nessun server, nessuna richiesta di rete:
+    la pagina funziona anche senza connessione.
+    Il livello &laquo;modello&raquo; non e' in questa pagina: richiede una chiave e gira solo dal terminale.
+  </footer>
+</main>
+
+<script id="dati" type="application/json">{
+ "glossario": [
+  {
+   "id": "V0001",
+   "fe": "magnàr",
+   "it": "mangiare",
+   "varianti": [
+    "mangàr",
+    "magnar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Biondelli scrive «magnàr» con accento; il testo udito tende a «magnar», con l'accento solo nella scelta tonale. La differenza e' di registrazione, non di significato.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0002",
+   "fe": "portàr",
+   "it": "portare",
+   "varianti": [
+    "portar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Stessa fonte di V0001.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0003",
+   "fe": "desideràr",
+   "it": "desiderare",
+   "varianti": [
+    "desiderar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0004",
+   "fe": "amà",
+   "it": "amare",
+   "varianti": [
+    "amar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Biondelli scrive «amà» senza la r finale: e' la forma abbreviata, non un errore.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0005",
+   "fe": "volà",
+   "it": "volare",
+   "varianti": [
+    "volar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Da non confondere con «voler»: sono due verbi diversi in italiano e in ferrarese.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0006",
+   "fe": "mancà",
+   "it": "mancare",
+   "varianti": [
+    "mancar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0007",
+   "fe": "principiar",
+   "it": "principiare",
+   "varianti": [],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Biondelli la dà come esempio della z aspra italiana resa in s, alla maniera veneta.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0008",
+   "fe": "sittadìn",
+   "it": "cittadino",
+   "varianti": [
+    "sittadin"
+   ],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "Come V0007: la z aspra diventa s.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0009",
+   "fe": "sivìl",
+   "it": "civile",
+   "varianti": [
+    "sivil"
+   ],
+   "campo": "aggettivo",
+   "varieta": "cittadino",
+   "note": "Come V0007.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0010",
+   "fe": "dottór",
+   "it": "dottore",
+   "varianti": [],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "Biondelli nota che qui si serbano le desinenze italiane, a differenza dei verbi.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0011",
+   "fe": "rasón",
+   "it": "ragione",
+   "varianti": [],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "Come V0010.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0012",
+   "fe": "padrón",
+   "it": "padrone",
+   "varianti": [],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "Come V0010.",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0013",
+   "fe": "brisa",
+   "it": "niente, nulla",
+   "varianti": [
+    "brisà"
+   ],
+   "campo": "negazione",
+   "varieta": "cittadino",
+   "note": "Operatore di negazione. La sua posizione cambia la frase intera e non si puo' tradurre parola per parola. Tre usi attestati nella stessa fonte: a n'agh ved brisa = non ci vedo niente; an ghè brisa pan = non c'è pane; al n'è brisa un gran quel = non è niente di buono.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "niente",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0014",
+   "fe": "ghe",
+   "it": "ci (particella enclitica)",
+   "varianti": [
+    "ghé",
+    "gh'e"
+   ],
+   "campo": "pronome",
+   "varieta": "cittadino",
+   "note": "Si aggiunge al verbo: ghe va, ghe son. In italiano non ha un equivalente unico, e questo e' il motivo per cui «ghe» non si puo' tradurre con una sola parola.",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1 (testo di riferimento)",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "ci",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0015",
+   "fe": "gh'è",
+   "it": "c'è, è (presenza)",
+   "varianti": [
+    "ghe è",
+    "gh'e",
+    "ghé"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Forma congiunta di «ghe» + essere. Nella posizione della negazione precede il nome: an ghè brisa pan.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "c'è",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0016",
+   "fe": "n'è",
+   "it": "non c'è, non è",
+   "varianti": [
+    "n'e"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Forma negata di V0015. Nella frase al n'è brisa un gran quel la negazione precede l'esistenziale, non il nome.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "non c'è",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0017",
+   "fe": "n'agh",
+   "it": "non ci (dativo di persona)",
+   "varianti": [
+    "n'ag"
+   ],
+   "campo": "pronome",
+   "varieta": "cittadino",
+   "note": "Forma negata di «ne» + dativo. Nella frase a n'agh ved brisa la negazione va in fondo, dopo il verbo: e' il caso opposto a brisa pan.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "non ci",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0018",
+   "fe": "ved",
+   "it": "vedere",
+   "varianti": [
+    "védar",
+    "vedar"
+   ],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Forma come appare nelle frasi attestate; l'infinito lungo non e' documentato nella fonte e resta da verificare.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frasi a n'agh ved brisa)",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0019",
+   "fe": "pan",
+   "it": "pane",
+   "varianti": [],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase an ghè brisa pan)",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0020",
+   "fe": "casa",
+   "it": "casa",
+   "varianti": [
+    "ca"
+   ],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "La forma breve «ca» e' quella che si usa parlando; «casa» e' la forma piena, attestata nei vocabolari.",
+   "fonte": "Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano",
+   "attendibilita": "I",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": true
+  },
+  {
+   "id": "V0021",
+   "fe": "frarés",
+   "it": "ferrarese (aggettivo, gentiliccio)",
+   "varianti": [
+    "frarés",
+    "frarèz"
+   ],
+   "campo": "aggettivo",
+   "varieta": "cittadino",
+   "note": "Nome nativo del dialetto. Il libro fornisce «ferrarese» come glossa, non come voce del dialetto.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0022",
+   "fe": "fra",
+   "it": "Ferrara (toponimo, forma popolare)",
+   "varianti": [
+    "fràra"
+   ],
+   "campo": "toponimo",
+   "varieta": "cittadino",
+   "note": "Le due forme non coincidono: «fra» e' la forma parlata, «Fràra» quella attestata per la citta' nei testi. La differenza non e' un errore di scrittura e va mantenuta.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "attendibilita": "I",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": true
+  },
+  {
+   "id": "V0023",
+   "fe": "nass",
+   "it": "nasceri",
+   "varianti": [],
+   "campo": "verbo",
+   "varieta": "cittadino",
+   "note": "Dalla traduzione della Dichiarazione universale dei diritti umani, art. 1.",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0024",
+   "fe": "tutti",
+   "it": "tutti (pronome, forma ridotta)",
+   "varianti": [
+    "tutt",
+    "tùtti"
+   ],
+   "campo": "pronome",
+   "varieta": "cittadino",
+   "note": "Nell'art. 1 della traduzione compare «Tutti j'èssar umanh», con forma quasi identica all'italiano: e' un caso in cui la traduzione coincide e non insegna niente sulla differenza fra le due lingue.",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0025",
+   "fe": "majàl",
+   "it": "maiale (animale; per estensione intercalare volgare)",
+   "varianti": [
+    "maiàl",
+    "omajàll",
+    "iomajàll"
+   ],
+   "campo": "sostantivo",
+   "varieta": "cittadino",
+   "note": "La voce piu' celebre del dialetto. E' anche un'interiezione, e l'origine del valore intercalare e' discussa. Non e' una parola neutra e non va usata in un contesto che non lo chieda.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "",
+   "principale_fe": "",
+   "da_verificare": false
+  },
+  {
+   "id": "V0026",
+   "fe": "oj",
+   "it": "già, sì (intercalare di conferma)",
+   "varianti": [
+    "oj!"
+   ],
+   "campo": "intercalare",
+   "varieta": "cittadino",
+   "note": "Si antepone alla frase per confermare o giustificare: «sat ca t'jé bèl? Oj!». Non ha un equivalente italiano unico, e il campo principale serve solo al gioco, che ha bisogno di una reso singolo.",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Altro intercalare frequentemente usato e' oj!»)",
+   "attendibilita": "D",
+   "registro": "",
+   "principale_it": "sì",
+   "principale_fe": "",
+   "da_verificare": false
+  }
+ ],
+ "coppie": [
+  {
+   "id": "F0001",
+   "it": "non c'è pane",
+   "fe": "an ghè brisa pan",
+   "tipo": "conversazione",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "nota": "Negazione davanti all'esistenziale, non al nome. E' il caso che spiega da solo V0013, V0015 e V0019."
+  },
+  {
+   "id": "F0002",
+   "it": "non ci vedo niente",
+   "fe": "a n'agh ved brisa",
+   "tipo": "conversazione",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "nota": "Qui la negazione va in fondo, dopo il verbo, e non davanti al nome come in F0001. Due posizioni diverse nella stessa lingua: e' il punto su cui il glossario delle singole parole non basta."
+  },
+  {
+   "id": "F0003",
+   "it": "non è niente di buono",
+   "fe": "al n'è brisa un gran quel",
+   "tipo": "conversazione",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "nota": "«un gran quel» non e' un errore per «buono»: e' il confronto, e la frase italiana non ha un equivalente fisso. Chi traduce parola per parola dice il contrario di quello che intende."
+  },
+  {
+   "id": "F0004",
+   "it": "sai che sei bello? Sicuramente!",
+   "fe": "sat ca t'jé bèl? Oj!",
+   "tipo": "conversazione",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («sat ca t'jé bèl? Oj!»)",
+   "nota": "Frase attestata per l'intercalare «oj». Mostra il dottorghero della forma interrogativa con suffisso -jé."
+  },
+  {
+   "id": "F0005",
+   "it": "mi sono dimenticato",
+   "fe": "oj! am son scurdà!",
+   "tipo": "conversazione",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («oj! am son scurdà!»)",
+   "nota": "Seconda occorrenza dell'intercalare, questa volta come scusa, non come conferma: la stessa parola in due funzioni diverse."
+  },
+  {
+   "id": "F0006",
+   "it": "Tutti gli esseri umani nascono liberi e uguali in dignità e diritti.",
+   "fe": "Tuti j'èssar umanh i nass lìbar e cumpagna in dgnità e dirit.",
+   "tipo": "attestato",
+   "varieta": "cittadino",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1",
+   "nota": "Traduzione integrale di un testo noto: il glossario delle parole piu' frequenti e' tutto qui dentro, e mette in evidenza che alcune parole restano uguali all'italiano («umanh» vicino a «umano», «dirit» vicino a «diritti»)."
+  },
+  {
+   "id": "F0007",
+   "it": "Essi hanno diritti e doveri",
+   "fe": "Lor i gh'ha scrimia e cussiença e i gh'ha da purtarass tra ad lor com i fradié.",
+   "tipo": "attestato",
+   "varieta": "cittadino",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1",
+   "nota": "Mostra «gh'ha» per il possessivo avere e «da purtarass» per il futuro prossimo obbligatorio. Nessuna delle due forme si ricava dagli infiniti presenti nel glossario."
+  },
+  {
+   "id": "F0008",
+   "it": "mangiare",
+   "fe": "magnàr",
+   "tipo": "attestato",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "nota": "Copia di V0001 come coppia. Serve a dare al motore un esempio di coppia singola, e a misurare quanto pesa l'infinito in -ar rispetto alla forma breve -à."
+  },
+  {
+   "id": "F0009",
+   "it": "portare",
+   "fe": "portàr",
+   "tipo": "attestato",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "nota": "Copia di V0002 come coppia."
+  },
+  {
+   "id": "F0010",
+   "it": "principiare",
+   "fe": "principiar",
+   "tipo": "attestato",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "nota": "Esempio della resa della z aspra in s."
+  }
+ ],
+ "proverbi": [],
+ "regole": [],
+ "varieta": {
+  "codici": [
+   "cittadino",
+   "centrale",
+   "occidentale",
+   "orientale",
+   "transpadano"
+  ],
+  "nomi": {
+   "cittadino": "cittadino",
+   "centrale": "centrale, detto anche arioso",
+   "occidentale": "occidentale",
+   "orientale": "orientale",
+   "transpadano": "transpadano, ibrido col polesano"
+  },
+  "voci": [
+   {
+    "codice": "cittadino",
+    "nome": "cittadino",
+    "territori": [
+     "Ferrara, dentro le mura"
+    ],
+    "descrizione": "Il ferrarese di dentro le mura storiche. E' la varieta' che il gioco usa perche' e' quella che si sente in citta', ed e' anche quella che oggi e' parlata da poche persone, quasi tutte di eta' alta.",
+    "confine": "",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Unica varieta' con voci nel glossario. Tutte le fonti disponibili documentano il cittadino: e' un vuoto delle fonti, non una scelta del progetto."
+   },
+   {
+    "codice": "centrale",
+    "nome": "centrale, detto anche arioso",
+    "territori": [
+     "resto del comune di Ferrara",
+     "Portomaggiore",
+     "Masi Torello",
+     "Voghiera",
+     "Berra",
+     "Ro",
+     "Jolanda di Savoia",
+     "Formignana",
+     "Tresignallo",
+     "Copparo",
+     "Ostellato",
+     "Fiscaglia",
+     "parti dell'argentano",
+     "Occhiobello"
+    ],
+    "descrizione": "La fascia interna della provincia, la piu' estesa e la piu' viva. Il nome «arioso» e' il nome popolare del dialetto di questa zona.",
+    "confine": "",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. E' la prima varieta' da riempire perche' e' la piu' grande e la piu' parlata: chiunque del territorio abbia Parentele conocce parole che il glossario non ha."
+   },
+   {
+    "codice": "occidentale",
+    "nome": "occidentale",
+    "territori": [
+     "Bondeno",
+     "Vigarano Mainarda",
+     "Sermide e Felonica",
+     "parti di Terre del Reno",
+     "parti di Poggio Renatico"
+    ],
+    "descrizione": "Il lembo occidentale, verso il mantovano e il modenese. La fonte lo descrive come influenzato dal Felonica, dal Sermide e da Finale Emilia.",
+    "confine": "Felonica e Sermide (Mantova), Finale Emilia (Modena)",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Il primo posto dove andare a chiedere una registrazione: e' la varieta' in cui la differenza dal cittadino si sente di piu'."
+   },
+   {
+    "codice": "orientale",
+    "nome": "orientale",
+    "territori": [
+     "Codigoro",
+     "Fiscaglia",
+     "Ostellato",
+     "Lagosanto",
+     "Comacchio",
+     "Goro"
+    ],
+    "descrizione": "La costa, dove il ferrarese si fonde col comacchiese. La fonte lo dichiara con quella frase e non con un confine.",
+    "confine": "si fonde con il comacchiese",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Fiscaglia e Ostellato compaiono anche nel gruppo centrale e Fiscaglia anche in quello transpadano: la fonte non li separa, e qui non si finge di separarli."
+   },
+   {
+    "codice": "transpadano",
+    "nome": "transpadano, ibrido col polesano",
+    "territori": [
+     "Occhiobello",
+     "Stienta",
+     "Canaro",
+     "Castelmassa",
+     "Goro"
+    ],
+    "descrizione": "La fascia oltre il Po, in provincia di Rovigo: il «ferrarese transpadano», ibrido col polesano.",
+    "confine": "il polesano (provincia di Rovigo)",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Occhiobello e Goro compaiono anche in altri gruppi: il territorio non e' una casella."
+   }
+  ],
+  "conteggi": {
+   "cittadino": {
+    "glossario": 26,
+    "coppie": 10,
+    "audio": 0,
+    "totale": 36,
+    "stato": "base"
+   },
+   "centrale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "occidentale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "orientale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "transpadano": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   }
+  },
+  "vuote": [
+   "centrale",
+   "occidentale",
+   "orientale",
+   "transpadano"
+  ]
+ },
+ "fonetica": [
+  {
+   "id": "T0001",
+   "riferimento": "V0001",
+   "forma": "magnàr",
+   "ipa": "/maˈɲnar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "La `gn` e' resa /ɲ/ per la regola 3. Se la lingua parlata raddoppia la consonante palatale la trascrizione e' mezza: e' la prima cosa da verificare a voce.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0002",
+   "riferimento": "V0002",
+   "forma": "portàr",
+   "ipa": "/porˈtar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Desinenza infinita conservata come la scrive la fonte; la forma parlata «portar» e' registrata come variante della voce e non ha trascrizione propria.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0003",
+   "riferimento": "V0003",
+   "forma": "desideràr",
+   "ipa": "/deziˈderar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "La forma scritta conserva la vocale atonica italiana in `-de-`. Nella lingua parlata quella vocale non c'e': la trascrizione segue la grafia della fonte, non quello che si ascolta, e la differenza e' il punto da chiarire con un vocabolario dell'Ottocento.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0004",
+   "riferimento": "V0004",
+   "forma": "amà",
+   "ipa": "/aˈma/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Biondelli scrive la forma abbreviata senza la r finale: si trascrive quello che c'e'.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0005",
+   "riferimento": "V0005",
+   "forma": "volà",
+   "ipa": "/voˈla/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Da non confondere con il ferrarese di «volere»: due verbi diversi, due trascrizioni diverse.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0006",
+   "riferimento": "V0006",
+   "forma": "mancà",
+   "ipa": "/manˈka/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Il gruppo `nc` e' reso /nk/ senza dichiarare niente sulla sua realizzazione: la fonte non ne parla.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0007",
+   "riferimento": "V0007",
+   "forma": "principiar",
+   "ipa": "/prinˈtʃipjar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "`ci` davanti a `i` e' /tʃ/ per la regola 4, e la vocale finale `a` davanti alla r si legge /j/. Biondelli usa questa voce per illustrare una resa della z aspra: qui si trascrive quello che ha scritto, non quello che dice di voler dire.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0008",
+   "riferimento": "V0008",
+   "forma": "sittadìn",
+   "ipa": "/sittaˈdin/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0007: `s` per la z aspra italiana.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0009",
+   "riferimento": "V0009",
+   "forma": "sivìl",
+   "ipa": "/siˈvil/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0007.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0010",
+   "riferimento": "V0010",
+   "forma": "dottór",
+   "ipa": "/dotˈtor/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Biondelli osserva che nei sostantivi le desinenze italiane si serbano, a differenza dei verbi: e' il caso che rende T0010, T0011 e T0012 diverse da T0001 e T0002 anche a occhio.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0011",
+   "riferimento": "V0011",
+   "forma": "rasón",
+   "ipa": "/raˈzon/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0010. La `o` finale preconsontante e' resa breve.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0012",
+   "riferimento": "V0012",
+   "forma": "padrón",
+   "ipa": "/paˈdron/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0010.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0013",
+   "riferimento": "V0013",
+   "forma": "brisa",
+   "ipa": "/brisa/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "Nessun accento nella fonte, quindi nessun accento qui: non e' che la parola e' sdruccia, e' che la fonte non dice dove cade l'accento. Da verificare per primi con un parlante, perche' e' una parola di tre sillabe.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0014",
+   "riferimento": "V0013",
+   "forma": "brisà",
+   "ipa": "/briˈsa/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "La variante con l'accento della stessa voce V0013. Due scritture, due trascrizioni: e' la prova che in questa lingua l'accento e' una scelta di chi scrive.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0015",
+   "riferimento": "V0014",
+   "forma": "ghe",
+   "ipa": "/ɡe/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "La `gh` e' /g/ per la regola 2. Monosillaba: l'accento non e' dichiarato dalla fonte.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0016",
+   "riferimento": "V0015",
+   "forma": "gh'è",
+   "ipa": "/ɡˈɛ/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "L'accento della fonte cade sulla vocale finale e viene riportato. La `gh` e' /g/ e non /ɡʁ/, che e' la scelta che un lettore italiano si aspetterebbe.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0017",
+   "riferimento": "V0016",
+   "forma": "n'è",
+   "ipa": "/nˈɛ/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "Come T0016.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0018",
+   "riferimento": "V0017",
+   "forma": "n'agh",
+   "ipa": "/naɡ/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "L'apostrofo segna il contatto con la vocale che segue e non lascia traccia nella trascrizione; la `gh` finale e' /g/.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0019",
+   "riferimento": "V0018",
+   "forma": "ved",
+   "ipa": "/ved/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase a n'agh ved brisa)",
+   "attendibilita": "I",
+   "nota": "La vocale pretonica e' resa breve senza dichiarare se sia aperta o chiusa: la fonte scrive `ved` e non distingue. Da verificare per primi con chi parla, perche' e' una delle parole che il gioco usa di piu'.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0020",
+   "riferimento": "V0019",
+   "forma": "pan",
+   "ipa": "/pan/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase an ghè brisa pan)",
+   "attendibilita": "I",
+   "nota": "Nessun accento nella fonte. Monosillaba: la sola cosa che resta da dire e' quanto dura la vocale.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0021",
+   "riferimento": "V0020",
+   "forma": "casa",
+   "ipa": "/kasa/",
+   "varieta": "cittadino",
+   "fonte": "Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano",
+   "attendibilita": "I",
+   "nota": "**La `z` intervocalica e' il punto debole di questa riga.** Il file la legge come la scrive, e le fonti disponibili non dicono se nella lingua parlata suoni diversamente: in una lingua che scrive a orecchio quello e' esattamente il caso in cui la scrittura mente. Prima cosa da verificare, e insieme alla `s` intervocalica.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0022",
+   "riferimento": "V0020",
+   "forma": "ca",
+   "ipa": "/ka/",
+   "varieta": "cittadino",
+   "fonte": "Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano",
+   "attendibilita": "I",
+   "nota": "La forma breve della stessa voce V0020. Nella lingua parlata la forma breve e' quella che si usa e la forma piena no: e' una ragione di piu' per non tradurre mai parola per parola.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0023",
+   "riferimento": "V0021",
+   "forma": "frarés",
+   "ipa": "/fraˈrɛs/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "attendibilita": "I",
+   "nota": "Il gentilizio. L'accento finale della fonte e' riportato; la vocale pretonica breve non e' dichiarata.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0024",
+   "riferimento": "V0021",
+   "forma": "frarèz",
+   "ipa": "/fraˈrɛz/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "attendibilita": "I",
+   "nota": "La variante con `z` finale della stessa voce V0021. Stessa `z` finale di T0021: due occasioni per capire se quella `z` suona o no.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0025",
+   "riferimento": "V0022",
+   "forma": "fra",
+   "ipa": "/fra/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "attendibilita": "I",
+   "nota": "La forma parlata del toponimo. T0026 e' la forma attestata: due scritture diverse per un nome di citta', e la voce dichiara perche' non sono la stessa cosa.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0026",
+   "riferimento": "V0022",
+   "forma": "fràra",
+   "ipa": "/ˈfrara/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "attendibilita": "I",
+   "nota": "Il toponimo come lo scrive la fonte, con l'accento sulla prima sillaba, mentre la forma parlata `fra` non lo dichiara. E' il modo più economico di vedere che in ferrarese la `r` finale si sente e si scrive in modo diverso da come si dice.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0027",
+   "riferimento": "V0023",
+   "forma": "nass",
+   "ipa": "/nas/",
+   "varieta": "cittadino",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1",
+   "attendibilita": "I",
+   "nota": "`ss` = /s/. La fonte di questa voce non ha licenza verificata: la trascrizione vale come lettura, e la pubblicazione dipende dalla fonte della voce, non da qui.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0028",
+   "riferimento": "V0024",
+   "forma": "tutti",
+   "ipa": "/tuti/",
+   "varieta": "cittadino",
+   "fonte": "Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1",
+   "attendibilita": "I",
+   "nota": "La forma coincide con l'italiano e non insegna niente: si trascrive per poter dire che il gioco la riconosce come la stessa parola, che e' un'informazione utile per chi impara.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0029",
+   "riferimento": "V0025",
+   "forma": "majàl",
+   "ipa": "/maˈjal/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)",
+   "attendibilita": "I",
+   "nota": "La `j` e' /j/, semivocale, e non una consonante: `majàl` si dice in tre sillabe, non due. Il doppio `ll` delle varianti `omajàll` e `iomajàll` e' il punto su cui questa voce e' meno documentata di tutte le altre.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0030",
+   "riferimento": "V0026",
+   "forma": "oj",
+   "ipa": "/oj/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Altro intercalare frequentemente usato e' oj!»)",
+   "attendibilita": "I",
+   "nota": "Due suoni, e il secondo e' la vocale finale. E' l'intercalare piu' breve del glossario e quello che uno studente usa di piu': quando si verifica una parola sola, e' questa.",
+   "da_verificare": true
+  }
+ ],
+ "audio": [],
+ "nomi_varieta": {
+  "cittadino": "cittadino",
+  "centrale": "centrale, detto anche arioso",
+  "occidentale": "occidentale",
+  "orientale": "orientale",
+  "transpadano": "transpadano, ibrido col polesano"
+ },
+ "origine": {
+  "glossario": 0.95,
+  "corpo": 0.8,
+  "corpo_frase": 0.92,
+  "regola": 0.55,
+  "modello": 0.5,
+  "nessuna": 0.0
+ }
+}</script>
+<script>
+(function () {
+  "use strict";
+
+  var DATI = JSON.parse(document.getElementById("dati").textContent);
+  var ETICHETTE = {
+    glossario: "dal glossario",
+    corpo: "dal corpus parallelo",
+    regola: "da una regola morfologica",
+    modello: "dal modello",
+    nessuna: "NON LO SO"
+  };
+
+  // La normalizzazione, in JavaScript, e' la stessa di quella del motore in
+  // Python. Le due copie non possono divergere: se divergono, la pagina dice
+  // una cosa e il terminale un'altra, ed e' il difetto peggiore che un
+  // traduttore possa avere. Per questo sono poche righe e sono scritte una
+  // volta sola.
+  var RE_NON = /[^0-9a-z\u00c0-\u024f]+/g;
+  function chiave(t) {
+    return String(t).toLowerCase().trim()
+      .replace(/gh'/g, "g").replace(/ch'/g, "c")
+      .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .replace(RE_NON, "");
+  }
+
+  function indice() {
+    var perIt = {}, perFe = {};
+    DATI.glossario.forEach(function (v) {
+      [v.fe].concat(v.varianti || []).forEach(function (f) {
+        var k = chiave(f); if (!k) return;
+        (perFe[k] = perFe[k] || []).push(v);
+      });
+      var ki = chiave(v.it); if (ki) (perIt[ki] = perIt[ki] || []).push(v);
+    });
+    return { perIt: perIt, perFe: perFe };
+  }
+  var IDX = indice();
+  var direzione = "it-fe";
+
+  // L'indice delle coppie per frase intera, nelle due direzioni.
+  IDX.coppieIt = {}; IDX.coppieFe = {};
+  DATI.coppie.forEach(function (c) {
+    var ki = chiave(c.it), kf = chiave(c.fe);
+    if (ki) IDX.coppieIt[ki] = c;
+    if (kf) IDX.coppieFe[kf] = c;
+  });
+
+  // Le trascrizioni IPA, per voce e per forma scritta. La stessa logica del
+  // glossario e' quella di `fonetica.py`: si indicizza sulla grafia, non sul
+  // suono, perche' a qualcuno che cerca «magnar» serve la parola che ha
+  // scritto, non quella che suona.
+  IDX.ipaPerForma = {}; IDX.ipaPerVoce = {};
+  (DATI.fonetica || []).forEach(function (t) {
+    var k = chiave(t.forma);
+    if (k) (IDX.ipaPerForma[k] = IDX.ipaPerForma[k] || []).push(t);
+    if (t.riferimento) (IDX.ipaPerVoce[t.riferimento] = IDX.ipaPerVoce[t.riferimento] || []).push(t);
+  });
+
+  function ipaDi(voceId, forma) {
+    if (voceId && IDX.ipaPerVoce[voceId] && IDX.ipaPerVoce[voceId].length) {
+      return IDX.ipaPerVoce[voceId][0];
+    }
+    var trovate = IDX.ipaPerForma[chiave(forma || "")];
+    return trovate && trovate.length ? trovate[0] : null;
+  }
+
+  function somiglianza(a, b) {
+    if (a === b) return 1;
+    if (!a || !b) return 0;
+    var m = a.length, n = b.length;
+    if (Math.abs(m - n) > Math.max(1, Math.floor(n / 2))) return 0;
+    var prev = [], i, j;
+    for (j = 0; j <= n; j++) prev[j] = j;
+    for (i = 1; i <= m; i++) {
+      var cur = [i];
+      for (j = 1; j <= n; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur;
+    }
+    return 1 - prev[n] / Math.max(m, n);
+  }
+
+  function tokenizza(t) {
+    return String(t).toLowerCase().trim()
+      .replace(/[’ʼ´`]/g, "'").replace(/gh'/g, "g").replace(/ch'/g, "c")
+      .split(/[^0-9a-z\u00c0-\u024f]+/).filter(function (x) { return x.length; });
+  }
+
+  // Una regola morfologica applicata dal basso: si prova dalla piu' lunga.
+  // Le regole arrivano gia' ordinate dalla piu' specifica alla piu' generica,
+  // quindi la prima che produce una parola e' quella giusta.
+  function perRegola(parola, verso) {
+    var k = chiave(parola);
+    for (var i = 0; i < DATI.regole.length; i++) {
+      var r = DATI.regole[i];
+      var sI = r.suffisso_italiano, sF = r.suffisso_ferrarese;
+      var entro = verso === "it-fe" ? sI : sF;
+      var fuori = verso === "it-fe" ? sF : sI;
+      if (!entro || k.length <= entro.length) continue;
+      if (k.slice(-entro.length) !== entro) continue;
+      if (r.prefisso && k.slice(0, r.prefisso.length) !== r.prefisso) continue;
+      var nucleo = k.slice(0, k.length - entro.length);
+      if (r.prefisso && nucleo !== r.prefisso) continue;
+      var prodotto = nucleo + fuori;
+      if (prodotto === k || prodotto.length < 3) continue;
+      return { testo: prodotto, regola: r };
+    }
+    return null;
+  }
+
+  // La stessa catena del motore, in quest'ordine: frase gemella, glossario,
+  // frammento del corpus, regola, buco. Ogni riga corrisponde a una riga di
+  // `motore.py`, e se le due copie divergono la pagina mente.
+  function fraseGemella(frase, verso) {
+    var k = chiave(frase);
+    if (!k) return null;
+    var lista = verso === "it-fe" ? IDX.coppieIt : IDX.coppieFe;
+    return lista[k] || null;
+  }
+
+  function risolvi(parola, verso, frase) {
+    // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
+    var gemella = fraseGemella(frase, verso);
+    if (gemella) {
+      return {
+        testo: verso === "it-fe" ? gemella.fe : gemella.it,
+        origine: "corpo",
+        confidenza: DATI.origine.corpo_frase,
+        dettaglio: "frase intera dal corpus, " + gemella.id + ": " + (gemella.fonte || "senza fonte")
+      };
+    }
+
+    // Livello 1: il glossario.
+    var voci = (verso === "it-fe" ? IDX.perIt : IDX.perFe)[chiave(parola)] || [];
+    if (voci.length) {
+      var v = voci[0];
+      // La forma singola, non la glossa: rimettere «niente, nulla» nel testo
+      // tradotto produrrebbe una frase che non e' italiano e non e' ferrarese.
+      var testo = verso === "it-fe" ? (v.principale_fe || v.fe) : (v.principale_it || v.it);
+      var dettaglio = v.id + " (" + v.attendibilita + ") " + (v.fonte || "senza fonte");
+      if (voci.length > 1) dettaglio += " | altre: " + voci.slice(1, 4).map(function (x) { return x.id; }).join(", ");
+      if (v.da_verificare) dettaglio += " | DA VERIFICARE";
+      var risultato = {
+        testo: testo, origine: "glossario", confidenza: DATI.origine.glossario,
+        dettaglio: dettaglio, id: v.id, varieta: v.varieta
+      };
+      // La trascrizione IPA viene dalla voce che ha risposto, non dalla parola
+      // che si e' scritti: se la voce porta tre forme, la trascrizione e'
+      // quella della forma che si sta usando, e non della prima in elenco.
+      if (verso === "it-fe") {
+        var formaUsata = testo;
+        var t = null;
+        (IDX.ipaPerVoce[v.id] || []).forEach(function (x) {
+          if (chiave(x.forma) === chiave(formaUsata)) t = x;
+        });
+        risultato.ipa = t || null;
+      } else {
+        risultato.ipa = ipaDi(v.id, parola);
+      }
+      return risultato;
+    }
+
+    // Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
+    // se il frammento non combacia, la coppia resta un esempio e non una
+    // traduzione.
+    var migliore = null;
+    DATI.coppie.forEach(function (c) {
+      var lato = verso === "it-fe" ? c.it : c.fe;
+      var frammento = null, punteggio = 0;
+      tokenizza(lato).forEach(function (t) {
+        var s = somiglianza(chiave(parola), chiave(t));
+        if (s > punteggio) { punteggio = s; frammento = t; }
+      });
+      if (punteggio >= 0.75 && (!migliore || punteggio > migliore.p)) {
+        migliore = { p: punteggio, frammento: frammento, c: c };
+      }
+    });
+    if (migliore) {
+      return {
+        testo: migliore.frammento,
+        origine: "corpo",
+        confidenza: DATI.origine.corpo * Math.min(1, migliore.p + 0.15),
+        dettaglio: migliore.c.id + ", frammento \"" + migliore.frammento + "\": " + (migliore.c.fonte || "senza fonte")
+      };
+    }
+
+    var r = perRegola(parola, verso);
+    if (r) {
+      var conf = DATI.origine.regola * r.regola.accordo;
+      if (conf >= 0.5) {
+        return {
+          testo: r.testo, origine: "regola", confidenza: conf,
+          dettaglio: r.regola.etichetta + " (" + r.regola.supporto + " esempi, accordo " + r.regola.accordo.toFixed(2) + ")"
+        };
+      }
+    }
+
+    return {
+      testo: parola, origine: "nessuna", confidenza: 0,
+      dettaglio: "nessuna fonte nel glossario, nel corpus o fra le regole"
+    };
+  }
+
+  function traduci() {
+    var testo = document.getElementById("testo").value.trim();
+    var box = document.getElementById("risposta");
+    var avviso = document.getElementById("avviso");
+    avviso.innerHTML = "";
+    if (!testo) { box.innerHTML = '<span class="vuoto">Scrivi qualcosa.</span>'; return; }
+
+    var token = tokenizza(testo);
+    if (!token.length) { box.innerHTML = '<span class="vuoto">Nessuna parola riconosciuta.</span>'; return; }
+
+    // Una frase che il corpus contiene per intero non viene smembrata: si
+    // restituisce come e' stata trovata. Smembrarla produrrebbe una traduzione
+    // piu' incerta di quella che si aveva gia' in mano.
+    var gemella = fraseGemella(testo, direzione);
+    if (gemella) {
+      var resa = direzione === "it-fe" ? gemella.fe : gemella.it;
+      box.innerHTML = '<div class="riga-parola"><span class="originale">' + scappa(testo) +
+        '</span> &rarr; <span class="parola corpo">' + scappa(resa) + '</span></div>' +
+        '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(resa) + '</div>' +
+        '<div class="dettaglio">frase intera dal corpus, ' + scappa(gemella.id) + ': ' + scappa(gemella.fonte || "senza fonte") +
+        ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div>';
+      avviso.innerHTML = '<div class="avviso ok">La frase era gia\' nel corpus, con la sua fonte. Non e\' stata ricostruita parola per parola.</div>';
+      return;
+    }
+
+    var risultati = token.map(function (t) { return risolvi(t, direzione, testo); });
+    var peso = 0, totale = 0, buchi = 0;
+    risultati.forEach(function (r, i) {
+      var n = Math.max(1, chiave(token[i]).length);
+      totale += r.confidenza * n; peso += n;
+      if (r.origine === "nessuna") buchi++;
+    });
+    var confidenza = peso ? totale / peso : 0;
+
+    var righe = risultati.map(function (r, i) {
+      return '<span class="originale">' + scappa(token[i]) + '</span> &rarr; ' +
+        '<span class="parola ' + r.origine + '" title="' + scappa(ETICHETTE[r.origine] + ": " + r.dettaglio) + '">' +
+        scappa(r.testo) + '</span>';
+    });
+    var traduzione = risultati.map(function (r) { return r.testo; }).join(" ");
+    box.innerHTML =
+      '<div class="riga-parola">' + righe.join(" ") + '</div>' +
+      '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(traduzione) + '</div>' +
+      (direzione === "it-fe" ? rigaSuona(risultati) : '') +
+      '<div class="dettaglio">confidenza ' + confidenza.toFixed(2) +
+      (buchi ? "  -  " + buchi + (buchi > 1 ? " parole" : " parola") + " senza fonte" : "") + '</div>';
+
+    if (buchi) {
+      avviso.innerHTML = '<div class="avviso"><strong>La traduzione ha dei buchi.</strong> ' +
+        quelleNonSa(risultati, token).length + ' parole non hanno risposta: ' +
+        scappa(quelleNonSa(risultati, token).join(", ")) +
+        '. Restano cosi\' come sono, non sono sbagliate: sono parole che il glossario non conosce.</div>';
+    } else if (confidenza >= 0.9) {
+      avviso.innerHTML = '<div class="avviso ok">Ogni parola viene dal glossario o dal corpus. Risultato pubblicabile.</div>';
+    } else {
+      avviso.innerHTML = '<div class="avviso">Nessun buco, ma la confidenza e\' sotto il novanta per cento: ' +
+        'alcune parole vengono da regole apprese, non dal glossario. Da rivedere prima di pubblicarlo.</div>';
+    }
+  }
+
+  // «Come suona»: la trascrizione accanto alla parola, parola per parola. Se
+  // non c'e', si dice che non c'e': una riga vuota semberebbe un'esortazione a
+  // indovinare, e questa pagina non ne fa.
+  function rigaSuona(risultati) {
+    var pezzi = risultati.map(function (r) {
+      if (!r.ipa) return null;
+      return '<span class="ipa" title="' + scappa(r.ipa.nota || "") + '">' +
+        scappa(r.testo) + ' ' + scappa(r.ipa.ipa) +
+        (r.ipa.da_verificare ? ' <span class="varieta">da verificare</span>' : '') +
+        '</span>';
+    }).filter(function (x) { return x; });
+    if (!pezzi.length) {
+      return '<div class="vuoto">come suona: nessuna parola di questa frase ha ancora una trascrizione.</div>';
+    }
+    var quanteVerificate = risultati.filter(function (r) {
+      return r.ipa && !r.ipa.da_verificare;
+    }).length;
+    var avvertenza = quanteVerificate
+      ? ""
+      : ' <span class="vuoto">trascrizioni non ancora verificate da un parlante</span>';
+    return '<div><strong>come suona:</strong> ' + pezzi.join(" &middot; ") + avvertenza + '</div>';
+  }
+
+  function etichettaVarieta(codice) {
+    if (!codice) return '<span class="varieta vuota">senza varieta\'</span>';
+    var nome = (DATI.nomi_varieta && DATI.nomi_varieta[codice]) || codice;
+    return '<span class="varieta" title="' + scappa(nome) + '">' + scappa(codice) + '</span>';
+  }
+
+  function quelleNonSa(risultati, token) {
+    return risultati.map(function (r, i) { return r.origine === "nessuna" ? token[i] : null; })
+      .filter(function (x) { return x; });
+  }
+
+  function scappa(t) {
+    return String(t).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function tabellaGlossario(filtro) {
+    var scelta = document.getElementById("filtroVarietaGlossario");
+    var varieta = scelta ? scelta.value : "";
+    var voci = DATI.glossario.filter(function (v) {
+      if (varieta && v.varieta !== varieta) return false;
+      if (!filtro) return true;
+      var f = filtro.toLowerCase();
+      return (v.fe + " " + v.it + " " + (v.varianti || []).join(" ") + " " +
+        (v.campo || "") + " " + (v.varieta || "")).indexOf(f) >= 0;
+    });
+    if (!voci.length) { document.getElementById("tabellaGlossario").innerHTML = '<p class="vuoto">Nessuna voce corrisponde.</p>'; return; }
+    var righe = voci.map(function (v) {
+      var t = ipaDi(v.id, v.fe);
+      return "<tr><td><code>" + scappa(v.id) + "</code></td>" +
+        "<td>" + scappa(v.fe) + (t ? "<br><span class=\"ipa\">" + scappa(t.ipa) + "</span>" : "") +
+        (v.varianti && v.varianti.length ? "<br><span class=\"vuoto\">" + scappa(v.varianti.join(", ")) + "</span>" : "") + "</td>" +
+        "<td>" + scappa(v.it) + "</td>" +
+        "<td>" + etichettaVarieta(v.varieta) + "</td>" +
+        "<td>" + scappa(v.campo || "—") + "</td>" +
+        "<td>" + scappa(v.attendibilita) + (v.da_verificare ? " <span class=\"vuoto\">(da verificare)</span>" : "") + "</td>" +
+        "<td>" + scappa(v.fonte || "senza fonte") + "</td></tr>";
+    }).join("");
+    document.getElementById("tabellaGlossario").innerHTML =
+      '<table><thead><tr><th>id</th><th>ferrarese</th><th>italiano</th><th>varieta\'</th><th>campo</th><th>att.</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table><p class=\"vuoto\">" + voci.length + " voci su " + DATI.glossario.length + ".</p>";
+  }
+
+  // Le cinque varieta' con quello che c'e' dentro. La riga vuota non e' un
+  // dettaglio estetico: e' il numero che dice al lettore che il glossario non
+  // copre la meta' del territorio, e va detto per primo e non per ultimo.
+  function elencoVarieta() {
+    var v = DATI.varieta || { voci: [], conteggi: {}, vuote: [] };
+    var nomi = v.nomi || DATI.nomi_varieta || {};
+    var contenitore = document.getElementById("elencoVarieta");
+    if (!v.voci.length) {
+      contenitore.innerHTML = '<p class="vuoto">dati/varieta.json non c\'e\' o e\' vuoto.</p>';
+      return;
+    }
+    contenitore.innerHTML = v.voci.map(function (x) {
+      var numeri = (v.conteggi && v.conteggi[x.codice]) || {};
+      var vuota = numeri.totale === 0;
+      var intestazione = '<h3>' + scappa(x.nome || x.codice) + ' ' +
+        etichettaVarieta(x.codice) +
+        (vuota ? ' <span class="varieta vuota">nessuna voce</span>' : '') + '</h3>';
+      var numeriTesto = '<p class="vuoto">' + (vuota
+        ? "Nessuna voce, nessuna frase, nessun brano: questa varieta' e' un buco dichiarato."
+        : numeri.glossario + " voci, " + numeri.coppie + " coppie, " +
+          numeri.audio + " brani audio.") + '</p>';
+      var territorio = x.territori && x.territori.length
+        ? '<p><strong>Dove:</strong> ' + scappa(x.territori.join(", ")) + '</p>' : '';
+      var descrizione = x.descrizione ? '<p>' + scappa(x.descrizione) + '</p>' : '';
+      var confine = x.confine ? '<p class="vuoto">Confina con: ' + scappa(x.confine) + '.</p>' : '';
+      var fonte = '<p class="vuoto">Fonte della variante: ' + scappa(x.fonte || "senza fonte") +
+        ' (attendibilita ' + scappa(x.attendibilita || "?") + ')</p>';
+      return '<div class="' + (vuota ? "vuoto-varieta" : "scheda") + '">' +
+        intestazione + numeriTesto + territorio + descrizione + confine +
+        (x.nota ? '<p class="vuoto">' + scappa(x.nota) + '</p>' : '') + fonte + '</div>';
+    }).join("");
+  }
+
+  // Il riproduttore. Fa tre cose e una non la fa: mette accanto la parola la
+  // sua trascrizione, dice da quale varieta' viene, e suona **solo** le
+  // registrazioni vere. Non mette una voce sintetica al posto di una persona:
+  // non esiste e non si puo' fingere che esista.
+  function riproduttore(filtro) {
+    var scelta = document.getElementById("filtroVarietaSuono");
+    var varieta = scelta ? scelta.value : "";
+    var mostraIpa = document.getElementById("mostraIpa").checked;
+    var voci = DATI.glossario.filter(function (v) {
+      if (varieta && v.varieta !== varieta) return false;
+      if (!filtro) return true;
+      var f = filtro.toLowerCase();
+      var t = ipaDi(v.id, v.fe);
+      return (v.fe + " " + v.it + " " + (v.varianti || []).join(" ") + " " +
+        (t ? t.ipa : "")).toLowerCase().indexOf(f) >= 0;
+    });
+    var suoni = (DATI.audio || []).filter(function (b) { return b.file_playable; });
+    var parti = [];
+    voci.slice(0, 60).forEach(function (v) {
+      var t = ipaDi(v.id, v.fe);
+      parti.push('<div class="scheda">' +
+        '<h3>' + scappa(v.fe) + '</h3>' +
+        '<div class="riga-sotto">' +
+        '<span>' + scappa(v.it) + '</span>' + etichettaVarieta(v.varieta) +
+        '<span class="vuoto">' + scappa(v.id) + ' · attendibilita ' + scappa(v.attendibilita) +
+        (v.da_verificare ? ' · da verificare' : '') + '</span>' +
+        '</div>' +
+        (t && mostraIpa
+          ? '<p class="ipa">' + scappa(t.ipa) +
+            (t.da_verificare ? ' <span class="varieta">trascrizione non verificata</span>' : ' <span class="varieta">verificata da un parlante</span>') +
+            (t.nota ? '<br><span class="vuoto">' + scappa(t.nota) + '</span>' : '') + '</p>'
+          : (t ? '' : '<p class="vuoto">trascrizione assente: e\' un buco dichiarato.</p>')) +
+        '<div class="vuoto">audio: nessuna registrazione di questa parola. ' +
+        'Nessuna voce sintetica la sostituisce: un falso Ferrara e\' peggio del silenzio.</div>' +
+        (branoDi(v.id) ? schedaBrano(branoDi(v.id)) : '') +
+        '<div class="riga"><button type="button" class="leggiItaliano" data-testo="' +
+        scappa(v.it) + '">leggi l\'italiano</button></div>' +
+        '</div>');
+    });
+    if (suoni.length) {
+      parti.push('<h3>Brani registrati</h3>' + suoni.map(schedaBrano).join(""));
+    }
+    document.getElementById("riproduttore").innerHTML = parti.join("") ||
+      '<p class="vuoto">Nessuna parola corrisponde.</p>';
+    if (voci.length > 60) {
+      document.getElementById("riproduttore").innerHTML +=
+        '<p class="vuoto">prime 60 di ' + voci.length + ': restringi la ricerca.</p>';
+    }
+  }
+
+  function branoDi(id) {
+    return (DATI.audio || []).filter(function (b) { return b.riferimento === id; })[0] || null;
+  }
+
+  function schedaBrano(b) {
+    return '<div class="scheda" style="background:#f5f1e6">' +
+      '<h3>' + scappa(b.testo || b.id) + '</h3>' +
+      '<div class="riga-sotto"><span class="vuoto">' + scappa(b.italiano || "") + '</span>' +
+      etichettaVarieta(b.varieta) +
+      '<span class="vuoto">' + scappa(b.voce) + ' · ' + scappa(b.luogo) +
+      ' · livello ' + scappa(b.lettibilita) + '</span></div>' +
+      '<audio controls preload="none" src="' + scappa(b.file_playable) + '"></audio>' +
+      '<p class="vuoto">licenza ' + scappa(b.licenza) + ' · consenso: ' +
+      scappa(b.consenso || "nessuno") + '</p></div>';
+  }
+
+  // La voce del browser. Non e' una voce ferrarese, non e' una voce di
+  // Ferrara, e in alcuni browser usa una connessione: per questo sta spenta
+  // di default e lo dice quando la si accende.
+  function parlaItaliano(testo) {
+    var interruttore = document.getElementById("voceItaliana");
+    if (!interruttore.checked) {
+      interruttore.checked = true;
+      document.getElementById("notaVoceItaliana").style.display = "";
+    }
+    if (!("speechSynthesis" in window)) {
+      window.alert("Questo browser non ha la sintesi vocale: la parola resta scritta.");
+      return;
+    }
+    try {
+      var d = new SpeechSynthesisUtterance(String(testo || ""));
+      d.lang = "it-IT";
+      d.rate = 0.9;
+      window.speechSynthesis.speak(d);
+    } catch (e) {
+      window.alert("La sintesi vocale non ha funzionato: la parola resta scritta.");
+    }
+  }
+
+  function tabellaCoppie() {
+    if (!DATI.coppie.length) { document.getElementById("tabellaCoppie").innerHTML = '<p class="vuoto">Nessuna coppia.</p>'; return; }
+    var righe = DATI.coppie.map(function (c) {
+      return "<tr><td><code>" + scappa(c.id) + "</code></td>" +
+        "<td>" + scappa(c.it) + "</td><td>" + scappa(c.fe) + "</td>" +
+        "<td>" + etichettaVarieta(c.varieta) + "</td>" +
+        "<td>" + scappa(c.fonte || "senza fonte") + "</td></tr>";
+    }).join("");
+    document.getElementById("tabellaCoppie").innerHTML =
+      '<table><thead><tr><th>id</th><th>italiano</th><th>ferrarese</th><th>varieta\'</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table>";
+  }
+
+  function pannello() {
+    var conFonte = DATI.glossario.filter(function (v) { return v.fonte; }).length;
+    var daVerificare = DATI.glossario.filter(function (v) { return v.da_verificare; }).length;
+    var troncazioni = (DATI.fonetica || []).length;
+    var verificate = (DATI.fonetica || []).filter(function (t) {
+      return t.attendibilita === "D" && !t.da_verificare;
+    }).length;
+    var brani = (DATI.audio || []).filter(function (b) { return b.file_playable; }).length;
+    var vuote = ((DATI.varieta || {}).vuote || []).length;
+    var voci = [
+      ["voci di glossario", DATI.glossario.length],
+      ["con fonte", conFonte],
+      ["da verificare", daVerificare],
+      ["coppie parallele", DATI.coppie.length],
+      ["proverbi", DATI.proverbi.length],
+      ["regole apprese", DATI.regole.length],
+      ["trascrizioni IPA", troncazioni],
+      ["verificate da un parlante", verificate],
+      ["brani audio pronti", brani],
+      ["varieta' vuote", vuote + " su " + ((DATI.varieta || {}).codici || []).length]
+    ];
+    document.getElementById("pannello").innerHTML = voci.map(function (p) {
+      return "<div>" + p[1] + "<span>" + p[0] + "</span></div>";
+    }).join("");
+  }
+
+  document.getElementById("traduci").addEventListener("click", traduci);
+  document.getElementById("testo").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) traduci();
+  });
+  document.getElementById("direzione").addEventListener("click", function () {
+    direzione = direzione === "it-fe" ? "fe-it" : "it-fe";
+    this.textContent = "Direzione: " + (direzione === "it-fe" ? "italiano → ferrarese" : "ferrarese → italiano");
+    this.setAttribute("aria-pressed", direzione === "fe-it" ? "true" : "false");
+  });
+  document.getElementById("cercaGlossario").addEventListener("input", function () {
+    tabellaGlossario(this.value.trim());
+  });
+
+  // I due filtri per varieta' hanno le stesse opzioni e le stesse parole:
+  // una lista di varieta' che cambia da un menu all'altro e' un modo per non
+  // capire quale delle due hai davanti.
+  [["filtroVarietaGlossario", ""], ["filtroVarietaSuono", ""]].forEach(function (coppia) {
+    var selezione = document.getElementById(coppia[0]);
+    var vuote = (DATI.varieta || {}).vuote || [];
+    ((DATI.varieta || {}).codici || []).forEach(function (codice) {
+      var opzione = document.createElement("option");
+      opzione.value = codice;
+      opzione.textContent = codice + (vuote.indexOf(codice) >= 0 ? " (vuota)" : "");
+      selezione.appendChild(opzione);
+    });
+  });
+  document.getElementById("filtroVarietaGlossario").addEventListener("change", function () {
+    tabellaGlossario(document.getElementById("cercaGlossario").value.trim());
+  });
+  document.getElementById("cercaSuono").addEventListener("input", function () {
+    riproduttore(this.value.trim());
+  });
+  document.getElementById("filtroVarietaSuono").addEventListener("change", function () {
+    riproduttore(document.getElementById("cercaSuono").value.trim());
+  });
+  document.getElementById("mostraIpa").addEventListener("change", function () {
+    riproduttore(document.getElementById("cercaSuono").value.trim());
+  });
+  document.getElementById("voceItaliana").addEventListener("change", function () {
+    document.getElementById("notaVoceItaliana").style.display = this.checked ? "" : "none";
+  });
+  // Il bottone che legge l'italiano e' generato dentro le schede, quindi
+  // l'ascolto e' delegato: si ascolta il click e si chiama la sintesi.
+  document.addEventListener("click", function (evento) {
+    var bottone = evento.target;
+    if (!bottone || !bottone.classList || !bottone.classList.contains("leggiItaliano")) return;
+    parlaItaliano(bottone.getAttribute("data-testo"));
+  });
+
+  tabellaGlossario("");
+  tabellaCoppie();
+  elencoVarieta();
+  riproduttore("");
+  pannello();
+})();
+</script>
+</body>
+</html>

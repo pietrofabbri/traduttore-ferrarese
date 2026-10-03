@@ -1,0 +1,22 @@
+# Il generato non si committa da solo, ma si committa quando si rigenera:
+# vedi `AGENTS.md` §3. La regola e' che il repository non mente sul proprio
+# contenuto, e un file generato che non corrisponde ai dati mente.
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+*.bak
+
+# Le chiavi non entrano mai. Il livello 4 le legge da `ANTHROPIC_API_KEY`.
+.env
+*.env
+
+# I grezzi delle registrazioni non entrano: in `audio/` ci va solo il brano
+# finito, pulito, e solo se ha consenso, licenza e `pubblicabile`. Un grezzo
+# puo' contenere voci che non hanno acconsentito e che nessuno ha ancora
+# ascoltato, quindi resta fuori anche quando il brano corrispondente entra.
+audio/*.m4a
+audio/*.mov
+audio/*.wav
+audio/*grezzo*
+web/audio/

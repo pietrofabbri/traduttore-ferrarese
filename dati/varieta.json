@@ -1,0 +1,152 @@
+{
+  "_nota": [
+    "Le varieta' del ferrarese. Questo file e' la copia di lavoro di S002",
+    "(Wikipedia «Dialetto ferrarese», CC BY-SA 4.0, stato `acquisita` in",
+    "`dati/fonti.json`) con le note di lettura di chi ci lavora.",
+    "",
+    "Perche' un file e non una costante nel codice: la fonte puo' cambiare, e",
+    "quando cambia deve cambiare qui e non in un file Python che nessuno",
+    "apre. Il codice conosce i cinque codici, che non cambiano; le descrizioni",
+    "e i territori stanno qui.",
+    "",
+    "Sul territorio che si sovrappone: Fiscaglia, Ostellato, Occhiobello e Goro",
+    "compaiono in piu' di un gruppo nella fonte. Non e' un errore della fonte e",
+    "non e' un errore qui: e' il modo in cui le varieta' si sfumano l'una",
+    "nell'altra alla frontiera. Il progetto non sceglie: lo dichiara.",
+    "",
+    "Le cinque varieta' non sono cinque lingue e non sono cinque dizionari.",
+    "Sono cinque punti dello stesso territorio, e il glossario che le",
+    "distingue serve a dire a uno studente di Bondeno che la parola che ha",
+    "imparato a Ferrara si dice anche li', ma non sempre cosi'.",
+    "",
+    "Sulla fonte, due cose da sapere prima di fidarsi: la voce enciclopedica",
+    "porta un avviso di non essere adeguatamente citata, e l'elenco dei",
+    "comuni e' una descrizione geografica, non un'indagine linguistica. Per",
+    "questo ogni voce del glossario dichiara la varieta' con la sua fonte e",
+    "con la sua attendibilita', e la maggior parte comincia da `cittadino`",
+    "non perche' sia la sola varieta' esistente ma perche' e' l'unica che le",
+    "fonti disponibili documentano davvero. Le altre quattro sono qui",
+    "dichiarate e vuote: un vuoto dichiarato e' un lavoro da fare, una",
+    "varieta' inventata e' un danno."
+  ],
+  "fonte_generale": {
+    "id": "S002",
+    "titolo": "Dialetto ferrarese",
+    "luogo": "https://it.wikipedia.org/wiki/Dialetto_ferrarese",
+    "licenza": "CC BY-SA 4.0"
+  },
+  "assegnazioni": [
+    {
+      "fonte": "S001",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Biondelli descrive il ferrarese di Ferrara citta'. La fonte non distingue le cinque varieta', quindi la scelta e' nostra e viene dichiarata come memoria, non come fatto documentato."
+    },
+    {
+      "fonte": "S002",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Le frasi e gli intercalari riportati nell'articolo sono usage cittadino. Le varieta' territoriali sono elencate nella stessa pagina, ma gli esempi non sono divisi per varieta'."
+    },
+    {
+      "fonte": "S003",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Una traduzione parallela anonima non dichiara dove e' stata scritta. Si assume il cittadino e si dichiara l'assunzione."
+    }
+  ],
+  "altre_zone": [
+    {
+      "nome": "Fertilia, Alghero",
+      "tipo": "zona di trapiantamento",
+      "stato": "da verificare",
+      "nota": "La fonte accenna a una presenza ferrarese fuori dal territorio ferrarese. Non e' una sesta varieta' e non e' una voce: e' un appunto, e resta un appunto finche' qualcuno non guarda cosa dice."
+    }
+  ],
+  "varieta": [
+    {
+      "codice": "cittadino",
+      "nome": "cittadino",
+      "territori": ["Ferrara, dentro le mura"],
+      "descrizione": "Il ferrarese di dentro le mura storiche. E' la varieta' che il gioco usa perche' e' quella che si sente in citta', ed e' anche quella che oggi e' parlata da poche persone, quasi tutte di eta' alta.",
+      "confine": "",
+      "fonte": "S002, sezione sulle varieta' territoriali",
+      "attendibilita": "D",
+      "nota": "Unica varieta' con voci nel glossario. Tutte le fonti disponibili documentano il cittadino: e' un vuoto delle fonti, non una scelta del progetto."
+    },
+    {
+      "codice": "centrale",
+      "nome": "centrale, detto anche arioso",
+      "territori": [
+        "resto del comune di Ferrara",
+        "Portomaggiore",
+        "Masi Torello",
+        "Voghiera",
+        "Berra",
+        "Ro",
+        "Jolanda di Savoia",
+        "Formignana",
+        "Tresignallo",
+        "Copparo",
+        "Ostellato",
+        "Fiscaglia",
+        "parti dell'argentano",
+        "Occhiobello"
+      ],
+      "descrizione": "La fascia interna della provincia, la piu' estesa e la piu' viva. Il nome «arioso» e' il nome popolare del dialetto di questa zona.",
+      "confine": "",
+      "fonte": "S002, sezione sulle varieta' territoriali",
+      "attendibilita": "D",
+      "nota": "Nessuna voce. E' la prima varieta' da riempire perche' e' la piu' grande e la piu' parlata: chiunque del territorio abbia Parentele conocce parole che il glossario non ha."
+    },
+    {
+      "codice": "occidentale",
+      "nome": "occidentale",
+      "territori": [
+        "Bondeno",
+        "Vigarano Mainarda",
+        "Sermide e Felonica",
+        "parti di Terre del Reno",
+        "parti di Poggio Renatico"
+      ],
+      "descrizione": "Il lembo occidentale, verso il mantovano e il modenese. La fonte lo descrive come influenzato dal Felonica, dal Sermide e da Finale Emilia.",
+      "confine": "Felonica e Sermide (Mantova), Finale Emilia (Modena)",
+      "fonte": "S002, sezione sulle varieta' territoriali",
+      "attendibilita": "D",
+      "nota": "Nessuna voce. Il primo posto dove andare a chiedere una registrazione: e' la varieta' in cui la differenza dal cittadino si sente di piu'."
+    },
+    {
+      "codice": "orientale",
+      "nome": "orientale",
+      "territori": [
+        "Codigoro",
+        "Fiscaglia",
+        "Ostellato",
+        "Lagosanto",
+        "Comacchio",
+        "Goro"
+      ],
+      "descrizione": "La costa, dove il ferrarese si fonde col comacchiese. La fonte lo dichiara con quella frase e non con un confine.",
+      "confine": "si fonde con il comacchiese",
+      "fonte": "S002, sezione sulle varieta' territoriali",
+      "attendibilita": "D",
+      "nota": "Nessuna voce. Fiscaglia e Ostellato compaiono anche nel gruppo centrale e Fiscaglia anche in quello transpadano: la fonte non li separa, e qui non si finge di separarli."
+    },
+    {
+      "codice": "transpadano",
+      "nome": "transpadano, ibrido col polesano",
+      "territori": [
+        "Occhiobello",
+        "Stienta",
+        "Canaro",
+        "Castelmassa",
+        "Goro"
+      ],
+      "descrizione": "La fascia oltre il Po, in provincia di Rovigo: il «ferrarese transpadano», ibrido col polesano.",
+      "confine": "il polesano (provincia di Rovigo)",
+      "fonte": "S002, sezione sulle varieta' territoriali",
+      "attendibilita": "D",
+      "nota": "Nessuna voce. Occhiobello e Goro compaiono anche in altri gruppi: il territorio non e' una casella."
+    }
+  ]
+}

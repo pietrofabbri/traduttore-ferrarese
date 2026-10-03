@@ -1,0 +1,162 @@
+---
+titolo: Istruzioni per chi lavora al progetto
+versione: 0.2
+data: 2026-10-03
+autore: progetto «I cinque duchi»
+---
+
+# Istruzioni per chi lavora al progetto (persone e IA)
+
+Leggi questo prima di modificare qualsiasi cosa. Vale per i due progetti:
+«I cinque duchi» e il traduttore.
+
+## 1. La regola che governa tutto
+
+**Nessuna risposta senza fonte. Nessun vuoto riempito a caso.**
+
+Nel traduttore una parola che nessuna fonte conosce resta com'e' e viene
+dichiarata un buco. In un glossario una voce senza fonte non entra. In un
+elenco di proverbi una riga senza informatore non e' un proverbio.
+
+La ragione e' tecnica, non morale. Il danno di una parola ferrarese inventata non
+si vede a occhio: `ca` per «casa» sembra giusta, e per vent'anni nessuno la
+corregge perche' nessuno ha un altro modo di sapere che e' sbagliata. Un
+traduttore di una lingua che sta morendo che sbaglia in silenzio e' peggio di
+un dizionario che non esiste.
+
+## 2. Le regole tecniche che non si cambiano senza chiedere
+
+- **Nessuna richiesta di rete a runtime.** La pagina web funziona da `file://`,
+  il gioco funziona offline. E' la condizione che li rende distribuibili in
+  una classe.
+- **Nessun account, nessun server, nessuna telemetria.**
+- **Niente dati degli studenti nel repository.** Vale anche per le voci dei
+  compagni di classe, che sono la cosa che il progetto vorrebbe di piu' e che
+  non ci devono stare.
+- **Le due copie della logica devono essere identiche.** Il motore esiste in
+  Python (`sorgenti/traduttore/motore.py`) e in JavaScript
+  (`sorgenti/modello.html`). Non e' una duplicazione tollerata: e' un rischio
+  dichiarato. Se le due divergono la pagina mente, e chi legge la pagina ha
+  ragione di crederle. Se cambi un livello, cambi entrambi, nello stesso
+  commit.
+- **Il livello IA non e' una fonte.** Non entra nel glossario, non entra nel
+  corpus, e non si usa senza chiave. Se qualcuno lo toglie, il progetto
+  funziona lo stesso: e' il test che garantisce che sia davvero facoltativo.
+
+## 3. Prima di dichiarare finito
+
+```bash
+cd traduttore-ferrarese
+export PYTHONPATH=sorgenti
+python3 prove/test_traduttore.py     # 45 test
+python3 -m traduttore.cli verifica   # i controlli sui dati
+```
+
+I due devono uscire senza errori. Se hai toccato `dati/`, aggiungi anche:
+
+```bash
+python3 -m traduttore.cli impara     # rigenera dati/regole.json
+python3 -m traduttore.cli web        # rigenera web/index.html
+```
+
+E committa anche i due file generati. Un repository in cui il file delle
+regole non corrisponde a quello che i dati produrrebbero mente sul proprio
+contenuto, e il workflow `verifica.yml` lo segnala.
+
+Se hai toccato una voce, la copia le due cose che viaggiano con lei:
+la sua **varieta'** (`dati/varieta.json` e `dati/glossario.jsonl`) e la sua
+**trascrizione IPA** (`dati/fonetica.jsonl`). Una voce nuova senza varieta'
+fallisce G8; una voce nuova senza IPA non fallisce niente, e va comunque
+segnalata come un buco.
+
+## 4. I controlli non correggono
+
+`verifica_dati.py` segnala, non corregge. Il motivo e' dichiarato nel modulo: il
+glossario e' un fatto, e un fatto non si corregge in automatico. Se un
+controllo segnala un problema, la correzione la fa una persona e la risolve
+nel campo giusto.
+
+I codici da conoscere:
+
+| Codice | Controllo |
+|---|---|
+| G1, G2 | voce senza id, id duplicato |
+| G3 | voce con un lato solo |
+| **G4** | **attendibilita `D` senza fonte** |
+| G5 | attendibilita fuori dall'insieme |
+| G6 | fonte troppo breve per essere controllabile |
+| G7 | voce non verificata ma dichiarata documentata |
+| **G8** | **voce senza `varieta'`** |
+| G9 | `varieta` fuori dall'insieme delle cinque |
+| V1&ndash;V6 | tassonomia: codici duplicati, nomi che non nominano, senza territorio, senza fonte, varieta' assente |
+| C1&ndash;C6 | coppie: id, lati, fonte, tipo, attendibilita |
+| **C7, C8** | **coppia senza `varieta'`, `varieta` fuori dall'insieme** |
+| P1&ndash;P5 | proverbi: id, lati, forme letteraria e popolare, fonte |
+| R1, R2 | regole sotto soglia, regole con un solo esempio |
+| F1&ndash;F14 | IPA: id, forma, vuoto, simboli che non sono IPA, riferimento ignoto, attendibilita, `D` senza fonte, varieta' discordi dalla voce, due trascrizioni della stessa scrittura, varieta' con parole e senza suoni |
+| A1&ndash;A10 | audio: id, file, `pubblicabile` senza consenso o senza licenza, varieta', contesto, livello CEFR, consenso senza voce dichiarata, file che non c'e' |
+
+## 5. Le cose che non si fanno
+
+- **Non si scrive una regola morfologica a mano.** Si mette la coppia nel
+  corpus e si rilancia `impara`. Una regola senza esempi non ha accordo, e
+  senza accordo non viene salvata.
+- **Non si aggiunge una voce al glossario senza la fonte.** Se la fonte non si
+  conosce, la voce non entra. Punto.
+- **Non si tira a indovinare.** Se una parola non si trova, il motore restituisce
+  la parola di partenza e un buco, ed e' il comportamento giusto.
+- **Non si registra audio senza consenso scritto.** E non si pubblica un brano
+  senza consenso, nemmeno in un repository privato, nemmeno «solo per prova».
+  Le tre condizioni sono `consenso`, `licenza` e `pubblicabile`, e servono
+  tutte e tre: copiare un file in `web/audio/` **e' pubblicarlo**.
+- **Non si scrive una trascrizione IPA come se fosse stata ascoltata.** Il
+  campo `fonte` dice da dove viene la **scrittura**. Una trascrizione con
+  `attendibilita: "D"` senza il nome di chi ha ascoltato, dove e quando e' una
+  dichiarazione falsa, e il controllo **F9** la blocca.
+- **Non si scrive una regola fonetica che nessuna fonte dichiari.** Dove le
+  fonti non dicono niente (la `z` intervocalica, la `s` intervocalica) si
+  lascia la nota e si resta `da_verificare`. E non si mette l'accento tonico
+  se la fonte non lo marca.
+- **Non si usa una voce ferrarese come se fosse un'altra varieta'.** Le cinque
+  sono `cittadino`, `centrale`, `occidentale`, `orientale`, `transpadano`, e
+  ogni voce porta la sua. Non si aggiunge una sesta: un elenco aperto
+  finisce per voler dire qualunque cosa.
+
+## 6. Le domande aperte, e dove stanno
+
+Le questioni aperte di questo progetto sono poche, e nessuna e' bloccante per
+lavorare:
+
+1. **Quante ore di registrazione servono** per un gioco di ascolto e parlato
+   utile, e chi le registra. Il gioco ha 150 livelli informatici e 900
+   livelli linguistici: il materiale audio necessario e' grande e nessuno ha
+   stimato la sua dimensione. **E' la domanda piu' importante.**
+2. ~~**Il glossario deve contenere solo il ferrarese cittadino o anche le
+   altre varieta'.**~~ **Deciso il 2026-10-03: tutte e cinque, distinte.**
+   `varieta` e' un campo obbligatorio del glossario e delle coppie (controlli
+   G8, G9, C7, C8), `dati/varieta.json` tiene la tassonomia con i territori
+   e la fonte, e quattro varieta' su cinque sono **vuote dichiarate**. La
+   domanda che resta e' chi le riempi e come: comincia dall'occidentale, dove
+   la differenza dal cittadino si sente di piu'.
+3. **Dove finiscono le proposte del livello IA.** `dati/proposte/` e' la
+   destinazione dichiarata ma la cartella non esiste ancora, e va creata con un
+   criterio di revisione che nomini chi approva.
+4. **Chi verifica le trascrizioni IPA e con quale criterio di pagamento.** Le
+   30 righe di `dati/fonetica.jsonl` sono tutte `I` e `da_verificare`: sono
+   una lettura della grafia, non un ascolto. Passarle a `D` richiede un
+   parlante, e il progetto non ha ancora deciso chi sia e come si faccia a
+   registrare il fatto.
+
+## 7. Il rapporto con «I cinque duchi»
+
+Il gioco non incorpora il traduttore: il gioco usa i **dati**, cioe' il
+glossario, le coppie e i brani. Il traduttore e' lo strumento con cui quei dati
+si producono e si controllano.
+
+Quindi la domanda giusta davanti a una modifica non e' «funziona?» ma «**il
+gioco la puo' usare cosi'?**». Una traduzione con un buco non si puo' mettere
+in un livello. Ecco perche' il motore calcola `da_pubblicare` e il perche'
+quel campo esiste: e' il confine fra quello che si puo' mostrare a uno
+studente e quello che va ancora verificato.
+
+Per il resto vale `i-cinque-duchi/AGENTS.md`, che non si riassume qui.

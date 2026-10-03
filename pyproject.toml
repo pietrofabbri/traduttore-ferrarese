@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "traduttore-ferrarese"
+version = "0.1.0"
+description = "Traduttore italiano-ferrarese con fonti dichiarate e astensione esplicita"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["ferrarese", "dialetto", "traduzione", "didattica"]
+
+# Il nucleo non ha **nessuna** dipendenza. Non serve installare niente per
+# usare il traduttore: si importa da `sorgenti/` e si esegue. E' una scelta,
+# e la ragione e' che questo progetto deve funzionare su una macchina scolastica
+# dove non si puo' installare niente, e su un computer di un docente che non ha
+# mai sentito parlare di ambienti virtuali.
+dependencies = []
+
+[project.optional-dependencies]
+# Il livello 4. Facoltativo per definizione: senza questo extra il motore
+# funziona lo stesso e si ferma al livello 3.
+ia = ["anthropic>=0.40"]
+# Solo per `audio`, che non c'e' ancora ma che quando ci sara' avra' bisogno di
+# riconoscere il parlato. Whisper ha un modello italiano, non ferrarese: su
+# parole ferraresi sbaglia, e va usato come indizio, non come giudizio.
+audio = ["openai-whisper>=20231117"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+traduttore = "traduttore.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "sorgenti" }
+
+[tool.setuptools.packages.find]
+where = ["sorgenti"]
+
+[tool.pytest.ini_options]
+testpaths = ["prove"]
+pythonpath = ["sorgenti"]

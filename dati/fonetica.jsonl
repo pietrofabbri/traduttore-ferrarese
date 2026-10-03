@@ -1,0 +1,102 @@
+// Le trascrizioni IPA. Un file per riga, piu' commenti che righe.
+//
+// **Perche' questo file esiste.** Il ferrarese si scrive a orecchio, quindi la
+// grafia non dice il suono. Il gioco ha bisogno di far ascoltare e far
+// ripetere, e la traccia di pronuncia piu' economica e piu' onesta e' la
+// trascrizione: trecento anni dopo Biondelli la si scrive a macchina, senza
+// chiedere il permesso a nessuno e senza mentire.
+//
+// **Perche' pero' e' pieno di "da verificare".** Perche' una trascrizione
+// scritta qui dentro e' un'interpretazione della grafia di una fonte, non un
+// ascolto. Ogni riga porta `attendibilita: "I"` e `da_verificare: true`, e
+// resta cosi' finche' qualcuno non l'ascolta e la conferma. Il passaggio a
+// `D` e' una riga da scrivere, non un controllo da bypassare:
+//
+//   "fonte": "confermato da [come la persona si fa chiamare], Bondeno, 2026"
+//   "attendibilita": "D", "da_verificare": false
+//
+// Il campo `fonte` dice da dove viene la **scrittura**, non il suono: e' la
+// stessa fonte della voce del glossario a cui la riga si riferisce.
+//
+// --- IL SISTEMA, dichiarato perche' si possa controllarlo -----------------
+//
+// Solo queste regole, e sono tutte regole di LETTURA della grafia, non
+// conoscenze sul parlato:
+//
+//   1. vocali: /a e ɛ i o u/; nessuna vocale schwa, nessuna vocale nasale.
+//      La fonte non scrive mai `ë`, `ì`, `ó` senza accento.
+//   2. `gh` = /g/, `ch` = /k/. Nessuna eccezione documentata.
+//   3. `gn` davanti a vocale anteriore = /n/ palatale, resa /ɲ/.
+//   4. `c` = /k/ davanti a a, o, u e consonantica; = /tʃ/ davanti a e, i.
+//      `g` = /g/ davanti ad a, o, u; = /dʒ/ davanti a e, i.
+//   5. `ci`, `gi` quindi si leggono /tʃi/, /dʒi/. `majàl` = /maˈjal/: la `j`
+//      e' la semivocale, non una consonante.
+//   6. `ss`, `s`, `z` = /s/, /z/... e qui il file **si ferma**: vedi sotto.
+//
+// La regola 6 e' quella che non c'e'. La `s` intervocalica e la `z`
+// intervocalica sono il punto su cui le fonti disponibili **non dicono
+// niente**, e in una lingua che scrive a orecchio sono proprio i punti dove
+// la scrittura inganna di piu'. Il file non sceglie: le rime con la `z`
+// dicono che la `z` e' stata letta come la scrive, e la nota dice che
+// l'altra lettura e' possibile. La stessa cosa vale per la vocale atonica
+// pretonica, resa breve senza dichiarare se e' aperta o chiusa: `ved` e'
+// /ved/, non /vɛd/, perche' la fonte non dice.
+//
+// La `s` e la `z` sono il primo posto dove guardare quando si comincia a
+// verificare con un parlante: e' la' che le regole scritte sopra si
+// rivelano sbagliate, se sbagliano.
+//
+// **L'accento tonico viene dalla fonte, non da qui.** Se la fonte scrive
+// `magnàr`, la trascrizione scrive `/maˈɲnar/`. Se la fonte scrive `brisa` e
+// `pan` senza accento, la trascrizione non mette l'accento e la nota dice
+// che l'accento non e' dichiarato dalla fonte. Mettere l'accento per conto
+// proprio sarebbe stato il modo piu' economico di sbagliare.
+//
+// **Cosa non c'e'.** Nessuna frase intera e' trascritta. Una frase e' piu'
+// difficile da trascrivere di una parola, e sbagliata suona peggio: quindi si
+// comincia dalle parole, che sono le uniche che il gioco fa ripetere.
+//
+// I campi:
+//
+//   id            T0001
+//   riferimento   l'id della voce (V0001) o della coppia (F0001)
+//   forma         la forma scritta, come la scrive la fonte
+//   ipa           la trascrizione, fra slash
+//   varieta       una delle cinque, come nel glossario
+//   fonte         da dove viene la SCRITTURA
+//   attendibilita I qui sotto; D solo dopo l'ascolto di un parlante
+//   nota          il dubbio, quando c'e'. Il dubbio e' il contenuto.
+//
+// Righe di esempio, da togliere:
+//
+// {"id":"T9999","riferimento":"V0000","forma":"","ipa":"","varieta":"cittadino","fonte":"","attendibilita":"I","nota":"","da_verificare":true}
+{"id":"T0001","riferimento":"V0001","forma":"magnàr","ipa":"/maˈɲnar/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"La `gn` e' resa /ɲ/ per la regola 3. Se la lingua parlata raddoppia la consonante palatale la trascrizione e' mezza: e' la prima cosa da verificare a voce.","da_verificare":true}
+{"id":"T0002","riferimento":"V0002","forma":"portàr","ipa":"/porˈtar/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Desinenza infinita conservata come la scrive la fonte; la forma parlata «portar» e' registrata come variante della voce e non ha trascrizione propria.","da_verificare":true}
+{"id":"T0003","riferimento":"V0003","forma":"desideràr","ipa":"/deziˈderar/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"La forma scritta conserva la vocale atonica italiana in `-de-`. Nella lingua parlata quella vocale non c'e': la trascrizione segue la grafia della fonte, non quello che si ascolta, e la differenza e' il punto da chiarire con un vocabolario dell'Ottocento.","da_verificare":true}
+{"id":"T0004","riferimento":"V0004","forma":"amà","ipa":"/aˈma/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Biondelli scrive la forma abbreviata senza la r finale: si trascrive quello che c'e'.","da_verificare":true}
+{"id":"T0005","riferimento":"V0005","forma":"volà","ipa":"/voˈla/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Da non confondere con il ferrarese di «volere»: due verbi diversi, due trascrizioni diverse.","da_verificare":true}
+{"id":"T0006","riferimento":"V0006","forma":"mancà","ipa":"/manˈka/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Il gruppo `nc` e' reso /nk/ senza dichiarare niente sulla sua realizzazione: la fonte non ne parla.","da_verificare":true}
+{"id":"T0007","riferimento":"V0007","forma":"principiar","ipa":"/prinˈtʃipjar/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"`ci` davanti a `i` e' /tʃ/ per la regola 4, e la vocale finale `a` davanti alla r si legge /j/. Biondelli usa questa voce per illustrare una resa della z aspra: qui si trascrive quello che ha scritto, non quello che dice di voler dire.","da_verificare":true}
+{"id":"T0008","riferimento":"V0008","forma":"sittadìn","ipa":"/sittaˈdin/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Come T0007: `s` per la z aspra italiana.","da_verificare":true}
+{"id":"T0009","riferimento":"V0009","forma":"sivìl","ipa":"/siˈvil/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Come T0007.","da_verificare":true}
+{"id":"T0010","riferimento":"V0010","forma":"dottór","ipa":"/dotˈtor/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Biondelli osserva che nei sostantivi le desinenze italiane si serbano, a differenza dei verbi: e' il caso che rende T0010, T0011 e T0012 diverse da T0001 e T0002 anche a occhio.","da_verificare":true}
+{"id":"T0011","riferimento":"V0011","forma":"rasón","ipa":"/raˈzon/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Come T0010. La `o` finale preconsontante e' resa breve.","da_verificare":true}
+{"id":"T0012","riferimento":"V0012","forma":"padrón","ipa":"/paˈdron/","varieta":"cittadino","fonte":"Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204","attendibilita":"I","nota":"Come T0010.","da_verificare":true}
+{"id":"T0013","riferimento":"V0013","forma":"brisa","ipa":"/brisa/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»","attendibilita":"I","nota":"Nessun accento nella fonte, quindi nessun accento qui: non e' che la parola e' sdruccia, e' che la fonte non dice dove cade l'accento. Da verificare per primi con un parlante, perche' e' una parola di tre sillabe.","da_verificare":true}
+{"id":"T0014","riferimento":"V0013","forma":"brisà","ipa":"/briˈsa/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»","attendibilita":"I","nota":"La variante con l'accento della stessa voce V0013. Due scritture, due trascrizioni: e' la prova che in questa lingua l'accento e' una scelta di chi scrive.","da_verificare":true}
+{"id":"T0015","riferimento":"V0014","forma":"ghe","ipa":"/ɡe/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»","attendibilita":"I","nota":"La `gh` e' /g/ per la regola 2. Monosillaba: l'accento non e' dichiarato dalla fonte.","da_verificare":true}
+{"id":"T0016","riferimento":"V0015","forma":"gh'è","ipa":"/ɡˈɛ/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»","attendibilita":"I","nota":"L'accento della fonte cade sulla vocale finale e viene riportato. La `gh` e' /g/ e non /ɡʁ/, che e' la scelta che un lettore italiano si aspetterebbe.","da_verificare":true}
+{"id":"T0017","riferimento":"V0016","forma":"n'è","ipa":"/nˈɛ/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»","attendibilita":"I","nota":"Come T0016.","da_verificare":true}
+{"id":"T0018","riferimento":"V0017","forma":"n'agh","ipa":"/naɡ/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»","attendibilita":"I","nota":"L'apostrofo segna il contatto con la vocale che segue e non lascia traccia nella trascrizione; la `gh` finale e' /g/.","da_verificare":true}
+{"id":"T0019","riferimento":"V0018","forma":"ved","ipa":"/ved/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase a n'agh ved brisa)","attendibilita":"I","nota":"La vocale pretonica e' resa breve senza dichiarare se sia aperta o chiusa: la fonte scrive `ved` e non distingue. Da verificare per primi con chi parla, perche' e' una delle parole che il gioco usa di piu'.","da_verificare":true}
+{"id":"T0020","riferimento":"V0019","forma":"pan","ipa":"/pan/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase an ghè brisa pan)","attendibilita":"I","nota":"Nessun accento nella fonte. Monosillaba: la sola cosa che resta da dire e' quanto dura la vocale.","da_verificare":true}
+{"id":"T0021","riferimento":"V0020","forma":"casa","ipa":"/kasa/","varieta":"cittadino","fonte":"Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano","attendibilita":"I","nota":"**La `z` intervocalica e' il punto debole di questa riga.** Il file la legge come la scrive, e le fonti disponibili non dicono se nella lingua parlata suoni diversamente: in una lingua che scrive a orecchio quello e' esattamente il caso in cui la scrittura mente. Prima cosa da verificare, e insieme alla `s` intervocalica.","da_verificare":true}
+{"id":"T0022","riferimento":"V0020","forma":"ca","ipa":"/ka/","varieta":"cittadino","fonte":"Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano","attendibilita":"I","nota":"La forma breve della stessa voce V0020. Nella lingua parlata la forma breve e' quella che si usa e la forma piena no: e' una ragione di piu' per non tradurre mai parola per parola.","da_verificare":true}
+{"id":"T0023","riferimento":"V0021","forma":"frarés","ipa":"/fraˈrɛs/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione","attendibilita":"I","nota":"Il gentilizio. L'accento finale della fonte e' riportato; la vocale pretonica breve non e' dichiarata.","da_verificare":true}
+{"id":"T0024","riferimento":"V0021","forma":"frarèz","ipa":"/fraˈrɛz/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione","attendibilita":"I","nota":"La variante con `z` finale della stessa voce V0021. Stessa `z` finale di T0021: due occasioni per capire se quella `z` suona o no.","da_verificare":true}
+{"id":"T0025","riferimento":"V0022","forma":"fra","ipa":"/fra/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)","attendibilita":"I","nota":"La forma parlata del toponimo. T0026 e' la forma attestata: due scritture diverse per un nome di citta', e la voce dichiara perche' non sono la stessa cosa.","da_verificare":true}
+{"id":"T0026","riferimento":"V0022","forma":"fràra","ipa":"/ˈfrara/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)","attendibilita":"I","nota":"Il toponimo come lo scrive la fonte, con l'accento sulla prima sillaba, mentre la forma parlata `fra` non lo dichiara. E' il modo più economico di vedere che in ferrarese la `r` finale si sente e si scrive in modo diverso da come si dice.","da_verificare":true}
+{"id":"T0027","riferimento":"V0023","forma":"nass","ipa":"/nas/","varieta":"cittadino","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","attendibilita":"I","nota":"`ss` = /s/. La fonte di questa voce non ha licenza verificata: la trascrizione vale come lettura, e la pubblicazione dipende dalla fonte della voce, non da qui.","da_verificare":true}
+{"id":"T0028","riferimento":"V0024","forma":"tutti","ipa":"/tuti/","varieta":"cittadino","fonte":"Dialettario ferrarese, traduzione della Dichiarazione universale dei diritti umani, art. 1","attendibilita":"I","nota":"La forma coincide con l'italiano e non insegna niente: si trascrive per poter dire che il gioco la riconosce come la stessa parola, che e' un'informazione utile per chi impara.","da_verificare":true}
+{"id":"T0029","riferimento":"V0025","forma":"majàl","ipa":"/maˈjal/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)","attendibilita":"I","nota":"La `j` e' /j/, semivocale, e non una consonante: `majàl` si dice in tre sillabe, non due. Il doppio `ll` delle varianti `omajàll` e `iomajàll` e' il punto su cui questa voce e' meno documentata di tutte le altre.","da_verificare":true}
+{"id":"T0030","riferimento":"V0026","forma":"oj","ipa":"/oj/","varieta":"cittadino","fonte":"it.wikipedia.org/wiki/Dialetto_ferrarese («Altro intercalare frequentemente usato e' oj!»)","attendibilita":"I","nota":"Due suoni, e il secondo e' la vocale finale. E' l'intercalare piu' breve del glossario e quello che uno studente usa di piu': quando si verifica una parola sola, e' questa.","da_verificare":true}

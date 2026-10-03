@@ -172,7 +172,7 @@ jobs:
           for radice, _, file in os.walk("audio"):
               for nome in file:
                   if nome.lower().endswith((".mp3", ".ogg", ".m4a", ".oga", ".wav", ".webm")):
-                  trovati.add(nome)
+                      trovati.add(nome)
           estranei = trovati - pronti
           if estranei:
               print("ERRORE: file audio in audio/ che nessun brano dichiara "

@@ -23,6 +23,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 from dataclasses import dataclass, field
 
 from . import normalizza
@@ -75,13 +76,53 @@ class Voce:
     # stampato lo dichiara, e il motore la tratta come voce di seconda.
     da_verificare: bool = False
 
+    def _chiavi_resi(self, testo: str, principale: str) -> list:
+        """Le chiavi con cui una voce si trova cercando una delle sue forme.
+
+        Una voce puo' avere piu' resi separati da virgola: «Maledire,
+        esacràre», «con calma, senza fretta». Indicizzando solo l'intero
+        campo, chi scrive «maledire» non trova niente e la voce che il libro
+        scrive e' proprio quella che serviva. Percio' ogni resi e' una chiave
+        sua, piu' `principale` quando c'e'.
+
+        Si divide su virgola e punto e virgola, **non sugli spazi**:
+        «con calma, senza fretta» deve trovarsi con «con calma» e con
+        «senza fretta», ma non con «calma» da sola, che e' un'altra voce
+        (V0025) e che perderebbe il suo contesto.
+
+        Il testo intero resta una chiave sua: chi incolla dal libro la voce
+        per come e' scritta, cioe' «con calma, senza fretta», deve trovarla.
+        Dividere i pezzi senza lasciare la frase intera e' il modo di
+        perdere la voce esattamente dove si cerca di ritrovarla.
+
+        I pezzi vuoti si scartano e i duplicati si eliminano: la stessa voce
+        non deve occupare due volte lo stesso slot dell'indice.
+        """
+        pezzi = []
+        if (testo or "").strip():
+            pezzi.append(testo.strip())
+        pezzi += [p.strip() for p in re.split(r"[,;]", testo or "") if p.strip()]
+        if (principale or "").strip():
+            pezzi.append(principale.strip())
+        chiavi = []
+        for pezzo in pezzi:
+            k = normalizza.chiave(pezzo)
+            if k and k not in chiavi:
+                chiavi.append(k)
+        return chiavi
+
     def chiavi_ferrarese(self) -> list:
-        return [normalizza.chiave(self.ferrarese)] + [
-            normalizza.chiave(v) for v in self.varianti
-        ]
+        # I pezzi del lato ferrarese vengono dai `varianti` dichiarati a mano
+        # e dai resi multipli: stesso ragionamento del lato italiano.
+        chiavi = self._chiavi_resi(self.ferrarese, self.principale_ferrarese)
+        for v in self.varianti:
+            k = normalizza.chiave(v)
+            if k and k not in chiavi:
+                chiavi.append(k)
+        return chiavi
 
     def chiavi_italiano(self) -> list:
-        return [normalizza.chiave(self.italiano)]
+        return self._chiavi_resi(self.italiano, self.principale_italiano)
 
     def varieta_valida(self) -> bool:
         return codice_valido(self.varieta)

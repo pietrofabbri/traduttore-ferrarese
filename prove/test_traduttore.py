@@ -46,6 +46,7 @@ e il progetto non puo' essere pubblicato con i dati rotti dentro.
 from __future__ import annotations
 
 import os
+import re
 import sys
 import unittest
 
@@ -773,6 +774,87 @@ class TestVociMeccaniche(unittest.TestCase):
             sys.path.pop(0)
         self.assertIn("la", costruisci_meccanico.FUNZIONALI)
         self.assertEqual(costruisci_meccanico.voce_pulita("Tundìn sm"), "Tundìn")
+
+
+class TestResiMultipli(unittest.TestCase):
+    """Una voce con piu' resi deve trovarsi da ciascuno dei suoi resi.
+
+    Il difetto che questi test prendono e' gia' stato dichiarato nella
+    versione 0.7 e poi corretto: il glossario indicizzava il lato italiano
+    sull'intero campo `italiano`, quindi «Maladir -> Maledire, esacràre»
+    non si trovava cercando «maledire». Erano **1663 voci su 10387** in
+    questa situazione, e non si vedeva perche' le 210 voci curate del
+    1889 avevano resi brevi. L'import meccanico le ha fatte emergere.
+
+    La riga e' la stessa che in `modello.html` (funzione `chiaviResi`): se
+    le due copie divergono, `prove/controlla_equivalenza.py` lo dice.
+    """
+
+    def test_una_resa_dentro_una_voce_si_trova_cercandola_sola(self):
+        # Il caso che riporta l'utente: la parola c'era, non si trovava.
+        # Non e' la parola che manca, e' l'indice che non la guardava.
+        glossario = Glossario([
+            _voce("V1", "Maladir", "Maledire, esacràre", "Ferri 1889, pag. 234"),
+        ])
+        voci = glossario.cerca_italiano("maledire")
+        self.assertEqual([v.id for v in voci], ["V1"])
+        voci = glossario.cerca_italiano("esacràre")
+        self.assertEqual([v.id for v in voci], ["V1"])
+
+    def test_il_reso_intero_resta_raggiungibile(self):
+        # Dividere i pezzi non deve far perdere la voce intera: chi cerca la
+        # voce come sta scritta nel libro deve trovarla lo stesso.
+        glossario = Glossario([
+            _voce("V1", "a bada", "con calma, senza fretta", "Ferri 1889, pag. 8"),
+        ])
+        for cercato in ("con calma, senza fretta", "con calma", "senza fretta"):
+            self.assertEqual([v.id for v in glossario.cerca_italiano(cercato)], ["V1"],
+                             "cercando %r" % cercato)
+
+    def test_un_pezzo_non_e_una_parola_del_glossario(self):
+        # Il limite che la correzione NON deve superare: si divide su virgola
+        # e punto e virgola, non sugli spazi. «con calma» deve trovarsi
+        # cercando «con calma», e NON cercando «calma», che e' un'altra voce
+        # (V0025) e che perderebbe il contesto in cui il libro la scrive.
+        glossario = Glossario([
+            _voce("V1", "a bada", "con calma, senza fretta", "Ferri 1889, pag. 8"),
+            _voce("V2", "calma", "calma", "Ferri 1889, pag. 30"),
+        ])
+        self.assertEqual([v.id for v in glossario.cerca_italiano("calma")], ["V2"])
+        self.assertNotIn("V1", [v.id for v in glossario.cerca_italiano("calma")])
+
+    def test_principale_che_non_e_un_reso_mal_risponde_ancora(self):
+        # `principale_italiano` vale anche quando non e' un pezzo della voce:
+        # e' la forma da usare in frase. Se il campo c'e', la voce deve
+        # trovarsi anche cercando quella.
+        glossario = Glossario([_voce("V1", "gh'è", "c'è, è (presenza)",
+                                     "Ferri 1889, pag. 40")])
+        self.assertEqual([v.id for v in glossario.cerca_italiano("c'è")], ["V1"])
+        self.assertEqual([v.id for v in glossario.cerca_italiano("è (presenza)")], ["V1"])
+
+    def test_una_voce_non_occupa_due_volte_lo_stesso_indice(self):
+        # Una voce i cui pezzi si normalizzano allo stesso modo («no, no»:
+        # due forme diverse che diventano la stessa chiave) deve comparire
+        # una volta sola, altrimenti il motore annuncerebbe «altre voci» che
+        # sono la voce che ha gia' risposto.
+        glossario = Glossario([_voce("V1", "a bada", "con calma, con calma",
+                                     "Ferri 1889, pag. 8")])
+        self.assertEqual(len(glossario.cerca_italiano("con calma")), 1)
+
+    def test_ogni_voce_con_piu_resi_e_raggiungibile(self):
+        # Il numero, non l'esempio. Se domani il file, questa riguarda tutte le
+        # voci e fallisce sul primo caso, che e' quello che serve vedere.
+        glossario, _, _, _, _ = _dati_del_repository()
+        composte = [v for v in glossario.voci if "," in (v.italiano or "")
+                    or ";" in (v.italiano or "")]
+        self.assertGreater(len(composte), 100, "il glossario non ha piu' resi da dividere")
+        for voce in composte:
+            for pezzo in re.split(r"[,;]", voce.italiano):
+                cercato = pezzo.strip()
+                if not cercato:
+                    continue
+                self.assertTrue(glossario.cerca_italiano(cercato),
+                                "%s non si trova cercando %r" % (voce.id, cercato))
 
 
 class TestBuchiDichiarati(unittest.TestCase):

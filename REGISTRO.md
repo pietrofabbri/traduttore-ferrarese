@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.7
+versione: 0.8
 data: 2026-10-03
 ---
 
@@ -25,6 +25,8 @@ codice, e che si perde per sempre se non la si scrive qui.
    riga di codice**, perché cambia quello che il progetto sa.
 
 ## 0.7 — 2026-10-03 · Il vocabolario entra quasi tutto, dichiarando quello che non e' verificato
+
+*(Immediatamente dopo: 0.8.)*
 
 **Perché.** Chi usava il traduttore si e' accorto che mancavano le parole
 piu' ovvie: «sedia» non c'era, e con essa la meta' del vocabolario di base. Il
@@ -75,6 +77,7 @@ voci curate avevano resi brevi. Correggere vuol dire indicizzare anche
 `principale_italiano` e i singoli pezzi — ma la stessa logica e' scritta due
 volte, in `glossario.py` e in `modello.html`, e le due copie vanno tenute
 allineate nello stesso commit. E' il prossimo passo, non un dettaglio.
+*(Corretto nella 0.8, che e' la versione successiva.)*
 
 **Verifiche.** 77 test (erano 74). `verifica`: 0 errori, 2 avvisi D2. Equivalenza
 Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
@@ -82,6 +85,42 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.8 — 2026-10-03 · Una voce con piu' resi si trova da ciascuno dei suoi resi
+
+**Perché.** La 0.7 aveva portato dentro 10000 voci e aveva dichiarato il
+difetto che ne era venuto fuori, senza correggerlo: il glossario indicizzava
+il lato italiano sull'intero campo `italiano`. «Maladir → Maledire,
+esacràre» era una voce che il libro scrive e che il motore non trovava
+cercando «maledire». Erano **1663 voci su 10387**. Il sintomo e' quello che
+si vede subito e che sembra assurdo: la parola c'e', la risposta c'e', e
+chi scrive «maledire» riceve «nessuna voce». Un vuoto cosi' non e' un vuoto:
+e' una voce presente ma irraggiungibile, che e' la specie peggiore, perche'
+si presenta come informazione.
+
+- **`Voce._chiavi_resi()`** indicizza ogni resi separato da virgola o punto e
+  virgola, piu' `principale_italiano` quando c'e'. Le **1663 voci irraggiungibili
+  sono 0**;
+- si divide su virgola e punto e virgola, **non sugli spazi**. «con calma»
+  deve trovarsi cercando «con calma» e **non** cercando «calma», che e'
+  un'altra voce (V0025) e che perderebbe il contesto in cui il libro la
+  scrive. E' un test (`test_un_pezzo_non_e_una_parola_del_glossario`);
+- **il testo intero resta una chiave**: chi incolla dal libro la voce per come
+  e' scritta deve trovarla. La prima stesura della correzione aveva sostituito
+  la chiave intera con i pezzi, e il test
+  `test_il_reso_intero_resta_raggiungibile` l'ha fatto vedere: si perdeva la
+  voce proprio dove si cercava di ritrovarla. Difetto della correzione,
+  corretto prima di metterla dentro;
+- la stessa logica e' scritta in `modello.html` (`chiaviResi`), nella stessa
+  versione, e `prove/controlla_equivalenza.py` continua a dare 0 divergenze
+  sulle dodici frasi. Il primo giro del confronto ne aveva trovata una — la
+  pagina era rigenerata con il vecchio script — ed e' il motivo per cui la
+  rigenerazione va fatta **prima** del confronto, non dopo.
+
+**Verifiche.** 83 test (erano 77). `verifica`: 0 errori, 2 avvisi D2. Equivalenza
+Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
+0 risposte cambiate: la correzione rende raggiungibile quello che prima non lo
+era, senza spostare quello che gia' rispondeva.
 
 ## 0.6 — 2026-10-03 · I buchi prendono un numero
 

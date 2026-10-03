@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.7
+versione: 0.8
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -47,6 +47,11 @@ da solo — «10363 voci su 10387 senza trascrizione IPA» e' una frase che qual
 puo' correggere lunedi', «non abbiamo le trascrizioni IPA» e' una frase che
 resta vera per sempre. Gli stessi numeri compaiono sotto «E che cosa non sa»
 nella pagina.
+
+Una voce con piu' resi si trova da **ciascuno** dei suoi resi: il Ferri scrive
+«Maladir → Maledire, esacràre», e chi cerca «maledire» trova la voce, come chi
+cerca «esacràre». Si divide su virgola e punto e virgola, non sugli spazi:
+«con calma» si trova con «con calma» e non con «calma», che e' un'altra voce.
 
 `cerca` guarda **in entrambi i lati** per default, e dice da quale lato ha
 trovato la parola. Serve a due persone diverse: a chi scrive una frase e cerca

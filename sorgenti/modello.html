@@ -216,14 +216,42 @@
       .replace(RE_NON, "");
   }
 
+  function chiaviResi(testo, principale) {
+    // Gli stessi pezzi di `Voce._chiavi_resi` in glossario.py. Le due copie
+    // della logica devono dire la stessa cosa, ed e' quello che controlla
+    // `prove/controlla_equivalenza.py`: se una indicizza i pezzi e l'altra
+    // no, la pagina e il motore dicono cose diverse per la stessa parola.
+    //
+    // Si divide su virgola e punto e virgola, NON sugli spazi: «con calma,
+    // senza fretta» deve trovarsi con «con calma» e non anche con «calma».
+    // Il testo intero resta una chiave: chi incolla dal libro la voce per
+    // come e' scritta deve trovarla.
+    var chiavi = [];
+    var intero = (testo || "").trim();
+    if (intero) {
+      var ki = chiave(intero);
+      if (ki) chiavi.push(ki);
+    }
+    (testo || "").split(/[,;]/).forEach(function (pezzo) {
+      var k = chiave(pezzo);
+      if (k && chiavi.indexOf(k) === -1) chiavi.push(k);
+    });
+    var kp = chiave(principale || "");
+    if (kp && chiavi.indexOf(kp) === -1) chiavi.push(kp);
+    return chiavi;
+  }
+
   function indice() {
     var perIt = {}, perFe = {};
     DATI.glossario.forEach(function (v) {
-      [v.fe].concat(v.varianti || []).forEach(function (f) {
+      chiaviResi(v.fe, v.principale_fe).concat(v.varianti || []).forEach(function (f) {
         var k = chiave(f); if (!k) return;
-        (perFe[k] = perFe[k] || []).push(v);
+        if ((perFe[k] || []).indexOf(v) === -1) (perFe[k] = perFe[k] || []).push(v);
       });
-      var ki = chiave(v.it); if (ki) (perIt[ki] = perIt[ki] || []).push(v);
+      chiaviResi(v.it, v.principale_it).forEach(function (f) {
+        var k = chiave(f); if (!k) return;
+        if ((perIt[k] || []).indexOf(v) === -1) (perIt[k] = perIt[k] || []).push(v);
+      });
     });
     return { perIt: perIt, perFe: perFe };
   }

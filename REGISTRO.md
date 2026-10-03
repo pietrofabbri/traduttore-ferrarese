@@ -86,6 +86,43 @@ copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
+## 0.13 — 2026-10-03 · Il motore che leggeva male due lettere, e come l'ho scoperto
+
+**Perché.** Il 0.12 ha aperto la fonte delle trascrizioni. In un repository
+fratello, costruendo il cammino **inverso** — dal suono alla grafia, che serve a
+un ipotetico sistema che ascolta il ferrarese — ho dovuto fare una misura che
+qui non esisteva: 28 parole fanno il viaggio di andata e ritorno, e si conta
+quante sopravvivono. Quella misura ha trovato due difetti di questo motore.
+
+**Il primo.** In Python la stringa vuota è sottostringa di qualunque stringa,
+quindi `"" in "eie"` è **vero**. La regola 4 chiedeva se la vocale che segue `c`
+o `g` fosse anteriore, senza chiedersi che vocale ci fosse: a fine parola non
+ce n'è nessuna, e il controllo passava. Ogni `c` e `g` **finale di parola**
+diventava affricata. `nag` leggeva `/nadʒ/`, `mang` `/mandʒ/`, `nac` `/natʃ/`:
+parole che si cercano ogni giorno, e la voce le diceva sbagliate senza
+dichiararlo. Corretto con una guardia esplicita.
+
+**Il secondo.** Le vocali anteriori erano l'elenco di caratteri `"eiéèi"`, e
+**mancavano `ì` e `í`**. Quindi `gì` leggeva `/g/` invece di `/dʒ/`, e `cì` `/k/`
+invece di `/tʃ/`. Una regola che funziona per tre casi su quattro sembra
+funzionare: è il motivo per cui la lista è adesso un insieme con nome,
+`ANTERIORI`, e non una stringa scritta a occhio.
+
+**La lezione, che vale più dei due difetti.** La domanda giusta non è «il
+codice sembra giusto» ma «un'altra strada per arrivarci dà la stessa
+risposta?». Il viaggio di ritorno **è** quell'altra strada, ed è la prima volta
+che il motore viene verificato da qualcosa che non è lui stesso. Un modulo che
+si controlla da solo non può trovare i propri errori di fondo, perché li ha
+scritti con la stessa convinzione con cui li ha sbagliati.
+
+Entrambi coperti da test. Il numero di test sale a 115, e i due casi che
+scoprivano sono entrambi nomi di parola che oggi si cercano e si traducono
+bene.
+
+**Verifiche.** 115 test (erano 113). `verifica`: 0 errori, 8 avvisi. Equivalenza
+Python/JavaScript: 12 frasi, 0 divergenze. Nessuna risorsa esterna, nessun
+carattere fuori dal latino.
+
 ## 0.12 — 2026-10-03 · La fonte che doveva decidere sull'accento non era mai stata aperta
 
 **Perché.** La 0.11 aveva lasciato aperta una domanda: l'accento di Biondelli.

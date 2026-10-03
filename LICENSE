@@ -19,16 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Questa licenza vale per il CODICE di questo repository: `sorgenti/`,
-`prove/`, `web/`, `.github/`.
-
-NON vale per i DATI. I dati hanno licenze diverse, perchè vengono da fonti
-diverse, e la licenza di ciascuno e' dichiarata nel campo `fonte` della riga
-che lo contiene e nel file `LICENZE.md`. Un file solo per i dati non
-esisterebbe comunque: Biondelli 1853 e' in pubblico dominio, Wikipedia e' CC
-BY-SA 4.0, e una traduzione dialettale anonima ha una licenza non ancora
-verificata — per quella i dati stanno in `dati/da_verificare/` e non vengono
-pubblicati.

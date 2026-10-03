@@ -13,10 +13,17 @@ usato, anche dentro un altro progetto, anche commerciale. Un progetto che
 insegna una lingua che sta morendo non ha interesse a trattenere il codice
 che lo fa funzionare.
 
-Il testo della licenza e' nel file `LICENSE` in radice, e fin li' che GitHub
-lo riconosca da solo e lo mostri accanto al codice. Vale per `sorgenti/`,
-`prove/`, `web/` e `.github/`; **non** vale per i dati, che hanno licenze
-diverse e le dichiarano uno per uno.
+Il testo della licenza e' nel file `LICENSE` in radice, **senza commenti**: e'
+il testo del MIT, nient'altro, e GitHub lo riconosce e lo mostra accanto al
+codice. Vale per `sorgenti/`, `prove/`, `web/` e `.github/`; **non** vale per
+i dati, che hanno licenze diverse e le dichiarano una per una.
+
+Quel che il `LICENSE` non puo' dire, perche' non e' una licenza ma una
+premessa, e' qui: **un file solo per i dati non esisterebbe comunque.** I dati
+verranno da Biondelli (pubblico dominio), da Wikipedia (CC BY-SA 4.0) e da
+una traduzione dialettale anonima la cui licenza non e' ancora verificata.
+Per quest'ultima i dati non sono pubblicati e stanno in
+`dati/da_verificare/`.
 
 ## Dati
 

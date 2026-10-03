@@ -31,7 +31,24 @@ jobs:
         # Escono diversamente da zero se c'e' un errore. E' voluto: il
         # workflow deve fallire quando i dati sono rotti, altrimenti e' un
         # documento che non dice niente.
-        run: python3 -m traduttore.cli verifica
+        #
+        # L'export sta dentro il passo e non in un passo prima: `PYTHONPATH`
+        # non sopravvive al passo in cui e' stato esportato, e un controllo che
+        # non trova il pacchetto fallisce per un motivo che non c'entra con i
+        # dati. E' successo, e il messaggio diceva «No module named
+        # traduttore» invece di quello che il controllo voleva dire.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli verifica
+
+      - name: Il pacchetto si importa da dove deve
+        # Un controllo che non parte non e' un controllo che passa. Questo
+        # passo non confronta nulla: verifica solo che il pacchetto si
+        # importi, e fallisce subito e con un messaggio chiaro invece di
+        # lasciare che falliscano i controlli veri con un errore di import.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -c "from traduttore import cli, glossario, corpora, morfologia, motore, modello, verifica_dati, varieta, fonetica, audio; print('pacchetto importato')"
 
       - name: Le regole apprese sono coerenti col glossario
         # Il file delle regole e' generato. Se qualcuno lo ha modificato a mano,

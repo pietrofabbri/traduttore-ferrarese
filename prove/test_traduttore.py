@@ -1,15 +1,32 @@
 """I test del traduttore.
 
-Sono sette, e ciascuno verifica una regola che il progetto dichiara per
-scritto. Se una regola non ha un test, non e' una regola: e' una speranza.
+Ogni test verifica una regola che il progetto dichiara per iscritto. Se una
+regola non ha un test, non e' una regola: e' una speranza.
 
-1. il glossario risponde per entrambe le direzioni;
-2. il glossario dichiara i campi che mancano, non li inventa;
-3. il motore risponde dal glossario quando la voce c'e';
-4. il motore **non indovina** quando la voce non c'e', e dichiara il buco;
-5. le regole morfologiche si imparano dal corpus e non si applicano al glossario;
-6. una risposta sotto soglia non e' pubblicabile;
-7. i controlli sui dati trovano quello che devono trovare.
+Le regole, per gruppo:
+
+1. la normalizzazione toglie quello che non distingue e lascia l'accento;
+2. il glossario risponde per entrambe le direzioni, e le voci vicine sono
+   consultive e non risposte;
+3. il glossario dichiara i campi che mancano, non li inventa: nessuna fonte
+   diventata `D` per arte, nessuna varieta' inventata;
+4. il motore risponde dal glossario quando la voce c'e', e quando la voce
+   non c'e' **non indovina**: restituisce la parola e registra il buco;
+5. il corpus risponde con il **frammento** che combacia e non con la frase
+   intera, e la frase gemella viene resa per intero;
+6. le regole morfologiche si imparano dal corpus, sopravvivono alla propria
+   generalizzazione e non si applicano al glossario;
+7. una risposta sotto soglia non e' pubblicabile;
+8. le cinque varieta' sono cinque, una voce le dichiara obbligatoriamente, e
+   le varieta' vuote si dicono;
+9. una trascrizione IPA e' una trascrizione, e non si dichiara documentata
+   senza che qualcuno abbia ascoltato;
+10. un brano audio non si pubblica senza consenso, licenza e `pubblicabile`;
+11. quello che aspetta la verifica della licenza non entra nei dati attivi;
+12. una risposta del modello resta una proposta e non si porta dentro una
+    fonte;
+13. i controlli trovano quello che devono trovare, e i dati di questo
+    repository li passano tutti.
 
 Il test 4 e' il piu' importante del file. Un traduttore che sbaglia in
 silenzio e' peggio di un dizionario che non c'e', perche' lo sbaglio una
@@ -19,6 +36,11 @@ Il blocco finale, quello delle varieta' e della fonetica, verifica le regole
 che sono venute dopo: una voce **deve** dire in quale varieta' e' attestata,
 una trascrizione IPA deve essere una trascrizione e non la parola rimessa al
 suo posto, e un brano audio non si pubblica senza consenso e licenza.
+
+L'ultimo test del file e' quello che conta di piu' di tutti e non guarda una
+funzione: `test_dati_del_repository_passano_i_controlli` prende i dati che ci
+sono adesso e li sottopone a tutti i controlli. Se fallisce, il CI fallisce,
+e il progetto non puo' essere pubblicato con i dati rotti dentro.
 """
 
 from __future__ import annotations
@@ -331,6 +353,51 @@ class TestFilaDAttesa(unittest.TestCase):
         # E la fila non e' vuota: se si svuotasse, il controllo D1 non
         # controllerebbe piu' niente e sembrerebbe che il progetto sia a posto.
         self.assertTrue(attesa_glossario.voci or attesa_corpus.coppie)
+
+
+class TestLineaDiComando(unittest.TestCase):
+    """I comandi, perche' un comando che risponde «nessuna voce» a una parola
+    che c'e' e' peggio di un comando assente.
+
+    Il difetto che questi test prendono e' reale e gia' successo: `cerca`
+    guardava **solo** il lato italiano per default, quindi chi cercava una
+    parola ferrarese — cioe' chi legge un vocabolario dell'Ottocento e vuole
+    sapere cosa vuol dire — riceveva «nessuna voce» per una parola che era
+    li'. Non un vuoto vero: un vuoto fabbricato dalla bandierina, che e' la
+    peggior specie di vuoto, perche' si vede come informazione.
+    """
+
+    def _esegui(self, argv):
+        import io
+        import contextlib
+        from traduttore import cli
+        uscita = io.StringIO()
+        with contextlib.redirect_stdout(uscita):
+            stato = cli.main(argv)
+        return stato, uscita.getvalue()
+
+    def test_cerca_trova_una_parola_ferrarese_senza_indicare_il_lato(self):
+        stato, testo = self._esegui(["cerca", "magnàr"])
+        self.assertEqual(stato, 0, testo)
+        self.assertIn("V0001", testo)
+        self.assertIn("dal lato ferrarese", testo)
+        # E porta anche le cose che sono il punto: varieta' e suono.
+        self.assertIn("cittadino", testo)
+        self.assertIn("/", testo)
+
+    def test_cerca_trova_anche_una_parola_italiana(self):
+        stato, testo = self._esegui(["cerca", "mangiare"])
+        self.assertEqual(stato, 0, testo)
+        self.assertIn("dal lato italiano", testo)
+
+    def test_cerca_restringuta_a_un_lato_e_rispettata(self):
+        stato, testo = self._esegui(["cerca", "magnàr", "--direzione", "it-fe"])
+        self.assertEqual(stato, 1)
+        self.assertIn("nessuna voce", testo)
+
+    def test_pronuncia_senza_parola_mostra_l_aiuto_e_non_esce_in_silenzio(self):
+        stato, _ = self._esegui(["pronuncia"])
+        self.assertEqual(stato, 1)
 
 
 class TestProposte(unittest.TestCase):

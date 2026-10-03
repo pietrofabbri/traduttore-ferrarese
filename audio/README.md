@@ -5,6 +5,10 @@ registrazione di nessuna persona è ancora stata autorizzata per entrare nel
 progetto. Non è un posto dove mettere i file per poi dichiararli: è il posto
 dove finiscono i brani che hanno già superato i tre controlli.
 
+Ci sono qui dentro i due documenti che servono perché la cartella si riempia:
+`SESSIONE.md` e `modello-consenso.txt`. Non sono un brano e non vengono
+pubblicati: sono le istruzioni e il permesso.
+
 ## I tre controlli, e perché sono tre
 
 Un brano entra in `audio/` e nella pagina solo se ha tutte e tre le cose:
@@ -87,6 +91,12 @@ I campi che non si possono saltare:
    perché è quella dove la differenza dal cittadino si sente di più.
 3. **Il consenso prima**, il file dopo, la riga del manifesto per ultima. In
    quest'ordine, sempre: è l'ordine che non lascia spazio a un file di troppo.
+
+I tre file che servono per una sessione, in quest'ordine: **`SESSIONE.md`** per
+il come (i venti minuti, minuto per minuto), **`modello-consenso.txt`** per il
+permesso, e questo file per il dove il risultato va messo. Quanto tempo ci
+vuole davvero è in `../STIMA-AUDIO.md`, e la stima va corretta con il primo
+dato vero che arriva.
 
 ## Lo stato adesso
 

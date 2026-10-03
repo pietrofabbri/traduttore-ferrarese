@@ -66,6 +66,10 @@ E committa anche i due file generati. Un repository in cui il file delle
 regole non corrisponde a quello che i dati produrrebbero mente sul proprio
 contenuto, e il workflow `verifica.yml` lo segnala.
 
+E se la modifica cambia il comportamento o i dati, **una riga in
+`REGISTRO.md`**: la versione, e il motivo in una frase. Una versione senza un
+motivo e' un numero, e il motivo di una decisione non si ricava dal codice.
+
 Se hai toccato una voce, la copia le due cose che viaggiano con lei:
 la sua **varieta'** (`dati/varieta.json` e `dati/glossario.jsonl`) e la sua
 **trascrizione IPA** (`dati/fonetica.jsonl`). Una voce nuova senza varieta'
@@ -119,7 +123,9 @@ I codici da conoscere:
 - **Non si registra audio senza consenso scritto.** E non si pubblica un brano
   senza consenso, nemmeno in un repository privato, nemmeno «solo per prova».
   Le tre condizioni sono `consenso`, `licenza` e `pubblicabile`, e servono
-  tutte e tre: copiare un file in `web/audio/` **e' pubblicarlo**.
+  tutte e tre: copiare un file in `web/audio/` **e' pubblicarlo**. Il
+  consenso si firma prima di premere il pulsante, con
+  `audio/modello-consenso.txt`, e la copia firmata non entra nel repository.
 - **Non si scrive una trascrizione IPA come se fosse stata ascoltata.** Il
   campo `fonte` dice da dove viene la **scrittura**. Una trascrizione con
   `attendibilita: "D"` senza il nome di chi ha ascoltato, dove e quando e' una
@@ -138,10 +144,13 @@ I codici da conoscere:
 Le questioni aperte di questo progetto sono poche, e nessuna e' bloccante per
 lavorare:
 
-1. **Quante ore di registrazione servono** per un gioco di ascolto e parlato
-   utile, e chi le registra. Il gioco ha 150 livelli informatici e 900
-   livelli linguistici: il materiale audio necessario e' grande e nessuno ha
-   stimato la sua dimensione. **E' la domanda piu' importante.**
+1. ~~**Quante ore di registrazione servono**~~ **Risposto il 2026-10-03**, non
+   chiuso: la stima e la sua aritmetica sono in `STIMA-AUDIO.md`. Il gioco ha
+   **150 livelli di ferrarese** (i 900 sono la somma delle sei lingue) e serve
+   circa un'ora di audio pulito ogni trenta livelli: **due ore e mezza per
+   l'anno 1, quindici per tutta la progressione**. Il numero che non e' un
+   numero e' **quante persone**: trenta, di cinque varietà diverse, che
+   dicano di sì. La stima va rifatta con il primo dato vero.
 2. ~~**Il glossario deve contenere solo il ferrarese cittadino o anche le
    altre varieta'.**~~ **Deciso il 2026-10-03: tutte e cinque, distinte.**
    `varieta` e' un campo obbligatorio del glossario e delle coppie (controlli

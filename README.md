@@ -39,6 +39,12 @@ apre con un doppio clic e funziona **senza connessione**. Nessun account,
 nessun server, nessuna richiesta di rete. Su GitHub la pubblica il workflow
 `pagine.yml`.
 
+`cerca` guarda **in entrambi i lati** per default, e dice da quale lato ha
+trovato la parola. Serve a due persone diverse: a chi scrive una frase e cerca
+la parola italiana, e a chi ha davanti un vocabolario dell'Ottocento e cerca
+cosa vuol dire una parola ferrarese. Con `--direzione it-fe` o `--direzione
+fe-it` si guarda un lato solo.
+
 ## I quattro livelli, e il quinto
 
 Una parola attraversa il motore sempre nella stessa direzione, e ogni risposta
@@ -188,12 +194,32 @@ diventa una fonte scrivendogli il nome in un campo, e a farlo deve essere una
 persona che ha aperto il vocabolario. Il protocollo e' in
 [dati/proposte/README.md](dati/proposte/README.md).
 
+## Quanto costa l'audio
+
+La domanda che il progetto si porta da più tempo — «quante ore di registrazione
+servono?» — ha una risposta con l'aritmetica in [STIMA-AUDIO.md](traduttore-ferrarese/STIMA-AUDIO.md).
+In breve: il gioco ha **150 livelli di ferrarese** (i 900 sono le sei lingue),
+ciascuno con un testo autentico che per il ferrarese è «una trascrizione di un
+parlante».
+
+| Scenario | Persone | Audio grezzo | Trascrizione |
+|---|---|---|---|
+| anno 1 (30 livelli) | 5 | 2 h 30 | 10 ore |
+| progressione intera (150 livelli) | 25–30 | 12 h 30 – 15 ore | 50 – 60 ore |
+
+Quindici ore di registrazione non sono un problema. Trovare trenta persone che
+parlino ferrarese di cinque varietà diverse e che diano il permesso, sì. Il
+percorso per un anno di gioco è cinque persone e una settimana, e la pagina che
+si segue è `audio/SESSIONE.md`.
+
 ## Struttura
 
 ```
 traduttore-ferrarese/
   README.md            questo file
   RACCOLTA.md          dove si accumulano vocabolari, testi e registrazioni
+  REGISTRO.md          che cosa e' cambiato, e perche'
+  STIMA-AUDIO.md       quante ore di registrazione servono, con l'aritmetica
   AGENTS.md            istruzioni per chi ci lavora, persone e IA
   dati/
     glossario.jsonl    le parole, con la fonte e la varieta'
@@ -208,7 +234,8 @@ traduttore-ferrarese/
                        possediamo, non li pubblichiamo, e il controllo D1
                        controlla che non vengano usati per errore
     proposte/          la coda di revisione delle risposte del livello IA
-  audio/               i brani registrati: adesso c'e' solo il README
+  audio/               i brani registrati, il protocollo di sessione e il
+                       modello di consenso: adesso non c'e' nessun brano
   sorgenti/
     traduttore/        il pacchetto
       normalizza.py    due livelli di normalizzazione, e quando usare ciascuno
@@ -248,6 +275,9 @@ ferrarese. In breve:
 - il glossario accetta solo voci con la fonte, e il controllo **G4** fa
   fallire la CI se una voce si dichiara documentata senza nominare libro e
   pagina;
+- `REGISTRO.md` tiene **perché** ogni versione è quella che è: un numero di
+  versione senza un motivo è un numero, e il motivo è la parte che non si
+  ricava dal codice;
 - **una fonte con licenza non verificata non si pubblica**: le voci e le coppie
   che ne derivano stanno in `dati/da_verificare/`, fuori dai dati attivi, e
   il controllo **D1** verifica che non vengano usate per errore;
@@ -271,9 +301,12 @@ ferrarese. In breve:
   usare **registrazioni vere**, non voci sintetiche, e dichiarare che sono
   vere.
 - **Non c'e' nessuna registrazione**: `dati/audio.jsonl` e' vuoto e
-  `audio/` contiene solo il protocollo. Le 28 trascrizioni IPA ci sono, ma
-  nessuna e' verificata da un parlante (`attendibilita D`): finche' vale
-  zero, la pronuncia non e' documentata da nessuna parte e la pagina lo dice.
+  `audio/` contiene il protocollo e il modello di consenso, non un brano. Le
+  28 trascrizioni IPA ci sono, ma nessuna e' verificata da un parlante
+  (`attendibilita D`): finche' vale zero, la pronuncia non e' documentata da
+  nessuna parte e la pagina lo dice. Quanto tempo ci vuole davvero e' in
+  `STIMA-AUDIO.md`: quindici ore di registrazione per tutta la progressione,
+  e il vincolo non sono le ore, sono le persone.
 - **Quattro voci e due frasi sono in una fila d'attesa**,
   `dati/da_verificare/`: vengono dalla traduzione ferrarese della
   Dichiarazione universale dei diritti umani (S003), e la licenza di quella

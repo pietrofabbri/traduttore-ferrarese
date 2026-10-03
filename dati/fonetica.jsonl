@@ -31,20 +31,24 @@
 //      `g` = /g/ davanti ad a, o, u; = /dʒ/ davanti a e, i.
 //   5. `ci`, `gi` quindi si leggono /tʃi/, /dʒi/. `majàl` = /maˈjal/: la `j`
 //      e' la semivocale, non una consonante.
-//   6. `ss`, `s`, `z` = /s/, /z/... e qui il file **si ferma**: vedi sotto.
+//   6. la `s` e la `z` si leggono **come sono scritte**, e questo non e' una
+//      regola ma una scelta che puo' essere sbagliata: vedi sotto.
 //
-// La regola 6 e' quella che non c'e'. La `s` intervocalica e la `z`
-// intervocalica sono il punto su cui le fonti disponibili **non dicono
-// niente**, e in una lingua che scrive a orecchio sono proprio i punti dove
-// la scrittura inganna di piu'. Il file non sceglie: le rime con la `z`
-// dicono che la `z` e' stata letta come la scrive, e la nota dice che
-// l'altra lettura e' possibile. La stessa cosa vale per la vocale atonica
-// pretonica, resa breve senza dichiarare se e' aperta o chiusa: `ved` e'
-// /ved/, non /vɛd/, perche' la fonte non dice.
+// La regola 6 dice una cosa che va detta anche male: **non si sa**. La `s`
+// intervocalica e la `z` intervocalica sono il punto su cui le fonti
+// disponibili non dicono niente, e in una lingua che scrive a orecchio sono
+// proprio i punti dove la scrittura inganna di piu'. Il file le legge come
+// sono scritte — `casa` = /kasa/, `brisà` = /briˈsa/ — e in ogni riga che ne
+// contiene una la nota dice che l'altra lettura e' possibile. Non e' una
+// scelta, e' un vuoto dichiarato dentro una trascrizione.
+//
+// La stessa cosa vale per la vocale atonica pretonica, resa breve senza
+// dichiarare se sia aperta o chiusa: `ved` e' /ved/, non /vɛd/, perche' la
+// fonte non dice.
 //
 // La `s` e la `z` sono il primo posto dove guardare quando si comincia a
-// verificare con un parlante: e' la' che le regole scritte sopra si
-// rivelano sbagliate, se sbagliano.
+// verificare con un parlante: e' li' che le regole scritte sopra si rivelano
+// sbagliate, se sbagliano.
 //
 // **L'accento tonico viene dalla fonte, non da qui.** Se la fonte scrive
 // `magnàr`, la trascrizione scrive `/maˈɲnar/`. Se la fonte scrive `brisa` e

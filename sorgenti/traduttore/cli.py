@@ -180,27 +180,59 @@ def comando_proposte(args) -> int:
 
 
 def comando_cerca(args) -> int:
+    """Cerca una parola, in italiano o in ferrarese, senza doverlo sapere.
+
+    Il default cerca **in entrambi i lati**, perche' il comando serve a due
+    persone diverse: a chi sta scrivendo una frase e cerca la parola
+    italiana, e a chi ha letto una parola ferrarese su un vecchio vocabolario
+    e cerca di sapere cosa significa. Con il default su un lato solo, il
+    secondo di questi due riceveva «nessuna voce» per una parola che era
+    li': non un vuoto vero, un vuoto fabbricato dalla bandierina.
+
+    `--direzione` resta, e serve a chi *vuole* guardare un lato solo (per
+    capire se una parola e' gia' stata presa in italiano).
+    """
     glossario = Glossario.da_file(PERCORSI["glossario"])
-    direzione = FE_IT if args.direzione == "fe-it" else IT_FE
-    voci = glossario.cerca(args.forma, direzione)
-    if not voci:
+    # La fonetica si carica una volta sola, prima di tutto: leggere il file
+    # dentro il ciclo e' sprezzo di disco, e in un comando che si usa spesso si
+    # sente. Non e' un difetto che si vede, e' un difetto che costa.
+    fonetica = Fonetica.da_file(PERCORSI["fonetica"])
+    direzioni = {"it-fe": [IT_FE], "fe-it": [FE_IT], "entrambe": [IT_FE, FE_IT]}
+    cercate = direzioni.get(args.direzione, [IT_FE, FE_IT])
+    trovate = []
+    for direzione in cercate:
+        for voce in glossario.cerca(args.forma, direzione):
+            trovate.append((direzione, voce))
+    if not trovate:
         print("nessuna voce per %r" % args.forma)
-        vicine = glossario.vicine(args.forma, direzione, soglia=0.6)
+        vicine = []
+        for direzione in cercate:
+            for punteggio, voce in glossario.vicine(args.forma, direzione, soglia=0.6):
+                vicine.append((direzione, punteggio, voce))
         if vicine:
             print("vicine (non sono risposte):")
-            for punteggio, voce in vicine:
-                print("  %0.2f  %s = %s  (%s)"
-                      % (punteggio, voce.ferrarese, voce.italiano, voce.fonte or "senza fonte"))
+            for direzione, punteggio, voce in vicine:
+                # Le stesse tre cose che stampa la risposta esatta: varieta' e
+                # suono. Una riga di suggerimento che mostra meno informazione
+                # della risposta e' una riga che si fa fidare piu' di quanto
+                # abbia diritto.
+                suono = fonetica.cerca_forma(voce.ferrarese)
+                print("  %0.2f  %s = %s  [%s]  %s  (cercata dal lato %s)"
+                      % (punteggio, voce.ferrarese, voce.italiano,
+                         voce.varieta or "senza varieta'",
+                         suono[0].ipa if suono else "senza IPA",
+                         "italiano" if direzione == IT_FE else "ferrarese"))
         return 1
-    for voce in voci:
-        print("%-8s %s = %s" % (voce.id, voce.ferrarese, voce.italiano))
+    for direzione, voce in trovate:
+        lato = "italiano" if direzione == IT_FE else "ferrarese"
+        print("%-8s %s = %s  (dal lato %s)" % (voce.id, voce.ferrarese,
+                                               voce.italiano, lato))
         if voce.varianti:
             print("         varianti: " + ", ".join(voce.varianti))
         print("         campo: %s | attendibilita: %s%s"
               % (voce.campo or "-", voce.attendibilita,
                  " | DA VERIFICARE" if voce.da_verificare else ""))
         print("         varieta': %s" % (voce.varieta or "NON DICHIARATA"))
-        fonetica = Fonetica.da_file(PERCORSI["fonetica"])
         for t in fonetica.per_riferimento(voce.id):
             print("         suona:   %-10s %s  (%s%s)"
                   % (t.forma, t.ipa, t.attendibilita,
@@ -318,6 +350,13 @@ def comando_pronuncia(args) -> int:
     deduzione: la trascrizione e il suo stato. Una IPA senza stato accanto e'
     un'affermazione, e questo progetto non le fa.
     """
+    if not args.forma and not args.tutte:
+        # Senza parola e senza `--tutte` il comando non ha niente da dire. Il
+        # peccato qui e' il silenzio: un programma che non risponde sembra
+        # rotto, e una cosa che sembra rotta e' stata cercata male.
+        print("dimmi una parola, oppure usa --tutte per l'elenco completo.")
+        print("esempio: python3 -m traduttore.cli pronuncia magnàr")
+        return 1
     fonetica = Fonetica.da_file(PERCORSI["fonetica"])
     glossario = Glossario.da_file(PERCORSI["glossario"])
     if args.tutte:
@@ -454,7 +493,10 @@ def costruisci_parser() -> argparse.ArgumentParser:
 
     p = sotto.add_parser("cerca", help="cerca una voce")
     p.add_argument("forma")
-    p.add_argument("--direzione", choices=["it-fe", "fe-it"], default="it-fe")
+    p.add_argument("--direzione", choices=["it-fe", "fe-it", "entrambe"],
+                   default="entrambe",
+                   help="da quale lato cercare (default: entrambi, perche' "
+                        "non si sa se la parola che cerca e' italiana o ferrarese)")
     p.set_defaults(func=comando_cerca)
 
     p = sotto.add_parser("impara", help="impara le regole dal corpus")
@@ -503,12 +545,6 @@ def main(argv=None) -> int:
         return 0
     if not getattr(args, "func", None):
         parser.print_help()
-        return 1
-    # `pronuncia` senza argomenti e senza `--tutte` non ha niente da dire e
-    # resterebbe in silenzio: e' l'unico modo in cui un utente pensa che il
-    # programma sia rotto.
-    if args.comando == "pronuncia" and not args.forma and not getattr(args, "tutte", False):
-        parser.parse_args(["pronuncia", "--help"])
         return 1
     return args.func(args)
 

@@ -1,0 +1,78 @@
+MODELO DI CONSENSO ALLA REGISTRAZIONE E ALLA PUBBLICAZIONE
+Progetto «I cinque duchi» — raccolta di parlato ferrarese
+===========================================================
+
+DA LEGGERE AD ALTA VOCE. Non si firma un foglio che non si è letto.
+
+
+1. CHI SONO E PERCHÉ LO CHIEDO
+-----------------------------
+Mi chiamo ______________________________ e raccolgo registrazioni di
+parlato ferrarese per un videogioco didattico che si chiama «I cinque duchi».
+Il gioco serve a imparare la lingua, anche a sentire e a parlare, e le
+registrazioni servono a far ascoltare la voce vera.
+
+Non c'è nessun account, nessun sito che raccoglie dati, nessun server. Le
+voci che vengono pubblicate sono dentro il gioco, che si può scaricare e
+usare senza connessione.
+
+
+2. CHI PARLA E COME VIENE CITATO
+--------------------------------
+La persona che parla vuole essere citata come: ______________________________
+(per esempio «un parlante di Bondeno, 2026», o un nome, o un soprannome)
+
+Luogo e data della registrazione: ______________________________________
+
+Varietà dichiarata (cerchiare quella che la persona riconosce):
+   cittadino · centrale/arioso · occidentale · orientale · transpadano
+   (se la persona non lo sa, si scrive «non dichiarata» e la domanda resta
+    aperta: meglio una varietà incerta che una inventata)
+
+
+3. CHE COSA VUOLE CHIEDERE
+-------------------------
+  [ ] che la registrazione sia usata nel videogioco, anche da altri che
+      scaricano il gioco
+  [ ] che la registrazione sia pubblicata insieme al testo, sul sito del
+      progetto, con la fonte dichiarata
+  [ ] solo uso interno del progetto: la registrazione NON viene pubblicata
+
+
+4. CHE COSA PUÒ RINUNCIARE IN QUALSIASI MOMENTO
+-----------------------------------------------
+Può dire «basta» quando vuole, anche dopo, e non deve spiegare perché.
+In quel caso il gioco smette di usare le registrazioni di questa sessione e
+io cancello i file che ho da questa sessione. Non ci sono conseguenze.
+
+
+5. PER I MINORI DI ETÀ
+----------------------
+Se chi parla ha meno di 18 anni, il consenso è di chi esercita la
+responsabilità legale, che firma qui sotto. Le voci dei compagni di classe
+non entrano nel progetto pubblico.
+
+
+6. FIRME
+--------
+Chi parla (o chi esercita la responsabilità):
+
+   Nome per come vuole essere citato  ______________________________
+
+   Firma  __________________  Data  ___/___/______
+
+
+Chi raccoglie:
+
+   Nome  __________________  Firma  __________________
+
+
+DOVE VANNO I MODULI
+-------------------
+Le copie firmate NON si mettono nel repository e NON si fotografano e si
+mandano in chat: restano a chi raccoglie le registrazioni. Nel repository
+finisce solo la riga del manifesto, che dice che il consenso c'è, e nient'altro
+sulla persona.
+
+Questo testo è un modello, non un contratto di un avvocato: se una
+circostanza non è prevista qui, si ferma la sessione e si scrive cosa manca.

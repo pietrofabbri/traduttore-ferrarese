@@ -480,15 +480,26 @@ class TestLineaDiComando(unittest.TestCase):
         # Il comando non deve mai produrre un numero con un metro che non ha:
         # 23,7% con i lemmi e 10,8% con le forme sono due numeri diversi, e
         # quello senza i file e' semplicemente falso. Meglio nessun numero.
-        import os as _os
-        grezzi = _os.path.join(RADICE, "raccolta", "grezzi")
-        if not _os.path.exists(_os.path.join(grezzi, "itwac_noun.csv")):
-            stato, testo = self._esegui(["copertura"])
-            # `copertura.py` esce con 1 quando gli elenchi mancano.
-            self.assertEqual(stato, 1, testo)
-            self.assertIn("Mancano questi elenchi", testo)
-            self.assertNotIn("23.7", testo)
-            self.assertNotIn("10.8", testo)
+        #
+        # Il comando delega a `copertura.py` con `subprocess`, quindi qui non
+        # si passa da `_esegui`: quello cattura lo stdout della CLI padre, e
+        # la scrittura del figlio finisce fuori. Si chiama lo script
+        # direttamente, che e' anche la cosa che il comando fa.
+        import subprocess
+        import sys as _sys
+        percorso = os.path.join(RADICE, "raccolta", "copertura.py")
+        risultato = subprocess.run([_sys.executable, percorso],
+                                  capture_output=True, text=True)
+        if os.path.exists(os.path.join(RADICE, "raccolta", "grezzi",
+                                       "itwac_noun.csv")):
+            self.skipTest("gli elenchi ItWaC sono presenti: niente da dichiarare")
+        # `copertura.py` esce con 1 quando gli elenchi mancano.
+        self.assertEqual(risultato.returncode, 1, risultato.stdout)
+        self.assertIn("Mancano questi elenchi", risultato.stdout)
+        # E soprattutto: nessun numero di copertura.
+        self.assertNotIn("23.7", risultato.stdout)
+        self.assertNotIn("10.8", risultato.stdout)
+        self.assertNotIn("coperte dal glossario", risultato.stdout)
 
     def test_buchi_stampa_un_numero_e_il_motivo_per_ogni_buco(self):
         # Il comando non fallisce mai e non e' un controllo: qui non c'e'

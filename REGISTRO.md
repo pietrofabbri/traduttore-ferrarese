@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.6
+versione: 0.7
 data: 2026-10-03
 ---
 
@@ -23,6 +23,65 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.7 — 2026-10-03 · Il vocabolario entra quasi tutto, dichiarando quello che non e' verificato
+
+**Perché.** Chi usava il traduttore si e' accorto che mancavano le parole
+piu' ovvie: «sedia» non c'era, e con essa la meta' del vocabolario di base. Il
+motivo non e' stato un buco di conoscenza: il vocabolario del Ferri era gia' nel
+repository dall'estrazione al 1889, con 13257 voci candidate, e di quelle ne
+erano state scelte a mano **210**. Le altre rimanevano in un file di lavoro che
+`.gitignore` nascondeva. Non era un dizionario troppo piccolo: era un
+dizionario che non era stato letto. Il caso peggiore era la direzione della
+scelta: fra le 210 voci curate c'erano 206 locuzioni e 28 parole singole — il
+glossario aveva scelto quasi solo i modi di dire, e il vocabolario di base era
+quasi interamente assente.
+
+- **`filtra_candidati.py` accetta `--pulito`**: un secondo filtro butta via
+  quello che l'OCR ha storpiato (i due punti, le cifre, le lettere isolate
+  dell'abbreviazione rimasta attaccata). 13257 candidati diventano 11101
+  leggibili, di cui 2848 locuzioni;
+- **`costruisci_meccanico.py`** porta dentro i candidati rimasti senza sceglierli
+  uno a uno. Ogni riga prende la pagina dal libro, la pagina si cita nel campo
+  `fonte`, e la voce entra con `attendibilita: I` e `da_verificare: true`: la
+  riga non si presenta come verificata, si presenta come trascritta. Il
+  glossario passa da 234 a **10387 voci** (2034 locuzioni, 8353 parole
+  singole). Le scelte non le fa il generatore: le fa il filtro, e quello che
+  il filtro non riesce a capire non entra;
+- la glossa viene ripulita della categoria e si prende l'ultimo pezzo (il Ferri
+  scrive la definizione e poi la resa), i punti dentro le parole si tolgono
+  («Tro.vare» → «Trovare»), e una riga che raccoglie piu' sotto-voci non entra
+  invece di essere mutilata;
+- **Difetto introdotto e corretto**: il primo import aveva messo dentro la
+  voce «La» → «La», e da li' il motore riscriveva con la grafia della fonte
+  ogni «la» di ogni frase («la porta» → «La portàr»). Le parole funzionali
+  non entrano piu': sono gia' in `morfologia.py`, e una voce che non distingue
+  le due lingue fa solo danno. Un test (`TestVociMeccaniche`) impedisce che
+  l'import le reintroduca e che una voce meccanica perda il suo
+  `da_verificare`;
+- **`scarana` (sedia) e' attestata in una fonte nuova**: il *Vocabolario
+  domestico ferrarese-italiano* di **Carlo Azzi (1857)**, la fonte base del
+  Ferri stesso, che il Ferri dichiara di aver studiato. Va in `dati/fonti.json`
+  come **S012**, stato `esaminata` con licenza verificata: attesta «Sedia,
+  scaranna. Sedia. Seggiola - Seggio», ma non e' ancora `acquisita` perche' il
+  suo OCR e' molto piu' sporco e i numeri di pagina radi, quindi ogni voce
+  dovrebbe riportare `s. p.` finche' non si legge il libro a stampa.
+
+**Difetto trovato e non corretto, dichiarato.** Il glossario indicizza il lato
+italiano sull'intero campo `italiano`. Una voce come «Maladir → Maledire,
+esacràre» non si trova quindi cercando «maledire», e sono **1663 voci su
+10387** in questa situazione. Prima dell'import non si vedeva, perche' le 210
+voci curate avevano resi brevi. Correggere vuol dire indicizzare anche
+`principale_italiano` e i singoli pezzi — ma la stessa logica e' scritta due
+volte, in `glossario.py` e in `modello.html`, e le due copie vanno tenute
+allineate nello stesso commit. E' il prossimo passo, non un dettaglio.
+
+**Verifiche.** 77 test (erano 74). `verifica`: 0 errori, 2 avvisi D2. Equivalenza
+Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
+**0 risposte cambiate** rispetto a prima dell'import: le voci nuove aggiungono
+copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
+da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
+e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
 ## 0.6 — 2026-10-03 · I buchi prendono un numero
 

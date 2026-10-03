@@ -480,10 +480,15 @@ class TestLineaDiComando(unittest.TestCase):
         # niente da correggere, c'e' solo da sapere. Quindi esce 0 anche se
         # i buchi sono cinque, e ogni riga porta il numero E il motivo: una
         # riga che porta solo il numero non dice a nessuno cosa fare.
+        #
+        # Il totale non e' scritto qui: quando il glossario e' passato da 234
+        # a 10401 voci, un numero scritto a mano nel test e' diventato falso
+        # senza che nessuno lo toccasse. Ora viene dai dati.
+        glossario, _, _, _, _ = _dati_del_repository()
         stato, testo = self._esegui(["buchi"])
         self.assertEqual(stato, 0, testo)
         self.assertIn("proverbi senza la forma che si dice", testo)
-        self.assertIn("su 234", testo)
+        self.assertIn("su %d" % len(glossario.voci), testo)
         self.assertIn("il campo `popolare`", testo)
         self.assertIn("Non sono errori", testo)
 
@@ -715,6 +720,59 @@ class TestFonetica(unittest.TestCase):
         _, _, _, fonetica, _ = _dati_del_repository()
         self.assertGreater(len(fonetica), 0)
         self.assertEqual(fonetica.quante_verificate(), 0)
+
+
+class TestVociMeccaniche(unittest.TestCase):
+    """Le voci portate dentro dal filtro senza sceglierle una a una.
+
+    Il difetto che questi test prendono e' successo davvero: l'import dei
+    10153 candidati del Ferri aveva messo dentro la voce «La» -> «La», e da
+    li' in poi il motore riscriveva con la grafia della fonte ogni «la» di
+    ogni frase — «la porta» diventava «La portàr». Una voce che non
+    distingue le due lingue, in un vocabolario di traduzione, non e' una voce
+    utile: e' una voce che fa scrivere sbagliato.
+    """
+
+    def _dati(self):
+        glossario, corpus, _, fonetica, _ = _dati_del_repository()
+        return glossario, corpus, fonetica
+
+    def test_una_parola_funzionale_non_deve_essere_una_voce(self):
+        # Gli articoli e le preposizioni sono gia' in `morfologia.py`. Una voce
+        # per «la» non aggiunge niente e toglie la parola al motore.
+        #
+        # «fra» e «tra» non sono in elenco perche' sono anche toponimi: V0022 e'
+        # la voce curata «fra» = Ferrara e viene da Wikipedia, non
+        # dall'import meccanico, e quella voce giusta resta. Il generatore,
+        # che legge solo i candidati del Ferri, li esclude lo stesso.
+        glossario, _, _ = self._dati()
+        for voce in glossario.voci:
+            self.assertNotIn(voce.ferrarese.strip().lower(),
+                             {"il", "lo", "la", "i", "gli", "le", "un", "una",
+                              "a", "al", "da", "di", "in", "con", "per",
+                              "e", "o", "ma", "che", "come", "se"},
+                             "una parola funzionale non deve essere una voce")
+
+    def test_ogni_voce_nuova_dichiara_che_non_e_stata_verificata(self):
+        # L'import e' meccanico per scelta e per onesta': ogni riga che viene
+        # dal filtro porta `da_verificare`, cosi' nessuno la prende per una
+        # voce controllata con un informatore.
+        glossario, _, _ = self._dati()
+        meccaniche = [v for v in glossario.voci if v.attendibilita == "I"]
+        self.assertGreater(len(meccaniche), 0)
+        for voce in meccaniche[:400]:
+            self.assertTrue(voce.da_verificare, voce.id)
+
+    def test_il_generatore_scarta_le_parole_funzionali(self):
+        # La regola e' del generatore, non solo dei dati: se domani il file
+        # dei candidati, il generatore deve comunque non scrivere «La».
+        sys.path.insert(0, os.path.join(RADICE, "raccolta"))
+        try:
+            import costruisci_meccanico
+        finally:
+            sys.path.pop(0)
+        self.assertIn("la", costruisci_meccanico.FUNZIONALI)
+        self.assertEqual(costruisci_meccanico.voce_pulita("Tundìn sm"), "Tundìn")
 
 
 class TestBuchiDichiarati(unittest.TestCase):

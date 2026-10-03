@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.6
+versione: 0.7
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -43,7 +43,7 @@ nessun server, nessuna richiesta di rete. Su GitHub la pubblica il workflow
 `buchi` non e' un controllo e non fallisce mai: qui non c'e' niente da
 correggere, c'e' solo da sapere. Stampa quello che il progetto **sa di non
 sapere**, con il numero accanto e il motivo per cui quel numero non si riduce
-da solo — «210 voci su 234 senza trascrizione IPA» e' una frase che qualcuno
+da solo — «10363 voci su 10387 senza trascrizione IPA» e' una frase che qualcuno
 puo' correggere lunedi', «non abbiamo le trascrizioni IPA» e' una frase che
 resta vera per sempre. Gli stessi numeri compaiono sotto «E che cosa non sa»
 nella pagina.
@@ -95,7 +95,7 @@ python3 -m traduttore.cli varieta
 ```
 
 ```
-cittadino    cittadino                      234 voci  16 coppie, 0 brani
+cittadino    cittadino                      10387 voci  16 coppie, 0 brani
 centrale     centrale, detto anche arioso    VUOTA     0 coppie, 0 brani
 occidentale  occidentale                     VUOTA     0 coppie, 0 brani
 orientale    orientale                       VUOTA     0 coppie, 0 brani
@@ -329,7 +329,7 @@ ferrarese. In breve:
 - **Non c'e' nessuna registrazione**: `dati/audio.jsonl` e' vuoto e
   `audio/` contiene il protocollo e il modello di consenso, non un brano. Le
   28 trascrizioni IPA ci sono, ma nessuna e' verificata da un parlante
-  (`attendibilita D`), e le altre **210 voci su 234 non hanno nessuna
+  (`attendibilita D`), e le altre **10363 voci su 10387 non hanno nessuna
   trascrizione**: `buchi` stampa i due numeri. Finche' il secondo vale zero,
   la pronuncia non e' documentata da
   nessuna parte e la pagina lo dice. Quanto tempo ci vuole davvero e' in
@@ -340,12 +340,14 @@ ferrarese. In breve:
   Dichiarazione universale dei diritti umani (S003), e la licenza di quella
   fonte non e' verificata. Non le usa nessuno, non sono nella pagina e il
   controllo **D1** fallisce se finiscono nei file attivi. Il glossario ha
-  quindi **234 voci**, tutte da tre fonti e **tutte di una sola varieta'**, il
-  cittadino. Quattro varieta' su cinque sono vuote dichiarate, e tre voci
-  sulle 234 hanno `da_verificare` perche' nessuno le ha ancora controllate
-  con un informatore. Non e' un dizionario e non si presenta come tale.
-- **Le locuzioni si cercano solo dalla parte che le contiene.** Duecentosei
-  delle 234 voci hanno piu' di una parola **dal lato ferrarese**, e il motore
+  quindi **10387 voci**, **tutte di una sola varieta'**, il cittadino, e
+  **10156 non verificate da un informatore** (`attendibilita I`,
+  `da_verificare`): sono la trascrizione meccanica del vocabolario, non una
+  voce controllata. Quattro varieta' su cinque sono vuote dichiarate. Non e'
+  un dizionario e non si presenta come tale.
+- **Le locuzioni si cercano solo dalla parte che le contiene.** Duemila
+  trentaquattro delle 10387 voci hanno piu' di una parola **dal lato
+  ferrarese**, e il motore
   le accorpa prima di tradurre parola per parola: «a braccia aperte» diventa
   `a brazz avèrti` e non tre buchi. Ma l'accorpamento guarda il lato da cui
   si parte: se scrivi in italiano «a braccia aperte» trova la voce, e se
@@ -356,7 +358,7 @@ ferrarese. In breve:
 - **I proverbi sono in pagina e si cercano**, e `popolare` e' vuoto per tutti
   e ventotto. La forma che si dice non l'ha ancora detta nessuno, e un campo
   vuoto dichiarato vale piu' di una forma inventata per simmetria.
-- **La grafia e' del 1889.** Le 210 voci prese dal vocabolario di Ferri sono
+- **La grafia e' del 1889.** Le voci prese dal vocabolario di Ferri sono
   nella grafia del libro, con l'accento sui toni come il Ferri lo intendeva.
   Non e' la grafia di oggi e non e' quella che si sente: le forme sono
   verificabili aprendo il libro alla pagina indicata, non ascoltando un

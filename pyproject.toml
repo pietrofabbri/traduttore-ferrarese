@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "traduttore-ferrarese"
-version = "0.6.0"
+version = "0.7.0"
 description = "Traduttore italiano-ferrarese con fonti dichiarate, varieta' dichiarate e astensione esplicita"
 readme = "README.md"
 requires-python = ">=3.9"

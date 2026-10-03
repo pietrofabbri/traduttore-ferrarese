@@ -157,6 +157,19 @@
       "nota": "La prima pagina e' la nota legale di Google: «a book that was never the subject of copyright ... enter the public domain». La dichiarazione e' della copia digitale, non dell'autore, e per questo la licenza resta non verificata finche' non si risale all'originale a stampa con data e autore. Il testo si e' aperto con l'estrattore minimo del progetto e non e' utilizzabile cosi': l'OCR tiene le coordinate dei glifi ma il file non le conserva, quindi le parole risultano incollate («Informazionsuquestolibro»). Per tirarlo fuori serve un lettore che usi le posizioni dei glifi, oppure il testo di archive.org di questo stesso volume, se esiste. Il libro resta il piu' grande dei quattro e quello che vale la pena di recuperare per primo: 9,4 milioni di caratteri, contro le poche decine di voci che S004 ha reso fin qui."
     },
     {
+      "id": "S012",
+      "titolo": "Vocabolario domestico ferrarese-italiano",
+      "autore": "Carlo Azzi",
+      "anno": 1857,
+      "tipo": "vocabolario",
+      "luogo": "https://archive.org/details/vocabolariodome00azzigoog",
+      "stato": "esaminata",
+      "licenza": "public domain",
+      "licenza_verificata": true,
+      "uso": "Non ancora usato nel glossario. E' la fonte che chiude il buco «sedia».",
+      "nota": "E' la fonte da cui il Ferri stesso deriva: il frontespizio del 1889 dice che e' «compilato da Luigi Ferri sullo studio accurato del Dizionario ferrarese di Carlo Azzi». Percio' quando una parola c'e' nell'Azzi e non nel Ferri, non e' che il Ferri sbaglia: e' che l'Azzi raccoglie il lessico domestico, cioe' la casa e i suoi arredi, che e' esattamente il buco di cui si lamentava chi usa il traduttore. Attesta «Sedia, scaranna. Sedia. Seggiola - Seggio» (pag. non separata nell'OCR). Non e' ancora `acquisita` perche' l'estrazione non e' finita: l'OCR e' molto piu' sporco di quello del Ferri (maiuscole e minuscole alternate nella stessa riga, `SGVLLk` per `SEGGIOLIK`) e i numeri di pagina sono radi e non affidabili, quindi ogni voce dovrebbe riportare `s. p.` finche' non si legge il libro."
+    },
+    {
       "id": "S011",
       "titolo": "«Scrìvar e l'èàr al frarés»",
       "autore": "non identificato",

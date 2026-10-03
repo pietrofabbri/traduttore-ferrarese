@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.11
+versione: 0.12
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -408,7 +408,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 109 test
+python3 prove/test_traduttore.py     # 113 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

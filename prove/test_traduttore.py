@@ -45,6 +45,7 @@ e il progetto non puo' essere pubblicato con i dati rotti dentro.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -1275,6 +1276,68 @@ class TestLetturaGrafia(unittest.TestCase):
             esito = leggi(parola)
             self.assertEqual(esito["attendibilita"], "I", parola)
             self.assertTrue(esito["da_verificare"], parola)
+
+
+class TestConfrontoConLaFonte(unittest.TestCase):
+    """F14 confronta le regole col file: il confronto deve essere giusto."""
+
+    def _f14(self):
+        glossario, corpus, varieta, fonetica, _ = _dati_del_repository()
+        for p in verifica_dati.controlla_fonetica(fonetica, glossario,
+                                                 corpus, varieta):
+            if p.codice == "F14":
+                return p
+        return None
+
+    def test_la_sillabificazione_non_e_un_suono_diverso(self):
+        # Difetto mio, preso da questo stesso test: `por'tar` e `port'ar` hanno
+        # gli stessi suoni e lo stesso accento, e li avevo contati come
+        # diverse dicendo che l'accento cadeva sulla sillaba sbagliata. Non
+        # cadeva: cambiava solo dove finiva la sillaba. Se il confronto torna
+        # a distinguere le due cose, questo test lo prende.
+        problema = self._f14()
+        self.assertIsNotNone(problema, "F14 non ha parlato")
+        # Le parole che differiscono solo di sillabificazione non devono
+        # comparire fra le discordanti.
+        for sola_sillaba in ("portàr", "sittadìn", "sivìl", "dottór",
+                             "padrón", "mancà", "volà", "amà"):
+            self.assertNotIn(sola_sillaba, problema.messaggio, sola_sillaba)
+
+    def test_il_numero_delle_discordanti_e_quello_giusto(self):
+        # Il numero non siGonfia per sembrareprudente. Al momento sono quattro
+        # e sono quattro, e se le regole cambiano il numero cambia: e' un
+        # numero misurato, non una soglia.
+        problema = self._f14()
+        self.assertIsNotNone(problema)
+        for forma in ("magnàr", "desideràr", "principiar", "rasón"):
+            self.assertIn(forma, problema.messaggio, forma)
+
+    def test_le_due_fonti_sono_davvero_in_contraddizione_sull_accento(self):
+        # No: non lo sono, e il file deve dirlo. Il blocco in testa a
+        # `dati/fonetica.jsonl` affermava che Biondelli segnasse l'accento sulla
+        # vocale finale non tonica. Il testo a pagina 205 dice il contrario, e
+        # sbagliare quella frase faceva sembrare un problema risolto un
+        # problema inesistente.
+        testo = open(os.path.join(RADICE, "dati", "fonetica.jsonl"),
+                     encoding="utf-8").read()
+        self.assertNotIn("accento sulla vocale finale **non** tonica",
+                         testo)
+
+    def test_nessuna_fonte_cita_una_pagina_che_non_esiste(self):
+        # S001 aveva un URL che rispondeva 404, e il suo testo non era mai
+        # stato scaricato: undici voci e ventotto trascrizioni citavano una
+        # fonte che il progetto non aveva mai aperto. Il controllo non puo'
+        # fare una richiesta di rete, ma puo' pretendere che l'identificatore
+        # sia della forma giusta, che e' quello che si sbaglia copiando a mano.
+        # Solo il campo `luogo`, non tutto il file: l'identificatore morto
+        # compare legittimamente nella nota che spiega il 404, e un test che
+        # lo troverebbe li' fallirebbe perche' la spiegazione c'e'.
+        with open(os.path.join(RADICE, "dati", "fonti.json"),
+                  encoding="utf-8") as f:
+            registro = json.load(f)
+        for fonte in registro["fonti"]:
+            self.assertNotIn("saggouisuidialetti00bion", fonte.get("luogo", ""),
+                             fonte["id"])
 
 
 class TestVoceSintetica(unittest.TestCase):

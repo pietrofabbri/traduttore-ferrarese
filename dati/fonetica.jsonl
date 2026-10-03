@@ -56,23 +56,61 @@
 // che l'accento non e' dichiarato dalla fonte. Mettere l'accento per conto
 // proprio sarebbe stato il modo piu' economico di sbagliare.
 //
-// **ATTENZIONE: qui sotto l'accento non e' come nelle regole 1-6.**
+// **ATTENZIONE: quattro righe su ventotto non tornano con le regole 1-6.**
 //
-// Le righe di questo file citano Biondelli 1853, e Biondelli ha un sistema
-// suo: segna l'accento sulla vocale finale **non** tonica e ritira la tonica
-// sulla penultima (`magnàr` = /maˈɲnar/, non /magnˈar/). Riduce inoltre la
-// vocale finale atonica (`principiar` = /-jar/, `desideràr` = /-d-/) e rende
-// /ɲ/ la `gn` anche davanti a vocale non anteriore, dove la regola 3 tace.
+// Le righe di questo file citano Biondelli 1853. Ho letto il suo testo a
+// pagina 205 per capire quale delle due fonti abbia ragione, e la risposta
+// e' che sull'accento **le due non divergono**: `magnàr` = /maˈɲnar/ segna
+// l'ultima sillaba, che e' quello che dice la grafia. Le 24 righe restanti
+// coincidono con le regole, accento compreso, e molte differiscono solo per
+// la sillabificazione (`porˈtar` e `portˈar` sono gli stessi suoni), che non
+// e' un suono.
 //
-// Il modulo `legge` applica le regole 1-6 **alla lettera**, quindi non puo'
-// riprodurre queste righe. Non e' un difetto da correggere: e' una scelta, e
-// le due non si possono fondere senza attribuire a Biondelli un sistema che
-// non e' il suo. Il controllo **F14** misura la distanza e la dichiara.
+// Le quattro che non tornano sono `magnàr`, `desideràr`, `principiar` e
+// `rasón`, e il testo di Biondelli spiega perche': dichiara regole che le
+// regole 1-6 qui sopra non descrivono. Sono nel blocco seguente.
 //
-// Finche' la questione non e' chiusa, la voce sintetica segue le regole
-// dichiarate e dice il dubbio; le righe qui sotto restano la trascrizione
-// dell' fonte. Sono due risposte a due domande diverse, e si deve sapere
-// quale si sta leggendo.
+// Quindi non sono due convenzioni in contraddizione: e' un sistema dichiarato
+// incompleto rispetto alla fonte che lo ha prodotto. Il controllo **F14**
+// conta le quattro e non le corregge, perche' scegliere significherebbe
+// decidere quale delle due fonti vale, e lo decide chi le ha lette entrambe.
+//
+// **QUELLO CHE LA FONTE DICHE E QUESTO SISTEMA NON APPLICA.**
+//
+// Il testo di Biondelli (S001, 1853, pag. 205) e' stato letto, e dichiara
+// cose che le regole 1-6 qui sopra non descrivono. Non sono state applicate,
+// perche' applicarle cambierebbe quattro righe senza che nessuno sappia
+// quale delle due fonti abbia ragione. Sono messe qui perche' la prossima
+// persona non le perda e non le riscopra:
+//
+//   - «distinguesi dai suoi affini per la mancanza del suono schwa e dei
+//     dittonghi ei, ou» — nessuno schwa e nessun dittongo. La regola 1 lo
+//     dice gia', e adesso ha anche la pagina.
+//   - «Al primo [= lo schwa] sostituisce, come il Veneti, un'a alquanto
+//     aperta, specialmente nell'indefinito e nei participi dei verbi,
+//     dicendo: detiderar, magnar, portar, ama, vola, manca». Cioe' la
+//     vocale finale atonica dell'infinito non sparisce: diventa una `a`
+//     **aperta**. Il sistema non ha questa regola, e da qui nasce la
+//     differenza su `desiderar` e `principiar`.
+//   - «Volge in ar breve le desinenze italiane dre, dro, pre, tre, tro,
+//     non che gli infiniti dei verbi terminanti in ere»: `padre` = `padar`,
+//     `ladro` = `ladar`, `leggere` = `lezar`, `godere` = `godar`. La `a`
+//     finale e' aperta anche qui.
+//   - «Volge la desinenza italiana in -a e talvolta ancora la -io in -ie»:
+//     `compagnia` = `cumpagnie`, `osteria` = `ostarie`, `mio` = `mie`.
+//   - «Invece di sostituire la z aspra al suono schwa italiano, esso lo
+//     permuta in s alla foggia dei Veneti, dicendo: prinsipier, sittadin,
+//     sivil». Questa e' la risposta alla regola 6, almeno per questo caso:
+//     dove l'italiano ha la `z` aspra, il ferrarese ha /s/. La regola 6
+//     continua a tacere perche' la regola vale per l'italiano `z` aspra, e
+//     non per ogni `s` intervocalica: non si puo' estenderla da un esempio.
+//   - «Ha meno frequenti le elisioni delle vocali nel mezzo delle parole»:
+//     le elisioni esistono ma sono meno frequenti che in italiano.
+//
+// Il punto 2 e' quello che spiega `magnàr`: la differenza non e' l'accento,
+// che in entrambe e' sull'ultima sillaba, ma che la `gn` davanti ad `a` la
+// fonte rende /ɲ/ e la regola 3, che parla solo di vocale anteriore, tace.
+// Se la fonte tace non si sceglie: si scrive che tace.
 //
 // **LA VOCE.** Il comando `voce` trasforma la grafia in suono con
 // `espeak-ng`, in locale e senza rete:

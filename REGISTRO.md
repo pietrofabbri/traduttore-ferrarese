@@ -86,6 +86,69 @@ copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
+## 0.12 — 2026-10-03 · La fonte che doveva decidere sull'accento non era mai stata aperta
+
+**Perché.** La 0.11 aveva lasciato aperta una domanda: l'accento di Biondelli.
+Per chiudere bisognava leggere la fonte, e la fonte era già dichiarata come
+**S001, stato `acquisita`, pubblico dominio**. Non era mai stata aperta.
+
+**Il difetto.** L'URL registrato — `saggouisuidialetti00bion` — **rispondeva
+404**. Quindici giorni di registro hanno indicato una fonte che non esiste, e
+il testo non era mai stato scaricato, benché undici voci del glossario e
+ventotto trascrizioni citassero quella pagina. L'identificatore giusto è
+`saggiosuidialet00biongoog`. Una fonte che si dichiara `acquisita` ma che non
+è mai stata aperta è la forma peggiore di fonte citata: sembra verificata e non
+è stata guardata. Ora il testo c'è, in `raccolta/grezzi/biondelli_1853.txt`.
+
+**La diagnosi della 0.11 era sbagliata, e va detto.** Avevo scritto che «Biondelli
+segnava l'accento sulla vocale finale non tonica e ritirava la tonica sulla
+penultima», e che 20 trascrizioni su 28 non coincidevano con le regole per
+quella ragione. Ho letto la pagina 205 e non è vero. Biondelli scrive
+`magnar`, `portar`, `ama`, `vola`, `manca`, e l'accento cade sull'ultima
+sillaba come in qualsiasi italiano: le due fonti **sull'accento concordano**.
+
+Il numero vero è **4 su 28**, non 20. E la causa non era una seconda
+convenzione: era il mio confronto che contava come differenza di suono una
+differenza di **sillabificazione**. `porˈtar` e `portˈar` hanno gli stessi
+suoni e lo stesso accento; cambia solo dove finisce la sillaba. Ventiquattro
+righe su ventotto coincidono, accento compreso.
+
+**Il difetto vero del confronto.** Un controllo che grida per una scelta di
+sillabificazione smette di essere letto, e un controllo che grida per niente fa
+dubitare delle regole serie. Il numero non va fatto più grande per sembrare
+prudente: va spiegato. Ora F14 confronta la sequenza dei simboli senza il
+segno di accento e senza confini di sillaba, e i test prendono il ritorno
+entrambe le cose — una sillaba spostata non deve più comparire fra le
+discordanti.
+
+**Che cosa dichiara la fonte, e che cosa il sistema non applica.** La pagina 205
+dice cose che le regole 1-6 non descrivono, e adesso sono scritte in testa al
+file con la pagina, perché la prossima persona non le perda:
+
+- nessuno schwa e nessun dittongo — la regola 1 lo diceva, adesso ha la pagina;
+- la vocale finale atonica dell'infinito diventa una `a` **aperta**:
+  `leggere` = `lézar`, `godere` = `gòdar`, `mentre` = `méntar`;
+- `-a` e `-io` finali diventano `-ie`: `compagnia` = `cumpagniè`, `mio` = `mie`;
+- **la `z` aspra italiana si rende /s/**: `cittadino` = `sittadin`,
+  `principiare` = `principièr`. Questa è la risposta alla regola 6, almeno per
+  questo caso, e spiega `rasón`.
+
+Non sono state applicate. Applicarle cambierebbe quattro righe senza che
+nessuno sappia quale delle due fonti abbia ragione, e la regola della `z` vale
+per l'italiano `z` aspra, non per ogni `s` intervocalica: estenderla da un
+esempio sarebbe il peggior genere di generalizzazione.
+
+**Che cosa resta aperto, con il numero giusto.** Le quattro righe — `magnàr`,
+`desideràr`, `principiar`, `rasón` — hanno tutte la stessa natura: la fonte ha
+forme con la vocale finale ridotta, e le regole dichiarate non la descrivono.
+È un sistema dichiarato **incompleto rispetto alla fonte che l'ha prodotto**,
+non due sistemi in contraddizione. F14 conta quattro e non corregge: scegliere
+significherebbe decidere quale delle due fonti vale.
+
+**Verifiche.** 113 test (erano 109). `verifica`: 0 errori, 8 avvisi. Equivalenza
+Python/JavaScript: 12 frasi, 0 divergenze. Nessuna risorsa esterna, nessun
+carattere fuori dal latino.
+
 ## 0.11 — 2026-10-03 · Una voce che sa dire la grafia e non finge di sapere il parlato
 
 **Perché.** Il gioco ha bisogno di far ascoltare, e il progetto non aveva
@@ -129,6 +192,16 @@ sulla vocale finale **non** tonica con la tonica ritirata sulla penultima
 senza attribuire a Biondelli un sistema che non è il suo, quindi il controllo
 **F14** misura la distanza e la dichiara senza correggere. È un avviso che
 resta finché la questione non è chiusa.
+
+> **Corretto dalla 0.12.** La diagnosi qui sopra è **sbagliata**, e la 0.12
+> dice perché. Biondelli non ha una convenzione diversa sull'accento: il suo
+> testo a pagina 205 lo mette sull'ultima sillaba come tutti, e le due fonti
+> concordano. Il numero vero è 4 su 28, non 20, e la causa non era l'accento ma
+> un confronto che contava come suono diverso una differenza di
+> sillabificazione. Il fatto che F14 restasse un avviso anche quando il numero
+> era sbagliato è la parte utile: un avviso che non sparisce quando dovrebbe
+> sparisce fa notare che qualcosa non torna, ed è così che si è arrivati alla
+> fonte.
 
 **La cosa che la voce non è.** Non è un parlante ferrarese, e il wav non
 verifica niente: le righe restano `attendibilita: "I"` e `da_verificare: true`.

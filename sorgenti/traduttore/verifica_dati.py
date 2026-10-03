@@ -232,22 +232,31 @@ def _controlla_grafia_contro_trascrizione(fonetica) -> list:
     """Le regole dichiarate che non riproducono le trascrizioni gia' nel file.
 
     Il file `dati/fonetica.jsonl` porta in testa un sistema di regole di
-    lettura, e il modulo `legge` lo applica. Se il sistema fosse giusto,
-    ogni riga del file uscirebbe fuori da `legge.leggi` senza differenze. Non
-    e' cosi', e la ragione non e' un errore di programmazione: **le due cose
-    seguono due convenzioni diverse**.
+    lettura, e il modulo `legge` lo applica. Se il sistema fosse giusto, ogni
+    riga del file uscirebbe fuori da `legge.leggi` senza differenze.
 
-    Le righe citano Biondelli 1853, che scrive l'accento sulla vocale finale
-    **non** tonica e ritira la tonica sulla penultima: `magnar` = /maˈɲnar/.
-    Le regole in testa al file dicono che l'accento scritto e' tonico, e
-    allora `magnar` = /magnˈar/. Non si puo' correggere nessuna delle due
-    senza scegliere, e scegliere qui significa attribuire a Biondelli una
-    convenzione che non e' la sua.
+    Il confronto pero' va fatto con criterio, e la prima stesura di questo
+    controllo sbagliava in un modo che costava un avviso intero: contava
+    `por'tar` e `port'ar` come diverse e le chiamava «l'accento cade sulla
+    sillaba diversa». Non era l'accento: era la **sillabificazione**.
+    `por.tar` e `port.ar` hanno gli stessi suoni e lo stesso accento, e dove
+    finisca il confine fra due consonanti e' una scelta della fonte, non una
+    differenza di suono. Per questo qui si confronta la sequenza dei simboli
+    **senza il segno di accento e senza confini di sillaba**: quello che resta
+    e' un suono davvero diverso, e nient'altro.
 
-    Quindi questo controllo **segnala e non corregge**: dice quante righe
-    discordano, dice se la differenza e' solo dove cade l'accento, e lascia
-    la decisione a chi conosce la fonte. Un avviso che sparisce da solo
-    sarebbe peggio di nessun avviso.
+    La lezione resta scritta dentro perche' torni. Un controllo che grida per
+    una scelta di sillabificazione smette di essere letto, e un controllo che
+    grida per niente fa dubitare delle regole vere. Un numero che non si puo'
+    spiegare non va fatto piu' grande per sembrareprudente: va spiegato.
+
+    Quello che resta e' un problema aperto e vero, e il controllo lo dice senza
+    risolverlo. Le righe citano Biondelli 1853, che a pagina 205 scrive forme
+    con la vocale finale ridotta — `leggere` = `lezar`, `godere` = `godar` —
+    cosa che le regole dichiarate qui non descrivono affatto, e rende la `z`
+    aspra /s/ dove la regola 6 la lascia come e' scritta. Serve il testo della
+    fonte per stabilire quale delle due abbia ragione: questo controllo
+    segnala, non sceglie al posto di chi conosce la fonte.
     """
     from .legge import leggi
     problemi = []
@@ -258,41 +267,28 @@ def _controlla_grafia_contro_trascrizione(fonetica) -> list:
         ottenuta = leggi(t.forma)["ipa"]
         if ottenuta == t.ipa:
             continue
-        # Il confronto e' fatto sui simboli, ignorando il segno di accento:
-        # cosi' il controllo distingue "detto diversamente" da "detto in
-        # modo diverso", e il primo caso non viene mascherato dal secondo.
         if _senza_accento(ottenuta) == _senza_accento(t.ipa):
-            motivo = "solo l'accento cade sulla sillaba diversa"
-        else:
-            motivo = "anche i suoni sono diversi"
-        discordi.append((t.id or "(senza id)", t.forma, t.ipa, ottenuta,
-                         motivo))
+            # Stessi suoni, stessa tonica, confine di sillaba diverso: non e'
+            # un problema e non deve rumorare l'avviso.
+            continue
+        discordi.append((t.id or "(senza id)", t.forma, t.ipa, ottenuta))
     if not discordi:
         return problemi
-    per_motivo = {}
-    for _, _, _, _, motivo in discordi:
-        per_motivo[motivo] = per_motivo.get(motivo, 0) + 1
-    dettaglio = ", ".join(
-        "%s (%d su %d)" % (motivo, quante, len(discordi))
-        for motivo, quante in sorted(per_motivo.items()))
-    esempi = "; ".join(
+    dettaglio = "; ".join(
         "%s %s: nel file %s, dalle regole %s"
         % (ident, forma, ipa, ottenuta)
-        for ident, forma, ipa, ottenuta, _ in discordi[:3])
+        for ident, forma, ipa, ottenuta in discordi)
     problemi.append(Problema(
         "F14", "dati/fonetica.jsonl",
-        "%d trascrizioni su %d non coincidono con le regole dichiarate in "
-        "testa al file (%s). Esempi: %s. Le righe citano Biondelli 1853, "
-        "e il suo sistema differisce dalle regole qui dichiarate per tre "
-        "motivi noti: (1) segna l'accento sulla vocale finale **non** tonica "
-        "e ritira la tonica sulla penultima; (2) riduce la vocale finale "
-        "atonica, che diventa semivocale (`principiar` = /-jar/) o sparisce "
-        "(`desideràr` = /-d-/); (3) rende /ɲ/ la `gn` anche davanti a vocale "
-        "non anteriore, dove la regola 3 dice che resta /gn/. Nessuna delle "
-        "tre si puo' correggiere qui senza scegliere quale delle due fonti "
-        "vale, e il controllo segnala: scegliere significa attribuire a "
-        "Biondelli una convenzione che non e' la sua."
-        % (len(discordi), len(fonetica.trascrizioni), dettaglio, esempi),
+        "%d trascrizioni su %d hanno suoni diversi rispetto alle regole "
+        "dichiarate in testa al file (%s). Le altre %d coincidono e "
+        "coincidono anche nell'accento: quello che le divide dalle prime e' "
+        "solo la sillabificazione, che non e' un suono. Le %d che restano "
+        "hanno tutte la stessa natura: la fonte (Biondelli 1853, pag. 205) "
+        "ha forme con la vocale finale ridotta e rende la `z` aspra /s/, e "
+        "le regole qui dichiarate non descrivono ne' l'una ne' l'altra."
+        % (len(discordi), len(fonetica.trascrizioni), dettaglio,
+           len(fonetica.trascrizioni) - len(discordi), len(discordi)),
         gravita="avviso"))
     return problemi
 

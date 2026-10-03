@@ -30,14 +30,14 @@
       "titolo": "Saggio sui dialetti gallo-italici",
       "autore": "Bernardino Biondelli",
       "anno": 1853,
-      "pagina": "204-205",
+      "pagina": "205",
       "tipo": "grammatica storica",
-      "luogo": "https://archive.org/details/saggouisuidialetti00bion",
+      "luogo": "https://archive.org/details/saggiosuidialet00biongoog",
       "stato": "acquisita",
       "licenza": "public domain",
       "licenza_verificata": true,
       "uso": "Undici voci del glossario (V0001-V0012) e quattro coppie (F0008-F0010).",
-      "nota": "E' una descrizione linguistica dell'Ottocento, non un vocabolario: le forme sono scelte per illustrare una regola fonetica, non per essere un inventario. Per questo le voci hanno `attendibilita D` ma non sono un glossario completo."
+      "nota": "Descrizione linguistica dell'Ottocento, non un vocabolario: le forme sono scelte per illustrare una regola fonetica, non per essere un inventario. Per questo le voci hanno `attendibilita D` ma non sono un glossario completo. Il testo e' stato letto a pagina 205 e l'URL registrato prima risultava un 404: `saggouisuidialetti00bion` non esiste, e il testo non era mai stato scaricato, benché 28 trascrizioni e 11 voci citassero quelle pagine. L'identificatore giusto e' `saggiosuidialet00biongoog`, col testo OCR in `raccolta/grezzi/biondelli_1853.txt` (non tracciato, si riscarica). Pagina 205 dichiara regole che il sistema di trascrizione non applica: nessuno schwa e nessun dittongo; la vocale finale atonica dell'infinito diventa `a` aperta (`leggere` = `lezar`, `godere` = `godar`); `-a` e `-io` finali diventano `-ie` (`compagnia` = `cumpagnie`); e la `z` aspra italiana si rende /s/ (`cittadino` = `sittadin`). Sono riportate in testa a `dati/fonetica.jsonl` con la pagina, e non applicate finche' nessuno decide se la fonte o le regole hanno ragione."
     },
     {
       "id": "S002",

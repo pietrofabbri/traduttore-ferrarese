@@ -689,9 +689,24 @@ def comando_stato(args) -> int:
 
 
 def comando_web(args) -> int:
+    """Genera il sito e dice quanto pesa ogni pagina.
+
+    Il peso e' stampato perche' e' il numero che riguarda l'utente: una pagina
+    che pesa 6 megabyte non e' «un sito con tanto contenuto», e' un sito che
+    non si apre. Il comando senza numeri dice «scritto», e il peso resta una
+    cosa che si scopre aprendo la pagina e aspettando.
+    """
     from costruisci_web import costruisci
-    percorso = costruisci(RADICE)
-    print("scritto %s" % percorso)
+    scritte = costruisci(RADICE)
+    totale = 0
+    piu_pesante = ("", 0)
+    for nome, peso in scritte:
+        totale += peso
+        if peso > piu_pesante[1]:
+            piu_pesante = (nome, peso)
+        print("%-22s %8d byte  %5.0f KB" % (nome, peso, peso / 1024.0))
+    print("%d pagine, %d byte in tutto, la piu' pesante %s (%d KB)"
+          % (len(scritte), totale, piu_pesante[0], piu_pesante[1] // 1024))
     return 0
 
 

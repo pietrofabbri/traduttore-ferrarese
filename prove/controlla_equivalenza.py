@@ -16,6 +16,13 @@ Come funziona: prende la pagina generata (che contiene i dati veri dentro un
 le stesse funzioni che chiama il browser. Poi confronta con il motore Python
 frase per frase.
 
+**Quale pagina.** Il sito ha piu' pagine e il confronto legge
+`web/traduttore.html`, che e' l'unica che porta il motore e il glossario
+ridotto ai campi che il motore usa. Le altre pagine non hanno il codice da
+confrontare: e' lo stesso codice, senza i dati che servono a esercitarlo. Il
+confronto potrebbe passare su una pagina che non contiene niente, quindi il
+test verifica anche che la pagina scelta abbia davvero il glossario dentro.
+
 Se Node non c'e', lo dice e esce con 0: un controllo che non puo' girare
 non deve far fallire la CI su una macchina che non ce l'ha. Sulla macchina
 che ce l'ha, ed e' `ubuntu-latest` su GitHub, gira.
@@ -33,6 +40,12 @@ import sys
 import tempfile
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# L'unica pagina che porta il motore e i dati che il motore usa. Tutte le
+# altre hanno lo stesso codice e meno dati, quindi confrontarle non
+# significa niente: il confronto passa quando le due copie rispondono uguale,
+# e rispondono tutte «non lo so» anche quando sono sbagliate.
+PAGINA_CON_MOTORE = "traduttore.html"
 sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 
 from traduttore.cli import PERCORSI  # noqa: E402
@@ -164,12 +177,25 @@ def main() -> int:
         print("Su GitHub gira, perche' ubuntu-latest ce l'ha.")
         return 0
 
-    pagina = os.path.join(RADICE, "web", "index.html")
+    pagina = os.path.join(RADICE, "web", PAGINA_CON_MOTORE)
     if not os.path.exists(pagina):
-        raise SystemExit("manca web/index.html: lancia `python3 -m traduttore.cli web`")
+        raise SystemExit("manca web/%s: lancia `python3 -m traduttore.cli web`"
+                         % PAGINA_CON_MOTORE)
     testo_pagina = open(pagina, encoding="utf-8").read()
     script = estrae_script(testo_pagina)
     dati = estrae_dati(testo_pagina)
+
+    # Il confronto puo' passare su una pagina che non contiene niente: se il
+    # glossario manca, il codice non trova una parola e risponde «non lo so»,
+    # che e' una risposta legittima. Quindi si verifica che la pagina scelta
+    # abbia davvero dentro il glossario, e che sia la forma compatta che il
+    # codice sa leggere.
+    dentro = json.loads(dati)
+    serie = dentro.get("glossario")
+    if not isinstance(serie, dict) or not serie.get("voci"):
+        raise SystemExit("web/%s non contiene il glossario: il confronto "
+                         "confronterebbe due motori che non sanno niente"
+                         % PAGINA_CON_MOTORE)
 
     glossario = Glossario.da_file(PERCORSI["glossario"])
     corpus = Corpus.da_file(PERCORSI["coppie"], PERCORSI["proverbi"])

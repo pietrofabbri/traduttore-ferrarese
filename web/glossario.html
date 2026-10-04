@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Traduttore italiano &ndash; ferrarese</title>
+<title>Il glossario &ndash; Traduttore italiano &ndash; ferrarese</title>
 <style>
   :root {
     --fondo: #fbf8f2;
@@ -131,106 +131,32 @@
 </head>
 <body>
 <main>
-  <h1>Traduttore italiano &ndash; ferrarese</h1>
-  <p class="occhiello">Ogni parola dice da dove viene. Quello che il glossario non sa resta scritto, non viene inventato.</p>
+  <h1>Il glossario</h1>
+  <p class="occhiello">Le voci sono a fette: si apre la lettera e si cerca dentro.</p>
 
-  <nav id="navigazione"><!--NAVIGAZIONE--></nav>
-
-  <!-- pagina:traduttore -->
-  <textarea id="testo" placeholder="Scrivi una frase in italiano o in ferrarese"></textarea>
-  <div class="riga">
-    <button id="traduci" type="button">Traduci</button>
-    <button id="direzione" type="button" aria-pressed="false">Direzione: italiano &rarr; ferrarese</button>
-  </div>
-
-  <div class="legenda">
-    <span><i class="pastiglia" style="border-color:var(--glossario)"></i>glossario</span>
-    <span><i class="pastiglia" style="border-color:var(--corpus)"></i>corpus</span>
-    <span><i class="pastiglia" style="border-color:var(--regola);border-bottom-style:dotted"></i>regola</span>
-    <span><i class="pastiglia" style="border-color:var(--modello);border-bottom-style:dashed"></i>modello</span>
-    <span><i class="pastiglia" style="border-color:var(--nessuna);background:#fdf0f0"></i>non lo so</span>
-  </div>
-
-  <div class="risposta" id="risposta"><span class="vuoto">Scrivi qualcosa e premi «Traduci».</span></div>
-  <div id="avviso"></div>
-  <!-- /pagina:traduttore -->
+  <nav id="navigazione"><span class="titolo-nav">Pagine</span>
+    <a href="index.html">Il progetto</a>
+    <a href="traduttore.html">Traduttore</a>
+    <a href="glossario.html" class="qui">Glossario</a>
+    <a href="frasi.html">Coppie e proverbi</a>
+    <a href="suoni.html">Varieta' e suoni</a></nav>
 
 
-  <!-- pagina:glossario -->
-  <h2>Il glossario</h2>
-  <div class="riga">
-    <input type="search" id="cercaGlossario" placeholder="cerca in questa fetta (ferrarese o italiano)" size="40">
-    <select id="filtroVarietaGlossario">
-      <option value="">tutte le varieta'</option>
-    </select>
-  </div>
-  <div id="tabellaGlossario"></div>
-  <!-- /pagina:glossario -->
 
 
-  <!-- pagina:frasi -->
-  <h2>Le coppie parallele</h2>
-  <div id="tabellaCoppie"></div>
-  <!-- /pagina:frasi -->
 
 
-  <!-- pagina:frasi -->
-  <h2>I proverbi</h2>
-  <p class="occhiello" style="margin:.4rem 0 1rem">
-    Un proverbio non e' una parola e non si traduce parola per parola: ha la
-    forma dei libri, la forma che si dice — che qui non e' ancora stata
-    nessuno a dirla — e il significato, che non coincide mai con l'italiano
-    letterale. La colonna «popolare» vuota e' un buco dichiarato, non una
-    dimenticanza.
-  </p>
-  <div class="riga">
-    <input type="search" id="cercaProverbi" placeholder="cerca fra i proverbi (ferrarese o italiano)" size="40">
-  </div>
-  <div id="tabellaProverbi"></div>
-  <!-- /pagina:frasi -->
 
 
-  <!-- pagina:suoni -->
-  <h2>Le cinque varieta' del ferrarese</h2>
-  <p class="occhiello" style="margin:.4rem 0 1rem">
-    Non e' una sola lingua. Ogni voce del glossario dichiara in quale di queste
-    e' attestata, e una varieta' senza voci e' un buco dichiarato, non una
-    varieta' che non esiste.
-  </p>
-  <div id="elencoVarieta"></div>
-  <!-- /pagina:suoni -->
 
 
-  <!-- pagina:suoni -->
-  <h2>Il riproduttore</h2>
-  <p class="occhiello" style="margin:.4rem 0 1rem">
-    La trascrizione IPA dice <em>come si scrive il suono</em>. Qui ci sono due
-    suoni, e sono due cose diverse. Quello che arriva quando qualcuno parla e
-    ha detto di sì non c'e' ancora: <code>web/audio/</code> è vuota e resta
-    vuota finché qualcuno chiede il permesso alle persone che hanno registrato.
-    Quello che c'è adesso è un suono <strong>fatto da un programma</strong>,
-    dichiarato accanto al tasto e in una cartella separata. Non è un
-    ferrarese che parla, è la lettura di una grafia: serve a sentire come
-    suona, non a imparare come parlano. Una voce di macchina che si fa passare
-    per una persona è la cosa che questo progetto non fa.
-  </p>
-  <div class="riga">
-    <input type="search" id="cercaSuono" placeholder="cerca una parola da ascoltare" size="30">
-    <select id="filtroVarietaSuono">
-      <option value="">tutte le varieta'</option>
-    </select>
-    <label class="scelta"><input type="checkbox" id="mostraIpa" checked> mostra la trascrizione</label>
-    <label class="scelta"><input type="checkbox" id="voceItaliana"> leggi l'italiano (voce del browser)</label>
-  </div>
-  <p class="vuoto" id="notaVoceItaliana" style="display:none">
-    La voce del browser non e' una voce ferrarese e non e' una voce italiana di
-   Ferrara: e' la sintesi del computer. Serve per sentire il ritmo dell'italiano
-    mentre si guarda il ferrarese, e in alcuni browser usa una connessione.
-    Tienila spenta se la pagina deve restare chiusa e muta.
-  </p>
-  <p class="vuoto" id="contoSuoni"></p>
-  <div id="riproduttore"></div>
-  <!-- /pagina:suoni -->
+
+
+
+
+
+
+
 
 
   <!-- pagina:fette -->
@@ -243,22 +169,10 @@
   <div id="fette"></div>
   <!-- /pagina:fette -->
 
-  <!-- pagina:index -->
-  <h2>Che cosa sa il motore</h2>
-  <div class="pannello" id="pannello"></div>
-  <!-- /pagina:index -->
 
 
-  <!-- pagina:index -->
-  <h3>E che cosa non sa</h3>
-  <p class="occhiello" style="margin:.4rem 0 1rem">
-    I buchi sono cose che il progetto sa di non sapere, non errori. Ogni numero
-    e' quello che si puo' correggere: una riga in piu' in un file, mezz'ora con
-    una persona che parla ferrarese, un informatore che dica un proverbio come
-    si dice.
-  </p>
-  <div id="buchi"></div>
-  <!-- /pagina:index -->
+
+
 
 
   <footer>
@@ -268,7 +182,521 @@
   </footer>
 </main>
 
-<script id="dati" type="application/json">/*DATI*/null</script>
+<script id="dati" type="application/json">{
+ "origine": {
+  "glossario": 0.95,
+  "corpo": 0.8,
+  "corpo_frase": 0.92,
+  "regola": 0.55,
+  "modello": 0.5,
+  "nessuna": 0.0
+ },
+ "nomi_varieta": {
+  "cittadino": "cittadino",
+  "centrale": "centrale, detto anche arioso",
+  "occidentale": "occidentale",
+  "orientale": "orientale",
+  "transpadano": "transpadano, ibrido col polesano"
+ },
+ "varieta": {
+  "codici": [
+   "cittadino",
+   "centrale",
+   "occidentale",
+   "orientale",
+   "transpadano"
+  ],
+  "nomi": {
+   "cittadino": "cittadino",
+   "centrale": "centrale, detto anche arioso",
+   "occidentale": "occidentale",
+   "orientale": "orientale",
+   "transpadano": "transpadano, ibrido col polesano"
+  },
+  "voci": [
+   {
+    "codice": "cittadino",
+    "nome": "cittadino",
+    "territori": [
+     "Ferrara, dentro le mura"
+    ],
+    "descrizione": "Il ferrarese di dentro le mura storiche. E' la varieta' che il gioco usa perche' e' quella che si sente in citta', ed e' anche quella che oggi e' parlata da poche persone, quasi tutte di eta' alta.",
+    "confine": "",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Unica varieta' con voci nel glossario, e da questa versione e' l'unica con una fonte che dichiari il territorio. Tutte le fonti disponibili documentano il cittadino: e' un vuoto delle fonti, non una scelta del progetto."
+   },
+   {
+    "codice": "centrale",
+    "nome": "centrale, detto anche arioso",
+    "territori": [
+     "resto del comune di Ferrara",
+     "Portomaggiore",
+     "Masi Torello",
+     "Voghiera",
+     "Berra",
+     "Ro",
+     "Jolanda di Savoia",
+     "Formignana",
+     "Tresignallo",
+     "Copparo",
+     "Ostellato",
+     "Fiscaglia",
+     "parti dell'argentano",
+     "Occhiobello"
+    ],
+    "descrizione": "La fascia interna della provincia, la piu' estesa e la piu' viva. Il nome «arioso» e' il nome popolare del dialetto di questa zona.",
+    "confine": "",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. E' la prima varieta' da riempire perche' e' la piu' grande e la piu' parlata: chiunque del territorio abbia Parentele conocce parole che il glossario non ha."
+   },
+   {
+    "codice": "occidentale",
+    "nome": "occidentale",
+    "territori": [
+     "Bondeno",
+     "Vigarano Mainarda",
+     "Sermide e Felonica",
+     "parti di Terre del Reno",
+     "parti di Poggio Renatico"
+    ],
+    "descrizione": "Il lembo occidentale, verso il mantovano e il modenese. La fonte lo descrive come influenzato dal Felonica, dal Sermide e da Finale Emilia.",
+    "confine": "Felonica e Sermide (Mantova), Finale Emilia (Modena)",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Il primo posto dove andare a chiedere una registrazione: e' la varieta' in cui la differenza dal cittadino si sente di piu'."
+   },
+   {
+    "codice": "orientale",
+    "nome": "orientale",
+    "territori": [
+     "Codigoro",
+     "Fiscaglia",
+     "Ostellato",
+     "Lagosanto",
+     "Comacchio",
+     "Goro"
+    ],
+    "descrizione": "La costa, dove il ferrarese si fonde col comacchiese. La fonte lo dichiara con quella frase e non con un confine.",
+    "confine": "si fonde con il comacchiese",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Fiscaglia e Ostellato compaiono anche nel gruppo centrale e Fiscaglia anche in quello transpadano: la fonte non li separa, e qui non si finge di separarli."
+   },
+   {
+    "codice": "transpadano",
+    "nome": "transpadano, ibrido col polesano",
+    "territori": [
+     "Occhiobello",
+     "Stienta",
+     "Canaro",
+     "Castelmassa",
+     "Goro"
+    ],
+    "descrizione": "La fascia oltre il Po, in provincia di Rovigo: il «ferrarese transpadano», ibrido col polesano.",
+    "confine": "il polesano (provincia di Rovigo)",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Occhiobello e Goro compaiono anche in altri gruppi: il territorio non e' una casella."
+   }
+  ],
+  "conteggi": {
+   "cittadino": {
+    "glossario": 10387,
+    "coppie": 16,
+    "audio": 0,
+    "totale": 10403,
+    "stato": "base"
+   },
+   "centrale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "occidentale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "orientale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "transpadano": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   }
+  }
+ },
+ "sintesi_avviso": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara. Serve per sentire come suona la grafia, non per imparare come parlano i ferraresi.",
+ "conteggi": {
+  "voci": 10387,
+  "con_fonte": 10387,
+  "da_verificare": 10156,
+  "coppie": 16,
+  "proverbi": 28,
+  "regole": 0
+ },
+ "buchi": [
+  {
+   "nome": "locuzioni nel glossario",
+   "quanti": 2034,
+   "nota": "una voce di piu' parole: il motore le accorpa prima di tradurre, ma restano piu' difficili da mettere in un livello di gioco"
+  },
+  {
+   "nome": "voci senza trascrizione IPA",
+   "quanti": 10363,
+   "nota": "si aggiunge una riga in dati/fonetica.jsonl; senza un parlante non si puo' fare, e la pagina lo dice accanto alla parola",
+   "totale": 10387
+  },
+  {
+   "nome": "trascrizioni non verificate da un parlante",
+   "quanti": 28,
+   "nota": "attendibilita I con da_verificare: sono una lettura della grafia, non un ascolto",
+   "totale": 28
+  },
+  {
+   "nome": "proverbi senza la forma che si dice",
+   "quanti": 28,
+   "nota": "il campo `popolare`: serve qualcuno che dica come li si dice, e finche' quel campo e' vuoto il proverbio ha una forma sola",
+   "totale": 28
+  },
+  {
+   "nome": "voci dichiarate da verificare",
+   "quanti": 10156,
+   "nota": "attendibilita I: la scrittura c'e' ma nessuno l'ha ancora controllata con un informatore",
+   "totale": 10387
+  },
+  {
+   "nome": "voci senza significato moderno in fonte",
+   "quanti": 6324,
+   "nota": "la fonte non ha l'articolo, o dichiara di non averne la definizione: non e' una parola senza significato, e' una parola che quella fonte non spiega",
+   "totale": 10387
+  },
+  {
+   "nome": "trascrizioni che non hanno un suono generato",
+   "quanti": 16,
+   "nota": "una parola con un dubbio dichiarato non suona: suonarla insegnerebbe il suono sbagliato. Il numero scende quando il dubbio si risolve, e non quando qualcuno decide di suonarla lo stesso",
+   "totale": 28
+  }
+ ],
+ "moderno_buchi": 6324,
+ "moderno_con_sinonimi": 3235,
+ "audio": [],
+ "sintesi": [
+  {
+   "id": "Y0002",
+   "riferimento": "V0002",
+   "forma": "portàr",
+   "ipa": "/portˈar/",
+   "file": "T0002.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "port'ar",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0002.wav"
+  },
+  {
+   "id": "Y0004",
+   "riferimento": "V0004",
+   "forma": "amà",
+   "ipa": "/amˈa/",
+   "file": "T0004.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "am'a",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0004.wav"
+  },
+  {
+   "id": "Y0005",
+   "riferimento": "V0005",
+   "forma": "volà",
+   "ipa": "/volˈa/",
+   "file": "T0005.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "vol'a",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0005.wav"
+  },
+  {
+   "id": "Y0006",
+   "riferimento": "V0006",
+   "forma": "mancà",
+   "ipa": "/mankˈa/",
+   "file": "T0006.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "mank'a",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0006.wav"
+  },
+  {
+   "id": "Y0009",
+   "riferimento": "V0009",
+   "forma": "sivìl",
+   "ipa": "/sivˈil/",
+   "file": "T0009.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "siv'il",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0009.wav"
+  },
+  {
+   "id": "Y0012",
+   "riferimento": "V0012",
+   "forma": "padrón",
+   "ipa": "/padrˈon/",
+   "file": "T0012.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "padr'on",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0012.wav"
+  },
+  {
+   "id": "Y0016",
+   "riferimento": "V0015",
+   "forma": "gh'è",
+   "ipa": "/gˈɛ/",
+   "file": "T0016.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "fonemi": "gE",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0016.wav"
+  },
+  {
+   "id": "Y0017",
+   "riferimento": "V0016",
+   "forma": "n'è",
+   "ipa": "/nˈɛ/",
+   "file": "T0017.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "fonemi": "nE",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0017.wav"
+  },
+  {
+   "id": "Y0023",
+   "riferimento": "V0021",
+   "forma": "frarés",
+   "ipa": "/frarˈɛs/",
+   "file": "T0023.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "fonemi": "frarEs",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0023.wav"
+  },
+  {
+   "id": "Y0024",
+   "riferimento": "V0021",
+   "forma": "frarèz",
+   "ipa": "/frarˈɛz/",
+   "file": "T0024.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "fonemi": "frarEz",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0024.wav"
+  },
+  {
+   "id": "Y0026",
+   "riferimento": "V0022",
+   "forma": "fràra",
+   "ipa": "/frˈara/",
+   "file": "T0026.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "fonemi": "fr'ara",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0026.wav"
+  },
+  {
+   "id": "Y0029",
+   "riferimento": "V0025",
+   "forma": "majàl",
+   "ipa": "/majˈal/",
+   "file": "T0029.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)",
+   "fonemi": "maj'al",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0029.wav"
+  }
+ ],
+ "fette": [
+  {
+   "numero": 1,
+   "file": "glossario-01.html",
+   "lettera": "1. A"
+  },
+  {
+   "numero": 2,
+   "file": "glossario-02.html",
+   "lettera": "2. A–B"
+  },
+  {
+   "numero": 3,
+   "file": "glossario-03.html",
+   "lettera": "3. B–C"
+  },
+  {
+   "numero": 4,
+   "file": "glossario-04.html",
+   "lettera": "4. C"
+  },
+  {
+   "numero": 5,
+   "file": "glossario-05.html",
+   "lettera": "5. C–D"
+  },
+  {
+   "numero": 6,
+   "file": "glossario-06.html",
+   "lettera": "6. D"
+  },
+  {
+   "numero": 7,
+   "file": "glossario-07.html",
+   "lettera": "7. D–F"
+  },
+  {
+   "numero": 8,
+   "file": "glossario-08.html",
+   "lettera": "8. F–G"
+  },
+  {
+   "numero": 9,
+   "file": "glossario-09.html",
+   "lettera": "9. G–I"
+  },
+  {
+   "numero": 10,
+   "file": "glossario-10.html",
+   "lettera": "10. I–M"
+  },
+  {
+   "numero": 11,
+   "file": "glossario-11.html",
+   "lettera": "11. M"
+  },
+  {
+   "numero": 12,
+   "file": "glossario-12.html",
+   "lettera": "12. M–P"
+  },
+  {
+   "numero": 13,
+   "file": "glossario-13.html",
+   "lettera": "13. P"
+  },
+  {
+   "numero": 14,
+   "file": "glossario-14.html",
+   "lettera": "14. P–Q"
+  },
+  {
+   "numero": 15,
+   "file": "glossario-15.html",
+   "lettera": "15. Q–S"
+  },
+  {
+   "numero": 16,
+   "file": "glossario-16.html",
+   "lettera": "16. S"
+  },
+  {
+   "numero": 17,
+   "file": "glossario-17.html",
+   "lettera": "17. S"
+  },
+  {
+   "numero": 18,
+   "file": "glossario-18.html",
+   "lettera": "18. S"
+  },
+  {
+   "numero": 19,
+   "file": "glossario-19.html",
+   "lettera": "19. S–T"
+  },
+  {
+   "numero": 20,
+   "file": "glossario-20.html",
+   "lettera": "20. T–V"
+  },
+  {
+   "numero": 21,
+   "file": "glossario-21.html",
+   "lettera": "21. V–Z"
+  }
+ ],
+ "pagina": "glossario"
+}</script>
 <script>
 (function () {
   "use strict";

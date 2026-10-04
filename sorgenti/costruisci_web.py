@@ -1,37 +1,54 @@
-"""Il sito statico: una pagina, nessuna richiesta di rete, nessun account.
+"""Il sito statico: piu' pagine, nessuna richiesta di rete, nessun account.
 
 Le stesse regole che valgono per il gioco valgono qui, perche' e' lo stesso
 pubblico: la pagina si apre da un file sul disco o da GitHub Pages, funziona
 senza connessione e non chiede nulla a nessuno.
 
-Cosa fa la pagina, in tutto:
+**Perche' sei pagine e non una.** La pagina unica pesava **6,2 megabyte**, di
+cui il 99,2% era il blocco dei dati e l'87,5% era il glossario. Il glossario
+intero dentro ogni pagina significa che anche la pagina che serve solo a
+leggere i numeri del progetto deve scaricare un vocabolario. E' il motivo per
+cui il sito era scomodo da consultare: non perche' i dati fossero sbagliati,
+ma perche' erano tutti nella stessa stanza.
 
-1. traduce una frase parola per parola, colorando **da quale parte viene**
-   ogni parola (glossario, corpus, regola, modello, nessuna);
-2. lascia **sporco** quello che non sa: la parola non tradotta resta nella
-   riga e si vede;
-3. permette di cercare il glossario e di leggere la fonte di ogni voce;
-4. dice in **quale varieta'** e' ogni voce, e dice anche quali varieta' sono
-   vuote;
-5. mostra il **riproduttore**: la trascrizione IPA accanto alla parola, e
-   l'audio quando - e solo quando - esiste, ha il consenso e la licenza.
+La divisione segue quello che le pagine hanno davvero in comune:
 
-Il colore non e' decorazione: e' l'informazione. Chi usa questa pagina in
-classe deve poter dire «questa parola l'ha data il glossario» e «questa
-non l'ha data nessuno» senza chiedere.
+| pagina | cosa c'e' | peso |
+|---|---|---|
+| `index.html` | i numeri, i buchi, la strada per le altre pagine | ~60 KB |
+| `traduttore.html` | il traduttore, con il glossario ridotto ai campi che serve | ~1,5 MB |
+| `glossario.html` | l'indice delle fette | ~30 KB |
+| `glossario-NN.html` | una fetta di 500 voci, con ricerca dentro la fetta | ~140 KB |
+| `frasi.html` | coppie parallele e proverbi | ~30 KB |
+| `suoni.html` | le varieta' e il riproduttore | ~40 KB |
 
-Il glossario viaggia dentro la pagina, in un blocco `<script>`. Non e' una
+**Perche' il glossario e' a fette e non in una pagina sola.** Perche' 10387
+voci in un'unica pagina resterebbero 5,6 megabyte: si puo' alleggerire il
+glossario potando i campi, ma la misura dice che i dati sono distribuiti e
+nessun campo lo salva da solo. L'unica cosa che funziona e' **spostare il
+peso in piu' pagine**, ognuna con la sua. Ogni fetta ha la sua ricerca, il
+suo link precedente e successivo e la sua lettera: si arriva alla parola
+che si cerca aprendo la pagina giusta, non leggendo 10387 righe.
+
+**L'ordine delle fette e' quello della ricerca.** Le voci sono ordinate con
+`normalizza.chiave()`, la stessa funzione che il motore usa in Python e che
+la pagina usa in JavaScript. Se l'ordine fosse un altro, la lettera nella
+barra non porterebbe da nessuna parte.
+
+**I dati viaggiano dentro la pagina, in un blocco `<script>`.** Non e' una
 scelta elegante: e' la scelta che rende la pagina apribile da `file://` senza
-server, che e' la condizione con cui la si distribuisce. L'audio non puo'
-fare la stessa cosa - un file audio da solo pesa qualche decimo di
-meggabyte - quindi viene copiato in `web/audio/` e li' resta, e il permesso di
-copiarlo e' chiesto tre volte prima (vedi `audio/README.md`).
+server, che e' la condizione con cui la si distribuisce. Lo stesso vale per
+la divisione in pagine: ogni pagina porta dentro i suoi dati, quindi passare
+da una all'altra e' un collegamento e non una richiesta. L'audio non puo'
+fare la stessa cosa, quindi viene copiato in `web/audio/` e li' resta, e il
+permesso di copiarlo e' chiesto tre volte prima (vedi `audio/README.md`).
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import sys
 
@@ -45,9 +62,20 @@ from traduttore.fonetica import Fonetica  # noqa: E402
 from traduttore import verifica_dati  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
 from traduttore.motore import ORIGINE  # noqa: E402
+from traduttore.normalizza import chiave  # noqa: E402
 from traduttore.varieta import NOMI, Varieta  # noqa: E402
 
+
 TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modello.html")
+
+# Quante voci in una fetta. Il numero e' una scelta e va dichiarata perche'
+# non e' neutrale: 300 vuol dire 35 pagine e 88 KB l'una, 800 vuol dire 13
+# pagine e 205 KB l'una. Sotto i ~150 KB la pagina si sente subito veloce
+# anche su una scuola con la connessione lenta, e il sito si apre da `file://`
+# dove il costo e' proprio la lettura del file. 500 e' il compromesso, e se
+# un giorno il glossario raddoppia il numero va riguardato perche' il peso
+# di una pagina raddoppia con lui.
+VOCI_PER_FETTA = 500
 
 # La frase che dichiara che il suono non e' una persona. Vive qui e nella
 # pagina la legge: due posti, uno solo da tenere d'accordo.
@@ -56,118 +84,405 @@ AVVERTIMENTO_SINTESI = (
     "di Ferrara. Serve per sentire come suona la grafia, non per imparare "
     "come parlano i ferraresi.")
 
+# Le voci del glossario in **array**, non in oggetti: i nomi dei campi si
+# ripetono 10387 volte in un JSON di oggetti e sono 150 KB di sovrapprezzo.
+# Dichiarandoli una volta sola si risparmia il 23%, che su 5,6 megabyte fa
+# oltre un megabyte. Il prezzo e' che la pagina deve leggere per posizione,
+# e quindi `intestazione` e `voci` non possono separarsi.
+CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
+                 "attendibilita", "da_verificare", "fonte", "moderno",
+                 "fonte_moderno", "sinonimi", "principale_it", "principale_fe")
+CAMPI_MOTORE = ("id", "fe", "it", "varianti", "campo", "varieta",
+                "attendibilita", "da_verificare", "note", "principale_it",
+                "principale_fe")
 
-def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
-                        varieta: Varieta = None, fonetica: Fonetica = None,
-                        archivio: Archivio = None, audio_disponibili=None,
-                        sintesi: Sintesi = None, radice_web: str = None) -> dict:
-    """Raccoglie tutto quello che la pagina deve sapere, in un solo JSON."""
-    varieta = varieta or Varieta([])
-    fonetica = fonetica or Fonetica([])
-    archivio = archivio or Archivio([])
-    sintesi = sintesi or Sintesi([])
-    audio_disponibili = set(audio_disponibili or [])
-    conteggi = varieta.conteggi(glossario=glossario, coppie=corpus.coppie,
-                                audio=list(archivio))
-    # I buchi dichiarati entrano nei dati della pagina e non sono calcolati in
-    # JavaScript: se la pagina e il terminale contassero gli stessi numeri per
-    # conto loro, un giorno avrebbero detto cose diverse e nessuno avrebbe la
-    # certezza di quale delle due quella giusta.
+# Le pagine del sito. `sezioni` sono i marcatori di `modello.html` che la
+# pagina tiene: tutto il resto viene rimosso. La lista e' qui e non nel
+# generatore perche' una pagina che non e' dichiarata qui non esiste, e
+# `prove/test_traduttore.py` verifica che la lista e le sezioni del modello
+# tornino: una sezione senza pagina e' codice che nessuno vedra' mai.
+PAGINE = (
+    {"file": "index.html", "chiave": "index",
+     "titolo": "Il progetto",
+     "occhiello": "Che cosa sa il motore, che cosa non sa, e da dove si comincia.",
+     "sezioni": ("fette", "index")},
+    {"file": "traduttore.html", "chiave": "traduttore",
+     "titolo": "Traduttore",
+     "occhiello": "Traduce parola per parola e dice da dove viene ogni parola.",
+     "sezioni": ("traduttore",)},
+    {"file": "glossario.html", "chiave": "glossario",
+     "titolo": "Il glossario",
+     "occhiello": "Le voci sono a fette: si apre la lettera e si cerca dentro.",
+     "sezioni": ("fette",)},
+    {"file": "frasi.html", "chiave": "frasi",
+     "titolo": "Coppie e proverbi",
+     "occhiello": "Le frasi che il glossario non puo' contenere.",
+     "sezioni": ("frasi",)},
+    {"file": "suoni.html", "chiave": "suoni",
+     "titolo": "Varieta' e suoni",
+     "occhiello": "Le cinque varieta' e le poche parole che si possono ascoltare.",
+     "sezioni": ("suoni",)},
+)
+
+# La barra di navigazione: l'ordine in cui le pagine si presentano, e la
+# voce «verso» per il glossario, che non e' una pagina sola ma un indice.
+NAVIGAZIONE = (
+    ("index.html", "Il progetto"),
+    ("traduttore.html", "Traduttore"),
+    ("glossario.html", "Glossario"),
+    ("frasi.html", "Coppie e proverbi"),
+    ("suoni.html", "Varieta' e suoni"),
+)
+
+
+# I nomi che la pagina usa e i nomi che la classe `Voce` ha. Sono diversi per
+# quattro campi, e la differenza e' gia' costata una generazione intera di
+# pagine con `fe: null` e `it: null`: `getattr(v, "fe", None)` su un attributo
+# che si chiama `ferrarese` **non fallisce**, restituisce `None`, e una pagina
+# con tutte le forme a vuoto sembra un glossario vuoto invece di un refuso.
+#
+# Per questo il nome della pagina non viene mai usato come nome dell'attributo:
+# la mappa e' dichiarata qui, e se un campo non c'e' la generazione fallisce
+# invece di produrre una pagina mezza vuota.
+CAMPI_VOCE = {
+    "id": "id",
+    "fe": "ferrarese",
+    "it": "italiano",
+    "varianti": "varianti",
+    "campo": "campo",
+    "varieta": "varieta",
+    "attendibilita": "attendibilita",
+    "da_verificare": "da_verificare",
+    "fonte": "fonte",
+    "note": "note",
+    "registro": "registro",
+    "moderno": "moderno",
+    "fonte_moderno": "fonte_moderno",
+    "sinonimi": "sinonimi",
+    "principale_it": "principale_italiano",
+    "principale_fe": "principale_ferrarese",
+}
+
+
+def _voce(v, campi: tuple) -> list:
+    """Una voce come lista di valori, nell'ordine dichiarato in `campi`.
+
+    Un campo che non esiste in `CAMPI_VOCE` e' un errore, non un `None`: e' la
+    differenza fra «questa voce non ha una nota» e «qui il nome del campo e'
+    sbagliato», che si vedono uguali e non lo sono.
+    """
+    fuori = [c for c in campi if c not in CAMPI_VOCE]
+    if fuori:
+        raise KeyError("campo della pagina senza nome in `Voce`: %s"
+                       % ", ".join(fuori))
+    return [getattr(v, CAMPI_VOCE[c]) for c in campi]
+
+
+def _coppie(corpus) -> list:
+    """Le coppie parallele come la pagina le legge.
+
+    `Coppia` e `Proverbio` non hanno `come_dict`, quindi il dizionario si
+    scrive qui. I nomi dei campi non sono un dettaglio: sono i nomi che il
+    codice della pagina usa, e cambiarli qui rompe la tabella senza che
+    nessuno se ne accorga.
+    """
+    return [{"id": c.id, "it": c.italiano, "fe": c.ferrarese, "tipo": c.tipo,
+             "varieta": c.varieta, "fonte": c.fonte, "nota": c.nota}
+            for c in corpus.coppie]
+
+
+def _proverbi(corpus) -> list:
+    return [{"id": p.id, "it": p.italiano, "fe": p.ferrarese,
+             "letterario": p.letterario, "popolare": p.popolare,
+             "fonte": p.fonte, "significato": p.significato}
+            for p in corpus.proverbi]
+
+
+def _regole(regole) -> list:
+    return [{"etichetta": r.etichetta(), "accordo": round(r.accordo, 3),
+             "supporto": r.supporto, "prefisso": r.prefisso,
+             "suffisso_italiano": r.suffisso_italiano,
+             "suffisso_ferrarese": r.suffisso_ferrarese}
+            for r in regole]
+
+
+def _serie(voci, campi: tuple) -> dict:
+    """Le voci in forma compatta: nomi dei campi una volta, valori in fila."""
+    return {"intestazione": list(campi), "voci": [_voce(v, campi) for v in voci]}
+
+
+def fette_del_glossario(glossario: Glossario) -> list:
+    """Le voci in fette, ordinate come le cerca il motore.
+
+    L'ordine e' quello di `normalizza.chiave()` perche' e' lo stesso che usa
+    la ricerca: una fetta che comincia con la `c` deve contenere le `c`,
+    altrimenti la lettera nella barra sarebbe una promessa che il sito non
+    mantiene. Il `locale` non c'entra e non viene usato: `chiave()` toglie
+    accenti e punteggiatura e restituisce solo lettere, quindi l'ordinamento e
+    quello dei nomi di `Voce`, non quello italiano di questa macchina.
+    """
+    voci = sorted(glossario.voci,
+                  key=lambda v: (chiave(v.principale_ferrarese or v.ferrarese or ""),
+                                 chiave(v.ferrarese or "")))
+    fette = []
+    for i in range(0, len(voci), VOCI_PER_FETTA):
+        numero = len(fette) + 1
+        fette.append({
+            "numero": numero,
+            "file": "glossario-%02d.html" % numero,
+            "lettera": _etichetta(numero, voci[i],
+                                 voci[min(i + VOCI_PER_FETTA, len(voci)) - 1]),
+            "voci": voci[i:i + VOCI_PER_FETTA],
+        })
+    return fette
+
+
+def _iniziale(voce) -> str:
+    """La lettera da cui comincia la voce, o `#` se non comincia con una.
+
+    Il `#` serve per le forme che cominciano con un apostrofo o un numero:
+    senza, la barra avrebbe una voce senza nome e il lettore non saprebbe
+    che cos'e'. Resta dichiarato perche' un carattere fuori dall'alfabeto in
+    una barra di navigazione sembra un errore di battitura, e invece e' una
+    voce che il progetto ha e non sa da che lettera cominciare.
+    """
+    k = chiave(voce.principale_ferrarese or voce.ferrarese or "")
+    if not k or not k[0].isalpha():
+        return "#"
+    return k[0].upper()
+
+
+def _etichetta(numero, prima, ultima) -> str:
+    """L'etichetta della fetta: il numero e l'intervallo di lettere.
+
+    Sono state provate due etichette e nessuna delle due reggeva da sola.
+
+    La prima era la lettera iniziale, e la barra risultava `A A B C C D D`.
+    La seconda era l'intervallo, `A`, `A–B`, `C–D`, e andava meglio — ma non
+    abbastanza: una fetta che comincia e finisce dentro la stessa lettera
+    riceve `C`, e se ce n'e' un'altra comincia e finisce dentro `C` riceve
+    `C` lo stesso. Sarebbero due voci diverse che portano da due parti
+    diverse, e chi sceglie «C» non saprebbe quale sta aprendo.
+
+    Quindi il numero c'e' sempre, ed e' l'unica parte dell'etichetta che non
+    puo' ripetersi: due voci uguali nella barra significano la stessa cosa.
+    Il numero e' anche quello che la pagina dichiara in titolo («fetta 4 di
+    21»), quindi non e' un numero nuovo da imparare.
+    """
+    a = _iniziale(prima)
+    b = _iniziale(ultima)
+    intervallo = a if a == b else "%s\u2013%s" % (a, b)
+    return "%d. %s" % (numero, intervallo)
+
+
+def _dati_comuni(glossario, corpus, varieta, fonetica, archivio, sintesi,
+                 web_dir, audio_disponibili, radice) -> dict:
+    """I dati che non dipendono dalla pagina: le fonti, i numeri, i buchi."""
     return {
-        "glossario": [
-            {
-                "id": v.id,
-                "fe": v.ferrarese,
-                "it": v.italiano,
-                "varianti": v.varianti,
-                "campo": v.campo,
-                "varieta": v.varieta,
-                "note": v.note,
-                "fonte": v.fonte,
-                "attendibilita": v.attendibilita,
-                "registro": v.registro,
-                "principale_it": v.principale_italiano,
-                "principale_fe": v.principale_ferrarese,
-                "da_verificare": v.da_verificare,
-                "moderno": v.moderno,
-                "fonte_moderno": v.fonte_moderno,
-                "sinonimi": v.sinonimi,
-            }
-            for v in glossario.voci
-        ],
-        "coppie": [
-            {
-                "id": c.id,
-                "it": c.italiano,
-                "fe": c.ferrarese,
-                "tipo": c.tipo,
-                "varieta": c.varieta,
-                "fonte": c.fonte,
-                "nota": c.nota,
-            }
-            for c in corpus.coppie
-        ],
-        "proverbi": [
-            {
-                "id": p.id,
-                "it": p.italiano,
-                "fe": p.ferrarese,
-                "letterario": p.letterario,
-                "popolare": p.popolare,
-                "fonte": p.fonte,
-                "significato": p.significato,
-            }
-            for p in corpus.proverbi
-        ],
-        "regole": [
-            {
-                "etichetta": r.etichetta(),
-                "accordo": round(r.accordo, 3),
-                "supporto": r.supporto,
-                "prefisso": r.prefisso,
-                "suffisso_italiano": r.suffisso_italiano,
-                "suffisso_ferrarese": r.suffisso_ferrarese,
-            }
-            for r in regole
-        ],
-        # Le varieta' con quello che c'e' dentro: la pagina deve poter dire
-        # «quattro varieta' su cinque sono vuote» senza chiedere al terminale.
-        "varieta": dict(varieta.come_dict(), conteggi=conteggi,
-                        vuote=varieta.vuote(conteggi)),
-        "fonetica": [t.come_dict() for t in fonetica.trascrizioni],
-        "audio": [
-            dict(b.come_dict(),
-                 # `file` diventa il percorso dentro la pagina, e vale solo se
-                 # il brano e' davvero pronto. Se non c'e' resta vuoto e la
-                 # pagina non mette un tasto che non suona niente.
-                 file_playable="audio/" + b.file
-                 if b.id in audio_disponibili else "")
-            for b in archivio.brani
-        ],
-        # I suoni generati. `file_playable` vale solo se il file c'e': senza,
-        # la pagina non mette un pulsante che porta da nessuna parte, che e'
-        # il modo peggiore di offrire un suono. Ogni riga porta la dichiarazione
-        # di sintesi, e la pagina la mostra accanto al pulsante.
-        "sintesi": [
-            dict(s.come_dict(),
-                 file_playable=("sintesi/" + s.file)
-                 if radice_web and s.esiste(radice_web) else "")
-            for s in sintesi.suoni
-        ],
-        # L'avviso e' un dato e non una frase scritta a mano nella pagina: sta
-        # nel manifesto accanto al suono che descrive, e cosi' non puo' succedere
-        # che la pagina dica una cosa e il manifesto un'altra.
-        "sintesi_avviso": AVVERTIMENTO_SINTESI,
-        "nomi_varieta": NOMI,
         "origine": ORIGINE,
+        "nomi_varieta": NOMI,
+        "varieta": dict(varieta.come_dict(),
+                        conteggi=varieta.conteggi(glossario=glossario,
+                                                 coppie=corpus.coppie,
+                                                 audio=list(archivio))),
+        "sintesi_avviso": AVVERTIMENTO_SINTESI,
+        # I numeri della home, calcolati qui e non in JavaScript: se la pagina
+        # li contasse da sola, un giorno la pagina e il terminale direbbero
+        # cose diverse e nessuno saprebbe quale delle due quella giusta.
+        "conteggi": {
+            "voci": len(glossario.voci),
+            "con_fonte": sum(1 for v in glossario.voci if v.fonte),
+            "da_verificare": sum(1 for v in glossario.voci if v.da_verificare),
+            "coppie": len(corpus.coppie),
+            "proverbi": len(corpus.proverbi),
+            "regole": 0,
+        },
         "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
-        # Le voci a cui la fonte non ha dato un significato moderno. La pagina
-        # non puo' contarli da sola: i dati sono gia' filtrati per varieta' e
-        # per ricerca, e il numero che mostra la tabella non e' quello del
-        # glossario intero. Il conteggio e' fatto qui, una volta sola.
         "moderno_buchi": sum(1 for v in glossario.voci if not v.moderno),
         "moderno_con_sinonimi": sum(1 for v in glossario.voci if v.sinonimi),
+        "audio": [dict(b.come_dict(),
+                       file_playable="audio/" + b.file
+                       if b.id in audio_disponibili else "")
+                  for b in archivio.brani],
+        "sintesi": [dict(s.come_dict(),
+                         file_playable=("sintesi/" + s.file)
+                         if s.esiste(web_dir) else "")
+                    for s in sintesi.suoni],
     }
+
+
+def _sezioni(modello: str, tenute: tuple) -> str:
+    """Il modello con dentro solo le sezioni che questa pagina deve avere.
+
+    Una sezione tolta sparisce dal codice e dal testo insieme: non resta una
+    `#tabellaGlossario` vuota, e non resta un `addEventListener` che aggancia
+    un elemento che non c'e'. E' il motivo per cui le sezioni sono marcate nel
+    modello e non riconosciute dal generatore: il posto in cui si decide cosa
+    mettere in una pagina deve essere leggibile da chi apre il modello.
+    """
+    def via(m: re.Match) -> str:
+        return "" if m.group(1) not in tenute else m.group(0)
+    # I blocchi sono `<!-- pagina:NOME -->` ... `<!-- /pagina:NOME -->` e
+    # possono stare su piu' righe: il confronto e' fra i due, non per riga.
+    return re.sub(r"  <!-- pagina:([a-z]+) -->.*?  <!-- /pagina:\1 -->",
+                  via, modello, flags=re.S)
+
+
+def _navigazione(pagina: str) -> str:
+    parti = ['<span class="titolo-nav">Pagine</span>']
+    for file, testo in NAVIGAZIONE:
+        qui = ' class="qui"' if file == pagina else ""
+        parti.append('<a href="%s"%s>%s</a>' % (file, qui, testo))
+    return "\n    ".join(parti)
+
+
+def _pagina(modello: str, sezioni: tuple, dati: dict, titolo: str,
+            occhiello: str, chiave_pagina: str, file_pagina: str) -> str:
+    """Una pagina intera: guscio, sezioni della pagina, navigazione, dati."""
+    testo = _sezioni(modello, sezioni)
+    testo = testo.replace("<!--NAVIGAZIONE-->", _navigazione(file_pagina))
+    # Il titolo e l'occhiello stanno nel corpo e cambiano da pagina a pagina:
+    # una pagina che si chiama «Traduttore» e si presenta come «Il progetto»
+    # costringe chi ci arriva a indovinare dov'e'.
+    testo = re.sub(r"<h1>.*?</h1>",
+                   "<h1>%s</h1>" % titolo, testo, count=1, flags=re.S)
+    testo = re.sub(r'<p class="occhiello">.*?</p>',
+                   '<p class="occhiello">%s</p>' % occhiello, testo,
+                   count=1, flags=re.S)
+    grezzo = json.dumps(dati, ensure_ascii=False, indent=1)
+    # Il JSON va in un elemento di tipo non eseguibile, perche' una voce con
+    # la sequenza `</script>` dentro romperebbe la pagina. Il carattere di
+    # escape e' la barra rovesciata, che JSON accetta e il browser no dentro
+    # un elemento script: e' il modo piu' semplice per non doverlo sostituire.
+    grezzo = grezzo.replace("</", "<\\/")
+    pagina = testo.replace("/*DATI*/null", grezzo)
+    return pagina.replace("<title>Traduttore italiano",
+                          "<title>%s &ndash; Traduttore italiano" % titolo) \
+        if "<title>Traduttore italiano" in pagina else pagina
+
+
+def costruisci(radice: str = None, web_dir: str = None) -> list:
+    """Genera tutte le pagine e restituisce l'elenco dei file scritti.
+
+    Il valore di ritorno era una stringa (il percorso di `index.html`) e
+    adesso e' un elenco: la pagina non e' piu' una, e un sito ramificato che
+    si dichiara una pagina sola e' un sito che mente sul proprio contenuto.
+    """
+    radice = radice or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    web_dir = web_dir or os.path.join(radice, "web")
+    (glossario, corpus, regole, varieta, fonetica, archivio,
+     sintesi) = carica_tutto(radice)
+    copiati = copia_audio(archivio, os.path.join(radice, "audio"), web_dir)
+    with open(TEMPLATE, "r", encoding="utf-8") as f:
+        modello = f.read()
+
+    comuni = _dati_comuni(glossario, corpus, varieta, fonetica, archivio,
+                          sintesi, web_dir, copiati, radice)
+    comuni["conteggi"]["regole"] = len(regole)
+
+    fette = fette_del_glossario(glossario)
+    indice_fette = [{"numero": f["numero"], "file": f["file"],
+                     "lettera": f["lettera"]} for f in fette]
+
+    scritte = []
+
+    def scrivi(nome, sezioni, dati, titolo, occhiello):
+        pagina = _pagina(modello, sezioni, dati, titolo, occhiello, nome, nome)
+        percorso = os.path.join(web_dir, nome)
+        with open(percorso, "w", encoding="utf-8") as f:
+            f.write(pagina)
+        scritte.append((nome, os.path.getsize(percorso)))
+
+    for pagina in PAGINE:
+        chiave_p = pagina["chiave"]
+        dati = dict(comuni)
+        dati["fette"] = indice_fette
+        dati["pagina"] = chiave_p
+        if chiave_p == "traduttore":
+            # Il motore ha bisogno di tutte le parole e di tutti i campi che
+            # usa per rispondere. Non ha bisogno del significato moderno ne'
+            # della fonte: sono cose che si leggono, e si leggono sulla pagina
+            # del glossario. Potarle qui fa risparmiare il 57%.
+            dati["glossario"] = _serie(glossario.voci, CAMPI_MOTORE)
+            dati["coppie"] = _coppie(corpus)
+            dati["proverbi"] = _proverbi(corpus)
+            dati["regole"] = _regole(regole)
+            # Le trascrizioni IPA sono 11 KB e servono anche qui: senza, la
+            # risposta dice «come suona: nessuna parola di questa frase ha
+            # ancora una trascrizione» anche quando la frase contiene
+            # `portàr`, che ce l'ha. Undici kilobyte per non dire una frase
+            # falsa.
+            dati["fonetica"] = [t.come_dict() for t in fonetica.trascrizioni]
+        elif chiave_p == "frasi":
+            dati["coppie"] = _coppie(corpus)
+            dati["proverbi"] = _proverbi(corpus)
+        elif chiave_p == "suoni":
+            dati["scontoSuoni"] = {
+                "con_suono": sum(1 for s in sintesi.suoni if s.esiste(web_dir)),
+                "dichiarate": len(fonetica.trascrizioni),
+            }
+            # Solo le parole che il progetto sa pronunciare. Le altre 10359
+            # non hanno una trascrizione e quindi non hanno niente da
+            # ascoltare: mostrarle qui sarebbe una pagina di 10387 «trascrizione
+            # assente», cioe' una pagina che dice una cosa sola 10387 volte.
+            con_trascrizione = _serie(
+                [v for v in glossario.voci if _ha_trascrizione(v, fonetica)],
+                CAMPI_TABELLA)
+            dati["glossario"] = con_trascrizione
+            dati["fonetica"] = [t.come_dict() for t in fonetica.trascrizioni]
+            dati["conteggi"]["voci"] = len(con_trascrizione["voci"])
+        elif chiave_p == "index":
+            dati["fonetica"] = [t.come_dict() for t in fonetica.trascrizioni]
+        scrivi(pagina["file"], pagina["sezioni"], dati,
+               pagina["titolo"], pagina["occhiello"])
+
+    for f in fette:
+        dati = dict(comuni)
+        dati["glossario"] = _serie(f["voci"], CAMPI_TABELLA)
+        dati["fette"] = indice_fette
+        dati["fetta"] = f["numero"]
+        dati["pagina"] = "glossario"
+        # I numeri del «significato moderno» qui sono di questa fetta e non
+        # del glossario intero. Dire 6324 sotto una tabella di 500 voci
+        # sarebbe un numero che non descrive quello che si vede.
+        dati["moderno_buchi"] = sum(1 for v in f["voci"] if not v.moderno)
+        dati["moderno_con_sinonimi"] = sum(1 for v in f["voci"] if v.sinonimi)
+        scrivi(f["file"], ("fette", "glossario"), dati,
+               "Glossario &ndash; %s" % f["lettera"].split(". ", 1)[1],
+               "Fetta %d di %d: %d voci da %s a %s."
+               % (f["numero"], len(fette), len(f["voci"]),
+                  scappa_maiuscolo(f["voci"][0]),
+                  scappa_maiuscolo(f["voci"][-1])))
+
+    # Le pagine che non esistono piu' non devono restare: una `glossario-99`
+    # rimasta dal glossario di ieri fa pensare che ci sia ancora.
+    for nome in os.listdir(web_dir):
+        if nome.startswith("glossario-") and nome.endswith(".html") \
+                and nome not in [f["file"] for f in fette]:
+            os.remove(os.path.join(web_dir, nome))
+            print("rimossa la pagina che non esiste piu': %s" % nome)
+
+    return scritte
+
+
+def scappa_maiuscolo(voce) -> str:
+    """La prima parola della voce, per il titolo della fetta."""
+    testo = voce.principale_ferrarese or voce.ferrarese or voce.italiano or ""
+    parola = testo.split(" ")[0] if testo else ""
+    return parola or "(senza nome)"
+
+
+def _ha_trascrizione(voce, fonetica: Fonetica) -> bool:
+    """La voce ha una trascrizione dichiarata, per id o per forma.
+
+    Il nome dei due metodi e' quello del modulo `fonetica`: `per_riferimento`
+    e `cerca_forma`. Ho scritto prima due nomi che non esistono, e un metodo
+    inesistente non falla subito: fallisce quando la riga viene eseguita,
+    cioe' solo sulla pagina dei suoni, e solo se qualcuno la apre.
+    """
+    if fonetica.per_riferimento(voce.id):
+        return True
+    return bool(fonetica.cerca_forma(voce.ferrarese))
 
 
 def carica_tutto(radice: str):
@@ -209,29 +524,6 @@ def copia_audio(archivio: Archivio, radice_audio: str, web_dir: str) -> list:
     return copiati
 
 
-def costruisci(radice: str = None, destinazione: str = None) -> str:
-    radice = radice or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    destinazione = destinazione or os.path.join(radice, "web", "index.html")
-    web_dir = os.path.dirname(destinazione)
-    (glossario, corpus, regole, varieta, fonetica, archivio,
-     sintesi) = carica_tutto(radice)
-    copiati = copia_audio(archivio, os.path.join(radice, "audio"), web_dir)
-    dati = _dati_per_la_pagina(glossario, corpus, regole, varieta, fonetica,
-                               archivio, copiati, sintesi, web_dir)
-    with open(TEMPLATE, "r", encoding="utf-8") as f:
-        modello = f.read()
-    grezzo = json.dumps(dati, ensure_ascii=False, indent=1)
-    # Il JSON va in un elemento di tipo non eseguibile, perche' una voce con
-    # la sequenza `</script>` dentro romperebbe la pagina. Il carattere di
-    # escape e' la barra rovesciata, che JSON accetta e il browser no dentro
-    # un elemento script: e' il modo piu' semplice per non doverlo sostituire.
-    grezzo = grezzo.replace("</", "<\\/")
-    pagina = modello.replace("/*DATI*/null", grezzo)
-    os.makedirs(os.path.dirname(destinazione), exist_ok=True)
-    with open(destinazione, "w", encoding="utf-8") as f:
-        f.write(pagina)
-    return destinazione
-
-
 if __name__ == "__main__":
-    print(costruisci())
+    for nome, peso in costruisci():
+        print("%-22s %8d byte" % (nome, peso))

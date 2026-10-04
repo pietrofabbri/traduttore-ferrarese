@@ -62,7 +62,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py           # 155 test
+python3 prove/test_traduttore.py           # 164 test
 python3 -m traduttore.cli verifica         # i controlli sui dati
 python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
 ```
@@ -71,9 +71,19 @@ I tre devono uscire senza errori. Se hai toccato `dati/`, aggiungi anche:
 
 ```bash
 python3 -m traduttore.cli impara     # rigenera dati/regole.json
-python3 -m traduttore.cli web        # rigenera web/index.html
+python3 -m traduttore.cli web        # rigenera TUTTE le pagine in web/
 python3 -m traduttore.cli buchi      # i numeri di quello che manca
 ```
+
+`web` non genera una pagina ma **ventisei**: la home, il traduttore, l'indice
+del glossario, ventuno fette, le frasi e i suoni. Il comando stampa il peso di
+ognuna, e quel peso e' un numero che va guardato: una pagina che torna a
+diversi megabyte e' la divisione annullata da qualche parte. Le pagine si
+aggiungono in `PAGINE` dentro `sorgenti/costruisci_web.py`, mai a mano.
+
+`prove/controlla_equivalenza.py` confronta Python e JavaScript su
+`web/traduttore.html`, che e' l'unica pagina con il motore e i dati che il
+motore usa. Se lo sposti, sposta anche quella riga.
 
 E se hai toccato `dati/fonetica.jsonl`, anche i suoni generati, che sono un
 file generato come gli altri e va committato insieme al manifesto:
@@ -214,7 +224,17 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
-6. **Un suono generato puo' passare per una voce?** La domanda ha gia' una
+6. **Le ventisei pagine sono giuste?** Il sito e' stato diviso perche' la
+   pagina unica pesava 6,2 megabyte, e la divisione ha funzionato. Restano
+   pero' due scelte che sono di Pietro e non dello script: `VOCI_PER_FETTA` in
+   `costruisci_web.py` e' 500 e da li' dipende quanto pesa una pagina, e la
+   ricerca guarda solo la fetta aperta. Se in classe si cercano parole sparse
+   e si finisce a girare di fetta in fetta, il numero da cambiare e' il primo.
+   Come si chiude il limite della ricerca — un indice delle parole senza la
+   voce dentro — e' una scelta, perche' un indice del glossario intero
+   riporterebbe il peso che si e' appena tolto.
+
+7. **Un suono generato puo' passare per una voce?** La domanda ha gia' una
    risposta — no — ma il **come** merita di stare scritto, perche' e' il punto
    dove questo progetto rischia di mentire. Le due cartelle di suoni sono
    separate dal manifesto e dai **nomi dei file**, non dal contenuto: dentro
@@ -226,7 +246,7 @@ lavorare:
    diventassero solo una convenzione scritta qui, il conto dei brani di persone
    vere diventerebbe falso e nessuno se ne accorgerebbe.
 
-7. **Le parole funzionali entrano nel glossario o no.** Il glossario non ne
+8. **Le parole funzionali entrano nel glossario o no.** Il glossario non ne
    ha quasi nessuna: fra 131 parole funzionali dell'elenco di `copertura.py`,
    38 ci sono e 93 passano invariate, quindi una frase come «il cane e' a casa»
    esce con due buchi. La domanda **non e'** «quale fonte le dichiara»: la

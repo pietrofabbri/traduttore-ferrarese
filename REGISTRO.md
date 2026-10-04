@@ -86,6 +86,83 @@ copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
+## 0.17 — 2026-10-04 · Il glossario in ventuno fette, e perche' potare i campi non bastava
+
+**Perche'.** La pagina pesava 6,2 megabyte e li caricava tutti insieme. Chi
+arrivava con una connessione lenta aspettava, e chi aveva un telefono vecchio
+aspettava di piu': la prima impressione del progetto era la parola «lento».
+Dividere il sito in piu' pagine e' sembrata la soluzione, ed e' una solzione,
+ma non per il motivo che sembrava.
+
+**La meta' che non c'era.** Il motivo vero della grandezza non era il numero di
+parole: era che ogni riga portava scritti campi che la pagina non usava quasi
+mai. Qui i due tentativi sbagliati insegnano una cosa che vale per tutto il
+progetto: **potare i campi non basta**. I campi inutili erano il 27% (`notes` e
+`fonte` insieme), e la forma compatta — non ripetere le stesse chiavi 10387
+volte — il 23%. Insieme poco piu' della meta': toglievano un megabyte su sei, e
+il grosso restava.
+
+**I dati erano distribuiti, non grandi.** Le 10387 voci non erano un blocco
+solo: nella pagina c'erano anche le coppie, i 28 proverbi, le regole e il
+pannello dei numeri. Nessuna parte era grande abbastanza da spiegare 6,2
+megabyte da sola. Un file che contiene molte cose piccole e' grande per la
+somma, e la somma si divide solo dividendola.
+
+**Che cosa e' stato fatto.** Ventisei pagine invece di una: home, traduttore,
+glossario, ventuno fette da 500 voci, frasi e suoni. La home pesa **82
+kilobyte** invece di 6,2 megabyte, e nessuna pagina supera i **3
+megabyte** — un tetto che ora controlla un passo della CI, pagina per pagina,
+perche' un peso che nessuno guarda torna.
+
+**Il costo, che e' reale.** La somma dei ventisei file e' **8,0 megabyte**,
+non 6,2: il modello, la barra e i dati comuni sono ripetuti in ogni pagina, e
+ogni fetta porta la barra delle sue vicine. Il sito pesa quindi di piu' di
+prima, pur pesando meno per chi apre qualcosa. Va detto qui perche' e' un
+numero che si puo' misurare, e un numero che si puo' misurare non si nasconde:
+una pagina sola che si carica subito vale piu' di ventisei pagine veloci che
+nessuno apre.
+
+**La ricerca ha un limite, e lo dichiara.** La casella cerca dentro la fetta
+aperta. Prima, quando non trovava niente, diceva «nessuna voce corrisponde»: e'
+una frase falsa, perche' le voci sono 10387 e 10387 non e' nessuna. Ora dice
+**«in questa fetta»** e rimanda alla barra in alto.
+
+**Otto difetti, e ognuno ha un test.** Non sono difetti ipotetici: sono cose
+che sono successe con la divisione gia' scritta.
+
+1. `getattr(v, "fe", None)` **non falliva** quando il campo si chiama
+   `ferrarese`: restituiva `None` e tutte le forme uscivano vuote, in nove
+   righe. Ora c'e' una mappa esplicita dei campi che **solleva `KeyError`**
+   su un campo sconosciuto: un campo nuovo non puo' passare inosservato.
+2. Il blocco delle fette era annidato dentro la home, quindi spariva proprio
+   dalle pagine che lo usano. Le sezioni non si annidano.
+3. Una sostituzione indiscriminata aveva cambiato `document.getElementById`
+   in `el()`, che pero' e' definito **dopo**: la pagina intera si rompeva e
+   nessun controllo di sintassi lo segnalava, perche' `new Function()`
+   accetta volentieri un nome che non esiste.
+4. Un apostrofo non scappato dentro una stringa del motore rompeva il
+   JavaScript. Errore di sintassi vero, questa volta.
+5. Una **virgola mancante** nella lista dei numeri del pannello non e' un
+   errore di sintassi — `["a"]["b"]` e' un'indicizzazione legittima — e il
+   difetto emergeva lontano, dentro `pannello`. L'ha trovato solo
+   `controlla_equivalenza.py`, che confronta la pagina costruita in Python
+   con quella che il motore costruisce in JavaScript.
+6. Le etichette delle fette erano duplicate: `A A B C C D D F G`, provate due
+   volte. Ora sono numero piu' intervallo — `1. A`, `2. A–B` … `21. V–Z` —
+   uniche per costruzione e non per controllo.
+7. Il pulsante di una voce con due forme faceva sentire solo il primo suono:
+   `V0021` ne ha due (`frarés` e `frarèz`), e il file `T0024.wav` era
+   dichiarato e generato ma **non compariva in nessuna pagina**. Ora la scheda
+   mappa tutti i suoni di tutte le forme.
+8. Il messaggio di ricerca di cui sopra, che negava l'esistenza di voci che
+   c'erano.
+
+**Verifiche.** 164 test (erano 155). `verifica`: 0 errori, 8 avvisi.
+Equivalenza: 12 frasi confrontate, 0 divergenze. Scanner: 67 file
+tracciati, 0 ideogrammi. Un passo nuovo della CI controlla che ogni pagina contenga i
+suoi dati, che nessuna superi i 3 megabyte, che ogni fetta abbia le sue voci
+e la sua barra, e che ogni link della barra apra un file che esiste.
+
 ## 0.16 — 2026-10-04 · Il pulsante che fa sentire la parola, e le tre frasi che diventavano false
 
 **Perché.** La pagina aveva un riproduttore che poteva suonare **zero** cose,

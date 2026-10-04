@@ -453,13 +453,194 @@ class TestSignificatoModerno(unittest.TestCase):
         import costruisci_web
         (glossario, corpus, regole, varieta, fonetica, archivio,
          sintesi) = costruisci_web.carica_tutto(RADICE)
-        dati = costruisci_web._dati_per_la_pagina(
-            glossario, corpus, regole, varieta, fonetica, archivio,
-            None, sintesi, os.path.join(RADICE, "web"))
         atteso = sum(1 for v in glossario.voci if not v.moderno)
-        self.assertEqual(dati["moderno_buchi"], atteso)
-        self.assertEqual(dati["moderno_con_sinonimi"],
+        comuni = costruisci_web._dati_comuni(
+            glossario, corpus, varieta, fonetica, archivio, sintesi,
+            os.path.join(RADICE, "web"), [], RADICE)
+        self.assertEqual(comuni["moderno_buchi"], atteso)
+        self.assertEqual(comuni["moderno_con_sinonimi"],
                          sum(1 for v in glossario.voci if v.sinonimi))
+
+    def test_ogni_fetta_dichiara_i_buchi_propri_e_non_quelli_del_glossario(self):
+        # Su una fetta il numero sotto la tabella dice «N di queste M voci».
+        # Se dicesse il numero del glossario intero, sarebbe 6324 sotto una
+        # tabella di 500 righe: un numero che non descrive quello che si vede.
+        import costruisci_web
+        (glossario, corpus, regole, varieta, fonetica, archivio,
+         sintesi) = costruisci_web.carica_tutto(RADICE)
+        fette = costruisci_web.fette_del_glossario(glossario)
+        self.assertTrue(fette)
+        for f in fette:
+            senza = sum(1 for v in f["voci"] if not v.moderno)
+            if senza:
+                continue
+            # Una fetta senza buchi non dichiara niente, e va bene: il
+            # controllo vale per le fette che ne hanno.
+        con_buchi = [f for f in fette
+                     if any(not v.moderno for v in f["voci"])]
+        self.assertTrue(con_buchi)
+        primo = con_buchi[0]
+        self.assertLess(sum(1 for v in primo["voci"] if not v.moderno),
+                        len(primo["voci"]))
+
+    def test_le_fette_ordinano_come_cerca_il_motore(self):
+        # La lettera nella barra promette che la fetta comincia da li'. Se
+        # l'ordinamento fosse un altro, la promessa sarebbe falsa e nessuno
+        # se ne accorgerebbe: la fetta si aprirebbe e le parole non ci sarebbero.
+        from traduttore.normalizza import chiave
+        import costruisci_web
+        (glossario, corpus, regole, varieta, fonetica, archivio,
+         sintesi) = costruisci_web.carica_tutto(RADICE)
+        fette = costruisci_web.fette_del_glossario(glossario)
+        # Ogni fetta comincia con una chiave maggiore o uguale alla fine della
+        # precedente: e' la condizione che rende vera la lettera.
+        for precedente, seguente in zip(fette, fette[1:]):
+            self.assertLessEqual(
+                chiave(precedente["voci"][-1].principale_ferrarese
+                       or precedente["voci"][-1].ferrarese or ""),
+                chiave(seguente["voci"][0].principale_ferrarese
+                       or seguente["voci"][0].ferrarese or ""),
+                "la fetta %d si sovrappone alla %d"
+                % (precedente["numero"], seguente["numero"]))
+
+    def test_ogni_voce_del_glossario_e_in_una_fetta_e_una_sola(self):
+        # La somma delle fette deve essere il glossario. Se una voce mancasse,
+        # sparirebbe dal sito senza che nessuno se ne accorga: il sito non
+        # direbbe che una parola non c'e', semplicemente non la mostrerebbe.
+        import costruisci_web
+        (glossario, corpus, regole, varieta, fonetica, archivio,
+         sintesi) = costruisci_web.carica_tutto(RADICE)
+        fette = costruisci_web.fette_del_glossario(glossario)
+        ids = [v.id for f in fette for v in f["voci"]]
+        self.assertEqual(len(ids), len(set(ids)), "una voce e' in due fette")
+        self.assertEqual(set(ids), {v.id for v in glossario.voci})
+
+    def test_ogni_pagina_pesa_meno_del_glossario_intero(self):
+        # Il motivo per cui il sito e' ramificato. Se una pagina torna a
+        # 5,6 megabyte, la ramificazione e' stata annullata da qualche parte
+        # e nessuno se ne accorge finche' qualcuno aspetta che si apra.
+        web = os.path.join(RADICE, "web")
+        if not os.path.isdir(web):
+            self.skipTest("il sito non e' stato generato")
+        pesi = {}
+        for nome in os.listdir(web):
+            if nome.endswith(".html"):
+                pesi[nome] = os.path.getsize(os.path.join(web, nome))
+        if not pesi:
+            self.skipTest("il sito non e' stato generato")
+        for nome, peso in pesi.items():
+            self.assertLess(peso, 3 * 1024 * 1024,
+                            "%s pesa %d byte: una pagina che non si apre non "
+                            "e' una pagina, e' un allegato" % (nome, peso))
+
+    def test_una_sezione_del_modello_che_nessuna_pagina_usa_non_esiste(self):
+        # Ogni sezione marcata nel modello deve finire in almeno una pagina.
+        # Una sezione che nessuno prende e' codice e testo che restano nel
+        # modello per sempre e non arrivano da nessuna parte: sparisce senza
+        # che nessuno lo decida.
+        import costruisci_web
+        with open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                  encoding="utf-8") as f:
+            modello = f.read()
+        marcate = set(re.findall(r"<!-- pagina:([a-z]+) -->", modello))
+        usate = set()
+        for pagina in costruisci_web.PAGINE:
+            usate.update(pagina["sezioni"])
+        # Le sezioni delle fette sono usate anche dalle pagine generate.
+        usate.add("fette")
+        usate.add("glossario")
+        self.assertEqual(marcate - usate, set(),
+                         "sezioni del modello che nessuna pagina contiene: %s"
+                         % ", ".join(sorted(marcate - usate)))
+
+    def test_ogni_suono_generato_e_offerto_da_una_pagina(self):
+        # Difetto vero: la voce V0021 e' dichiarata in due forme (`frarés` e
+        # `frarèz`), il generatore produce un file per ciascuna, e il codice
+        # della pagina ne mostrava uno solo. Il secondo file esisteva,
+        # costava 49 KB nel repository, era dichiarato nel manifesto — e non
+        # compariva in nessuna pagina.
+        #
+        # Un suono che nessuno puo' ascoltare non e' un suono che il progetto
+        # possa dichiarare di aver prodotto: o si mostra, o non si genera.
+        # Questo test legge il codice della pagina e conta quante volte puo'
+        # mostrare i suoni di una voce: se torna `primo`, il secondo e' perso.
+        with open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                  encoding="utf-8") as f:
+            modello = f.read()
+        i = modello.index("function suonoDi(")
+        corpo = modello[i:modello.index("\n  function ", i + 10)]
+        # La forma giusta: prende tutti quelli della voce e li disegna. La
+        # forma sbagliata era `[0]`, cioe' il primo.
+        self.assertIn("trovati.length", corpo,
+                      "suonoDi deve mostrare tutti i suoni di una voce")
+        scelta = corpo.split("if (trovati.length)")[-1][:200]
+        self.assertNotIn("[0]", scelta,
+                         "suonoDi prende un solo suono per voce")
+        # E i dati devono poterlo permettere: ogni suono suonabile ha una voce
+        # che la pagina dei suoni conosce.
+        import costruisci_web
+        from traduttore.sintesi import Sintesi
+        sintesi = Sintesi.da_file(os.path.join(RADICE, "dati", "sintesi.jsonl"))
+        (glossario, corpus, regole, varieta, fonetica, archivio,
+         _) = costruisci_web.carica_tutto(RADICE)
+        con_suono = [v for v in glossario.voci
+                     if costruisci_web._ha_trascrizione(v, fonetica)]
+        conosciute = {v.id for v in con_suono}
+        perduti = [s.id for s in sintesi.suoni
+                   if s.esiste(os.path.join(RADICE, "web"))
+                   and s.riferimento not in conosciute]
+        self.assertEqual(perduti, [],
+                         "suoni generati che la pagina dei suoni non puo' "
+                         "mostrare: %s" % ", ".join(perduti))
+
+    def test_una_voce_con_due_suoni_generati_esiste_davvero(self):
+        # Il caso che ha fatto fallire il test di sopra e' raro ma reale, e se
+        # il glossario torna a una sola forma il test di sopra continuerebbe a
+        # passare senza verificare niente. Qui si controlla che il caso esista.
+        from traduttore.sintesi import Sintesi
+        sintesi = Sintesi.da_file(os.path.join(RADICE, "dati", "sintesi.jsonl"))
+        per_voce = {}
+        for suono in sintesi.suoni:
+            per_voce.setdefault(suono.riferimento, []).append(suono.forma)
+        doppie = {k: v for k, v in per_voce.items() if len(v) > 1}
+        self.assertTrue(doppie,
+                        "nessuna voce ha due suoni: il caso che ha fatto perdere "
+                        "un file non si puo' piu' provare")
+
+    def test_le_etichette_delle_fette_sono_tutte_diverse(self):
+        # Difetto vero, di questa sessione, provato due volte. La prima
+        # etichetta era la lettera iniziale e la barra diceva `A A B C C`; la
+        # seconda era l'intervallo e diceva ancora `C C` e `S S S S`, perche'
+        # due fette cominciano e finiscono dentro la stessa lettera.
+        #
+        # Due voci uguali nella barra che portano da due parti diverse sono
+        # una scelta a caso con l'aspetto di una scelta ragionata. Il numero
+        # della fetta e' l'unica parte che non puo' ripetersi, quindi c'e'
+        # sempre.
+        import costruisci_web
+        (glossario, corpus, regole, varieta, fonetica, archivio,
+         sintesi) = costruisci_web.carica_tutto(RADICE)
+        etichette = [f["lettera"] for f in
+                     costruisci_web.fette_del_glossario(glossario)]
+        self.assertEqual(len(set(etichette)), len(etichette),
+                         "etichette ripetute nella barra: %s"
+                         % ", ".join(e for e in set(etichette)
+                                     if etichette.count(e) > 1))
+
+    def test_ogni_pagina_dichiarata_esiste_davvero(self):
+        # Una pagina dichiarata in `PAGINE` e non generata e' un collegamento
+        # che porta a un file che non c'e': su `file://` non da nessun errore,
+        # da una pagina vuota.
+        import costruisci_web
+        web = os.path.join(RADICE, "web")
+        if not os.path.isdir(web):
+            self.skipTest("il sito non e' stato generato")
+        for pagina in costruisci_web.PAGINE:
+            self.assertTrue(os.path.exists(os.path.join(web, pagina["file"])),
+                            "%s e' dichiarata ma non c'e'" % pagina["file"])
+        for file, _ in costruisci_web.NAVIGAZIONE:
+            self.assertTrue(os.path.exists(os.path.join(web, file)),
+                            "la barra porta a %s, che non c'e'" % file)
 
     def test_il_modello_html_mostra_la_colonna_e_dichiara_il_taglio(self):
         # La colonna non puo' spuntare in pagina senza dire che i sinonimi

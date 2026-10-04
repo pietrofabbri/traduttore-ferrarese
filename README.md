@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.16
+versione: 0.17
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -77,6 +77,45 @@ insieme al fonte. Un proverbio non e' una voce e non si presenta come tale.
 ```bash
 python3 -m traduttore.cli cerca "lupo non mangia di lupo"
 python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
+```
+
+## Il sito: sei pagine invece di una da sei megabyte
+
+La pagina era **una sola** e pesava **6,2 megabyte**. Di quelli, il 99,2% era il
+blocco dei dati e l'87,5% era il glossario: la pagina che serve solo a leggere
+i numeri del progetto doveva scaricare un vocabolario.
+
+Ora il sito è ramificato, e ogni pagina porta dentro quello che le serve:
+
+| pagina | cosa c'è | peso |
+|---|---|---|
+| `index.html` | i numeri, i buchi dichiarati, la strada per le altre pagine | **82 KB** |
+| `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa | 2,3 MB |
+| `glossario.html` | l'indice delle fette | 70 KB |
+| `glossario-01.html` … `-21.html` | una fetta di 500 voci, con ricerca dentro | ~250 KB |
+| `frasi.html` | coppie parallele e proverbi | 88 KB |
+| `suoni.html` | le cinque varietà e i suoni | 101 KB |
+
+**Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
+dice che i dati sono distribuiti e nessun campo, da solo, toglie il peso
+principale. Su 5,6 megabyte, togliere `note` e `fonte` insieme fa risparmiare
+il 27%. L'unica cosa che funziona è **spostare il peso in più pagine**, ognuna
+con la sua. In più i dati viaggiano in forma compatta — i nomi dei campi si
+dicono una volta sola invece di 10387 — e da soli fanno risparmiare il 23%.
+
+**Il limite, dichiarato.** La ricerca guarda **solo la fetta aperta**. Una
+parola che cominci con un'altra lettera è in un'altra pagina, e la pagina lo
+dice: «nessuna voce corrisponde **in questa fetta**» con la barra delle lettere
+subito sotto. È il prezzo della divisione, e un prezzo che si dichiara è
+preferibile a una pagina da 6 megabyte che si scopre lentamente.
+
+**Le lettere sono uniche.** La barra mostra `1. A`, `2. A–B`, `3. B–C`, e non
+una lettera sola: la prima versione mostrava `A A B C C D D`, cioè due voci
+diverse che portavano da due parti diverse. Il numero della fetta è l'unica
+parte che non si può ripetere, quindi c'è sempre.
+
+```bash
+python3 -m traduttore.cli web     # genera tutte le pagine e stampa i pesi
 ```
 
 ## I quattro livelli, e il quinto
@@ -384,6 +423,12 @@ si segue è `audio/SESSIONE.md`.
 traduttore-ferrarese/
   dati/sintesi.jsonl    i suoni generati: generato, non scritto a mano
   web/sintesi/          i dodici wav che la pagina fa suonare
+  web/index.html        la home: i numeri e i buchi
+  web/traduttore.html   il traduttore, con il glossario ridotto
+  web/glossario.html    l'indice delle fette del glossario
+  web/glossario-NN.html le fette: 500 voci per pagina
+  web/frasi.html        coppie parallele e proverbi
+  web/suoni.html        varieta' e suoni
   README.md            questo file
   RACCOLTA.md          dove si accumulano vocabolari, testi e registrazioni
   REGISTRO.md          che cosa e' cambiato, e perche'
@@ -541,7 +586,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 155 test
+python3 prove/test_traduttore.py     # 164 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

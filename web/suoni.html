@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Traduttore italiano &ndash; ferrarese</title>
+<title>Varieta' e suoni &ndash; Traduttore italiano &ndash; ferrarese</title>
 <style>
   :root {
     --fondo: #fbf8f2;
@@ -131,63 +131,26 @@
 </head>
 <body>
 <main>
-  <h1>Traduttore italiano &ndash; ferrarese</h1>
-  <p class="occhiello">Ogni parola dice da dove viene. Quello che il glossario non sa resta scritto, non viene inventato.</p>
+  <h1>Varieta' e suoni</h1>
+  <p class="occhiello">Le cinque varieta' e le poche parole che si possono ascoltare.</p>
 
-  <nav id="navigazione"><!--NAVIGAZIONE--></nav>
-
-  <!-- pagina:traduttore -->
-  <textarea id="testo" placeholder="Scrivi una frase in italiano o in ferrarese"></textarea>
-  <div class="riga">
-    <button id="traduci" type="button">Traduci</button>
-    <button id="direzione" type="button" aria-pressed="false">Direzione: italiano &rarr; ferrarese</button>
-  </div>
-
-  <div class="legenda">
-    <span><i class="pastiglia" style="border-color:var(--glossario)"></i>glossario</span>
-    <span><i class="pastiglia" style="border-color:var(--corpus)"></i>corpus</span>
-    <span><i class="pastiglia" style="border-color:var(--regola);border-bottom-style:dotted"></i>regola</span>
-    <span><i class="pastiglia" style="border-color:var(--modello);border-bottom-style:dashed"></i>modello</span>
-    <span><i class="pastiglia" style="border-color:var(--nessuna);background:#fdf0f0"></i>non lo so</span>
-  </div>
-
-  <div class="risposta" id="risposta"><span class="vuoto">Scrivi qualcosa e premi «Traduci».</span></div>
-  <div id="avviso"></div>
-  <!-- /pagina:traduttore -->
+  <nav id="navigazione"><span class="titolo-nav">Pagine</span>
+    <a href="index.html">Il progetto</a>
+    <a href="traduttore.html">Traduttore</a>
+    <a href="glossario.html">Glossario</a>
+    <a href="frasi.html">Coppie e proverbi</a>
+    <a href="suoni.html" class="qui">Varieta' e suoni</a></nav>
 
 
-  <!-- pagina:glossario -->
-  <h2>Il glossario</h2>
-  <div class="riga">
-    <input type="search" id="cercaGlossario" placeholder="cerca in questa fetta (ferrarese o italiano)" size="40">
-    <select id="filtroVarietaGlossario">
-      <option value="">tutte le varieta'</option>
-    </select>
-  </div>
-  <div id="tabellaGlossario"></div>
-  <!-- /pagina:glossario -->
 
 
-  <!-- pagina:frasi -->
-  <h2>Le coppie parallele</h2>
-  <div id="tabellaCoppie"></div>
-  <!-- /pagina:frasi -->
 
 
-  <!-- pagina:frasi -->
-  <h2>I proverbi</h2>
-  <p class="occhiello" style="margin:.4rem 0 1rem">
-    Un proverbio non e' una parola e non si traduce parola per parola: ha la
-    forma dei libri, la forma che si dice — che qui non e' ancora stata
-    nessuno a dirla — e il significato, che non coincide mai con l'italiano
-    letterale. La colonna «popolare» vuota e' un buco dichiarato, non una
-    dimenticanza.
-  </p>
-  <div class="riga">
-    <input type="search" id="cercaProverbi" placeholder="cerca fra i proverbi (ferrarese o italiano)" size="40">
-  </div>
-  <div id="tabellaProverbi"></div>
-  <!-- /pagina:frasi -->
+
+
+
+
+
 
 
   <!-- pagina:suoni -->
@@ -233,32 +196,12 @@
   <!-- /pagina:suoni -->
 
 
-  <!-- pagina:fette -->
-  <!-- DIFETTO CORRETTO, e il commento resta perche' la forma e' facilissima da
-     rifare: questo blocco era dentro quello `index`, quindi spariva da tutte
-     le pagini che non prendono `index` — cioe' da tutte le fette del
-     glossario, che sono le pagine che lo usano. Le sezioni non si annidano,
-     e questa la' dentro l'altra e' stato un blocco che nessuna pagina
-     mostrava. -->
-  <div id="fette"></div>
-  <!-- /pagina:fette -->
-
-  <!-- pagina:index -->
-  <h2>Che cosa sa il motore</h2>
-  <div class="pannello" id="pannello"></div>
-  <!-- /pagina:index -->
 
 
-  <!-- pagina:index -->
-  <h3>E che cosa non sa</h3>
-  <p class="occhiello" style="margin:.4rem 0 1rem">
-    I buchi sono cose che il progetto sa di non sapere, non errori. Ogni numero
-    e' quello che si puo' correggere: una riga in piu' in un file, mezz'ora con
-    una persona che parla ferrarese, un informatore che dica un proverbio come
-    si dice.
-  </p>
-  <div id="buchi"></div>
-  <!-- /pagina:index -->
+
+
+
+
 
 
   <footer>
@@ -268,7 +211,1773 @@
   </footer>
 </main>
 
-<script id="dati" type="application/json">/*DATI*/null</script>
+<script id="dati" type="application/json">{
+ "origine": {
+  "glossario": 0.95,
+  "corpo": 0.8,
+  "corpo_frase": 0.92,
+  "regola": 0.55,
+  "modello": 0.5,
+  "nessuna": 0.0
+ },
+ "nomi_varieta": {
+  "cittadino": "cittadino",
+  "centrale": "centrale, detto anche arioso",
+  "occidentale": "occidentale",
+  "orientale": "orientale",
+  "transpadano": "transpadano, ibrido col polesano"
+ },
+ "varieta": {
+  "codici": [
+   "cittadino",
+   "centrale",
+   "occidentale",
+   "orientale",
+   "transpadano"
+  ],
+  "nomi": {
+   "cittadino": "cittadino",
+   "centrale": "centrale, detto anche arioso",
+   "occidentale": "occidentale",
+   "orientale": "orientale",
+   "transpadano": "transpadano, ibrido col polesano"
+  },
+  "voci": [
+   {
+    "codice": "cittadino",
+    "nome": "cittadino",
+    "territori": [
+     "Ferrara, dentro le mura"
+    ],
+    "descrizione": "Il ferrarese di dentro le mura storiche. E' la varieta' che il gioco usa perche' e' quella che si sente in citta', ed e' anche quella che oggi e' parlata da poche persone, quasi tutte di eta' alta.",
+    "confine": "",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Unica varieta' con voci nel glossario, e da questa versione e' l'unica con una fonte che dichiari il territorio. Tutte le fonti disponibili documentano il cittadino: e' un vuoto delle fonti, non una scelta del progetto."
+   },
+   {
+    "codice": "centrale",
+    "nome": "centrale, detto anche arioso",
+    "territori": [
+     "resto del comune di Ferrara",
+     "Portomaggiore",
+     "Masi Torello",
+     "Voghiera",
+     "Berra",
+     "Ro",
+     "Jolanda di Savoia",
+     "Formignana",
+     "Tresignallo",
+     "Copparo",
+     "Ostellato",
+     "Fiscaglia",
+     "parti dell'argentano",
+     "Occhiobello"
+    ],
+    "descrizione": "La fascia interna della provincia, la piu' estesa e la piu' viva. Il nome «arioso» e' il nome popolare del dialetto di questa zona.",
+    "confine": "",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. E' la prima varieta' da riempire perche' e' la piu' grande e la piu' parlata: chiunque del territorio abbia Parentele conocce parole che il glossario non ha."
+   },
+   {
+    "codice": "occidentale",
+    "nome": "occidentale",
+    "territori": [
+     "Bondeno",
+     "Vigarano Mainarda",
+     "Sermide e Felonica",
+     "parti di Terre del Reno",
+     "parti di Poggio Renatico"
+    ],
+    "descrizione": "Il lembo occidentale, verso il mantovano e il modenese. La fonte lo descrive come influenzato dal Felonica, dal Sermide e da Finale Emilia.",
+    "confine": "Felonica e Sermide (Mantova), Finale Emilia (Modena)",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Il primo posto dove andare a chiedere una registrazione: e' la varieta' in cui la differenza dal cittadino si sente di piu'."
+   },
+   {
+    "codice": "orientale",
+    "nome": "orientale",
+    "territori": [
+     "Codigoro",
+     "Fiscaglia",
+     "Ostellato",
+     "Lagosanto",
+     "Comacchio",
+     "Goro"
+    ],
+    "descrizione": "La costa, dove il ferrarese si fonde col comacchiese. La fonte lo dichiara con quella frase e non con un confine.",
+    "confine": "si fonde con il comacchiese",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Fiscaglia e Ostellato compaiono anche nel gruppo centrale e Fiscaglia anche in quello transpadano: la fonte non li separa, e qui non si finge di separarli."
+   },
+   {
+    "codice": "transpadano",
+    "nome": "transpadano, ibrido col polesano",
+    "territori": [
+     "Occhiobello",
+     "Stienta",
+     "Canaro",
+     "Castelmassa",
+     "Goro"
+    ],
+    "descrizione": "La fascia oltre il Po, in provincia di Rovigo: il «ferrarese transpadano», ibrido col polesano.",
+    "confine": "il polesano (provincia di Rovigo)",
+    "fonte": "S002, sezione sulle varieta' territoriali",
+    "attendibilita": "D",
+    "nota": "Nessuna voce. Occhiobello e Goro compaiono anche in altri gruppi: il territorio non e' una casella."
+   }
+  ],
+  "conteggi": {
+   "cittadino": {
+    "glossario": 10387,
+    "coppie": 16,
+    "audio": 0,
+    "totale": 10403,
+    "stato": "base"
+   },
+   "centrale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "occidentale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "orientale": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   },
+   "transpadano": {
+    "glossario": 0,
+    "coppie": 0,
+    "audio": 0,
+    "totale": 0,
+    "stato": "vuota"
+   }
+  }
+ },
+ "sintesi_avviso": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara. Serve per sentire come suona la grafia, non per imparare come parlano i ferraresi.",
+ "conteggi": {
+  "voci": 24,
+  "con_fonte": 10387,
+  "da_verificare": 10156,
+  "coppie": 16,
+  "proverbi": 28,
+  "regole": 0
+ },
+ "buchi": [
+  {
+   "nome": "locuzioni nel glossario",
+   "quanti": 2034,
+   "nota": "una voce di piu' parole: il motore le accorpa prima di tradurre, ma restano piu' difficili da mettere in un livello di gioco"
+  },
+  {
+   "nome": "voci senza trascrizione IPA",
+   "quanti": 10363,
+   "nota": "si aggiunge una riga in dati/fonetica.jsonl; senza un parlante non si puo' fare, e la pagina lo dice accanto alla parola",
+   "totale": 10387
+  },
+  {
+   "nome": "trascrizioni non verificate da un parlante",
+   "quanti": 28,
+   "nota": "attendibilita I con da_verificare: sono una lettura della grafia, non un ascolto",
+   "totale": 28
+  },
+  {
+   "nome": "proverbi senza la forma che si dice",
+   "quanti": 28,
+   "nota": "il campo `popolare`: serve qualcuno che dica come li si dice, e finche' quel campo e' vuoto il proverbio ha una forma sola",
+   "totale": 28
+  },
+  {
+   "nome": "voci dichiarate da verificare",
+   "quanti": 10156,
+   "nota": "attendibilita I: la scrittura c'e' ma nessuno l'ha ancora controllata con un informatore",
+   "totale": 10387
+  },
+  {
+   "nome": "voci senza significato moderno in fonte",
+   "quanti": 6324,
+   "nota": "la fonte non ha l'articolo, o dichiara di non averne la definizione: non e' una parola senza significato, e' una parola che quella fonte non spiega",
+   "totale": 10387
+  },
+  {
+   "nome": "trascrizioni che non hanno un suono generato",
+   "quanti": 16,
+   "nota": "una parola con un dubbio dichiarato non suona: suonarla insegnerebbe il suono sbagliato. Il numero scende quando il dubbio si risolve, e non quando qualcuno decide di suonarla lo stesso",
+   "totale": 28
+  }
+ ],
+ "moderno_buchi": 6324,
+ "moderno_con_sinonimi": 3235,
+ "audio": [],
+ "sintesi": [
+  {
+   "id": "Y0002",
+   "riferimento": "V0002",
+   "forma": "portàr",
+   "ipa": "/portˈar/",
+   "file": "T0002.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "port'ar",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0002.wav"
+  },
+  {
+   "id": "Y0004",
+   "riferimento": "V0004",
+   "forma": "amà",
+   "ipa": "/amˈa/",
+   "file": "T0004.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "am'a",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0004.wav"
+  },
+  {
+   "id": "Y0005",
+   "riferimento": "V0005",
+   "forma": "volà",
+   "ipa": "/volˈa/",
+   "file": "T0005.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "vol'a",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0005.wav"
+  },
+  {
+   "id": "Y0006",
+   "riferimento": "V0006",
+   "forma": "mancà",
+   "ipa": "/mankˈa/",
+   "file": "T0006.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "mank'a",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0006.wav"
+  },
+  {
+   "id": "Y0009",
+   "riferimento": "V0009",
+   "forma": "sivìl",
+   "ipa": "/sivˈil/",
+   "file": "T0009.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "siv'il",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0009.wav"
+  },
+  {
+   "id": "Y0012",
+   "riferimento": "V0012",
+   "forma": "padrón",
+   "ipa": "/padrˈon/",
+   "file": "T0012.wav",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "fonemi": "padr'on",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0012.wav"
+  },
+  {
+   "id": "Y0016",
+   "riferimento": "V0015",
+   "forma": "gh'è",
+   "ipa": "/gˈɛ/",
+   "file": "T0016.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "fonemi": "gE",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0016.wav"
+  },
+  {
+   "id": "Y0017",
+   "riferimento": "V0016",
+   "forma": "n'è",
+   "ipa": "/nˈɛ/",
+   "file": "T0017.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "fonemi": "nE",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0017.wav"
+  },
+  {
+   "id": "Y0023",
+   "riferimento": "V0021",
+   "forma": "frarés",
+   "ipa": "/frarˈɛs/",
+   "file": "T0023.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "fonemi": "frarEs",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0023.wav"
+  },
+  {
+   "id": "Y0024",
+   "riferimento": "V0021",
+   "forma": "frarèz",
+   "ipa": "/frarˈɛz/",
+   "file": "T0024.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "fonemi": "frarEz",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0024.wav"
+  },
+  {
+   "id": "Y0026",
+   "riferimento": "V0022",
+   "forma": "fràra",
+   "ipa": "/frˈara/",
+   "file": "T0026.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "fonemi": "fr'ara",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0026.wav"
+  },
+  {
+   "id": "Y0029",
+   "riferimento": "V0025",
+   "forma": "majàl",
+   "ipa": "/majˈal/",
+   "file": "T0029.wav",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)",
+   "fonemi": "maj'al",
+   "attendibilita": "I",
+   "da_verificare": true,
+   "sintetica": true,
+   "nota": "voce sintetica: non e' un parlante ferrarese e non verifica la trascrizione",
+   "avvertimento": "Attenzione: questo suono lo ha fatto un programma, non una persona di Ferrara.",
+   "file_playable": "sintesi/T0029.wav"
+  }
+ ],
+ "fette": [
+  {
+   "numero": 1,
+   "file": "glossario-01.html",
+   "lettera": "1. A"
+  },
+  {
+   "numero": 2,
+   "file": "glossario-02.html",
+   "lettera": "2. A–B"
+  },
+  {
+   "numero": 3,
+   "file": "glossario-03.html",
+   "lettera": "3. B–C"
+  },
+  {
+   "numero": 4,
+   "file": "glossario-04.html",
+   "lettera": "4. C"
+  },
+  {
+   "numero": 5,
+   "file": "glossario-05.html",
+   "lettera": "5. C–D"
+  },
+  {
+   "numero": 6,
+   "file": "glossario-06.html",
+   "lettera": "6. D"
+  },
+  {
+   "numero": 7,
+   "file": "glossario-07.html",
+   "lettera": "7. D–F"
+  },
+  {
+   "numero": 8,
+   "file": "glossario-08.html",
+   "lettera": "8. F–G"
+  },
+  {
+   "numero": 9,
+   "file": "glossario-09.html",
+   "lettera": "9. G–I"
+  },
+  {
+   "numero": 10,
+   "file": "glossario-10.html",
+   "lettera": "10. I–M"
+  },
+  {
+   "numero": 11,
+   "file": "glossario-11.html",
+   "lettera": "11. M"
+  },
+  {
+   "numero": 12,
+   "file": "glossario-12.html",
+   "lettera": "12. M–P"
+  },
+  {
+   "numero": 13,
+   "file": "glossario-13.html",
+   "lettera": "13. P"
+  },
+  {
+   "numero": 14,
+   "file": "glossario-14.html",
+   "lettera": "14. P–Q"
+  },
+  {
+   "numero": 15,
+   "file": "glossario-15.html",
+   "lettera": "15. Q–S"
+  },
+  {
+   "numero": 16,
+   "file": "glossario-16.html",
+   "lettera": "16. S"
+  },
+  {
+   "numero": 17,
+   "file": "glossario-17.html",
+   "lettera": "17. S"
+  },
+  {
+   "numero": 18,
+   "file": "glossario-18.html",
+   "lettera": "18. S"
+  },
+  {
+   "numero": 19,
+   "file": "glossario-19.html",
+   "lettera": "19. S–T"
+  },
+  {
+   "numero": 20,
+   "file": "glossario-20.html",
+   "lettera": "20. T–V"
+  },
+  {
+   "numero": 21,
+   "file": "glossario-21.html",
+   "lettera": "21. V–Z"
+  }
+ ],
+ "pagina": "suoni",
+ "scontoSuoni": {
+  "con_suono": 12,
+  "dichiarate": 28
+ },
+ "glossario": {
+  "intestazione": [
+   "id",
+   "fe",
+   "it",
+   "varianti",
+   "campo",
+   "varieta",
+   "attendibilita",
+   "da_verificare",
+   "fonte",
+   "moderno",
+   "fonte_moderno",
+   "sinonimi",
+   "principale_it",
+   "principale_fe"
+  ],
+  "voci": [
+   [
+    "V0001",
+    "magnàr",
+    "mangiare",
+    [
+     "mangàr",
+     "magnar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "consumazione di cibi a mezzogiorno o a sera; ogni cibo o vivanda gustosi e piacevoli al palato; nutrirsi di alimenti solidi o semisolidi",
+    "https://it.wiktionary.org/wiki/mangiare",
+    [
+     "cibo",
+     "derrate",
+     "pasto",
+     "pietanza",
+     "vivanda",
+     "vivande",
+     "saziarsi",
+     "sostentarsi",
+     "rifocillarsi",
+     "assaggiare",
+     "assaporare",
+     "gustare",
+     "pranzare",
+     "cenare",
+     "pasteggiare",
+     "desinare",
+     "taffiare",
+     "mangiucchiare",
+     "piluccare",
+     "spilluzzicare",
+     "divorare",
+     "inghiottire",
+     "ingurgitare",
+     "rimpinzarsi",
+     "pappare",
+     "consumare",
+     "logorare",
+     "intaccare",
+     "erodere",
+     "dissipare",
+     "dilapidare",
+     "distruggere",
+     "rubare",
+     "estorcere",
+     "speculare",
+     "sfruttare",
+     "catturare",
+     "cibare",
+     "alimentare"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0002",
+    "portàr",
+    "portare",
+    [
+     "portar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "reggere un oggetto, spostandolo in altro luogo; prendere con sé durante un viaggio; consegnare, fare un dono",
+    "https://it.wiktionary.org/wiki/portare",
+    [
+     "trasportare",
+     "trascinare",
+     "fare arrivare",
+     "condurre",
+     "accompagnare",
+     "guidare",
+     "produrre",
+     "causare",
+     "provocare",
+     "comportare",
+     "generare",
+     "arrecare",
+     "indurre",
+     "spingere",
+     "idee",
+     "proporre",
+     "addurre",
+     "dare",
+     "consegnare",
+     "recapitare",
+     "sorreggere",
+     "reggere",
+     "contenere",
+     "nutrire",
+     "mettere",
+     "indossare",
+     "calzare",
+     "possedere",
+     "manovrare",
+     "pilotare",
+     "dirigere",
+     "governare",
+     "avere",
+     "andare",
+     "comunicare",
+     "dichiarare",
+     "tenere",
+     "supportare",
+     "sopportare",
+     "scortare",
+     "menare",
+     "apportare",
+     "cagionare",
+     "sostenere",
+     "favorire",
+     "provare",
+     "covare",
+     "alimentare",
+     "riportare",
+     "trasferirsi",
+     "recarsi",
+     "condursi",
+     "spostarsi",
+     "mettersi",
+     "comportarsi",
+     "agire"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0003",
+    "desideràr",
+    "desiderare",
+    [
+     "desiderar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "volere qualcosa intensamente; immaginare fortemente di realizzare qualcosa; essere proteso con tutto sé stesso verso un obiettivo",
+    "https://it.wiktionary.org/wiki/desiderare",
+    [
+     "agognare",
+     "amare",
+     "ambire",
+     "aspirare",
+     "aver voglia",
+     "augurarsi",
+     "bramare",
+     "anelare",
+     "sognare",
+     "sospirare",
+     "struggere",
+     "vagheggiare",
+     "volere",
+     "aspettare  cercare",
+     "esigere",
+     "pretendere",
+     "richiedere"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0004",
+    "amà",
+    "amare",
+    [
+     "amar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "femminile plurale di amaro; provare forte attrazione emotiva e fisica nei confronti di qualcuno; \"voler bene\" con rispetto e cura",
+    "https://it.wiktionary.org/wiki/amare",
+    [
+     "amarognole",
+     "acri",
+     "salate",
+     "tristi",
+     "dolorose",
+     "penose",
+     "spiacevoli",
+     "crudeli",
+     "brucianti",
+     "funeste",
+     "cocenti",
+     "squallide",
+     "insoddisfacenti",
+     "disgustose",
+     "deludenti",
+     "negative",
+     "sdegnose",
+     "aspirare a",
+     "avere a cuore",
+     "desiderare",
+     "essere affezionato",
+     "essere attaccato",
+     "essere innamorato di",
+     "essere legato",
+     "infatuarsi",
+     "invaghirsi provare affetto",
+     "venerare",
+     "voler bene",
+     "fare l'amore",
+     "prediligere",
+     "preferire",
+     "ricercare",
+     "sentire solidarietà",
+     "essere solidale",
+     "difendere",
+     "la musica",
+     "interessarsi",
+     "avere bisogno"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0005",
+    "volà",
+    "volare",
+    [
+     "volar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "termine comparativo riferito all'estremità distale degli arti, indica una struttura posta posteriormente (anatomia umana) o caudalmente (anatomia veterinaria) rispetto ad altra struttura posta dorsalmente, ovvero anteriormente (anatomia umana) o cranialmente (anatomia veterinaria). Sinonimo di palmare (arto toracico) e plantare (arto pelvico).; prendere il volo; cascare o essere buttati da un punto alto e piombare a terra",
+    "https://it.wiktionary.org/wiki/volare",
+    [
+     "plantare",
+     "palmare",
+     "ritornare",
+     "levarsi in volo",
+     "librarsi",
+     "sorvolare",
+     "svolazzare",
+     "volteggiare",
+     "trasvolare",
+     "essere lanciato",
+     "precipitare",
+     "scendere",
+     "sfrecciare",
+     "precipitarsi",
+     "piombare",
+     "filare",
+     "trascorrere",
+     "fuggire",
+     "affrettarsi",
+     "correre",
+     "sbrigarsi",
+     "fantasticare",
+     "sognare",
+     "spaziare",
+     "vagabondare",
+     "vagare",
+     "diffondersi",
+     "propagarsi",
+     "spargersi",
+     "aleggiare",
+     "aliare",
+     "alzarsi",
+     "innalzarsi",
+     "salire",
+     "rovinare",
+     "ruzzolare"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0006",
+    "mancà",
+    "mancare",
+    [
+     "mancar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "essere in numero o quantità insufficiente; essere necessario per il raggiungimento di un termine; sentire la mancanza",
+    "https://it.wiktionary.org/wiki/mancare",
+    [
+     "contravvenire",
+     "fallire",
+     "non riuscire",
+     "peccare",
+     "sbagliare",
+     "tralasciare",
+     "trascurare",
+     "essere in difetto",
+     "far difetto",
+     "difettare",
+     "essere insufficiente",
+     "non bastare",
+     "scarseggiare",
+     "essere di meno",
+     "essere carente",
+     "essere privo",
+     "essere sprovvisto",
+     "non avere",
+     "trovarsi senza",
+     "cessare",
+     "decedere",
+     "morire",
+     "perdere i sensi",
+     "spirare",
+     "venire meno",
+     "svenire",
+     "scomparire",
+     "trapassare",
+     "non esistere",
+     "essere assente",
+     "non esserci",
+     "essere lontano",
+     "disertare",
+     "avere nostalgia",
+     "avvertire l’assenza",
+     "omettere",
+     "dimenticare",
+     "deludere",
+     "violare",
+     "essere in errore",
+     "commettere un fallo"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0007",
+    "principiar",
+    "principiare",
+    [],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "avere inizio",
+    "https://it.wiktionary.org/wiki/principiare",
+    [
+     "avviare",
+     "cominciare",
+     "debuttare",
+     "esordire",
+     "incominciare",
+     "iniziare",
+     "intraprendere",
+     "partire",
+     "avere principio"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0008",
+    "sittadìn",
+    "cittadino",
+    [
+     "sittadin"
+    ],
+    "sostantivo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "relativo, che riguarda la città; chi gode di particolari diritti ed è obbligato ad osservare doveri stabiliti dalla legge  che esorbitano da quelli stessi che hanno coloro che vivono in una città senza esserne cittadini",
+    "https://it.wiktionary.org/wiki/cittadino",
+    [
+     "civico",
+     "comunale",
+     "di città",
+     "municipale",
+     "urbano",
+     "civile",
+     "elegante",
+     "educato",
+     "raffinato",
+     "abitante",
+     "residente"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0009",
+    "sivìl",
+    "civile",
+    [
+     "sivil"
+    ],
+    "aggettivo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "che riguarda l'organizzazione e il modo di vivere di una città; che non appartiene a o non riguarda l'esercito o comunque le forze armate militari e paramilitari; che riguarda un'autorità politica laica e non spirituale",
+    "https://it.wiktionary.org/wiki/civile",
+    [
+     "civico",
+     "comunitario",
+     "pubblico",
+     "sociale",
+     "impegnato",
+     "politico",
+     "borghese",
+     "privato",
+     "avanzato",
+     "civilizzato",
+     "evoluto",
+     "moderno",
+     "progredito",
+     "sviluppato",
+     "educato",
+     "fine",
+     "gentile",
+     "perbene",
+     "urbano",
+     "decente",
+     "decoroso",
+     "dignitoso",
+     "corretto",
+     "cortese",
+     "garbato",
+     "onorevole",
+     "piacevole",
+     "umano",
+     "interno",
+     "intestino",
+     "cittadino",
+     "laico",
+     "privato cittadino"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0010",
+    "dottór",
+    "dottore",
+    [],
+    "sostantivo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "chi opera in ambito medico; appellativo di chi ha conseguito una laurea (soprattutto in Italia) o un dottorato, che attesta la possibilità di insegnare una specifica materia, a scuola nel primo caso, all'università nel secondo",
+    "https://it.wiktionary.org/wiki/dottore",
+    [
+     "dotto",
+     "sapiente",
+     "colto",
+     "erudito",
+     "istruito",
+     "preparato",
+     "esperto",
+     "chirurgo",
+     "docente",
+     "professore",
+     "maestro professore",
+     "luminare"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0011",
+    "rasón",
+    "ragione",
+    [],
+    "sostantivo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "insieme degli obiettivi e delle ambizioni di uno stato in ambito economico, militare e culturale; capacità di ricavare una conclusione su una certa questione dal collegamento di enunciazioni e concetti; capacità di distinguere il vero dal falso, il giusto dall’ingiusto, il bene dal male, a cui si attribuisce il controllo dell’istinto, delle passioni e degli impulsi",
+    "https://it.wiktionary.org/wiki/ragione",
+    [
+     "cuore",
+     "sentimento",
+     "follia",
+     "pazzia",
+     "pregiudizio",
+     "irragionevolezza",
+     "torto",
+     "conseguenza",
+     "effetto",
+     "comprensione",
+     "intelletto",
+     "intelligenza",
+     "logica",
+     "pensiero",
+     "raziocinio",
+     "riflessione",
+     "buon senso",
+     "criterio",
+     "equilibrio ponderatezza",
+     "ragionevolezza",
+     "saggezza",
+     "senno",
+     "causa",
+     "giustificazione",
+     "motivazione",
+     "motivo",
+     "movente",
+     "origine",
+     "spiegazione",
+     "argomentazione",
+     "argomento",
+     "dimostrazione",
+     "prova",
+     "scusa",
+     "diritto",
+     "giustizia",
+     "legittimità",
+     "liceità",
+     "facoltà di pensare",
+     "mente",
+     "ragionamento",
+     "giudizio",
+     "discernimento",
+     "principio",
+     "fondamento",
+     "pretesto",
+     "legalità",
+     "equità",
+     "misura",
+     "quantità",
+     "rapporto",
+     "proporzione",
+     "percentuale",
+     "conto",
+     "contabilità",
+     "ragioneria"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0012",
+    "padrón",
+    "padrone",
+    [],
+    "sostantivo",
+    "cittadino",
+    "D",
+    false,
+    "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+    "chi possiede qualcosa; plurale di padrona",
+    "https://it.wiktionary.org/wiki/padrone",
+    [
+     "arbitro",
+     "capo",
+     "despota",
+     "dominatore",
+     "governante",
+     "signore",
+     "sovrano",
+     "tiranno",
+     "borghese capitalista",
+     "datore di lavoro",
+     "detentore",
+     "imprenditore",
+     "impresarioindustriale",
+     "possessore",
+     "principale",
+     "proprietario",
+     "titolare",
+     "boss",
+     "conoscitore",
+     "esperto",
+     "intenditore",
+     "specialista"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0013",
+    "brisa",
+    "niente, nulla",
+    [
+     "brisà"
+    ],
+    "negazione",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+    "in alcun modo; niente paura!; nessuno, nessuna",
+    "https://it.wiktionary.org/wiki/niente",
+    [
+     "in alcun modo",
+     "nulla",
+     "punto",
+     "il vuoto",
+     "nullità",
+     "bazzecola",
+     "inezia",
+     "minuzia",
+     "miseria",
+     "nonnulla",
+     "piccolezza",
+     "poca cosa",
+     "quisquilia",
+     "sciocchezza",
+     "qualcosa"
+    ],
+    "niente",
+    ""
+   ],
+   [
+    "V0014",
+    "ghe",
+    "ci (particella enclitica)",
+    [
+     "ghé",
+     "gh'e"
+    ],
+    "pronome",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+    "",
+    "",
+    [],
+    "ci",
+    ""
+   ],
+   [
+    "V0015",
+    "gh'è",
+    "c'è, è (presenza)",
+    [
+     "ghe è",
+     "gh'e",
+     "ghé"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+    "",
+    "",
+    [],
+    "c'è",
+    ""
+   ],
+   [
+    "V0016",
+    "n'è",
+    "non c'è, non è",
+    [
+     "n'e"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+    "",
+    "",
+    [],
+    "non c'è",
+    ""
+   ],
+   [
+    "V0017",
+    "n'agh",
+    "non ci (dativo di persona)",
+    [
+     "n'ag"
+    ],
+    "pronome",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+    "",
+    "",
+    [],
+    "non ci",
+    ""
+   ],
+   [
+    "V0018",
+    "ved",
+    "vedere",
+    [
+     "védar",
+     "vedar"
+    ],
+    "verbo",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frasi a n'agh ved brisa)",
+    "azione di percepire con gli occhi; distinguere con l'occhio ciò che ci circonda; intuire qualcosa",
+    "https://it.wiktionary.org/wiki/vedere",
+    [
+     "adocchiare",
+     "avvistare",
+     "discernere",
+     "distinguere",
+     "guardare",
+     "intravedere",
+     "osservare",
+     "percepire",
+     "riconoscere",
+     "sbirciare",
+     "scorgere",
+     "scrutare",
+     "incontrare",
+     "trovare",
+     "visitare",
+     "controllare",
+     "esaminare",
+     "leggere",
+     "scorrere sfogliare",
+     "accorgersi",
+     "capire",
+     "comprendere",
+     "constatare",
+     "intuire",
+     "notare",
+     "ravvisare",
+     "analizzare",
+     "concludere",
+     "dedurre",
+     "giudicare",
+     "ponderare",
+     "valutare",
+     "adoperarsi",
+     "cercare",
+     "industriarsi",
+     "ingegnarsi",
+     "procurare",
+     "provare",
+     "un giornale",
+     "rivedere",
+     "ripassare",
+     "assistere",
+     "essere in rapporto",
+     "intendere",
+     "concepire",
+     "conoscere",
+     "tentare",
+     "saggiare",
+     "badare",
+     "stare attento",
+     "ricordarsi",
+     "immaginare",
+     "sognare",
+     "raffigurarsi",
+     "contemplare",
+     "vaticinare",
+     "considerare",
+     "reputare",
+     "avvedersi"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0019",
+    "pan",
+    "pane",
+    [],
+    "sostantivo",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase an ghè brisa pan)",
+    "prodotto alimentare ottenuto dalla lievitazione e successiva cottura di un impasto di farina di cereali, acqua e condimenti; metafora del cibo consumato quotidianamente, o in senso lato  anche del sostentamento economico che si ottiene lavorando; blocco generico di una qualche sostanza o prodotto, per lo più alimentare. In particolare di quest'accezione è usato il diminutivo panetto",
+    "https://it.wiktionary.org/wiki/pane",
+    [
+     "pagnotta",
+     "panino",
+     "sfilatino",
+     "filone",
+     "baguette",
+     "alimento",
+     "cibo",
+     "nutrimento",
+     "sostentamento",
+     "sussistenza",
+     "vitto",
+     "blocco",
+     "lingotto",
+     "massa",
+     "spira"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0020",
+    "casa",
+    "casa",
+    [
+     "ca"
+    ],
+    "sostantivo",
+    "cittadino",
+    "I",
+    true,
+    "Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano",
+    "f sing",
+    "https://it.wiktionary.org/wiki/casa",
+    [
+     "civile",
+     "casolare",
+     "stamberga",
+     "casupola",
+     "covo",
+     "tetto",
+     "mura domestiche",
+     "nido",
+     "casato",
+     "stirpe",
+     "ditta",
+     "azienda",
+     "terra"
+    ],
+    "",
+    ""
+   ],
+   [
+    "V0021",
+    "frarés",
+    "ferrarese (aggettivo, gentiliccio)",
+    [
+     "frarés",
+     "frarèz"
+    ],
+    "aggettivo",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+    "",
+    "",
+    [],
+    "",
+    ""
+   ],
+   [
+    "V0022",
+    "fra",
+    "Ferrara (toponimo, forma popolare)",
+    [
+     "fràra"
+    ],
+    "toponimo",
+    "cittadino",
+    "I",
+    true,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+    "",
+    "",
+    [],
+    "",
+    ""
+   ],
+   [
+    "V0025",
+    "majàl",
+    "maiale (animale; per estensione intercalare volgare)",
+    [
+     "maiàl",
+     "omajàll",
+     "iomajàll"
+    ],
+    "sostantivo",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)",
+    "",
+    "",
+    [],
+    "",
+    ""
+   ],
+   [
+    "V0026",
+    "oj",
+    "già, sì (intercalare di conferma)",
+    [
+     "oj!"
+    ],
+    "intercalare",
+    "cittadino",
+    "D",
+    false,
+    "it.wikipedia.org/wiki/Dialetto_ferrarese («Altro intercalare frequentemente usato e' oj!»)",
+    "",
+    "",
+    [],
+    "sì",
+    ""
+   ]
+  ]
+ },
+ "fonetica": [
+  {
+   "id": "T0001",
+   "riferimento": "V0001",
+   "forma": "magnàr",
+   "ipa": "/maˈɲnar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "La `gn` e' resa /ɲ/ per la regola 3. Se la lingua parlata raddoppia la consonante palatale la trascrizione e' mezza: e' la prima cosa da verificare a voce.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0002",
+   "riferimento": "V0002",
+   "forma": "portàr",
+   "ipa": "/porˈtar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Desinenza infinita conservata come la scrive la fonte; la forma parlata «portar» e' registrata come variante della voce e non ha trascrizione propria.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0003",
+   "riferimento": "V0003",
+   "forma": "desideràr",
+   "ipa": "/deziˈderar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "La forma scritta conserva la vocale atonica italiana in `-de-`. Nella lingua parlata quella vocale non c'e': la trascrizione segue la grafia della fonte, non quello che si ascolta, e la differenza e' il punto da chiarire con un vocabolario dell'Ottocento.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0004",
+   "riferimento": "V0004",
+   "forma": "amà",
+   "ipa": "/aˈma/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Biondelli scrive la forma abbreviata senza la r finale: si trascrive quello che c'e'.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0005",
+   "riferimento": "V0005",
+   "forma": "volà",
+   "ipa": "/voˈla/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Da non confondere con il ferrarese di «volere»: due verbi diversi, due trascrizioni diverse.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0006",
+   "riferimento": "V0006",
+   "forma": "mancà",
+   "ipa": "/manˈka/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Il gruppo `nc` e' reso /nk/ senza dichiarare niente sulla sua realizzazione: la fonte non ne parla.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0007",
+   "riferimento": "V0007",
+   "forma": "principiar",
+   "ipa": "/prinˈtʃipjar/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "`ci` davanti a `i` e' /tʃ/ per la regola 4, e la vocale finale `a` davanti alla r si legge /j/. Biondelli usa questa voce per illustrare una resa della z aspra: qui si trascrive quello che ha scritto, non quello che dice di voler dire.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0008",
+   "riferimento": "V0008",
+   "forma": "sittadìn",
+   "ipa": "/sittaˈdin/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0007: `s` per la z aspra italiana.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0009",
+   "riferimento": "V0009",
+   "forma": "sivìl",
+   "ipa": "/siˈvil/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0007.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0010",
+   "riferimento": "V0010",
+   "forma": "dottór",
+   "ipa": "/dotˈtor/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Biondelli osserva che nei sostantivi le desinenze italiane si serbano, a differenza dei verbi: e' il caso che rende T0010, T0011 e T0012 diverse da T0001 e T0002 anche a occhio.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0011",
+   "riferimento": "V0011",
+   "forma": "rasón",
+   "ipa": "/raˈzon/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0010. La `o` finale preconsontante e' resa breve.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0012",
+   "riferimento": "V0012",
+   "forma": "padrón",
+   "ipa": "/paˈdron/",
+   "varieta": "cittadino",
+   "fonte": "Bernardino Biondelli, Saggio sui dialetti gallo-italici, 1853, pag. 204",
+   "attendibilita": "I",
+   "nota": "Come T0010.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0013",
+   "riferimento": "V0013",
+   "forma": "brisa",
+   "ipa": "/brisa/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "Nessun accento nella fonte, quindi nessun accento qui: non e' che la parola e' sdruccia, e' che la fonte non dice dove cade l'accento. Da verificare per primi con un parlante, perche' e' una parola di tre sillabe.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0014",
+   "riferimento": "V0013",
+   "forma": "brisà",
+   "ipa": "/briˈsa/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "La variante con l'accento della stessa voce V0013. Due scritture, due trascrizioni: e' la prova che in questa lingua l'accento e' una scelta di chi scrive.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0015",
+   "riferimento": "V0014",
+   "forma": "ghe",
+   "ipa": "/ɡe/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "La `gh` e' /g/ per la regola 2. Monosillaba: l'accento non e' dichiarato dalla fonte.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0016",
+   "riferimento": "V0015",
+   "forma": "gh'è",
+   "ipa": "/ɡˈɛ/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "L'accento della fonte cade sulla vocale finale e viene riportato. La `gh` e' /g/ e non /ɡʁ/, che e' la scelta che un lettore italiano si aspetterebbe.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0017",
+   "riferimento": "V0016",
+   "forma": "n'è",
+   "ipa": "/nˈɛ/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "Come T0016.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0018",
+   "riferimento": "V0017",
+   "forma": "n'agh",
+   "ipa": "/naɡ/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche»",
+   "attendibilita": "I",
+   "nota": "L'apostrofo segna il contatto con la vocale che segue e non lascia traccia nella trascrizione; la `gh` finale e' /g/.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0019",
+   "riferimento": "V0018",
+   "forma": "ved",
+   "ipa": "/ved/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase a n'agh ved brisa)",
+   "attendibilita": "I",
+   "nota": "La vocale pretonica e' resa breve senza dichiarare se sia aperta o chiusa: la fonte scrive `ved` e non distingue. Da verificare per primi con chi parla, perche' e' una delle parole che il gioco usa di piu'.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0020",
+   "riferimento": "V0019",
+   "forma": "pan",
+   "ipa": "/pan/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, sezione «Caratteristiche» (frase an ghè brisa pan)",
+   "attendibilita": "I",
+   "nota": "Nessun accento nella fonte. Monosillaba: la sola cosa che resta da dire e' quanto dura la vocale.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0021",
+   "riferimento": "V0020",
+   "forma": "casa",
+   "ipa": "/kasa/",
+   "varieta": "cittadino",
+   "fonte": "Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano",
+   "attendibilita": "I",
+   "nota": "**La `z` intervocalica e' il punto debole di questa riga.** Il file la legge come la scrive, e le fonti disponibili non dicono se nella lingua parlata suoni diversamente: in una lingua che scrive a orecchio quello e' esattamente il caso in cui la scrittura mente. Prima cosa da verificare, e insieme alla `s` intervocalica.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0022",
+   "riferimento": "V0020",
+   "forma": "ca",
+   "ipa": "/ka/",
+   "varieta": "cittadino",
+   "fonte": "Da verificare su vocabolario stampato: Nannini, Vocabolario portatile ferrarese-italiano",
+   "attendibilita": "I",
+   "nota": "La forma breve della stessa voce V0020. Nella lingua parlata la forma breve e' quella che si usa e la forma piena no: e' una ragione di piu' per non tradurre mai parola per parola.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0023",
+   "riferimento": "V0021",
+   "forma": "frarés",
+   "ipa": "/fraˈrɛs/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "attendibilita": "I",
+   "nota": "Il gentilizio. L'accento finale della fonte e' riportato; la vocale pretonica breve non e' dichiarata.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0024",
+   "riferimento": "V0021",
+   "forma": "frarèz",
+   "ipa": "/fraˈrɛz/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese, intestazione",
+   "attendibilita": "I",
+   "nota": "La variante con `z` finale della stessa voce V0021. Stessa `z` finale di T0021: due occasioni per capire se quella `z` suona o no.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0025",
+   "riferimento": "V0022",
+   "forma": "fra",
+   "ipa": "/fra/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "attendibilita": "I",
+   "nota": "La forma parlata del toponimo. T0026 e' la forma attestata: due scritture diverse per un nome di citta', e la voce dichiara perche' non sono la stessa cosa.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0026",
+   "riferimento": "V0022",
+   "forma": "fràra",
+   "ipa": "/ˈfrara/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Ferrara ... in dialetto ferrarese»)",
+   "attendibilita": "I",
+   "nota": "Il toponimo come lo scrive la fonte, con l'accento sulla prima sillaba, mentre la forma parlata `fra` non lo dichiara. E' il modo più economico di vedere che in ferrarese la `r` finale si sente e si scrive in modo diverso da come si dice.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0029",
+   "riferimento": "V0025",
+   "forma": "majàl",
+   "ipa": "/maˈjal/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («La parola piu' celebre di questo dialetto e' majàl»)",
+   "attendibilita": "I",
+   "nota": "La `j` e' /j/, semivocale, e non una consonante: `majàl` si dice in tre sillabe, non due. Il doppio `ll` delle varianti `omajàll` e `iomajàll` e' il punto su cui questa voce e' meno documentata di tutte le altre.",
+   "da_verificare": true
+  },
+  {
+   "id": "T0030",
+   "riferimento": "V0026",
+   "forma": "oj",
+   "ipa": "/oj/",
+   "varieta": "cittadino",
+   "fonte": "it.wikipedia.org/wiki/Dialetto_ferrarese («Altro intercalare frequentemente usato e' oj!»)",
+   "attendibilita": "I",
+   "nota": "Due suoni, e il secondo e' la vocale finale. E' l'intercalare piu' breve del glossario e quello che uno studente usa di piu': quando si verifica una parola sola, e' questa.",
+   "da_verificare": true
+  }
+ ]
+}</script>
 <script>
 (function () {
   "use strict";

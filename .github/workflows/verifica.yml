@@ -96,33 +96,97 @@ jobs:
         run: |
           export PYTHONPATH=sorgenti
           python3 -m traduttore.cli web
-          if grep -nE 'src="https?://' web/index.html; then
-            echo "ERRORE: la pagina carica una risorsa esterna"
+          # Tutte le pagine, non una: il sito e' ramificato e la regola che
+          # vale per la home vale per le fette del glossario.
+          if grep -rnE 'src="https?://' web/*.html; then
+            echo "ERRORE: una pagina carica una risorsa esterna"
             exit 1
           fi
-          if grep -nE '\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(' web/index.html; then
-            echo "ERRORE: la pagina chiama la rete dal codice"
+          if grep -rnE '\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(' web/*.html; then
+            echo "ERRORE: una pagina chiama la rete dal codice"
             exit 1
           fi
           echo "nessuna risorsa esterna, nessuna chiamata a rete"
 
-      - name: Il sito contiene i dati
+      - name: Ogni pagina contiene i suoi dati
+        # Il sito non e' piu' una pagina sola. Il controllo e' passato da «la
+        # pagina contiene il glossario» a «ogni pagina contiene quello che
+        # dichiara di contenere», che e' la forma giusta per un sito ramificato:
+        # la domanda non e' piu' «il glossario c'e'?» ma «questa pagina ha
+        # quello che le serve?».
+        #
+        # Il peso entra nel controllo perche' e' il numero che riguarda chi
+        # apre la pagina. Il tetto e' di 3 MB: sopra, la pagina non si apre
+        # subito e il progetto smette di essere consultabile, che era il
+        # motivo per cui il sito e' stato diviso.
         run: |
+          export PYTHONPATH=sorgenti
           python3 - <<'PY'
-          import json, re, sys
-          pagina = open("web/index.html", encoding="utf-8").read()
-          m = re.search(r'<script id="dati" type="application/json">(.*?)</script>', pagina, re.S)
-          if not m:
-              print("ERRORE: il blocco dati non c'e' nella pagina")
-              sys.exit(1)
-          grezzo = m.group(1).replace("<\\/", "</")
-          dati = json.loads(grezzo)
-          if not dati["glossario"]:
-              print("ERRORE: il glossario incorporato e' vuoto")
-              sys.exit(1)
-          print("glossario: %d voci, coppie: %d, proverbi: %d, regole: %d"
-                % (len(dati["glossario"]), len(dati["coppie"]),
-                   len(dati.get("proverbi", [])), len(dati["regole"])))
+          import json, os, re, sys
+          sys.path.insert(0, "sorgenti")
+          from costruisci_web import PAGINE, NAVIGAZIONE
+
+          def dati_di(pagina):
+              m = re.search(r'<script id="dati"[^>]*>(.*?)</script>',
+                            pagina, re.S)
+              if not m:
+                  raise SystemExit("una pagina non ha il blocco dati")
+              return json.loads(m.group(1).replace("<\\/", "</"))
+
+          # Cosa ogni pagina deve avere, e cosa non deve. Una pagina che
+          # dichiara di contenere il glossario e non lo contiene e' una pagina
+          # vuota con un titolo che promette.
+          ATTESI = {
+              "index.html": {"conteggi", "buchi", "fette"},
+              "traduttore.html": {"glossario", "coppie", "proverbi", "regole",
+                                  "fonetica"},
+              "glossario.html": {"fette"},
+              "frasi.html": {"coppie", "proverbi"},
+              "suoni.html": {"glossario", "fonetica", "sintesi", "varieta"},
+          }
+          for pagina in PAGINE:
+              percorso = os.path.join("web", pagina["file"])
+              if not os.path.exists(percorso):
+                  print("ERRORE: %s non e' stata generata" % pagina["file"])
+                  sys.exit(1)
+              testo = open(percorso, encoding="utf-8").read()
+              dati = dati_di(testo)
+              mancanti = ATTESI.get(pagina["file"], set()) - set(dati)
+              if mancanti:
+                  print("ERRORE: %s non contiene %s"
+                        % (pagina["file"], ", ".join(sorted(mancanti))))
+                  sys.exit(1)
+              peso = len(testo)
+              if peso > 3 * 1024 * 1024:
+                  print("ERRORE: %s pesa %d byte: sopra il tetto di 3 MB una "
+                        "pagina smette di aprirsi" % (pagina["file"], peso))
+                  sys.exit(1)
+              print("%-20s %7d byte" % (pagina["file"], peso))
+
+          # Le fette del glossario: ogni pagina deve portare il suo pezzo e la
+          # barra che porta alle altre. Una fetta senza voce e' una pagina
+          # che non contiene niente, e non si vede.
+          fette = [n for n in os.listdir("web")
+                   if n.startswith("glossario-") and n.endswith(".html")]
+          for nome in sorted(fette):
+              dati = dati_di(open(os.path.join("web", nome),
+                                  encoding="utf-8").read())
+              if not dati.get("glossario", {}).get("voci"):
+                  print("ERRORE: %s non contiene voci" % nome)
+                  sys.exit(1)
+              if not dati.get("fette"):
+                  print("ERRORE: %s non ha la barra delle fette" % nome)
+                  sys.exit(1)
+          print("%d fette, ognuna con le sue voci e la sua barra" % len(fette))
+
+          # Ogni collegamento della barra porta a una pagina che esiste. Su
+          # `file://` un collegamento a un file assente non da nessun errore:
+          # da una pagina che non si apre e basta.
+          for file, _ in NAVIGAZIONE:
+              if not os.path.exists(os.path.join("web", file)):
+                  print("ERRORE: la barra porta a %s, che non esiste" % file)
+                  sys.exit(1)
+          print("ogni collegamento della barra porta a una pagina che esiste")
           PY
 
       - name: La pagina e il motore dicono la stessa cosa

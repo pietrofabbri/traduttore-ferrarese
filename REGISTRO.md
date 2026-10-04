@@ -127,7 +127,21 @@ E per S021 in particolare il test controlla che la dichiarazione continui a dire
 che il **lessico non è pubblicato** — non che le pagine non si vedono: è la
 seconda che una dichiarazione sbagliata confonde con la prima.
 
-**Verifiche.** 256 test (erano 254): due sulle fonti verificate. `verifica`: 0
+**Un difetto nella mia stessa dichiarazione, preso da un test.** Mandavo a
+`raccolta/grezzi/s021/pagine_verificate.txt`, e `raccolta/grezzi/` è
+gitignorata — che è la regola del progetto, e va bene per i grezzi che si
+rileggono dal sito. Ma quello di S021 **non** si rilegge con un comando: le
+pagine si rendono con JavaScript e servono un browser. Quindi quel file sta sul
+disco di chi ha verificato e non è nel repository, e chi leggeva la
+dichiarazione su una copia fresca non lo trovava e non sapeva se mancasse il
+file o il lavoro. Ora la dichiarazione lo dice (`grezzo_tracciato: false`, con
+la ragione), e un test controlla due cose: che ogni verifica che dichiara un
+grezzo dica anche se è tracciato, e che quel file contino a essere ignorato —
+perché se un giorno smettere di esserlo va tracciato, e la dichiarazione
+deve dirlo. Le quattro righe che contano restano nella dichiarazione, che è
+tracciata.
+
+**Verifiche.** 257 test (erano 254): tre sulle fonti verificate. `verifica`: 0
 errori, 8 avvisi noti. Il glossario non è cambiato di una voce, ed è la misura
 giusta: la fonte non aveva voci da prendere.
 

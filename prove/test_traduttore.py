@@ -4325,6 +4325,38 @@ class TestLeFontiVerificate(unittest.TestCase):
                             % where)
             self.assertTrue(verifica.get("conclusione"),
                             "%s: la verifica non conclude nulla" % where)
+            # Un percorso che il repository non contiene è una dichiarazione
+            # che non si può controllare: `raccolta/grezzi/` è gitignorata, e
+            # quindi un grezzo che li' non è nel repository. Se la verifica
+            # dichiara un grezzo, deve dire se è tracciato — altrimenti chi
+            # legge apre un file che non c'è e non sa se manca il file o se
+            # manca il lavoro.
+            if verifica.get("grezzo"):
+                self.assertIn("grezzo_tracciato", verifica,
+                              "%s: dice dove sta il grezzo ma non se e' nel "
+                              "repository" % where)
+                if not verifica["grezzo_tracciato"]:
+                    self.assertTrue(verifica.get("grezzo_perche"),
+                                    "%s: il grezzo non e' tracciato e non si "
+                                    "sa perche'" % where)
+
+    def test_il_grezzo_di_s021_dice_che_non_e_nel_repository(self):
+        # Il difetto vero di questa voce: la dichiarazione mandava a un file
+        # che `raccolta/grezzi/` tiene fuori da git, quindi chi leggeva su una
+        # copia fresca non lo trovava e non sapeva se mancasse il file o il
+        # lavoro.
+        verifica = self._fonti()["S021"]["verifica_2026_10_05"]
+        self.assertIs(verifica["grezzo_tracciato"], False)
+        self.assertIn("gitignorata", verifica["grezzo_perche"])
+        import subprocess
+        regola = subprocess.run(
+            ["git", "check-ignore", "-q",
+             os.path.join(RADICE, "raccolta", "grezzi", "s021",
+                          "pagine_verificate.txt")],
+            cwd=RADICE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(regola.returncode, 0,
+                         "il grezzo non e' piu' ignorato: allora va "
+                         "tracciato, e la dichiarazione deve dirlo")
 
     def test_s021_dichiara_che_il_lessico_non_c_e_pagina(self):
         # Il punto di questa fonte: non e' che le pagine non si vedono, e' che

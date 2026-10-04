@@ -71,7 +71,9 @@
         ],
         "esito": "`/vocabolari` e' una pagina di presentazione che dice «alcune pubblicazioni sono state ideate e create da membri della nostra associazione» e non ne elenca nessuna: i suoi 33 link sono tutti menu. `/gocce-di-dialetto` e' un elenco di articoli di blog ed e' vuoto. Il sito si raggiunge e si legge: l'ostacolo non e' che le pagine non si vedono, e' che il lessico non e' pubblicato.",
         "grezzo": "raccolta/grezzi/s021/pagine_verificate.txt",
-        "conclusione": "Le pubblicazioni esistono: sono materiale dell'associazione. Per usarle serve chiederle all'associazione, e la domanda e' se le si puo' usare e come. Fino ad allora questa fonte e' una consultazione citabile e nient'altro."
+        "conclusione": "Le pubblicazioni esistono: sono materiale dell'associazione. Per usarle serve chiederle all'associazione, e la domanda e' se le si puo' usare e come. Fino ad allora questa fonte e' una consultazione citabile e nient'altro.",
+        "grezzo_tracciato": false,
+        "grezzo_perche": "`raccolta/grezzi/` è gitignorata perché i grezzi si rileggono dal sito. Quello di S021 **non** si rilegge con un comando: le pagine si rendono con JavaScript e servono un browser. Quindi il file sta sul disco di chi ha fatto la verifica e **non è nel repository**, e va detto: chi legge questa dichiarazione su una copia fresca non troverà quel file e non deve pensare di aver perso qualcosa. Le conclusioni che contano sono le quattro righe qui sopra — le due pagine, il testo che ci trovano e il fatto che il sito non dichiara licenza — e quelle sono tracciate."
       }
     },
     {

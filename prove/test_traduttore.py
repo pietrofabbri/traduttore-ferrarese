@@ -1169,6 +1169,37 @@ class TestIlBottoneDelSuono(_ModelloInNode, unittest.TestCase):
         # E la riga non sparisce per questo: la trascrizione resta.
         self.assertIn("/kavˈal/", riga)
 
+    def test_il_bottone_c_e_anche_quando_la_risposta_viene_dal_corpus(self):
+        # Difetto vero, trovato nel browser e non dai dati: `portare` da solo
+        # non mostrava il bottone, `portare il cavallo` lo mostrava. Il motore
+        # risolve prima la frase intera dal corpus e in quel percorso
+        # restituisce la risposta **senza l'id della voce** — sa che la frase e'
+        # giusta, non da quale voce viene — quindi il bottone, che cercava per
+        # voce, non offriva niente. La stessa parola suonava o no a seconda di
+        # quante parole aveva intorno, che e' l'incoerenza piu' difficile da
+        # spiegare a chi guarda.
+        #
+        # La correzione non e' «cerca sempre»: quando non c'e' l'id si cerca
+        # **sulla forma scritta**, che e' l'unica cosa che si conosce, e il
+        # ripiego «una sola voce» resta solo per il caso con l'id.
+        # Il risultato che il motore costruisce per una frase presa dal
+        # corpus: la trascrizione c'e' — `risolvi` la cerca sulla forma
+        # prodotta — ma l'id della voce no, perche' il corpus sa che la frase
+        # e' giusta e non sa da quale voce viene.
+        senza = {"testo": "portàr", "origine": "corpo", "confidenza": 0.92,
+                 "dettaglio": "frase intera dal corpus",
+                 "ipa": {"ipa": "/porˈtar/", "da_verificare": True, "nota": ""}}
+        con_id = self._risultato("portàr", "V0002", "/porˈtar/")
+        riga = self._riga([senza])
+        self.assertIn("<audio", riga,
+                      "dal corpus non c'e' l'id della voce e il bottone e' "
+                      " sparito: %s" % riga)
+        self.assertIn("sintesi/T0002.wav", riga)
+        # E con l'id continua a funzionare: non si e' sostituito un criterio
+        # con un altro, li si e' allargati.
+        riga2 = self._riga([con_id])
+        self.assertIn("sintesi/T0002.wav", riga2)
+
     def test_il_bottone_dichiara_che_l_ha_fatto_un_programma(self):
         # La dichiarazione sta accanto al bottone, non in un pie' di pagina:
         # chi preme il bottone e' li' e li' deve poterlo sapere.

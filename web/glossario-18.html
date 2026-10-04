@@ -10169,12 +10169,32 @@ function tokenizza(t) {
     // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
     var gemella = fraseGemella(frase, verso);
     if (gemella) {
-      return {
+      var risultato = {
         testo: verso === "it-fe" ? gemella.fe : gemella.it,
         origine: "corpo",
         confidenza: DATI.origine.corpo_frase,
         dettaglio: "frase intera dal corpus, " + gemella.id + ": " + (gemella.fonte || "senza fonte")
       };
+      // La trascrizione della parola prodotta, cercata **sulla forma scritta**.
+      // Prima non c'era, e quindi la riga «come suona» saltava: scrivendo
+      // `portare` da solo non si vedeva niente, scrivendo `portare il cavallo`
+      // si vedeva. Il corpus sa che la frase e' giusta ma non da quale voce
+      // viene, quindi non si puo' chiedere a lui — ma la forma prodotta puo'
+      // essere cercata fra le trascrizioni dichiarate, che e' quello che la
+      // riga sta facendo in ogni altro caso.
+      //
+      // Non e' una dichiarazione di provenienza: l'origine resta «corpo» e la
+      // confidenza resta quella del corpus. Qui si aggiunge la resa di una
+      // grafia gia' dichiarata, non si cambia da dove viene la risposta.
+      if (verso === "it-fe") {
+        var resa = risultato.testo;
+        var scelta = null;
+        (DATI.fonetica || []).forEach(function (x) {
+          if (!scelta && chiave(x.forma) === chiave(resa)) scelta = x;
+        });
+        risultato.ipa = scelta || null;
+      }
+      return risultato;
     }
 
     // Livello 1: il glossario.
@@ -10281,9 +10301,29 @@ function tokenizza(t) {
     var gemella = fraseGemella(testo, direzione);
     if (gemella) {
       var resa = direzione === "it-fe" ? gemella.fe : gemella.it;
+      // La riga «come suona» c'e' anche qui, e ci sta perche' la risposta e'
+      // ferrarese come in ogni altro caso. Prima questa strada restituiva subito
+      // senza disegnarla, quindi la stessa parola suonava o no a seconda di
+      // quante parole aveva la frase intorno: `portare` da solo niente,
+      // `portare il cavallo` il bottone. E' l'incoerenza piu' difficile da
+      // spiegare a chi guarda, perche' la pagina non dice da dove viene.
+      //
+      // La parola e' quella **prodotta**, non quella scritta: e' il ferrarese
+      // che si vuol sentire, ed e' il ferrarese che ha la trascrizione. Su una
+      // frase intera non c'e' accorpamento da fare — e' gia' una resa sola —
+      // quindi la riga si costruisce con un solo risultato.
+      var rigaSuonaCorpus = "";
+      if (direzione === "it-fe") {
+        var ipaCorpus = ipaDi(null, resa);
+        rigaSuonaCorpus = rigaSuona([{
+          testo: resa, origine: "corpo", confidenza: DATI.origine.corpo_frase,
+          dettaglio: "", ipa: ipaCorpus
+        }]);
+      }
       box.innerHTML = '<div class="riga-parola"><span class="originale">' + scappa(testo) +
         '</span> &rarr; <span class="parola corpo">' + scappa(resa) + '</span></div>' +
         '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(resa) + '</div>' +
+        rigaSuonaCorpus +
         '<div class="dettaglio">frase intera dal corpus, ' + scappa(gemella.id) + ': ' + scappa(gemella.fonte || "senza fonte") +
         ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div>';
       avviso.innerHTML = '<div class="avviso ok">La frase era gia\' nel corpus, con la sua fonte. Non e\' stata ricostruita parola per parola.</div>';
@@ -10407,9 +10447,16 @@ function tokenizza(t) {
   // `raccolta/sintetizza.py` e questo bottone non lo allarga: non e' un posto
   // dove si riparano i dati, e' un posto dove si mostra cio' che c'e'.
   function bottoneSuono(r) {
-    if (!r.id || !r.ipa || !r.ipa.ipa) return "";
+    if (!r.ipa || !r.ipa.ipa) return "";
     var dellaVoce = (DATI.sintesi || []).filter(function (x) {
-      return x.riferimento === r.id && x.file_playable;
+      if (!x.file_playable) return false;
+      // Con l'id della voce il confronto e' quello di prima. Senza l'id —
+      // cioe' quando la risposta viene dal corpus, che restituisce la frase
+      // intera e non sa da quale voce viene — si cerca sulla **forma scritta**.
+      // E' lo stesso confronto, senza l'ancoraggio che manca, e serve perche'
+      // altrimenti la stessa parola suonava o no a seconda di quante parole
+      // aveva la frase intorno.
+      return r.id ? x.riferimento === r.id : true;
     });
     if (!dellaVoce.length) return "";
     // Il confronto e' sulla **forma scritta**, non sulla trascrizione: e'
@@ -10423,9 +10470,14 @@ function tokenizza(t) {
     var dellaForma = dellaVoce.filter(function (x) {
       return chiave(x.forma) === chiave(r.testo);
     });
+    // Il ripiego vale solo con la voce: e' il caso in cui la parola prodotta e'
+    // la parola di quella voce, e la differenza di sillabazione si dichiara.
+    // Senza l'id non si puo' fare: `dellaVoce` sarebbe tutte le voci del
+    // glossario e il ripiego prenderebbe il suono di una parola qualunque.
     var s = dellaForma[0];
-    if (!s && dellaVoce.length === 1) s = dellaVoce[0];
-    // Con piu' suoni e nessuno della forma cercata non si offre niente.
+    if (!s && r.id && dellaVoce.length === 1) s = dellaVoce[0];
+    // Con piu' suoni e nessuno della forma cercata non si offre niente: meglio
+    // un bottone che manca che un bottone che suona la parola sbagliata.
     if (!s) return "";
     var titolo = scappa(s.avvertimento || DATI.sintesi_avviso ||
                         "voce di programma");

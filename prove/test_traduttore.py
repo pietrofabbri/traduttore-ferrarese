@@ -4207,5 +4207,81 @@ class TestLeFormeVerbali(unittest.TestCase):
         self.assertIn("casella inventata", messaggi)
 
 
+class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):
+    """Le forme verbali attestate anche nella pagina, non solo nel terminale.
+
+    Il difetto che questi test prendono è la **divergenza delle due copie**: il
+    motore in Python rispondeva alle forme attestate e la pagina no, quindi il
+    buco dichiarato arrivava a metà degli utenti e non agli altri. E' la stessa
+    regola che il progetto ha già per il bottone del suono: se una cosa vale
+    nel terminale, vale nella pagina, e si verifica sul codice che il browser
+    esegue e non su una ricostruzione.
+    """
+
+    def _dati(self):
+        """I dati della pagina, presi dal generatore e non scritti a mano."""
+        import importlib.util
+        specifica = importlib.util.spec_from_file_location(
+            "costruisci_web", os.path.join(RADICE, "sorgenti",
+                                           "costruisci_web.py"))
+        modulo = importlib.util.module_from_spec(specifica)
+        specifica.loader.exec_module(modulo)
+        return {"glossario": None, "verbi": modulo._verbi(),
+                "origine": {"verbo": 0.75}}
+
+    def test_i_dati_dei_verbi_arrivano_alla_pagina_costruita(self):
+        # Se `per_italiano` non finisce in `web/traduttore.html`, il codice
+        # della pagina cerca un indice vuoto e nessun test in node lo nota,
+        # perche' il codice funziona benissimo su un indice vuoto.
+        with io.open(os.path.join(RADICE, "web", "traduttore.html"),
+                     encoding="utf-8") as f:
+            pagina = f.read()
+        self.assertIn('"per_italiano"', pagina,
+                      "i dati dei verbi non sono nella pagina costruita")
+        from traduttore import verbi
+        sa = verbi.cosa_sa()
+        self.assertIn('"vój"', pagina,
+                      "la forma attestata di «voglio» non e' nella pagina")
+
+    def test_la_pagina_risponde_con_una_forma_attestata(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        esito = self._valuta_js(
+            'risolvi("voglio", "it-fe", "voglio")', dati=self._dati())
+        self.assertEqual(esito["testo"], "vój")
+        self.assertEqual(esito["origine"], "verbo")
+        self.assertAlmostEqual(esito["confidenza"], 0.75)
+        self.assertIn("S015", esito["dettaglio"])
+
+    def test_la_pagia_non_indovina_una_forma_non_attestata(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        esito = self._valuta_js(
+            'risolvi("dormimmo", "it-fe", "dormimmo")', dati=self._dati())
+        self.assertEqual(esito["origine"], "nessuna")
+        self.assertEqual(esito["testo"], "dormimmo",
+                         "una forma non attestata deve restare com'e'")
+
+    def test_il_buco_della_pagina_dice_quanti_verbi_e_quali_caselle(self):
+        # Il buco dichiarato e' la parte che lo studente legge: senza i numeri
+        # e le caselle, la pagina dice solo «non lo so», che e' il difetto.
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        dal_file = self._valuta_js(
+            'DATI.verbi.forme + "|" + DATI.verbi.verbi + "|" + '
+            'DATI.verbi.vuoto.map(function (v) { return v[0] + " " + v[1]; })'
+            '.join(", ")', dati=self._dati())
+        forma, verbi, caselle = dal_file.split("|")
+        from traduttore import verbi as verbi_modulo
+        sa = verbi_modulo.cosa_sa()
+        self.assertEqual(int(forma), sa["forme"])
+        self.assertEqual(int(verbi), sa["verbi"])
+        for persona, tempo in sa["vuoto"]:
+            self.assertIn("%s %s" % (persona, tempo), caselle)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

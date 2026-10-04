@@ -322,6 +322,7 @@ def _dati_comuni(glossario, corpus, varieta, fonetica, archivio, sintesi,
             "regole": 0,
         },
         "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
+        "verbi": _verbi(),
         "moderno_buchi": sum(1 for v in glossario.voci if not v.moderno),
         "moderno_con_sinonimi": sum(1 for v in glossario.voci if v.sinonimi),
         "audio": [dict(b.come_dict(),
@@ -333,6 +334,35 @@ def _dati_comuni(glossario, corpus, varieta, fonetica, archivio, sintesi,
                          if s.esiste(web_dir) else "")
                     for s in sintesi.suoni],
     }
+
+
+def _verbi() -> dict:
+    """Le forme verbali attestate, per la pagina.
+
+    La chiave che arriva e' la parola **italiana come sta scritta**, non la sua
+    chiave normalizzata: la pagina costruisce l'indice con la sua `chiave()`,
+    che e' una copia di quella di Python, e se qui si mandasse gia' la chiave
+    le due copie potrebbero normalizzare in modo diverso e la ricerca
+    fallirebbe in silenzio. Il glossario funziona cosi' e quindi funziona
+    anche questo.
+    """
+    from traduttore import verbi as verbi_modulo
+    sa = verbi_modulo.cosa_sa()
+    per_italiano = {}
+    for riga in verbi_modulo.carica()["righe"]:
+        if not (riga.get("italiano") or "").strip():
+            continue
+        per_italiano.setdefault(riga["italiano"], []).append({
+            "forma": riga["forma"],
+            "persona": riga.get("persona", ""),
+            "tempo": riga["tempo"],
+            "fonte": riga["fonte"],
+            "dove": riga["dove"],
+            "nota": riga.get("nota", ""),
+        })
+    return {"per_italiano": per_italiano, "forme": sa["forme"],
+            "verbi": sa["verbi"],
+            "vuoto": [list(v) for v in sa["vuoto"]]}
 
 
 def _sezioni(modello: str, tenute: tuple) -> str:

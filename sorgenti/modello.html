@@ -48,6 +48,7 @@
   .parola { border-bottom: 3px solid; padding-bottom: 1px; cursor: help; }
   .parola.glossario { border-color: var(--glossario); }
   .parola.corpo { border-color: var(--corpus); }
+  .parola.verbo { border-color: var(--corpus); border-bottom-style: double; }
   .parola.regola { border-color: var(--regola); border-bottom-style: dotted; }
   .parola.modello { border-color: var(--modello); border-bottom-style: dashed; }
   .parola.nessuna { border-color: var(--nessuna); background: #fdf0f0; }
@@ -169,6 +170,7 @@
   <div class="legenda">
     <span><i class="pastiglia" style="border-color:var(--glossario)"></i>glossario</span>
     <span><i class="pastiglia" style="border-color:var(--corpus)"></i>corpus</span>
+    <span><i class="pastiglia" style="border-color:var(--corpus);border-bottom-style:double"></i>forma verbale attestata</span>
     <span><i class="pastiglia" style="border-color:var(--regola);border-bottom-style:dotted"></i>regola</span>
     <span><i class="pastiglia" style="border-color:var(--modello);border-bottom-style:dashed"></i>modello</span>
     <span><i class="pastiglia" style="border-color:var(--nessuna);background:#fdf0f0"></i>non lo so</span>
@@ -375,6 +377,10 @@
   var ETICHETTE = {
     glossario: "dal glossario",
     corpo: "dal corpus parallelo",
+    // `verbo` e' una forma coniugata che una fonte scrive per iscritto. Vale
+    // meno di una voce di dizionario, perche' copre una persona sola, e vale
+    // piu' di una regola imparata, perche' qualcuno l'ha scritta.
+    verbo: "da una forma verbale attestata",
     regola: "da una regola morfologica",
     modello: "dal modello",
     nessuna: "NON LO SO"
@@ -467,6 +473,16 @@
   }
   var IDX = indice();
   var direzione = "it-fe";
+
+  // L'indice delle forme verbali attestate, dalla parola **italiana** alla
+  // forma ferrarese. La chiave e' quella della pagina, calcolata qui e non
+  // mandata da Python, perche' le due copie della normalizzazione non
+  // possono divergere: se divergono la ricerca fallisce in silenzio.
+  IDX.verbi = {};
+  Object.keys((DATI.verbi || {}).per_italiano || {}).forEach(function (parola) {
+    var k = chiave(parola);
+    if (k) IDX.verbi[k] = DATI.verbi.per_italiano[parola];
+  });
 
   // L'indice delle coppie per frase intera, nelle due direzioni.
   IDX.coppieIt = {}; IDX.coppieFe = {};
@@ -696,6 +712,23 @@ function tokenizza(t) {
       }
     }
 
+    // Livello 3 bis: le forme verbali attestate. Sta **prima** del ripiego e
+    // non dopo il modello perche' e' una fonte. Il verso e' uno solo:
+    // dall'altra parte la domanda sarebbe «quale forma ferrarese e' questa?»,
+    // e rispondere significa riconoscere la forma, che e' esattamente cio'
+    // che le fonti non documentano.
+    if (verso === "it-fe") {
+      var attestate = IDX.verbi[chiave(parola)] || [];
+      if (attestate.length) {
+        var a = attestate[0];
+        return {
+          testo: a.forma, origine: "verbo", confidenza: DATI.origine.verbo,
+          dettaglio: "forma attestata da " + a.fonte + ", " + a.dove +
+            ": " + (a.nota || "senza nota")
+        };
+      }
+    }
+
     return {
       testo: parola, origine: "nessuna", confidenza: 0,
       dettaglio: "nessuna fonte nel glossario, nel corpus o fra le regole"
@@ -770,10 +803,29 @@ function tokenizza(t) {
       (buchi ? "  -  " + buchi + (buchi > 1 ? " parole" : " parola") + " senza fonte" : "") + '</div>';
 
     if (buchi) {
+      // Il buco dei verbi e' **uno solo per traduzione** e parla del progetto,
+      // non della parola: i buchi sono anche «il» e «di», e una frase che
+      // accusasse la parola sbaglierebbe per meta' delle volte.
+      var suVerbi = "";
+      if (direzione === "it-fe" && DATI.verbi && DATI.verbi.forme) {
+        var caselle = DATI.verbi.vuoto.map(function (v) {
+          return v[0] + " " + v[1];
+        }).join(", ");
+        suVerbi = " Il progetto non coniuga: le fonti attestano " +
+          DATI.verbi.forme + " forme verbali su " + DATI.verbi.verbi +
+          " verbi, e le caselle che nessuna fonte scrive sono " + caselle +
+          ". Una parola coniugata che non è fra quelle resta un buco dichiarato, non una forma indovinata.";
+      }
+      // Il numero concorda con la parola che segue: «1 parole» e' la prima
+      // cosa che si vede in un messaggio che vuol dire «guarda, questo e' un
+      // dato e non un parolone».
+      var nonSa = quelleNonSa(risultati, token);
       avviso.innerHTML = '<div class="avviso"><strong>La traduzione ha dei buchi.</strong> ' +
-        quelleNonSa(risultati, token).length + ' parole non hanno risposta: ' +
-        scappa(quelleNonSa(risultati, token).join(", ")) +
-        '. Restano cosi\' come sono, non sono sbagliate: sono parole che il glossario non conosce.</div>';
+        nonSa.length + (nonSa.length === 1 ? " parola non ha risposta: "
+                                           : " parole non hanno risposta: ") +
+        scappa(nonSa.join(", ")) +
+        '. Restano cosi\' come sono, non sono sbagliate: sono parole che il glossario non conosce.' +
+        scappa(suVerbi) + '</div>';
     } else if (confidenza >= 0.9) {
       avviso.innerHTML = '<div class="avviso ok">Ogni parola viene dal glossario o dal corpus. Risultato pubblicabile.</div>';
     } else {

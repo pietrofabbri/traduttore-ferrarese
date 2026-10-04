@@ -128,6 +128,12 @@ dichiara che `avér` si raddoppia con una «ɣ» quando è dimostrativo: «mi aj
 e «mi a ɣ o» sono la stessa persona e lo stesso tempo con due forme diverse.
 Una chiave senza clitico restituirebbe «ò» per entrambe.
 
+**Verificato sulla pagina, non solo sul terminale.** Scrivendo `andammo` la
+pagina risponde `i andò` — la forma di Biondelli — con la sua etichetta e la
+sua fonte; scrivendo `dormimmo` resta com'è e l'avviso spiega perché. Il primo
+è l'unico modo per vedere che il buco dichiarato non è una scusa: la casella
+che le fonti scrivono si usa, e quella che non scrivono si nomina.
+
 **Un disaccordo fra due fonti, dichiarato e non risolto.** Il noi plurale:
 S015 lo scrive in «-ŋ» — «nu a kaŋtéŋ» — e S001 con una proclitica «i» —
 «i andò». Le due forme sono nel file e il disaccordo è scritto nella nota
@@ -147,7 +153,21 @@ motore ha iniziato a tradurla il test è fallito. Non era un test rotto: era un
 test che, senza saperlo, provava due cose. La parola di guardia è diventata
 «vorrei», e il motivo è scritto nel test.
 
-**Verifiche.** 250 test (erano 237): tredici nuovi sulle forme verbali.
+**Anche la pagina aveva il buco, e per un motivo che è già del progetto.**
+Il motore è in Python e la pagina ha una copia sua dello stesso motore in
+JavaScript: due copie che non possono divergere. Avevano divaricato — il
+terminale rispondeva con le forme attestate e la pagina no, quindi il buco
+dichiarato arrivava a metà degli utenti e non agli altri, e la pagina che lo
+studente usa era quella senza. Ora la pagina ha il livello delle forme
+attestate, l'etichetta che le distingue («da una forma verbale attestata»), i
+dati che arrivano dal generatore — mandati **come sta scritta** la parola
+italiana, non già normalizzata, perché la normalizzazione la fa la pagina con
+la sua copia e se le due divergono la ricerca fallirebbe in silenzio — e
+l'avviso con i numeri. Il test è in `node`, sul codice che il browser esegue,
+come il bottone del suono.
+
+**Verifiche.** 254 test (erano 237): tredici sulle forme verbali e quattro
+sulla pagina.
 `verifica`: 0 errori, 8 avvisi noti, e F16 non segnala nulla sulle 18 forme.
 Il generatore, rieseguito, scrive **0** righe: sono già tutte dentro.
 

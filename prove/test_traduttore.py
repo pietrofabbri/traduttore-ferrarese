@@ -893,18 +893,33 @@ class TestConteggiDichiarati(unittest.TestCase):
 
         testo = open(os.path.join(RADICE, "REGISTRO.md"),
                      encoding="utf-8").read()
-        # Solo la voce piu' recente: il registro racconta anche cio' che era,
-        # e riscrivere i numeri delle voci passate farebbe di un registro un
-        # elenco senza tempo.
+        # La voce piu' recente **che dichiara il numero**, non la voce piu'
+        # recente in assoluto. Il registro racconta anche cio' che era, e una
+        # versione che non tocca il glossario non ha nessun motivo di
+        # ripetere un numero che e' gia' scritto e che non e' cambiato: il
+        # numero delle locuzioni sta nella voce che ha fatto crescere il
+        # glossario, e va verificato li'.
+        #
+        # Il criterio e' «la piu' recente che dichiara» e non «la prima che
+        # si trova»: altrimenti un numero falso in fondo al registro passerebbe
+        # finche' non si aprisse il file dall'alto, e la guardia dipenderebbe
+        # dall'ordine in cui il file e' stato scritto invece che dall'ordine
+        # delle versioni.
+        PATTERNE = re.compile(r"conta \*\*(\d+) locuzioni\*\* e "
+                              r"\*\*(\d+) parole singole\*\*")
         voci = re.findall(r"^## (\d+\.\d+) — .*$", testo, re.M)
-        ultima = max(voci, key=lambda v: tuple(int(x) for x in v.split(".")))
-        blocco = testo.split("## %s" % ultima, 1)[1].split("\n## ", 1)[0]
-
-        dichiarate = re.search(r"conta \*\*(\d+) locuzioni\*\* e "
-                               r"\*\*(\d+) parole singole\*\*", blocco)
+        ordinate = sorted(voci, key=lambda v: tuple(int(x) for x in v.split(".")),
+                          reverse=True)
+        ultima = dichiarate = blocco = None
+        for voce in ordinate:
+            pezzo = testo.split("## %s" % voce, 1)[1].split("\n## ", 1)[0]
+            if PATTERNE.search(pezzo):
+                ultima, blocco = voce, pezzo
+                dichiarate = PATTERNE.search(pezzo)
+                break
         self.assertIsNotNone(dichiarate,
-                             "la voce %s non dichiara locuzioni e parole "
-                             "singole" % ultima)
+                             "nessuna voce del registro dichiara quante "
+                             "locuzioni e quante parole singole ha il glossario")
         self.assertEqual(int(dichiarate.group(1)), locuzioni,
                          "la voce %s dice %s locuzioni e tokenizza() ne trova %d"
                          % (ultima, dichiarate.group(1), locuzioni))
@@ -977,6 +992,307 @@ class TestConteggiDichiarati(unittest.TestCase):
                                  % (nome, d, m.group(2)))
 
 
+
+
+class _ModelloInNode(object):
+    """Gira il codice della pagina dentro `node`, e lo interroga.
+
+    Due test hanno bisogno di questo e per motivi diversi — uno confronta
+    la normalizzazione nelle due copie, l'altro verifica il bottone del
+    suono — ma la parte difficile e' la stessa: prendere il **codice che
+    il browser esegue** e non una ricostruzione, ed eseguirlo davvero.
+
+    Il mixin non contiene test: contiene il modo di chiedere. Un test
+    qui dentro verrebbe contato due volte se due classi lo ereditassero,
+    e un test che gira due volte e' un test che ha smesso di dire quanto
+    costa.
+    """
+    def _js(self):
+        """Il `node` di sistema, o `None`. Non e' una dipendenza del progetto."""
+        import shutil
+        return shutil.which("node")
+
+    def _valuta_js(self, espressione, variabili=None, dati=None):
+        import subprocess
+        with io.open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                     encoding="utf-8") as f:
+            pagina = f.read()
+        # Il blocco di script del modello, da solo: e' quello che la pagina
+        # esegue, quindi e' quello che va interrogato.
+        inizio = pagina.find("function chiave(")
+        if inizio < 0:
+            self.fail("modello.html non ha piu' la funzione chiave")
+        # Si prende il **contenuto** del blocco `<script>` che non e' quello
+        # dei dati, e non la pagina: prendere l'HTML fa fallire node sul primo
+        # `<`, e un test che non gira e non lo dice e' peggio di un test che
+        # non gira e lo dice.
+        import re as _re
+        blocchi = _re.findall(r'<script(?![^>]*id="dati")[^>]*>(.*?)</script>',
+                              pagina, _re.S)
+        self.assertTrue(blocchi, "modello.html non ha nessun blocco di codice")
+        codice = "\n".join(blocchi)
+
+        # Lo script della pagina e' una IIFE: `chiave` e `tokenizza` sono
+        # locali e non si raggiungono da fuori. Percio' l'espressione viene
+        # iniettata **dentro** la funzione, subito prima della fine, e non
+        # appesa in coda. Le due copie si confrontano sul codice che il
+        # browser esegue, non su una ricostruzione.
+        fine = codice.rfind("})();")
+        self.assertGreater(fine, 0,
+                           "modello.html non chiude la IIFE: il confronto "
+                           "delle due copie non si puo' fare")
+        # Le variabili di ingresso si dichiarano **dentro** la IIFE, accanto
+        # all'espressione: il contesto e' quello della pagina, quindi e' li'
+        # che le parole da confrontare devono stare.
+        if variabili:
+            # Le dichiarazioni stanno **fuori** da `JSON.stringify`: dentro
+            # diventerebbero un argomento, e `JSON.stringify(var x = 1)` e'
+            # un errore di sintassi. Dichiararle fuori e usare l'espressione
+            # dentro e' l'unico ordine che si puo' eseguire.
+            programma = (codice[:fine]
+                         + "var %s; " % ", ".join(
+                             "%s = %s" % (nome, json.dumps(valore,
+                                                             ensure_ascii=False))
+                             for nome, valore in sorted(variabili.items()))
+                         + "console.log(JSON.stringify(%s));" % espressione
+                         + codice[fine:])
+        else:
+            programma = (codice[:fine]
+                         + "console.log(JSON.stringify(%s));" % espressione
+                         + codice[fine:])
+
+        # `document` e' l'unica cosa che lo script tocca subito, perche'
+        # legge il blocco dei dati. Se ne dà uno vuoto: e' un test della
+        # normalizzazione, e il glossario non c'entra.
+        # I dati con cui la pagina viene costruita. Il default e' il minimo
+        # che serve agli altri test; un test che prova una parte della pagina
+        # che legge altri dati passa il proprio, altrimenti interrogerebbe
+        # sempre uno stub vuoto e troverebbe sempre che la funzione non c'e'.
+        if dati is None:
+            dati = {"glossario": None}
+        # Il JSON va **quotato** come stringa JavaScript: `json.dumps` una
+        # seconda volta produce la stringa con le sue virgolette, e senza
+        # quella passata `textContent` diventava un oggetto letterale e node
+        # falliva sulla riga 1 senza che l'errore dicesse di cosa.
+        stub = ("var document = { getElementById: function () { "
+                "return { textContent: "
+                + json.dumps(json.dumps(dati, ensure_ascii=False)) + ", "
+                "appendChild: function () {}, addEventListener: function () {}, "
+                "createElement: function () { return {}; }, "
+                "style: {}, value: '', checked: false, innerHTML: '' }; }, "
+                "addEventListener: function () {}, createElement: function () "
+                "{ return {}; } };\n")
+        programma = stub + programma
+        # `node -e` di default legge l'input come TypeScript su queste versioni,
+        # e il `<` di un confronto diventa un errore di sintassi. Il flag lo
+        # dice: e' JavaScript, che e' quello che il browser esegue.
+        fatto = subprocess.run([self._js(), "--input-type=commonjs", "-e", programma],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if fatto.returncode != 0:
+            self.fail("node ha fallito: %s"
+                      % fatto.stderr.decode("utf-8", "replace")[:400])
+        return json.loads(fatto.stdout.decode("utf-8"))
+
+    PAROLE = ["àɣar", "àʎà", "alòž", "magnàr", "l'a", "ghe gh'e", "città",
+              "škaba", "aŋkóra", "àldàm", "portar", "zzz"]
+
+
+class TestIlBottoneDelSuono(_ModelloInNode, unittest.TestCase):
+    """Il pulsante che fa sentire la parola ferrarese, dentro il traduttore.
+
+    Difetto vero, di questa sessione: il traduttore scriveva la trascrizione
+    («come suona: portàr /porˈtar/») e non offriva modo di ascoltarla. I suoni
+    generati c'erano gia' tutti nei dati di **quella** pagina, dodici righe con
+    il percorso del file: non mancavano i dati, mancava il codice che li
+    disegnava. Il player esisteva, ma dentro `riproduttore()`, che chiama solo
+    la pagina dei suoni.
+
+    Il test centrale chiama `rigaSuona`, non `bottoneSuono`: una pagina che
+    disegna la trascrizione e non chiama la funzione del bottone passerebbe
+    qualunque test sulla funzione, e il bottone non comparirebbe lo stesso. Il
+    difetto era esattamente quello — la funzione c'era, la chiamata no — quindi
+    il test deve guardare la chiamata.
+    """
+    # I dati con cui la pagina viene costruita per questi test: un glossario
+    # vuoto e i suoni che servono. Non si prende il glossario vero perche' non
+    # e' il soggetto: qui si disegna una riga, e la riga si disegna da come
+    # guarda la funzione, non da quanti dati ci sono.
+    def _dati(self, suoni=None):
+        if suoni is None:
+            suoni = [
+                {"riferimento": "V0002", "forma": "portàr",
+                 "ipa": "/portˈar/", "file_playable": "sintesi/T0002.wav",
+                 "avvertimento": "questo suono lo ha fatto un programma"},
+                {"riferimento": "V0021", "forma": "frarés",
+                 "ipa": "/frarˈɛs/", "file_playable": "sintesi/T0023.wav"},
+                {"riferimento": "V0021", "forma": "frarèz",
+                 "ipa": "/frarˈɛz/", "file_playable": "sintesi/T0024.wav"},
+            ]
+        return {"glossario": None, "sintesi": suoni,
+                "sintesi_avviso": "questo suono lo ha fatto un programma"}
+
+    def _riga(self, risultati, suoni=None):
+        """Il testo che la pagina mostra davvero per questa frase."""
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        return self._valuta_js(
+            "rigaSuona(%s)" % json.dumps(risultati, ensure_ascii=False),
+            dati=self._dati(suoni))
+
+    def _risultato(self, testo, id_, ipa, **kw):
+        r = {"testo": testo, "id": id_, "origine": "glossario",
+             "confidenza": 0.95, "dettaglio": "", "varieta": "cittadino",
+             "ipa": {"ipa": ipa, "da_verificare": True, "nota": ""}}
+        r.update(kw)
+        return r
+
+    def test_una_parola_con_suono_dichiarato_mostra_il_bottone(self):
+        # Il difetto vero, verificato sul testo che la pagina produce: qui
+        # dentro c'era la trascrizione e non c'era nessun `<audio>`.
+        riga = self._riga([self._risultato("portàr", "V0002", "/porˈtar/")])
+        self.assertIn("<audio", riga,
+                      "la parola ha un suono dichiarato e la pagina non ha "
+                      "mostrato il bottone: %s" % riga)
+        self.assertIn("sintesi/T0002.wav", riga)
+
+    def test_una_parola_senza_suono_non_mostra_il_bottone(self):
+        # Il contrario, che e' la parte che il progetto vieta di allargare:
+        # non si aggiunge un bottone a ogni parola con una trascrizione. Sono
+        # 16727 voci su 16739 che il progetto non fa suonare apposta, perche'
+        # la loro trascrizione ha un dubbio dichiarato e suonarle
+        # insegnerebbe il suono sbagliato.
+        riga = self._riga([self._risultato("kavàl", "V0003", "/kavˈal/")])
+        self.assertNotIn("<audio", riga,
+                         "una parola senza suono dichiarato ha mostrato un "
+                         "bottone: %s" % riga)
+        # E la riga non sparisce per questo: la trascrizione resta.
+        self.assertIn("/kavˈal/", riga)
+
+    def test_il_bottone_dichiara_che_l_ha_fatto_un_programma(self):
+        # La dichiarazione sta accanto al bottone, non in un pie' di pagina:
+        # chi preme il bottone e' li' e li' deve poterlo sapere.
+        riga = self._riga([self._risultato("portàr", "V0002", "/porˈtar/")])
+        self.assertIn("programma", riga,
+                      "il bottone non dichiara che il suono e' di un programma")
+
+    def test_il_bottone_sceglie_il_suono_della_forma_che_ho_chiesto(self):
+        # `V0021` ha due forme, `frarés` e `frarèz`, e due suoni distinti.
+        # Suonare `frarés` mentre si cerca `frarèz` e' la parola sbagliata, e
+        # non e' una differenza di sillabazione che si puo' dichiarare.
+        riga = self._riga([self._risultato("frarèz", "V0021", "/fraˈrɛz/")])
+        self.assertIn("sintesi/T0024.wav", riga,
+                      "chiesto frarèz, il bottone ha suonato frarés: %s" % riga)
+        self.assertNotIn("sintesi/T0023.wav", riga)
+
+    def test_una_forma_scritta_che_non_e_dichiarata_non_prende_il_suono_di_una_che_e(self):
+        # Il caso in cui la parola cercata non e' nessuna delle forme che
+        # hanno un suono. La regola e' «nessuna offerta»: non si prende il
+        # primo suono della voce, perche' un suono offerto accanto a una parola
+        # che non e' quella sua e' la parola sbagliata con un bottone sopra, e
+        # la dichiarazione «sillabazione diversa» non puo' coprirlo.
+        # «frar» e' una forma che nessuna delle due dichiarate produce: la
+        # chiave di confronto toglie gli accenti, quindi `frarés` e `frarès`
+        # diventano la stessa parola — e va bene, perche' `risolvi` sceglie la
+        # trascrizione con la stessa chiave e il bottone resta coerente con
+        # quello che e' scritto accanto. Qui serve una parola che davvero non
+        # c'e'.
+        riga = self._riga([self._risultato("frar", "V0021", "/altra/ˈresa/")])
+        self.assertNotIn("<audio", riga,
+                         "una forma senza suono ha preso il suono di un'altra: "
+                         "%s" % riga)
+
+    def test_il_criterio_non_nasconde_nessuno_dei_suoni_dichiarati(self):
+        # Il primo tentativo accettava un suono solo se la sua IPA coincideva
+        # con quella dichiarata accanto, e su dodici ne passava **uno**: le
+        # altre undici sono la stessa parola con l'accento tonico sulla sillaba
+        # diversa, che il controllo F14 chiama gia' «non un suono». Un
+        # criterio cosi' non e' piu' severo: e' **sbagliato**, e nascondeva il
+        # bottone proprio dove il suono c'era.
+        #
+        # Il test guarda tutte le righe di `dati/sintesi.jsonl`, non un
+        # campione: e' l'unico modo perche' un criterio troppo severo faccia
+        # crollare il conto invece di passare.
+        righe = [json.loads(riga) for riga in
+                 io.open(os.path.join(RADICE, "dati", "sintesi.jsonl"),
+                         encoding="utf-8")
+                 if riga.strip() and not riga.lstrip().startswith("//")]
+        self.assertTrue(righe, "dati/sintesi.jsonl e' vuoto")
+        senza = []
+        for s in righe:
+            # Ogni suono viene chiesto con una trascrizione **diversa** dalla
+            # sua, che e' il caso peggiore e anche quello reale.
+            risultati = [self._risultato(
+                s["forma"], s["riferimento"], "/altra/ˈresa/")]
+            riga = self._riga(risultati, suoni=[dict(s, file_playable="suono.wav")])
+            if "<audio" not in riga:
+                senza.append((s["id"], s["forma"], s["ipa"]))
+        self.assertFalse(senza,
+                         "suoni dichiarati senza bottone perche' la "
+                         "trascrizione e' scritta diversamente: %s" % (senza,))
+
+
+class TestLaPoolDellAudizione(unittest.TestCase):
+    """Le parole di prova dell'audizione, e le voci in prova.
+
+    Una pool non spiegata e' una lista di parole a caso che sembra una pool:
+    si guarderebbe, si ascolterebbero suoni di parole facili, si concluderebbe
+    «tutte le voci sono uguali» e si prenderebbe per una verifica. Quindi qui
+    si controlla che ogni parola abbia un motivo, e che le voci siano
+    dichiarate e non scoperte a ogni esecuzione.
+
+    Le voci sono dichiarate perche' un confronto che cambia a ogni giro non e'
+    un confronto ripetibile: se domani la lista cresce di una voce e quella di
+    ieri non c'e' piu', non si puo' piu' dire quale delle due era migliore.
+    """
+    def _modulo(self):
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "audizione.py")
+        spec = importlib.util.spec_from_file_location("audizione", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo
+
+    def test_ogni_parola_della_pool_ha_il_motivo_per_esserci(self):
+        modulo = self._modulo()
+        self.assertTrue(modulo.POOL, "la pool e' vuota")
+        for forma, attesa, motivo in modulo.POOL:
+            self.assertTrue(motivo.strip(),
+                            "%s e' nella pool senza un motivo: e' una parola "
+                            "a caso" % forma)
+            self.assertTrue(attesa.startswith("/") and attesa.endswith("/"),
+                            "%s ha una trascrizione che non sembra una "
+                            "trascrizione: %r" % (forma, attesa))
+
+    def test_le_voci_in_prova_sono_dichiarate_e_applicate_allitaliano(self):
+        modulo = self._modulo()
+        self.assertTrue(modulo.VOCI, "non c'e' nessuna voce in prova")
+        for voce in modulo.VOCI:
+            # Ogni voce deve essere l'italiano piu' una variante: `it` da solo
+            # e' la voce di partenza e le altre sono timbri diversi sopra la
+            # stessa lingua. Una voce di un'altra lingua romperebbe il
+            # confronto, perche' cambierebbe anche la pronuncia e non solo il
+            # timbro — che e' la cosa che qui si vuole tenere ferma.
+            self.assertTrue(voce.startswith("it"),
+                            "%s non e' una variante dell'italiano" % voce)
+
+    def test_la_destinazione_dell_audizione_e_fuori_dal_repository(self):
+        # I suoni dell'audizione sono **il mezzo**: centotrenta file per una
+        # griglia di confronto non entrano nel repository, che non e' un
+        # archivio di esperimenti. Quindi la cartella deve stare sotto
+        # `raccolta/lavorato/`, che il `.gitignore` esclude gia'.
+        modulo = self._modulo()
+        self.assertIn(os.path.join("raccolta", "lavorato"),
+                      modulo.DESTINAZIONE,
+                      "i suoni dell'audizione finirebbero nel repository")
+        le = io.open(os.path.join(RADICE, '.gitignore'), encoding='utf-8')
+        dentro = False
+        for riga in le:
+            if riga.strip() == "raccolta/lavorato/":
+                dentro = True
+        self.assertTrue(dentro,
+                        "raccolta/lavorato/ non e' in .gitignore: i suoni "
+                        "dell'audizione entrerebbero nel repository")
 
 
 class TestPaginaRegole(unittest.TestCase):
@@ -1410,7 +1726,7 @@ def _chiave_vecchia(testo):
     senza = "".join(c for c in nudo if not unicodedata.combining(c))
     return re.sub(r"[^0-9a-z\u00c0-\u024f]+", "", senza)
 
-class TestLeDueCopieDellaNormalizzazione(unittest.TestCase):
+class TestLeDueCopieDellaNormalizzazione(_ModelloInNode, unittest.TestCase):
     """La normalizzazione esiste in Python e in JavaScript, e devono coincidere.
 
     Difetto vero, di questa sessione, e la lezione piu' utile del lavoro:
@@ -1429,84 +1745,6 @@ class TestLeDueCopieDellaNormalizzazione(unittest.TestCase):
     che contiene le due lettere dell'alfabeto che il filtro vecchio perdeva.
     Se il JavaScript torna indietro, questo test lo dice.
     """
-
-    def _js(self):
-        """Il `node` di sistema, o `None`. Non e' una dipendenza del progetto."""
-        import shutil
-        return shutil.which("node")
-
-    def _valuta_js(self, espressione, variabili=None):
-        import subprocess
-        with io.open(os.path.join(RADICE, "sorgenti", "modello.html"),
-                     encoding="utf-8") as f:
-            pagina = f.read()
-        # Il blocco di script del modello, da solo: e' quello che la pagina
-        # esegue, quindi e' quello che va interrogato.
-        inizio = pagina.find("function chiave(")
-        if inizio < 0:
-            self.fail("modello.html non ha piu' la funzione chiave")
-        # Si prende il **contenuto** del blocco `<script>` che non e' quello
-        # dei dati, e non la pagina: prendere l'HTML fa fallire node sul primo
-        # `<`, e un test che non gira e non lo dice e' peggio di un test che
-        # non gira e lo dice.
-        import re as _re
-        blocchi = _re.findall(r'<script(?![^>]*id="dati")[^>]*>(.*?)</script>',
-                              pagina, _re.S)
-        self.assertTrue(blocchi, "modello.html non ha nessun blocco di codice")
-        codice = "\n".join(blocchi)
-
-        # Lo script della pagina e' una IIFE: `chiave` e `tokenizza` sono
-        # locali e non si raggiungono da fuori. Percio' l'espressione viene
-        # iniettata **dentro** la funzione, subito prima della fine, e non
-        # appesa in coda. Le due copie si confrontano sul codice che il
-        # browser esegue, non su una ricostruzione.
-        fine = codice.rfind("})();")
-        self.assertGreater(fine, 0,
-                           "modello.html non chiude la IIFE: il confronto "
-                           "delle due copie non si puo' fare")
-        # Le variabili di ingresso si dichiarano **dentro** la IIFE, accanto
-        # all'espressione: il contesto e' quello della pagina, quindi e' li'
-        # che le parole da confrontare devono stare.
-        if variabili:
-            # Le dichiarazioni stanno **fuori** da `JSON.stringify`: dentro
-            # diventerebbero un argomento, e `JSON.stringify(var x = 1)` e'
-            # un errore di sintassi. Dichiararle fuori e usare l'espressione
-            # dentro e' l'unico ordine che si puo' eseguire.
-            programma = (codice[:fine]
-                         + "var %s; " % ", ".join(
-                             "%s = %s" % (nome, json.dumps(valore,
-                                                             ensure_ascii=False))
-                             for nome, valore in sorted(variabili.items()))
-                         + "console.log(JSON.stringify(%s));" % espressione
-                         + codice[fine:])
-        else:
-            programma = (codice[:fine]
-                         + "console.log(JSON.stringify(%s));" % espressione
-                         + codice[fine:])
-
-        # `document` e' l'unica cosa che lo script tocca subito, perche'
-        # legge il blocco dei dati. Se ne dà uno vuoto: e' un test della
-        # normalizzazione, e il glossario non c'entra.
-        stub = ("var document = { getElementById: function () { "
-                "return { textContent: '{\"glossario\":null}', "
-                "appendChild: function () {}, addEventListener: function () {}, "
-                "createElement: function () { return {}; }, "
-                "style: {}, value: '', checked: false, innerHTML: '' }; }, "
-                "addEventListener: function () {}, createElement: function () "
-                "{ return {}; } };\n")
-        programma = stub + programma
-        # `node -e` di default legge l'input come TypeScript su queste versioni,
-        # e il `<` di un confronto diventa un errore di sintassi. Il flag lo
-        # dice: e' JavaScript, che e' quello che il browser esegue.
-        fatto = subprocess.run([self._js(), "--input-type=commonjs", "-e", programma],
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if fatto.returncode != 0:
-            self.fail("node ha fallito: %s"
-                      % fatto.stderr.decode("utf-8", "replace")[:400])
-        return json.loads(fatto.stdout.decode("utf-8"))
-
-    PAROLE = ["àɣar", "àʎà", "alòž", "magnàr", "l'a", "ghe gh'e", "città",
-              "škaba", "aŋkóra", "àldàm", "portar", "zzz"]
 
     def test_le_due_chiavi_dicono_la_stessa_cosa(self):
         node = self._js()

@@ -100,6 +100,11 @@
   /* La scheda del suono generato porta un bordo diverso da quella del brano
      vero: la differenza deve vedersi prima di leggere qualsiasi testo. */
   .scheda.sintesi { background:#eef1f4; border-left:3px solid #7d8794; }
+  /* Il bottone compatto della riga «come suona». Piu' piccolo del player
+     della pagina dei suoni perche' sta dentro una riga di testo e non puo'
+     spostare gli accapo: e' accanto alla parola, non un blocco. */
+  .ipa audio.suono { width: 7.5rem; height: 1.6rem; vertical-align: middle;
+                     margin: 0 .2rem; }
   .etichetta-sintesi { font-size:.72rem; letter-spacing:.06em;
     text-transform:uppercase; color:#4a5158; font-weight:700; }
   /* La pagina delle regole. La regola e' testo e la fonte e' in fondo: la
@@ -10363,6 +10368,14 @@
   // elemento assente **solleva un errore**, e quell'errore ferma tutto il
   // resto dello script: senza questo, la prima sezione mancante renderebbe
   // bianca metà della pagina senza dire perche'.
+  // Gli avvertimenti raccolti mentre si disegna la riga dei suoni. Vivono
+  // qui e non dentro `bottoneSuono` perche' la funzione va chiamata una volta
+  // sola per parola: chiamarla due volte — una per il bottone e una per sapere
+  // se c'e' — riempierebbe il registro due volte e la riga mostrerebbe ogni
+  // avvertimento due volte, che e' il modo piu' economico per far scomparire
+  // un avvertimento.
+  var AVVERTIMENTI = [];
+
   function el(id) {
     var trovato = document.getElementById(id);
     return trovato || { addEventListener: function () {},
@@ -10769,15 +10782,31 @@ function tokenizza(t) {
     }
   }
 
-  // «Come suona»: la trascrizione accanto alla parola, parola per parola. Se
-  // non c'e', si dice che non c'e': una riga vuota semberebbe un'esortazione a
+  // «Come suona»: la trascrizione accanto alla parola, parola per parola, e
+  // accanto alla trascrizione il bottone che la **fa sentire**. Se non c'e',
+  // si dice che non c'e': una riga vuota sembrerebbe un'esortazione a
   // indovinare, e questa pagina non ne fa.
+  //
+  // Il bottone mancava, e il motivo non era che i suoni mancassero: i dati di
+  // questa pagina li aveva gia' tutti — dodici righe con il percorso del file.
+  // Mancava il codice che li disegna. Il player esisteva, ma solo dentro
+  // `riproduttore()`, che chiama solo la pagina dei suoni: il traduttore
+  // sapeva *scrivere* che una parola si pronuncia e non sapeva farla
+  // pronunciare, che e' il peggiore dei due modi di saperlo.
   function rigaSuona(risultati) {
+    // Azzerato **prima** del ciclo: e' un registro della riga, non della
+    // pagina, e una riga nuova non deve ripetere gli avvertimenti della
+    // precedente.
+    AVVERTIMENTI = [];
+    var quantiBottoni = 0;
     var pezzi = risultati.map(function (r) {
       if (!r.ipa) return null;
+      var bottone = bottoneSuono(r);
+      if (bottone) quantiBottoni++;
       return '<span class="ipa" title="' + scappa(r.ipa.nota || "") + '">' +
         scappa(r.testo) + ' ' + scappa(r.ipa.ipa) +
         (r.ipa.da_verificare ? ' <span class="varieta">da verificare</span>' : '') +
+        bottone +
         '</span>';
     }).filter(function (x) { return x; });
     if (!pezzi.length) {
@@ -10789,7 +10818,86 @@ function tokenizza(t) {
     var avvertenza = quanteVerificate
       ? ""
       : ' <span class="vuoto">trascrizioni non ancora verificate da un parlante</span>';
-    return '<div><strong>come suona:</strong> ' + pezzi.join(" &middot; ") + avvertenza + '</div>';
+    // La dichiarazione sulla voce di programma sta **qui**, accanto al bottone,
+    // e non solo nella pagina dei suoni: il bottone e' nel traduttore, quindi
+    // e' li' che chi lo preme deve leggere che quel suono l'ha fatto un
+    // programma e non una persona di Ferrara. Una dichiarazione che sta in
+    // un'altra pagina non dichiara niente per chi non ci va.
+    var sotto = "";
+    if (quantiBottoni) {
+      sotto = '<div class="vuoto">' +
+        scappa(DATI.sintesi_avviso ||
+               "questo suono lo ha fatto un programma, non una persona di Ferrara") +
+        '</div>';
+      AVVERTIMENTI.forEach(function (a) {
+        sotto += '<div class="vuoto">' + scappa(a) + '</div>';
+      });
+    }
+    return '<div><strong>come suona:</strong> ' + pezzi.join(" &middot; ") +
+      avvertenza + '</div>' + sotto;
+  }
+
+  // Il bottone che **fa sentire** la parola ferrarese, accanto alla sua
+  // trascrizione.
+  //
+  // Il suono e' scelto per **voce**, non per identita' di trascrizione: la
+  // stessa parola resa in due modi e' sempre la stessa parola, e la riga che
+  // precede — `/portˈar/` e `/porˈtar/` non differiscono in un suono, ma nel
+  // posto in cui si mette la barra dell'accento. Pretendere l'identita' delle
+  // due scritture nasconderebbe il bottore in undici casi su dodici.
+  //
+  // Su una voce con piu' forme scritte (`frarés` e `frarèz`, che hanno due
+  // suoni distinti) il suono si sceglie confrontando la **forma scritta** con
+  // quella della risposta: suonare `frarés` mentre si cerca `frarèz` e' la
+  // parola sbagliata, e quello non si puo' dichiarare come una differenza di
+  // sillabazione. Il confronto non puo' essere sulla trascrizione, che su
+  //quelle due parole e' diversa per la sillaba dell'accento e quindi non
+  // coinciderebbe mai. Se non c'e' un suono della forma giusta si offre
+  // niente: la differenza che si dichiara e' fra due modi di scrivere e
+  // sillabare la **stessa** parola, e non può coprire il caso in cui sono due
+  // parole diverse.
+  //
+  // E non aggiunge niente per le parole che non hanno un suono generato: sono
+  // la maggior parte del glossario, e il progetto non le fa suonare apposta,
+  // perche' la loro trascrizione ha un dubbio dichiarato e suonarle
+  // insegnerebbe il suono sbagliato. Quel divieto e' scritto in
+  // `raccolta/sintetizza.py` e questo bottone non lo allarga: non e' un posto
+  // dove si riparano i dati, e' un posto dove si mostra cio' che c'e'.
+  function bottoneSuono(r) {
+    if (!r.id || !r.ipa || !r.ipa.ipa) return "";
+    var dellaVoce = (DATI.sintesi || []).filter(function (x) {
+      return x.riferimento === r.id && x.file_playable;
+    });
+    if (!dellaVoce.length) return "";
+    // Il confronto e' sulla **forma scritta**, non sulla trascrizione: e'
+    // l'unica cosa che distingue una parola dall'altra, ed e' la stessa chiave
+    // con cui `risolvi` sceglie la trascrizione, cosi' bottone e trascrizione
+    // non possono guardare due cose diverse. Sulla trascrizione il confronto
+    // non tornerebbe mai — le due sono sillabate in modo diverso — e quindi
+    // ripiegherebbe sempre sul primo suono della voce, che su `V0021` e' quello
+    // di `frarés` mentre si chiedeva `frarèz`: una parola diversa, offerta
+    // dichiarandola la stessa.
+    var dellaForma = dellaVoce.filter(function (x) {
+      return chiave(x.forma) === chiave(r.testo);
+    });
+    var s = dellaForma[0];
+    if (!s && dellaVoce.length === 1) s = dellaVoce[0];
+    // Con piu' suoni e nessuno della forma cercata non si offre niente.
+    if (!s) return "";
+    var titolo = scappa(s.avvertimento || DATI.sintesi_avviso ||
+                        "voce di programma");
+    if (s.ipa !== r.ipa.ipa) {
+      titolo += " Il suono e' di " + s.forma + " (" + s.ipa +
+        "), la trascrizione qui accanto e' " + r.ipa.ipa + ".";
+      AVVERTIMENTI.push("Il suono di " + s.forma + " e' " + s.ipa +
+        ", la trascrizione qui accanto e' " + r.ipa.ipa +
+        ": stessa parola, sillabazione diversa.");
+    }
+    // `preload="metadata"` e non `"none"`, come nella pagina dei suoni: un
+    // lettore fermo a `0:00 / 0:00` sembra rotto, e chi crede sia rotto non lo
+    // preme. Il file e' di 45 KB, e qui ce n'e' uno per parola con il suono.
+    return ' <audio class="suono" controls preload="metadata" title="' + titolo +
+      '" src="' + scappa(s.file_playable) + '"></audio>';
   }
 
   function etichettaVarieta(codice) {

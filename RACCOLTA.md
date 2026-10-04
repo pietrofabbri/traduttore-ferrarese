@@ -427,3 +427,29 @@ python3 raccolta/moderni.py --scrivi   # il significato moderno dalla fonte
 
 Il primo, il quarto e il quinto si possono fare in parallelo, e il quarto e'
 quello che manca di piu'.
+
+## L'audizione delle voci, e cosa ci si aspetta di trovare
+
+`raccolta/audizione.py` genera una griglia di parole per voci in
+`raccolta/lavorato/audizione/`, che e' gitignorato: e' il mezzo, non il
+risultato.
+
+```bash
+PYTHONPATH=sorgenti python3 raccolta/audizione.py
+```
+
+Serve a una domanda sola — **quale di queste voci suona meno falsa** — e la
+risposta e' un timbro. Non e' la domanda «come si fa a suonare ferrarese?»:
+questa seconda non ha risposta dentro i vincoli del progetto, e va detto prima
+che qualcuno perda una giornata a cercarla.
+
+Le parole della pool sono tredici e ognuna c'e' perche' mette alla prova una
+regola diversa (`ghe` per la `gh`, `sittadìn` per la `z` aspra, `principiar`
+per `ci` davanti a `i`, `majàl` per la `j` semivocale, `casa` per la `z`
+intervocalica che il progetto dichiara come punto debole, e cosi' via). Una
+pool di parole facili non distingue le voci: e' il motivo per cui il confronto
+esiste e per cui queste parole sono queste.
+
+Una riga senza motivo non entra nella pool. Una lista di parole a caso sembra
+una pool e non distingue niente.
+

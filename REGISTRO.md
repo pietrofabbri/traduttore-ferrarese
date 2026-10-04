@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.18
+versione: 0.19
 data: 2026-10-04
 ---
 
@@ -85,6 +85,86 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.19 — 2026-10-04 · Il bottone che mancava, e la voce che non puo' essere quella giusta
+
+**Il bottone.** La pagina del traduttore scriveva «come suona: portàr /porˈtar/»
+e non offriva modo di ascoltarla. I suoni generati c'erano gia' tutti nei dati
+di **quella** pagina — dodici righe con il percorso del file — ma nessun codice
+li disegnava: il player esisteva dentro `riproduttore()`, che chiama solo la
+pagina dei suoni. Il traduttore sapeva *scrivere* che una parola si pronuncia e
+non sapeva farla pronunciare, che e' il peggiore dei due modi di saperlo, e in
+un progetto che si chiama «ascolto ferrarese» e chiede di far ripetere questa
+e' la differenza fra una trascrizione e un suono.
+
+Il bottone compare adesso accanto alla trascrizione, **solo** per le parole che
+hanno un suono dichiarato. Non si e' allargato alle altre 16727: quelle non
+suonano apposta, perche' la loro trascrizione ha un dubbio dichiarato e
+suonarle insegnerebbe il suono sbagliato. Quel divieto e' scritto in
+`raccolta/sintetizza.py` e il bottone non lo tocca.
+
+**Il criterio, e il suo primo tentativo.** La prima versione accettava un suono
+solo se la sua IPA coincideva con quella dichiarata accanto. Su dodici ne
+passava **uno**: le altre undici sono la stessa parola con l'accento tonico
+sulla sillaba diversa (`/portˈar/` accanto a `/porˈtar/`), che il controllo F14
+chiama gia' «non un suono». Un criterio cosi' non e' severo, e' sbagliato:
+nascondeva il bottone proprio dove il suono c'era, che e' il difetto peggiore
+che un bottone possa avere — assente, e senza dire perche'.
+
+La versione giusta confronta la **forma scritta**, che e' l'unica cosa che
+distingue una parola dall'altra, ed e' la stessa chiave con cui `risolvi` sceglie
+la trascrizione: bottone e trascrizione non possono guardare due cose diverse.
+Su una voce con piu' forme (`frarés` e `frarèz` hanno due suoni distinti) se
+nessun suono e' della forma cercata non si offre niente.
+
+**Il test ha preso un difetto vero, e non mio quello che pensavo.** Il test
+sulla forma giusta falliva perche' il mio ripiego offriva il suono di `frarés`
+mentre si chiedeva `frarèz`: una **parola diversa**, dichiarata come una
+differenza di sillabazione. La dichiarazione era vera e il suono era sbagliato.
+La regola era scritta male e il commento che la descriveva era scritto bene,
+quindi il file diceva una cosa e ne faceva un'altra.
+
+Poi il test ha continuato a fallire anche dopo la correzione, perche' nei dati
+del test avevo scritto `frarès`, che non e' una parola: la chiave toglie gli
+accenti, quindi `frarès` e `frarés` diventano la stessa e il confronto tornava
+per la porta sbagliata. Due errori in due righe diverse, presi entrambi dal
+test e non da un ragionamento.
+
+**La voce: cosa non si può fare, detto prima di farlo.** Il suono sembra «un
+inglese che cerca di parlare ferrarese», e la diagnosi e' giusta: e' un italiano
+che applica regole italiane a una grafia romagnola. Fra le lingue che questa
+installazione di espeak-ng offre, **l'unica romanza e' l'italiano**: non c'e'
+l'emiliano-romagnolo, che e' la famiglia giusta. Quindi un confronto fra
+«fonatori» puo' cambiare il **timbro** e non la pronuncia. Una voce migliore
+rende il suono meno sgradevole, non piu' ferrarese, ed e' importante dirlo
+perche' la domanda «quale voce e' la migliore?» ha una risposta e la domanda
+«come si fa a suonare ferrarese?» no, dentro questi vincoli.
+
+Quello che la migliorerebbe sono le regole dichiarate in `dati/fonetica.jsonl`,
+che il progetto dichiara gia' `attendibilita I`. E' lavoro di una persona, come
+i 316 disaccordi fra S006 e il Ferri: nessuno script puo' decidere che
+`majàl` si dice con la `j` semivocale.
+
+**L'audizione.** `raccolta/audizione.py` genera una griglia di parole per voci.
+La pool non e' una lista di parole facili — quelle non distinguono niente,
+perche' tutte suonano male e il confronto non serve — ma **tredici parole
+scelte perche' ognuna mette alla prova una regola diversa**, con la ragione
+scritta accanto. Serve anche a distinguere due problemi: se una voce e' buona
+su `ghe` e cattiva su `majàl` il difetto e' della voce, se e' cattiva su tutte
+il difetto e' delle regole. Due problemi diversi, due soluzioni diverse.
+
+Nella griglia non c'e' nessun punteggio e nessuna stellina. Un numero li' sarebbe
+un giudizio che lo script non puo' formulare, e la scelta la prende chi ha
+ascoltato. Quello che lo script produce e' il mezzo, in
+`raccolta/lavorato/audizione/` che e' gitignorato; il risultato — quale voce ha
+scelto una persona e perche' — va scritto in `dati/` e dichiarato qui.
+
+**Verifiche.** 213 test (erano 204). Cinque nuovi sul bottone, ciascuno provato
+ricreando il difetto: togliere la chiamata alla riga fa fallire tre test.
+`verifica`: 0 errori, 8 avvisi. Equivalenza: 12 frasi, 0 divergenze. Scanner: 115
+file tracciati, 0 ideogrammi. Sito: 40 pagine, 34 fette, `traduttore.html` a 2,4
+MB sotto il tetto di 3 MB.
+
 
 ## 0.18 — 2026-10-04 · Le 6352 parole di Bigoni, e le due lettere che l'indice buttava via
 
@@ -214,7 +294,7 @@ che `\w` non copre, e i test adesso girano la copia JavaScript con `node` e
 confrontano le due implementazioni voce per voce. Una copia che nessuno
 eseguiva non era una copia, era un'altra versione del bug.
 
-**Verifiche.** 204 test (erano 177). `verifica`: 0 errori, 8 avvisi.
+**Verifiche.** 210 test (erano 177). `verifica`: 0 errori, 8 avvisi.
 Equivalenza: 12 frasi confrontate, 0 divergenze. Il glossario e' passato da
 21 a 34 fette, il sito da 27 a 40 pagine. `note` non e' piu' trasportata dalla
 pagina del traduttore: 2,4 MB invece di 3,9.

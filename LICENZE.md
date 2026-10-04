@@ -20,9 +20,9 @@ i dati, che hanno licenze diverse e le dichiarano una per una.
 
 Quel che il `LICENSE` non puo' dire, perche' non e' una licenza ma una
 premessa, e' qui: **un file solo per i dati non esisterebbe comunque.** I dati
-verranno da Biondelli (pubblico dominio), da Wikipedia (CC BY-SA 4.0) e da
-una traduzione dialettale anonima la cui licenza non e' ancora verificata.
-Per quest'ultima i dati non sono pubblicati e stanno in
+verranno da Biondelli (pubblico dominio), da Wikipedia e da Wiktionary
+(CC BY-SA 4.0) e da una traduzione dialettale anonima la cui licenza non
+e' ancora verificata. Per quest'ultima i dati non sono pubblicati e stanno in
 `dati/da_verificare/`.
 
 ## Dati
@@ -34,6 +34,14 @@ da fonti diverse con diritti diversi. Chi scarica il repository riceve dati
 con licenze diverse dentro lo stesso file, e deve saperlo dalla riga che sta
 leggendo.
 
+Il significato moderno fa un passo in piu': la sua fonte non e' il campo
+`fonte`, che dice da dove viene **la voce ferrarese**, ma il campo
+`fonte_moderno`, che dice da dove viene **la spiegazione** — ed e' un
+indirizzo, non un codice, perche' qui la fonte e' una pagina e non un libro.
+Una riga con `moderno` e senza `fonte_moderno` non entra: e' il controllo
+**G10**, e senza di esso questa sarebbe l'unica colonna del progetto che puo'
+inventare.
+
 Le fonti attualmente nel registro (`dati/fonti.json`):
 
 | Fonte | Licenza | Stato |
@@ -41,6 +49,7 @@ Le fonti attualmente nel registro (`dati/fonti.json`):
 | Bernardino Biondelli, *Saggio sui dialetti gallo-italici*, 1853 | pubblico dominio | acquisita |
 | «Dialetto ferrarese», Wikipedia in italiano | CC BY-SA 4.0 | acquisita |
 | — di cui la **tassonomia delle cinque varieta'**, in `dati/varieta.json` | CC BY-SA 4.0 | acquisita |
+| **Significati moderni e sinonimi**, da Wiktionary in italiano | CC BY-SA 4.0 | acquisita |
 | Traduzione ferrarese della Dichiarazione universale dei diritti umani, art. 1 | **da verificare** | acquisita |
 | Luigi Ferri (1826-1895), *Vocabolario ferrarese-italiano*, 1889 | pubblico dominio | acquisita |
 | Francesco Nannini, *Vocabolario portatile ferrarese-italiano*, 1805 | pubblico dominio | esaminata |

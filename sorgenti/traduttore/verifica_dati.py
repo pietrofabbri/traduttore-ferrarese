@@ -131,6 +131,34 @@ def controlla_glossario(glossario) -> list:
             problemi.append(Problema(
                 "G9", dove, "varieta' %r fuori dall'insieme %s"
                 % (voce.varieta, ", ".join(VARIETA))))
+        # Il significato moderno e' l'unica colonna del progetto che puo'
+        # essere scritta da qualcuno che non ha guardato nessun dizionario:
+        # nessun controllo meccanico puo' accorgersene, quindi l'unica difesa
+        # e' strutturale: nessuna riga entra senza l'indirizzo da cui e' stata
+        # presa. Senza questo controllo `moderno` e' l'unico campo del glossario
+        # che puo' inventare, e sarebbe una colonna di definizioni inventate
+        # accanto a 10.387 voci che portano la fonte.
+        if voce.moderno and not voce.fonte_moderno:
+            problemi.append(Problema(
+                "G10", dove,
+                "significato moderno senza fonte: si rimuove il significato, "
+                "o si scrive l'articolo da cui e' stato preso"))
+        # Il contrario: una fonte senza significato e' un resto di raccolta. Non
+        # e' un errore che blocca, perche' puo' succedere che la fonte cambi
+        # articolo, ma nessuno deve accorgersene per caso: e' un avviso.
+        if voce.fonte_moderno and not voce.moderno:
+            problemi.append(Problema(
+                "G11", dove,
+                "fonte del significato moderno senza significato: resta vuoto",
+                gravita="avviso"))
+        # I sinonimi da soli non spiegano niente: dicono «e' come altre parole»
+        # senza dire quali. Se il significato non c'e', i sinonimi non hanno
+        # niente a cui appigliarsi e vengono persi in tavola.
+        if voce.sinonimi and not voce.moderno:
+            problemi.append(Problema(
+                "G12", dove,
+                "sinonimi senza significato moderno: restano inutilizzabili",
+                gravita="avviso"))
     return problemi
 
 
@@ -532,5 +560,17 @@ def buchi_dichiarati(glossario, corpus, fonetica=None) -> list:
     aggiungi("voci dichiarate da verificare", len(da_verificare),
              "attendibilita I: la scrittura c'e' ma nessuno l'ha ancora "
              "controllata con un informatore", totale=len(voci))
+
+    # Il numero di parole che la fonte non spiega. Va detto perche' e' l'unico
+    # modo di distinguere «questa parola non ha un significato» da «non
+    # abbiamo chiesto bene»: il vuoto e' dichiarato, e dichiararlo stanca
+    # piu' che confessarlo una volta sola. La colonna «in italiano di oggi» e'
+    # l'unica che si riempie da una fonte esterna, quindi e' l'unica in cui
+    # il buco puo' essere un difetto di raccolta invece che un dato assente.
+    senza_moderno = [v for v in voci if not v.moderno]
+    aggiungi("voci senza significato moderno in fonte", len(senza_moderno),
+             "la fonte non ha l'articolo, o dichiara di non averne la "
+             "definizione: non e' una parola senza significato, e' una parola "
+             "che quella fonte non spiega", totale=len(voci))
 
     return buchi

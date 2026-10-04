@@ -79,6 +79,9 @@ def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
                 "principale_it": v.principale_italiano,
                 "principale_fe": v.principale_ferrarese,
                 "da_verificare": v.da_verificare,
+                "moderno": v.moderno,
+                "fonte_moderno": v.fonte_moderno,
+                "sinonimi": v.sinonimi,
             }
             for v in glossario.voci
         ],
@@ -134,6 +137,12 @@ def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
         "nomi_varieta": NOMI,
         "origine": ORIGINE,
         "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
+        # Le voci a cui la fonte non ha dato un significato moderno. La pagina
+        # non puo' contarli da sola: i dati sono gia' filtrati per varieta' e
+        # per ricerca, e il numero che mostra la tabella non e' quello del
+        # glossario intero. Il conteggio e' fatto qui, una volta sola.
+        "moderno_buchi": sum(1 for v in glossario.voci if not v.moderno),
+        "moderno_con_sinonimi": sum(1 for v in glossario.voci if v.sinonimi),
     }
 
 

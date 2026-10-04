@@ -68,6 +68,16 @@
   th { color: var(--tacchino); font-weight: normal; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
   code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .85rem; }
   .vuoto { color: var(--tacchino); font-style: italic; }
+  a.fonte { font-size: .75rem; color: var(--tacchino); white-space: nowrap; }
+  /* La colonna «in italiano di oggi» e' la piu' lunga della tabella: senza un
+     tetto, una definizione di Wiktionary allunga la riga e spinge fuori
+     «varieta'», «campo», «att.» e «fonte», cioe' le colonne che dicono da
+     dove viene la voce. Il tetto e' dichiarato anche nel senso: e' il punto in
+     cui la colonna smette di essere leggibile e va riletta dal file. */
+  td.moderno, th.moderno { max-width: 16rem; }
+  #tabellaGlossario { overflow-x: auto; }
+  #tabellaGlossario table { font-size: .82rem; }
+  #tabellaGlossario th, #tabellaGlossario td { padding: .3rem .3rem; }
   .pannello { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: .9rem; }
   .pannello div strong { display: block; font-size: 1.3rem; }
   /* La trascrizione IPA e' monospaziata e senza maiuscolette ambigue: si
@@ -571,6 +581,39 @@ function tokenizza(t) {
     });
   }
 
+  // La colonna «in italiano di oggi». Non e' una colonna decorativa: e' l'unica
+  // che puo' spiegare a uno studente una parola che il Ferri scriveva nel 1889 e
+  // che nessuno usa piu'. Ogni valore che mostra porta con se' il link alla
+  // pagina da cui e' preso, perche' una definizione senza fonte e' una parola
+  // indovinata.
+  //
+  // I sinonimi vengono **tagliati a tre**, e il taglio si dichiara: la fonte ne
+  // dà in media dieci e una colonna con dieci sinonimi non si legge. Il file
+  // li ha tutti; quello che si taglia qui e' quello che si mostra, e si dice
+  // che si e' tagliato perche' una colonna che mostra tre pezzi senza dirlo
+  // sembra mostrarne tre di dieci che ci sono. Meglio così che mentire piano.
+  var SINO_IN_COLONNA = 3;
+
+  function cellulaModerno(v) {
+    if (!v.moderno) return '<span class="vuoto">—</span>';
+    var testo = scappa(v.moderno);
+    var sin = v.sinonimi || [];
+    if (sin.length) {
+      testo += '<br><span class="vuoto">anche: ' + scappa(sin.slice(0, SINO_IN_COLONNA).join(", ")) +
+        (sin.length > SINO_IN_COLONNA ? " (+" + (sin.length - SINO_IN_COLONNA) + " altri)" : "") +
+        "</span>";
+    }
+    // La fonte e' un rimando piccolo e non un link che avvolge la
+    // definizione: un'intera colonna di testo sottolineato e' un muro blu, e
+    // la definizione — che e' la cosa che si viene a leggere — sparisce
+    // dentro il colore. Il link resta cliccabile e resta la prova.
+    if (v.fonte_moderno) {
+      testo += ' <a class="fonte" href="' + scappa(v.fonte_moderno) +
+        '" target="_blank" rel="noopener" title="la fonte di questa definizione">fonte</a>';
+    }
+    return testo;
+  }
+
   function tabellaGlossario(filtro) {
     var scelta = document.getElementById("filtroVarietaGlossario");
     var varieta = scelta ? scelta.value : "";
@@ -579,7 +622,8 @@ function tokenizza(t) {
       if (!filtro) return true;
       var f = filtro.toLowerCase();
       return (v.fe + " " + v.it + " " + (v.varianti || []).join(" ") + " " +
-        (v.campo || "") + " " + (v.varieta || "")).indexOf(f) >= 0;
+        (v.campo || "") + " " + (v.varieta || "") + " " + (v.moderno || "") + " " +
+        (v.sinonimi || []).join(" ")).indexOf(f) >= 0;
     });
     if (!voci.length) { document.getElementById("tabellaGlossario").innerHTML = '<p class="vuoto">Nessuna voce corrisponde.</p>'; return; }
     var righe = voci.map(function (v) {
@@ -588,14 +632,28 @@ function tokenizza(t) {
         "<td>" + scappa(v.fe) + (t ? "<br><span class=\"ipa\">" + scappa(t.ipa) + "</span>" : "") +
         (v.varianti && v.varianti.length ? "<br><span class=\"vuoto\">" + scappa(v.varianti.join(", ")) + "</span>" : "") + "</td>" +
         "<td>" + scappa(v.it) + "</td>" +
+        "<td class=\"moderno\">" + cellulaModerno(v) + "</td>" +
         "<td>" + etichettaVarieta(v.varieta) + "</td>" +
         "<td>" + scappa(v.campo || "—") + "</td>" +
         "<td>" + scappa(v.attendibilita) + (v.da_verificare ? " <span class=\"vuoto\">(da verificare)</span>" : "") + "</td>" +
         "<td>" + scappa(v.fonte || "senza fonte") + "</td></tr>";
     }).join("");
+    // Il numero di vuoti si dichiara sotto la tabella, non si nasconde. Una
+    // colonna che contiene dati solo per tre quarti delle voci, e che non lo
+    // dice, fa pensare che le altre non esistano: invece esistono e la fonte
+    // non ne parla. Il conteggio e' fatto in Python e arrivato nei dati, non
+    // ricalcolato qui: se la pagina contasse da sola, un giorno i due numeri
+    // direbbero cose diverse e nessuno saprebbe quale dei due e' giusto.
+    var senza = DATI.moderno_buchi;
+    var rigaVuoti = "";
+    if (senza) {
+      rigaVuoti = " <span class=\"vuoto\">Nessun significato moderno in fonte per " +
+        senza + " voci: è un buco dichiarato, non una parola senza significato. " +
+        "Sinonimi: i primi " + SINO_IN_COLONNA + " di quelli che la fonte dà, gli altri sono nel file.</span>";
+    }
     document.getElementById("tabellaGlossario").innerHTML =
-      '<table><thead><tr><th>id</th><th>ferrarese</th><th>italiano</th><th>varieta\'</th><th>campo</th><th>att.</th><th>fonte</th></tr></thead><tbody>' +
-      righe + "</tbody></table><p class=\"vuoto\">" + voci.length + " voci su " + DATI.glossario.length + ".</p>";
+      '<table><thead><tr><th>id</th><th>ferrarese</th><th>italiano</th><th class="moderno">in italiano di oggi</th><th>varieta\'</th><th>campo</th><th>att.</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table><p class=\"vuoto\">" + voci.length + " voci su " + DATI.glossario.length + "." + rigaVuoti + "</p>";
   }
 
   // Le cinque varieta' con quello che c'e' dentro. La riga vuota non e' un

@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.10
-data: 2026-10-03
+versione: 0.14
+data: 2026-10-04
 ---
 
 # Registro delle modifiche
@@ -85,6 +85,84 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.14 — 2026-10-04 · Le parole che non si usano più, spiegate dalla fonte che le spiega
+
+**Perché.** Una voce come «ardiglione» arriva a uno studente con un italiano
+che non scrive più, e il trattino che c'era in colonna non spiegava niente.
+Il glossario ha 10387 parole del 1889 e nessuna dice che cosa vogliono dire
+oggi. Il 0.14 aggiunge la colonna, e la cosa interessante non è la colonna:
+è **da dove viene** e che cosa non si può chiedere alla sua fonte.
+
+**La fonte.** Wiktionary in italiano, che dichiara la licenza CC BY-SA 4.0 e
+la pubblica in machine-readable: la licenza non l'ho cercata su un sito di
+terzi, l'ho chiesta alla fonte stessa con `meta=siteinfo&siprop=rightsinfo`.
+Diventa S017, e ogni riga del glossario che riceve un significato porta in
+`fonte_moderno` **l'indirizzo della pagina da cui viene**, non il codice della
+fonte: qui la fonte è una pagina e non un libro, quindi il codice non
+basterebbe a controllarla.
+
+**Il buco dichiarato.** 4063 voci su 10387 hanno il significato
+moderno, 3235 hanno anche i sinonimi, e le altre sono un buco
+dichiarato con quattro motivi distinti: la fonte non ha l'articolo, dichiara di
+non averne la definizione, l'articolo non ha una sezione italiana, la sezione
+italiana non ha definizioni. Questi quattro non sono la stessa cosa, e
+somparli avrebbe reso la raccolta più bella e meno vera.
+
+**Quello che non si sa, detto chiaramente.** Nessun template di Wiktionary
+dichiara che una parola è arcaica. Quindi **non si può chiedere alla fonte
+«questa parola è antica?»**, e il modulo non prova a indovinarlo con la
+grafia: nessun segno ortografico distingue «ardiglione», che è arcaico, da
+«cane», che non lo è. La colonna non finge di separare le parole antiche,
+spiega tutte quelle che la fonte spiega, e i 6324 che restano non sono
+una misura di quanto è antico il glossario. È il punto 5 delle domande aperte
+in `AGENTS.md`.
+
+**Il taglio, e perché si dichiara.** In colonna si vedono tre definizioni e
+tre sinonimi; nel file ci sono tutti. La prima stesura scriveva tutto e il
+significato più lungo arrivava a 1970 caratteri: una colonna che nessuno legge
+fa sembrare vuota la colonna delle altre. Ma il taglio si dichiara, perché una
+colonna che mostra tre pezzi senza dire che sono tre sembra mostrarne tre di
+dieci che ci sono.
+
+**I cinque difetti reali trovati strada facendo**, ognuno coperto da un test,
+perché ognuno è stato un giorno di raccolta buttata:
+
+1. `{{Nodef|it}}` è **per definizione**, non per articolo: la prima stesura
+   scartava l'articolo intero e perdeva «fungo», «arcangelo», «sorriso» e
+   «falda». Ora si toglie dalla riga e si legge il resto.
+2. Le definizioni non sono sempre `# ` (spazio): esistono `#provocare …` e
+   `#{{Nodef|it}}`. Ora si accetta `#` e si esclude `#*`, che è un esempio
+   d'uso.
+3. La sezione cercava solo le intestazioni di **secondo** livello: su una
+   pagina che annida, l'inglese entrava nella sezione italiana e finiva in
+   colonna accanto all'italiano. Ora si cerca qualsiasi livello.
+4. Le **tabelle di coniugazione** non sono il significato: in «calunnia»
+   finivano in colonna cinque righe come «terza persona singolare
+   dell'indicativo presente di calunniare». Si scartano le righe che descrivono
+   una *forma* del verbo, non la sezione che le contiene — perché la sezione
+   di significato («botanica», «medicina») contiene invece definizioni vere,
+   ed è stato proprio un test a farlo vedere.
+5. it.wiktionary scrive i titoli in **minuscolo**: mandare «Giustizia» fa
+   rispondere che l'articolo non esiste. Da sola, questa cosa faceva fallire
+   l'87% delle parole.
+
+**La lezione sulla cache.** Il parser è stato sbagliato tre volte, e ogni
+volta la correzione costava un'ora di rete, perché la cache teneva il
+**risultato** e non il testo. Ora la cache tiene il **wikitext grezzo** e la
+lettura avviene all'ultimo momento: la prossima correzione del parser non
+costerà niente. E la cache porta un numero di versione, perché una cache che
+non sa con quale regola è stata fatta è un posto dove si perdono i dati.
+
+**La raccolta, senza rete a runtime.** Il progetto non usa la rete quando
+funziona: `raccolta/moderni.py --daemon` è l'unico punto che chiede qualcosa,
+e lo fa una volta, in locale, con i lotti da 50 e una pausa fra lotti. Il
+processo si sgancia dal terminale con un doppio fork, altrimenti un lavoro di
+un'ora viene ucciso dalla shell che lo ha lanciato.
+
+**Verifiche.** 133 test (erano 115). `verifica`: 0 errori, 8 avvisi.
+Equivalenza Python/JavaScript: 12 frasi, 0 divergenze. Nessuna risorsa esterna,
+nessun carattere fuori dal latino.
 
 ## 0.13 — 2026-10-03 · Il motore che leggeva male due lettere, e come l'ho scoperto
 

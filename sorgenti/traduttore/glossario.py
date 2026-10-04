@@ -75,6 +75,27 @@ class Voce:
     # voce appena raccolta e non ancora controllata su un vocabolario
     # stampato lo dichiara, e il motore la tratta come voce di seconda.
     da_verificare: bool = False
+    # `moderno` e' il significato che la parola ha in italiano di oggi, preso
+    # da una fonte dichiarata e non scritto di testa. Serve perche' una voce
+    # come «ardiglione» arriva a uno studente con un italiano che non usa piu'
+    # e che lui non puo' indovinare. Il campo e' vuoto quando la fonte non ha
+    # l'articolo: e' un buco dichiarato, non un campo da riempire a piacere.
+    # `sinonimi` e' l'alternativa, quando la fonte la dà. I due campi non si
+    # escludono: spesso il significato e' chiaro e i sinonimi aiutano.
+    #
+    # `sinonimi` e' una lista come `varianti`, perche' la fonte ne dà dieci e
+    # uno studente ne legge tre. Tutti e dieci restano nel file, dove sono il
+    # dato; la colonna ne mostra tre e **dichiara** il taglio, perche' una
+    # colonna che mostra tre pezzi senza dire che sono tre sembra mostrare
+    # tutti.
+    #
+    # `moderno` porta **sempre** con se' `fonte_moderno`, l'indirizzo
+    # dell'articolo da cui e' stato preso. Una riga con il significato e
+    # senza la fonte non entra: e' il controllo G10, e senza di esso questa
+    # sarebbe l'unica colonna del progetto che puo' inventare.
+    moderno: str = ""
+    fonte_moderno: str = ""
+    sinonimi: list = field(default_factory=list)
 
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
@@ -268,7 +289,8 @@ def _voce_da_dict(grezzo: dict) -> Voce:
     """
     noto = {"id", "ferrarese", "italiano", "varianti", "campo", "note",
             "fonte", "attendibilita", "registro", "da_verificare",
-            "principale_italiano", "principale_ferrarese", "varieta"}
+            "principale_italiano", "principale_ferrarese", "varieta",
+            "moderno", "fonte_moderno", "sinonimi"}
     grezzo = dict(grezzo)
     varianti = grezzo.pop("varianti", []) or []
     if isinstance(varianti, str):
@@ -276,6 +298,9 @@ def _voce_da_dict(grezzo: dict) -> Voce:
     da_verificare = grezzo.pop("da_verificare", False)
     if isinstance(da_verificare, str):
         da_verificare = da_verificare.strip().lower() in ("1", "true", "si", "sì")
+    sinonimi = grezzo.pop("sinonimi", []) or []
+    if isinstance(sinonimi, str):
+        sinonimi = [s.strip() for s in sinonimi.split(";") if s.strip()]
     sconosciuti = {k: grezzo.pop(k) for k in list(grezzo) if k not in noto}
     nota = grezzo.get("note", "") or ""
     if sconosciuti:
@@ -296,4 +321,7 @@ def _voce_da_dict(grezzo: dict) -> Voce:
         attendibilita=str(grezzo.get("attendibilita", "M") or "M").strip().upper()[:1],
         registro=str(grezzo.get("registro", "") or "").strip(),
         da_verificare=bool(da_verificare),
+        moderno=str(grezzo.get("moderno", "") or "").strip(),
+        fonte_moderno=str(grezzo.get("fonte_moderno", "") or "").strip(),
+        sinonimi=[str(s).strip() for s in sinonimi if str(s).strip()],
     )

@@ -60,7 +60,7 @@ from traduttore import morfologia, normalizza, verifica_dati  # noqa: E402
 from traduttore.audio import Archivio, Brano, controlla_archivo  # noqa: E402
 from traduttore.corpora import Coppia, Corpus, Proverbio  # noqa: E402
 from traduttore.fonetica import Fonetica, Trascrizione, ipa_valida  # noqa: E402
-from traduttore.glossario import FE_IT, IT_FE, Glossario, Voce  # noqa: E402
+from traduttore.glossario import FE_IT, IT_FE, Glossario, Voce, _voce_da_dict  # noqa: E402
 from traduttore.legge import leggi  # noqa: E402
 from traduttore.motore import Motore  # noqa: E402
 from traduttore import proposte  # noqa: E402
@@ -375,6 +375,273 @@ class TestControlli(unittest.TestCase):
                                                     attesa_glossario, attesa_corpus))
         errori = [p for p in problemi if p.gravita == "errore"]
         self.assertEqual([p.riga() for p in errori], [], "i dati del repository hanno errori")
+
+
+class TestSignificatoModerno(unittest.TestCase):
+    """La colonna «in italiano di oggi»: tre campi, e una regola sola.
+
+    La regola e' che nessun significato entra senza l'articolo da cui e' stato
+    preso. Tutto il resto — il taglio dei sinonimi, il vuoto dichiarato —
+    segue da li'.
+    """
+
+    def test_il_significato_moderno_senza_fonte_e_un_errore(self):
+        # Il caso che la colonna potrebbe inventare. Un campo che puo' essere
+        # scritto senza aver guardato niente non si controlla con il confronto:
+        # si controlla togliendo il permesso di scriverlo senza fonte.
+        glossario = Glossario([_voce("V1", "ardiglione", "ardiglione",
+                                     "fonte di prova",
+                                     moderno="persona spregevole")])
+        problemi = verifica_dati.controlla_glossario(glossario)
+        self.assertIn("G10", [p.codice for p in problemi])
+
+    def test_il_significato_moderno_con_fonte_passa_i_controlli(self):
+        glossario = Glossario([_voce(
+            "V1", "ardiglione", "ardiglione", "fonte di prova",
+            moderno="persona spregevole, spreggiata",
+            fonte_moderno="https://it.wiktionary.org/wiki/ardiglione")])
+        codici = [p.codice for p in verifica_dati.controlla_glossario(glossario)]
+        self.assertNotIn("G10", codici)
+        self.assertNotIn("G11", codici)
+
+    def test_una_fonte_senza_significato_e_un_avviso_e_non_un_errore(self):
+        # Non blocca: puo' succedere che la fonte cambi articolo. Ma nessuno
+        # deve accorgersene per caso.
+        glossario = Glossario([_voce("V1", "tortiglione", "tortiglione",
+                                     "fonte di prova",
+                                     fonte_moderno="https://it.wiktionary.org/wiki/tortiglione")])
+        problemi = verifica_dati.controlla_glossario(glossario)
+        self.assertIn("G11", [p.codice for p in problemi])
+        self.assertEqual([p.gravita for p in problemi if p.codice == "G11"], ["avviso"])
+
+    def test_i_sinonimi_senza_significato_non_sono_un_errore(self):
+        glossario = Glossario([_voce("V1", "x", "y", "fonte di prova",
+                                     sinonimi=["a", "b"])])
+        problemi = verifica_dati.controlla_glossario(glossario)
+        self.assertIn("G12", [p.codice for p in problemi])
+        self.assertEqual([p.gravita for p in problemi if p.codice == "G12"], ["avviso"])
+
+    def test_i_sinonimi_si_leggono_come_lista_e_anche_se_sono_stringa(self):
+        # Nel file sono una lista; ma una lista puo' diventare una stringa se
+        # qualcuno la scrive a mano, e allora non deve spaccare il glossario.
+        voce = _voce_da_dict({"id": "V1", "ferrarese": "a",
+                                        "italiano": "b", "fonte": "f",
+                                        "varieta": "cittadino",
+                                        "sinonimi": "uno; due; tre"})
+        self.assertEqual(voce.sinonimi, ["uno", "due", "tre"])
+
+    def test_il_glossario_del_repository_ha_il_significato_ma_sempre_con_la_fonte(self):
+        # Il controllo che conta, sul file vero: nessuna riga con un significato
+        # moderno e senza l'articolo. Il numero di righe con il campo lo dice
+        # anche in alto: se resta zero, la colonna e' vuota e il motivo va
+        # cercato nella raccolta, non qui.
+        glossario = Glossario.da_file(
+            os.path.join(RADICE, "dati", "glossario.jsonl"))
+        senza = [v.id for v in glossario.voci if v.moderno and not v.fonte_moderno]
+        self.assertEqual(senza, [])
+        problemi = verifica_dati.controlla_glossario(glossario)
+        self.assertEqual([p.riga() for p in problemi
+                          if p.codice == "G10" and p.gravita == "errore"], [])
+
+    def test_la_pagina_conta_i_vuoti_e_i_sinonimi_in_python(self):
+        # I due numeri che la pagina mostra sotto la tabella devono arrivare
+        # calcolati, non ricalcolati in JavaScript: se la pagina contasse da
+        # sola, un giorno i due numeri direbbero cose diverse.
+        import costruisci_web
+        glossario, corpus, regole, varieta, fonetica, archivio = \
+            costruisci_web.carica_tutto(RADICE)
+        dati = costruisci_web._dati_per_la_pagina(
+            glossario, corpus, regole, varieta, fonetica, archivio)
+        atteso = sum(1 for v in glossario.voci if not v.moderno)
+        self.assertEqual(dati["moderno_buchi"], atteso)
+        self.assertEqual(dati["moderno_con_sinonimi"],
+                         sum(1 for v in glossario.voci if v.sinonimi))
+
+    def test_il_modello_html_mostra_la_colonna_e_dichiara_il_taglio(self):
+        # La colonna non puo' spuntare in pagina senza dire che i sinonimi
+        # sono tagliati: altrimenti si legge «tre sinonimi» quando sono dieci.
+        modello = open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                       encoding="utf-8").read()
+        self.assertIn("in italiano di oggi", modello)
+        self.assertIn("SINO_IN_COLONNA", modello)
+        self.assertIn("fonte_moderno", modello)
+        self.assertIn("moderno_buchi", modello)
+
+
+class TestLetturaDelWikitext(unittest.TestCase):
+    """Come il modulo `raccolta/moderni.py` legge una pagina.
+
+    Il wikitext qui e' **scritto a mano**, e non copiato da Wiktionary: e' un
+    documento CC BY-SA e `prove/` e' sotto licenza MIT. Non serve il testo
+    vero per provare le regole, e un testo vero nel repository sarebbe una
+    fonte nuova da dichiarare per provare quattro righe di codice.
+
+    Ogni test qui sotto copre un difetto che si e' **realmente** verificato
+    nella raccolta, non un caso inventato per far passare il test.
+    """
+
+    def _leggi(self, wikitext, parola="calunnia"):
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "moderni.py")
+        spec = importlib.util.spec_from_file_location("moderni", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo._significato(wikitext, parola)
+
+    def test_le_tabelle_di_coniugazione_non_sono_il_significato(self):
+        # Difetto vero: «calunnia» mostrava in colonna «terza persona
+        # singolare dell'indicativo presente di calunniare». Sono cinque righe
+        # di coniugazione, non il significato della parola.
+        wikitext = (
+            "{{-it-}}\n"
+            "# [[falsa]] attribuzione di colpa\n"
+            "# offesa verbale\n"
+            "{{-verb form-}}\n"
+            "# terza persona singolare dell'indicativo presente di "
+            "calunniare\n"
+            "# seconda persona singolare dell'imperativo di calunniare\n")
+        significato, _, _ = self._leggi(wikitext)
+        self.assertEqual(significato, "falsa attribuzione di colpa; offesa verbale")
+
+    def test_una_lingua_annidata_non_entra_nella_sezione_italiana(self):
+        # Difetto vero: «pizzicato» mostrava una definizione in inglese,
+        # perch’ la sezione cercava solo le intestazioni di secondo livello
+        # e la pagina annidava l’inglese sotto una di terzo.
+        wikitext = (
+            "{{-it-}}\n# che è stato colto alla sprovvista\n"
+            "=== {{-en-}} ===\n# an instruction to do something\n")
+        significato, _, _ = self._leggi(wikitext, "pizzicato")
+        self.assertEqual(significato, "che è stato colto alla sprovvista")
+        self.assertNotIn("instruction", significato)
+
+    def test_una_definizione_che_ripete_la_parola_non_spiega_nulla(self):
+        wikitext = "{{-it-}}\n# pizzicato\n# che è stato fatto vibrare\n"
+        significato, _, _ = self._leggi(wikitext, "pizzicato")
+        self.assertEqual(significato, "che è stato fatto vibrare")
+
+    def test_nodef_accanto_a_due_definizioni_non_le_cancella(self):
+        # Difetto vero: la prima stesura scartava l’articolo intero appena
+        # trovava un `{{Nodef}}`, e perdeva «fungo», «arcangelo», «sorriso»
+        # e «falda». `{{Nodef}}` vale per il senso accanto a cui sta.
+        wikitext = ("{{-it-}}\n{{-bot-}}\n# {{Nodef}}\n"
+                    "{{-med-}}\n# corpo dell’organismo\n")
+        significato, _, _ = self._leggi(wikitext, "fungo")
+        self.assertEqual(significato, "corpo dell’organismo")
+
+    def test_nodef_senza_niente_around_declara_il_vuoto(self):
+        wikitext = "{{-it-}}\n# {{Nodef}}\n"
+        significato, _, motivo = self._leggi(wikitext, "prova")
+        self.assertEqual(significato, "")
+        self.assertIn("non avere la definizione", motivo)
+
+    def test_le_definizioni_sono_tagliate_e_il_numero_e_dichiarato(self):
+        # Difetto vero: si scrivevano tutte, e il significato piu’ lungo
+        # arrivava a 1970 caratteri. Il taglio c’è, e il numero del taglio
+        # e’ nel codice e nei documenti.
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "moderni.py")
+        spec = importlib.util.spec_from_file_location("moderni", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        righe = "".join("# definizione numero %d\n" % i for i in range(9))
+        significato, _, _ = self._leggi("{{-it-}}\n" + righe)
+        parti = significato.split("; ")
+        self.assertEqual(len(parti), modulo.DEFINIZIONI_IN_COLONNA)
+        self.assertLessEqual(modulo.DEFINIZIONI_IN_COLONNA, 5)
+
+    def test_una_riga_senza_spazio_dopo_il_cancelletto_e_una_definizione(self):
+        # Difetto vero: si accettava solo `# `, e si perdevano le forme che la
+        # fonte scrive senza spazio. `#*` invece e’ un esempio d’uso e va
+        # escluso, altrimenti si attribuisce al dizionario una frase che ha
+        # scritto solo per far capire.
+        wikitext = ("{{-it-}}\n#provocare deliberatamente la propria morte\n"
+                    "#* mi sono suicidato ieri\n")
+        significato, _, _ = self._leggi(wikitext, "suicidarsi")
+        self.assertEqual(significato,
+                         "provocare deliberatamente la propria morte")
+
+    def test_i_sinonimi_si_leggono_dalla_sezione_intera(self):
+        # Il capolavoro taglia via le sotto-sezioni, e i sinonimi stanno in
+        # una sotto-sezione: senza questo la colonna dei sinonimi sarebbe
+        # vuota per costruzione, per un motivo che nessuno vedrebbe.
+        wikitext = ("{{-it-}}\n# sinonimo di prova\n"
+                    "{{-sin-}}\n* [[prova]]\n* ripetuto\n")
+        significato, sinonimi, _ = self._leggi(wikitext, "banale")
+        self.assertEqual(significato, "sinonimo di prova")
+        self.assertEqual(sinonimi, ["prova", "ripetuto"])
+
+    def test_una_glossa_spezzata_non_diventa_un_sinonimo(self):
+        # Difetto vero: la divisione sulla virgola produceva pezzi come
+        # «(negli scacchi» e «dama) prendere», che in colonna sembravano
+        # sinonimi scritti dal dizionario.
+        wikitext = ("{{-it-}}\n# prova\n{{-sin-}}\n"
+                    "* [[pedone]], (negli scacchi\n* dama) prendere\n"
+                    "* [[dama]]\n")
+        _, sinonimi, _ = self._leggi(wikitext, "pedone")
+        self.assertEqual(sinonimi, ["pedone", "dama"])
+
+    def test_ogni_riga_del_glossario_torna_scritta_come_era(self):
+        # Difetto vero, e costa un diff illeggibile: il glossario e' stato
+        # scritto in due formati (10363 righe con i separatori di default e 24
+        # compatte) e la prima stesura del modulo le ha normalizzate tutte. Il
+        # diff mostrava 10379 righe modificate invece delle 4063 con i campi
+        # nuovi, quindi non diceva piu' niente. Il file di prova contiene una
+        # riga per ciascuno dei due formati e una senza significato, e devono
+        # tornare identiche.
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "moderni.py")
+        spec = importlib.util.spec_from_file_location("moderni", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        con_spazi = {"id": "V1", "ferrarese": "a", "italiano": "b",
+                     "fonte": "f", "varieta": "cittadino"}
+        senza_spazi = {"id": "V2", "ferrarese": "c", "italiano": "d",
+                       "fonte": "f", "varieta": "cittadino"}
+        testo_grezzo = (json.dumps(con_spazi, ensure_ascii=False) + "\n"
+                        + json.dumps(senza_spazi, ensure_ascii=False,
+                                     separators=(",", ":")) + "\n")
+        with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False,
+                                         encoding="utf-8") as f:
+            f.write(testo_grezzo)
+            nome = f.name
+        try:
+            vecchio = modulo.GLOSSARIO
+            modulo.GLOSSARIO = nome
+            # La chiave e' la parola che il glossario usa per chiedere: per V1
+            # e' `italiano`, cioe' «b».
+            modulo.applica({"b": ("significato", ["sin"], "")}, scrivi=True)
+            righe = open(nome, encoding="utf-8").read().split("\n")
+        finally:
+            modulo.GLOSSARIO = vecchio
+            os.unlink(nome)
+        # La prima riga ha un campo nuovo ma deve restare con gli spazi, e la
+        # seconda non ne ha nessuno e deve restare compatta: identiche a
+        # prima, salvo il campo che si e' aggiunto.
+        self.assertTrue(righe[0].startswith('{"id": "V1", '))
+        self.assertTrue(righe[1].startswith('{"id":"V2","ferrarese":"c"'))
+        self.assertIn('"moderno": "significato"', righe[0])
+        self.assertNotIn("moderno", righe[1])
+
+    def test_una_cache_di_versione_diversa_non_viene_usata(self):
+        # Difetto vero: la cache diceva gia’ «risposta» per tutte le parole
+        # mentre il parser era stato corretto, e la correzione non si vedeva.
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "moderni.py")
+        spec = importlib.util.spec_from_file_location("moderni", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
+                                         encoding="utf-8") as f:
+            json.dump({"versione": modulo.VERSIONE_PARSER - 1,
+                       "risposte": {"cane": ["guarcia", [], ""]}}, f)
+            nome = f.name
+        try:
+            vecchio = modulo.CACHE
+            modulo.CACHE = nome
+            self.assertEqual(modulo._cache(), {})
+        finally:
+            modulo.CACHE = vecchio
+            os.unlink(nome)
 
 
 def _dati_del_repository():

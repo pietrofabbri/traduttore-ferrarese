@@ -225,6 +225,40 @@ esiste e non si scarica da nessuna parte (`dati/fonti.json`, S009). Non si
 puo' fingere che ci sia e non si puo' costruire per download. Si costruisce
 registrando.
 
+## 6. Il significato moderno: l'unica cosa che si chiede a una fonte
+
+Il glossario porta parole del 1889 che nessuno usa piu'. Capire che cosa
+vogliono dire oggi e' l'unico punto di questo progetto che usa la rete, e la
+usa per **chiedere**, non per scaricare un vocabolario di nascosto.
+
+```bash
+export PYTHONPATH=sorgenti
+python3 -u raccolta/moderni.py --daemon   # raccoglie e si sgancia dal terminale
+python3 raccolta/moderni.py --scrivi     # scrive il glossario (o no, se manca)
+```
+
+`--daemon` serve perche' la raccolta dura piu' di un'ora e la shell che la
+lancia no: il processo viene staccato con un doppio fork e `setsid`, e
+continua anche se il terminale chiude. Senza, si ripete a riprese e si butta
+via un'ora ogni volta.
+
+Quattro cose da non fare:
+
+1. **non scrivere un significato di testa.** `moderno` e' l'unico campo che si
+   puo' riempire senza aver aperto un dizionario, quindi porta **sempre** con
+   se' `fonte_moderno`, l'indirizzo della pagina. Il controllo **G10** lo
+   blocca;
+2. **non decidere che una parola e' antica.** Nessun template di Wiktionary lo
+   dichiara, e nessun segno ortografico distingue «ardiglione» da «cane». Si
+   chiede che cosa significa oggi, e il filtro resta della fonte;
+3. **non scegliere il senso «giusto» di una parola.** In «mangiare» la prima
+   definizione e' quella del sostantivo, e questo progetto non sa quale parte
+   del discorso sia la parola in ognuna delle sue voci: si scrive quello che
+   la fonte scrive;
+4. **non fidarsi della cache vecchia.** La cache porta un numero di versione
+   e si butta se il parser e' cambiato; il wikitext ci resta dentro, quindi
+   rileggerlo costa un secondo e non un'ora.
+
 ## Come si aggiunge qualcosa, in pratica
 
 0. **Qualcosa che non si puo' ancora pubblicare** → in
@@ -279,6 +313,7 @@ python3 -m traduttore.cli varieta     # le cinque, e quante voci ha ciascuna
 python3 -m traduttore.cli pronuncia --tutte   # le trascrizioni e il loro stato
 python3 -m traduttore.cli audio       # i brani e quelli pubblicabili
 python3 -m traduttore.cli proposte    # la coda di revisione del livello IA
+python3 raccolta/moderni.py --scrivi   # il significato moderno dalla fonte
 ```
 
 ## L'ordine in cui conviene procedere

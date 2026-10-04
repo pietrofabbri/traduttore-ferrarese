@@ -80,14 +80,31 @@ jobs:
       - name: Il sito si genera e non contiene richieste di rete
         # La pagina non deve mai chiamare fuori: e' la condizione che la rende
         # apribile da un file, senza connessione e senza server.
+        #
+        # La distinzione e' fra **risorse** e **rimandi**. Una risorsa — uno
+        # script, un foglio di stile, un'immagine — viene scaricata dal browser
+        # senza che nessuno abbia chiesto niente, e quindi viene richiesta. Un
+        # rimando — un `<a href>` su una fonte, come l'indirizzo di Wiktionary
+        # accanto al significato moderno — non richiede niente: e' testo che
+        # diventa un collegamento solo se qualcuno lo clicca, e lo clicca per
+        # andare a controllare la fonte, che e' esattamente quello che il progetto
+        # vuole. Vietare anche i rimandi avrebbe tolto l'unica cosa che rende
+        # una fonte citata verificabile.
+        #
+        # Quindi il controllo vieta `src=` verso l'esterno e vieta qualsiasi
+        # chiamata a rete fatta dal codice, e i rimandi restano.
         run: |
           export PYTHONPATH=sorgenti
           python3 -m traduttore.cli web
-          if grep -nE '(src|href)="https?://' web/index.html; then
-            echo "ERRORE: la pagina punta a una risorsa esterna"
+          if grep -nE 'src="https?://' web/index.html; then
+            echo "ERRORE: la pagina carica una risorsa esterna"
             exit 1
           fi
-          echo "nessuna risorsa esterna"
+          if grep -nE '\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(' web/index.html; then
+            echo "ERRORE: la pagina chiama la rete dal codice"
+            exit 1
+          fi
+          echo "nessuna risorsa esterna, nessuna chiamata a rete"
 
       - name: Il sito contiene i dati
         run: |

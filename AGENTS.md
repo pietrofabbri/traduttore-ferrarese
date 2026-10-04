@@ -29,6 +29,14 @@ un dizionario che non esiste.
 - **Nessuna richiesta di rete a runtime.** La pagina web funziona da `file://`,
   il gioco funziona offline. E' la condizione che li rende distribuibili in
   una classe.
+- **Un rimando non e' una richiesta.** Nella pagina si puo' mettere un
+  `<a href>` verso la fonte di una voce — e nella colonna del significato
+  moderno c'e', perche' una fonte citata e non cliccabile e' una dichiarazione.
+  Quello che non si puo' mettere e' `src=` verso l'esterno, e non si puo' fare
+  `fetch()` dal codice. Il controllo nella CI guarda le risorse e le chiamate,
+  non i collegamenti, e guarda il motivo per cui esiste: se il divieto si
+  allargasse ai rimandi, l'unica cosa che si perderebbe e' la possibilità di
+  andare a verificare una fonte.
 - **Nessun account, nessun server, nessuna telemetria.**
 - **Niente dati degli studenti nel repository.** Vale anche per le voci dei
   compagni di classe, che sono la cosa che il progetto vorrebbe di piu' e che
@@ -105,6 +113,8 @@ I codici da conoscere:
 | G7 | voce non verificata ma dichiarata documentata |
 | **G8** | **voce senza `varieta'`** |
 | G9 | `varieta` fuori dall'insieme delle cinque |
+| **G10** | **significato moderno senza `fonte_moderno`** |
+| G11, G12 | fonte del significato moderno senza significato, sinonimi senza significato (avvisi) |
 | V1&ndash;V6 | tassonomia: codici duplicati, nomi che non nominano, senza territorio, senza fonte, varieta' assente |
 | C1&ndash;C6 | coppie: id, lati, fonte, tipo, attendibilita |
 | **C7, C8** | **coppia senza `varieta'`, `varieta` fuori dall'insieme** |
@@ -148,6 +158,12 @@ I codici da conoscere:
   sono `cittadino`, `centrale`, `occidentale`, `orientale`, `transpadano`, e
   ogni voce porta la sua. Non si aggiunge una sesta: un elenco aperto
   finisce per voler dire qualunque cosa.
+- **Non si scrive un significato moderno di testa.** `moderno` e' l'unico
+  campo del glossario che puo' essere riempito senza aver guardato un
+  dizionario, e per questo porta **sempre** con se' `fonte_moderno`: l'articolo
+  da cui la definizione e' presa. Il controllo **G10** lo blocca. E vale
+  anche per i sinonimi: si mettono quelli che la fonte dà, non quelli che
+  verrebbero bene.
 
 ## 6. Le domande aperte, e dove stanno
 
@@ -179,6 +195,14 @@ lavorare:
    una lettura della grafia, non un ascolto. Passarle a `D` richiede un
    parlante, e il progetto non ha ancora deciso chi sia e come si faccia a
    registrare il fatto.
+5. **Quale fonte dichiara che una parola e' antica.** La colonna «in italiano di
+   oggi» risponde a «che cosa vuol dire *ardiglione*», ma non a «*ardiglione*
+   e' una parola antica?». Wiktionary non marchia l'obsoleto: non esiste un
+   template che lo dichiari, quindi non si puo' chiedere alla fonte e il modulo
+   `raccolta/moderni.py` **non prova a indovinarlo con la grafia** — nessun
+   segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
+   non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
+   vocabolario che marchi l'obsoleto, o se basta la definizione.
 
 ## 7. Il rapporto con «I cinque duchi»
 

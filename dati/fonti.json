@@ -233,6 +233,19 @@
       "licenza_verificata": false,
       "uso": "Esclusa dal glossario.",
       "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra."
+    },
+    {
+      "id": "S017",
+      "titolo": "Wiktionary in italiano",
+      "autore": "Wikimedia Foundation, contributori",
+      "anno": 2026,
+      "tipo": "dizionario collaborativo online",
+      "luogo": "https://it.wiktionary.org/wiki/ardiglione",
+      "stato": "acquisita",
+      "licenza": "CC BY-SA 4.0",
+      "licenza_verificata": true,
+      "uso": "Significato moderno e sinonimi di 4063 voci del glossario, dalle pagine di 8536 interrogate. Ogni riga porta in `fonte_moderno` l'indirizzo della propria pagina.",
+      "nota": "La licenza e' stata letta dalla fonte stessa, non da un sito di terzi: `w/api.php?action=query&meta=siteinfo&siprop=rightsinfo` risponde «Creative Commons Attribution-Share Alike 4.0». Il testo delle pagine non e' nel repository: quello che ci sta e' l'indirizzo di ogni articolo, quindi la fonte di una riga e' controllabile da chiunque aprendo quella riga, e non un rinvio a un file che puo' cambiare.\n\n**Quello che questa fonte non sa fare, e che e' la cosa da sapere.** Nessun template di Wiktionary dichiara che una parola e' arcaica. Quindi non si puo' chiedere alla fonte «questa parola e' antica?», e il modulo `raccolta/moderni.py` non prova a indovinarlo dalla grafia: nessun segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che non lo e'. Quello che la fonte sa dire e' che cosa vuol dire la parola oggi, e quello viene preso.\n\nIl Wiktionary in italiano non divide inoltre gli articoli per parte del discorso: in «mangiare» la prima definizione e' quella del sostantivo. Non e' un difetto che si puo' correggere dall'esterno senza sapere quale parte del discorso sia la parola, quindi si mette quello che la fonte scrive — tagliato a tre definizioni, con il taglio dichiarato — invece di scegliere un senso che sarebbe una scelta mia."
     }
   ]
 }

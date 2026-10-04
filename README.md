@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.13
+versione: 0.14
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -127,6 +127,58 @@ glossario copre la citta' e nient'altro. Le tassonomie stanno in
 ferrarese», CC BY-SA 4.0); i territori che la fonte elenca in due gruppi
 (Fiscaglia, Ostellato, Occhiobello, Goro) sono dichiarati come sovrapposti e
 non vengono arbitrariamente separati.
+
+## Le parole che non si usano piu': il significato moderno
+
+Una voce come «ardiglione» o «tortiglione» arriva a uno studente con un
+italiano che non scrive piu'. Non lo puo' intuire, e la pagina glielo
+spiegava con un trattino.
+
+Il glossario porta adesso tre campi nuovi, e vengono da una fonte che li
+dichiara: **Wiktionary in italiano** (S017, CC BY-SA 4.0, licenza letta dalla
+fonte stessa con `meta=siteinfo&siprop=rightsinfo`).
+
+| Campo | Che cos'e' |
+|---|---|
+| `moderno` | che cosa vuol dire la parola in italiano di oggi |
+| `fonte_moderno` | l'indirizzo della pagina da cui e' stato preso |
+| `sinonimi` | gli equivalenti che la fonte dà |
+
+**Nessun significato entra senza la sua fonte.** `moderno` e' l'unico campo
+del glossario che si puo' scrivere senza aver aperto un dizionario, quindi il
+controllo **G10** lo blocca: una riga con il significato e senza l'indirizzo
+e' un errore, e non un avviso. Non e' una difesa contro gli errori di
+significato — quelle li fa la fonte — e' una difesa contro la definizione
+inventata.
+
+```bash
+python3 -u raccolta/moderni.py --daemon   # raccoglie, in locale, con cache
+python3 raccolta/moderni.py --scrivi     # mette i risultati nel glossario
+```
+
+- **Tre definizioni in colonna, non tutte.** La fonte ne scrive anche dodici e
+  il significato piu' lungo arrivava a 1970 caratteri, che nessuno legge. Il
+  file tiene quello che la fonte ha scritto; la colonna ne mostra tre e **dichiara**
+  il taglio, perche' una colonna che mostra tre pezzi senza dirlo sembra
+  mostrarne tre di dieci che ci sono.
+- **Tre sinonimi in colonna, non tutti** (in media la fonte ne dà dodici, e
+  arrivano a centosessantatre). Anche questi stanno tutti nel file.
+- **4063 voci su 10387 hanno il significato moderno**, e
+  3235 hanno anche i sinonimi. Le altre sono un **buco dichiarato**,
+  e sotto la tabella la pagina dice quante sono e perche': non «la fonte non
+  ha l'articolo» e basta, ma la somma dei quattro motivi distinti, che sono
+  quattro cose diverse.
+- **Nessun filtro mio su «e' una parola antica».** Wiktionary non marchia
+  l'obsoleto, quindi non si puo' chiedere alla fonte; e nessun segno
+  ortografico distingue «ardiglione», che e' arcaico, da «cane», che non lo
+  e'. Quindi la colonna non finge di separare le parole antiche: spiega
+  tutte quelle che la fonte spiega. E' la domanda che resta aperta, ed e' il
+  punto 5 di `AGENTS.md`.
+- **La fonte non distingue il verbo dal nome.** In «mangiare» la prima
+  definizione e' quella del **sostantivo**. Scegliere il senso giusto
+  richiederebbe sapere quale parte del discorso sia la parola, e questo
+  progetto non lo sa per tutte le voci: quindi si scrive quello che la fonte
+  scrive, che e' la fonte e non una scelta mia.
 
 ## Il suono: le trascrizioni IPA e il riproduttore
 
@@ -281,7 +333,8 @@ traduttore-ferrarese/
   STIMA-AUDIO.md       quante ore di registrazione servono, con l'aritmetica
   AGENTS.md            istruzioni per chi ci lavora, persone e IA
   dati/
-    glossario.jsonl    le parole, con la fonte e la varieta'
+    glossario.jsonl    le parole, con la fonte, la varieta' e il
+                       significato moderno (con la sua fonte)
     coppie.jsonl       le frasi parallele, con la fonte e la varieta'
     proverbi.jsonl     i proverbi, con la forma dei libri e quella che si dice
     varieta.json       le cinque varieta' del ferrarese, con i territori
@@ -318,6 +371,10 @@ traduttore-ferrarese/
                          filtra_candidati.py  tiene solo quello che si legge
                          lettura_ferri.py la lista scelta a mano, voce per voce
                          costruisci_da_ferri.py  la porta dentro `dati/`
+                         moderni.py         il significato moderno da
+                                           Wiktionary: l'unico punto di questo
+                                           progetto che usa la rete, e la usa
+                                           per chiedere, non per scaricare
                        `grezzi/` e `lavorato/` non sono nel repository: sono
                        i libri e il mezzo, entrambi ricreabili con una riga
   web/                 la pagina generata
@@ -404,11 +461,17 @@ ferrarese. In breve:
   Non e' la grafia di oggi e non e' quella che si sente: le forme sono
   verificabili aprendo il libro alla pagina indicata, non ascoltando un
   parlante.
+- **Non si sa quali parole sono antiche.** La colonna «in italiano di oggi» dice
+  che cosa *vuol dire* una parola, non che *quella parola non si usa piu'*:
+  nessuna fonte aperta finora marchia l'obsoleto. Su 4063 voci si ha
+  il significato moderno e su 6324 no, e quel numero non e' la misura di
+  quanto e' antico il glossario: e' la misura di quanto ne sa la fonte che si
+  e' aperta. Perci' la pagina lo dichiara e non lo nasconde.
 
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 115 test
+python3 prove/test_traduttore.py     # 133 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

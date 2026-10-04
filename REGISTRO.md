@@ -95,8 +95,31 @@ giorni. Il metro di `raccolta/copertura.py` lo misurava — 38,4% dei 10744
 lemmi italiani sopra la soglia — ma nessuno ci aveva costruito **sopra** un
 giro di lavoro. Adesso c'e': `raccolta/cerca_nelle_fonti.py` parte dalle parole
 italiane piu' frequenti e chiede, per ognuna, in quali fonti si trova. Il primo
-giro dice **2759 delle 6598 parole non coperte sono gia' in qualche fonte**, e
-**197 di quelle sono in Musacchi**, che si possono prendere senza decisione.
+giro dice che **1297 delle 6598 parole non coperte aprono una voce in una
+fonte**, e che **una** di queste e' prendibile subito da S020.
+
+**Il primo conto che questo ciclo ha dato era sbagliato, e come.** La prima
+versione cercava la parola in **tutto** il testo di ogni fonte e non nella
+testa della voce: e allora `modo` risultava «trovata in sei fonti», perche' la
+parola `modo` compare in quei libri dentro una definizione, dentro una glossa,
+dentro un'altra voce. Una parola che compare in un vocabolario non vuol dire che
+quel vocabolario la traduce: vuol dire che la nomina. Il conto era gonfiato di
+piu' del doppio — 2759 invece di 1297, e 197 «prendibili subito» invece di una —
+e la ragione e' che questo numero e' la cosa che il progetto non puo' dare
+sbagliata. Ora ogni fonte ha un **lettore dichiarato**, e il lettore dice dove
+sta la testa di una voce: per S020 e' la parola italiana, per S006 la ferrarese,
+e per i cinque libri dell'Ottocento — che sono testo continuo e non hanno una
+riga per voce — la prima parola della riga, che e' un'approssimazione dichiarata
+e non esatta. Un lettore che non sa dove sia la testa **fallisce**: e' meglio di
+uno che indovina.
+
+**Cosa significa davvero «1297 trovate».** Sono parole che il metro conta come
+non coperte e che aprono una voce in una fonte. Il metro e' severo per scelta —
+confronta il lemma dall'italiano e non per traduzione inversa — e le fonti
+ferrarese-italiano hanno la parola **dall'altra parte**: in Biondelli `fatto` e'
+la voce ferrarese, e l'italiano ne e' la definizione. Coprire `fatto` da li'
+richiede un'inversione che nessuno script fa e che va fatta a occhio. E' il
+lavoro vero del giro dopo, e adesso si sa quant'e'.
 
 **La fonte che cambia la direzione: S020, Musacchi.** Tutte le fonti precedenti
 sono state costruite **dal ferrarese verso l'italiano**: si leggeva una parola

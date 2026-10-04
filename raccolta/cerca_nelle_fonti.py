@@ -15,7 +15,10 @@ quadro che esce dice tre cose, e sono le tre che servono per decidere il
 giro dopo:
 
 - quante parole del metro non sono coperte, e quante sono state trovate
-  adesso: il numero che si muove a ogni giro;
+  adesso: il numero che si muove a ogni giro. «Trovata» vuol dire che la
+  parola **apre una voce** in quella fonte, non che la parola compare da
+  qualche parte nel testo: la prima versione faceva quello e il conto era
+  gonfiato;
 - **dove** e stata trovata ciascuna, per fonte: una parola trovata in una sola
   fonte e' fragile, in due fonti e' un fatto che regge;
 - quali parole sono in Musacchi, che e' l'unica fonte che va dall'italiano al
@@ -47,6 +50,7 @@ RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 sys.path.insert(0, RADICE)
 
+from traduttore import normalizza  # noqa: E402
 from traduttore.normalizza import chiave  # noqa: E402
 
 GREZZI = os.path.join(RADICE, "raccolta", "grezzi")
@@ -82,6 +86,87 @@ CONSULTE = [
     {"id": "S016", "nome": "AR.PA.DIA. 2007",
      "perche": "tutti i diritti riservati: in biblioteca, non copiabile"},
 ]
+
+
+# Come ogni fonte e' fatta, dichiarato per fonte. `None` vuol dire «non lo
+# so ancora», e va detto: un lettore che indovina produce un conto falso.
+LETTORE = {
+    "S020": "_musacchi",   # italiano -> ferrarese, la testa e' l'italiano
+    "S006": "_bigoni",     # ferrarese -> italiano, la testa e' il ferrarese
+    "S001": "_prima_parola",
+    "S005": "_prima_parola",
+    "S012": "_prima_parola",
+    "S009": "_prima_parola",
+    "S010": "_prima_parola",
+}
+
+_SEP = re.compile(r"\s*[-–—.]*(?:-{2,}|—|–)\s*")
+
+
+def _musacchi(testo: str) -> set:
+    """Le teste di S020: la parola **italiana** che apre la voce.
+
+    E' l'unica fonte che va dall'italiano al ferrarese, quindi la sua testa e'
+    la parola che il motore cerca. Le altre hanno la testa dall'altra parte, e
+    cercarci dentro l'italiano sarebbe cercare la definizione di una cosa.
+    """
+    chiavi = set()
+    for riga in testo.split("\n"):
+        riga = riga.strip()
+        if not riga or "HYPERLINK" in riga or "mailto:" in riga:
+            continue
+        pezzi = [x.strip() for x in _SEP.split(riga) if x and x.strip()]
+        if len(pezzi) < 2:
+            continue
+        lemma = pezzi[0].split(",")[0].split("(")[0].strip(" .;:")
+        k = chiave(lemma)
+        if k:
+            chiavi.add(k)
+    return chiavi
+
+
+def _bigoni(testo: str) -> set:
+    """Le teste di S006: la parola **ferrarese** che apre la voce.
+
+    `raccolta/grezzi/bigoni_ferrarese_italiano.jsonl` e' un json per riga e il
+    campo che contiene la parola e' `ferrarese`.
+    """
+    chiavi = set()
+    for riga in testo.split("\n"):
+        riga = riga.strip()
+        if not riga:
+            continue
+        try:
+            voce = json.loads(riga)
+        except ValueError:
+            continue
+        for parola in normalizza.tokenizza(voce.get("ferrarese") or ""):
+            k = chiave(parola)
+            if len(k) > 2:
+                chiavi.add(k)
+    return chiavi
+
+
+def _prima_parola(testo: str) -> set:
+    """Le prime parole di ogni riga: un'approssimazione, e lo e' dichiarata.
+
+    Biondelli, Ferri, Azzi, Nannini e lo «Scrìvar e l'èàr» sono libri
+    dell'Ottocento in testo continuo: non hanno una riga per voce, quindi la
+    «testa» non esiste e si prende la prima parola della riga. E' una scelta
+    che sbaglia in piu' e in meno — una voce che comincia a meta' riga non la
+    vede, e una riga di mezzo periodo la vede — ed e' dichiarata perche' il
+    conto che esce non e' piu' preciso di questo. Per S020 e S006, che sono
+    elenchi veri, il conto e' esatto.
+    """
+    chiavi = set()
+    for riga in testo.split("\n"):
+        parole = re.findall(r"[A-Za-zÀ-ÿ]+", riga)
+        if not parole:
+            continue
+        k = chiave(parole[0])
+        if len(k) > 2:
+            chiavi.add(k)
+    return chiavi
 
 
 def _testo(percorso: str) -> str:
@@ -142,7 +227,8 @@ def main() -> int:
             mancanti_sul_disco.append(fonte["id"])
             repertori[fonte["id"]] = set()
             continue
-        repertori[fonte["id"]] = _chiavi_in(testo)
+        lettore = globals()[LETTORE[fonte["id"]]]
+        repertori[fonte["id"]] = lettore(testo)
 
     mancanti = _copertura()
     if not mancanti:

@@ -437,9 +437,14 @@ il glossario non trova e chiede, per ognuna, in quali fonti si trova:
 PYTHONPATH=sorgenti python3 raccolta/cerca_nelle_fonti.py --limite 100
 ```
 
-Il primo giro del 5 ottobre 2026: **2759 delle 6598 parole non coperte sono
-gia' in una fonte**, e 197 di queste sono in S020 (Musacchi), che va
-dall'italiano al ferrarese e quindi le puo' prendere senza decisione.
+Il primo giro del 5 ottobre 2026: **1297 delle 6598 parole non coperte aprono
+una voce in una fonte**, e una sola e' prendibile subito da S020.
+
+«Trovata» vuol dire che la parola **apre una voce** in quella fonte, non che
+compare da qualche parte nel testo: ogni fonte ha un lettore dichiarato in
+`cerca_nelle_fonti.py`, e per i cinque libri dell'Ottocento — testo continuo,
+non un elenco di voci — il lettore prende la prima parola della riga, che e'
+un'approssimazione dichiarata e non esatta.
 
 Lo script **non scrive in `dati/`**: conta e dice dove. La decisione la prende
 chi guarda la fonte citata accanto alla parola.

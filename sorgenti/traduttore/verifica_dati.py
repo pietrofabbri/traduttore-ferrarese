@@ -573,4 +573,27 @@ def buchi_dichiarati(glossario, corpus, fonetica=None) -> list:
              "definizione: non e' una parola senza significato, e' una parola "
              "che quella fonte non spiega", totale=len(voci))
 
+    # Le parole che non suonano. Il numero e' dichiarato perche' la pagina
+    # mette un pulsante solo dove suona, e uno studente che cerca «magnàr» e
+    # non trova niente deve sapere che il motivo non e' che la parola non
+    # esiste. Il numero si riduce quando il dubbio si risolve, quindi e' un
+    # numero che si puo' correggere, che e' la condizione per stare qui.
+    #
+    # Il conto viene dalle stesse regole di lettura che producono i suoni,
+    # non dal manifesto: se il manifesto dicesse 12 e le regole ne dicessero
+    # 15, il numero giusto sarebbe 15 e un altro buco — quello che nessuno
+    # guarda perche' non e' un errore.
+    if fonetica is not None and fonetica.trascrizioni:
+        from . import voce
+        muti = []
+        for t in fonetica.trascrizioni:
+            esito = voce.voce(t.forma)
+            if esito["problema"] or esito["dubbi"]:
+                muti.append(t)
+        aggiungi("trascrizioni che non hanno un suono generato", len(muti),
+                 "una parola con un dubbio dichiarato non suona: suonarla "
+                 "insegnerebbe il suono sbagliato. Il numero scende quando il "
+                 "dubbio si risolve, e non quando qualcuno decide di suonarla "
+                 "lo stesso", totale=len(fonetica.trascrizioni))
+
     return buchi

@@ -33,6 +33,7 @@ import sys
 from . import morfologia, verifica_dati
 from . import voce as voce_modulo
 from .audio import Archivio, controlla_archivo
+from .sintesi import Sintesi, controlla_sintesi
 from .corpora import Corpus
 from .fonetica import Fonetica
 from .glossario import FE_IT, IT_FE, Glossario
@@ -44,6 +45,9 @@ from .varieta import NOMI, VARIETA, Varieta
 RADICE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATI = os.path.join(RADICE, "dati")
 AUDIO = os.path.join(RADICE, "audio")
+# La pagina vive in `web/`, e i suoni generati con lei: senza questa
+# radice il controllo Y2g direbbe che il file manca quando c'e'.
+WEB = os.path.join(RADICE, "web")
 
 PERCORSI = {
     "glossario": os.path.join(DATI, "glossario.jsonl"),
@@ -53,6 +57,10 @@ PERCORSI = {
     "varieta": os.path.join(DATI, "varieta.json"),
     "fonetica": os.path.join(DATI, "fonetica.jsonl"),
     "audio": os.path.join(DATI, "audio.jsonl"),
+    # I suoni generati stanno in un manifest�� proprio e in una cartella
+    # propria: nessuno dei due e` un brano di una persona, e mescolarli
+    # renderebbe falso il conto che il progetto fa pubblicamente.
+    "sintesi": os.path.join(DATI, "sintesi.jsonl"),
 }
 
 # La fila d'attesa: materiale raccolto ma non ancora pubblicabile. Non entra
@@ -378,6 +386,7 @@ def comando_verifica(args) -> int:
     varieta = Varieta.da_file(PERCORSI["varieta"])
     fonetica = Fonetica.da_file(PERCORSI["fonetica"])
     archivio = Archivio.da_file(PERCORSI["audio"])
+    sintesi = Sintesi.da_file(PERCORSI["sintesi"])
     in_attesa_glossario = Glossario.da_file(IN_ATTESA["glossario"])
     in_attesa_corpus = Corpus.da_file(IN_ATTESA["coppie"])
     problemi = (verifica_dati.controlla_varieta(varieta)
@@ -385,6 +394,8 @@ def comando_verifica(args) -> int:
                 + verifica_dati.controlla_corpora(corpus)
                 + verifica_dati.controlla_fonetica(fonetica, glossario, corpus, varieta)
                 + controlla_archivo(archivio, AUDIO)
+                + controlla_sintesi(sintesi, WEB,
+                                    forme_senza_dubbio=_senza_dubbio(fonetica))
                 + verifica_dati.controlla_tenuta(glossario, corpus,
                                                 in_attesa_glossario, in_attesa_corpus)
                 + controlla_proposte(
@@ -615,6 +626,53 @@ def comando_audio(args) -> int:
     return 0
 
 
+def _senza_dubbio(fonetica) -> set:
+    """Le forme che il progetto sa pronunciare senza domandarsi se sbaglia.
+
+    Il controllo Y4 confronta i suoni generati con questo insieme: e' il modo
+    che ha il progetto di impedire che la comodo' diventi un buco. Se le
+    regole di lettura cambiano e un dubbio sparisce, il controllo comincia a
+    segnalare che manca un suono; se ne compare uno, segnala che il suono
+    c'e' ma il dubbio no. In entrambi i casi dice la verita'.
+    """
+    forme = set()
+    for t in fonetica.trascrizioni:
+        esito = voce_modulo.voce(t.forma)
+        if not esito["problema"] and not esito["dubbi"]:
+            forme.add(t.forma)
+    return forme
+
+
+def comando_sintesi(args) -> int:
+    """I suoni generati, e perche' sono cosi pochi.
+
+    Il comando `audio` risponde a «posso mettere la voce di mia nonna nel
+    gioco?». Questo risponde a «posso mettere una voce di computerla?», che e'
+    una domanda diversa e ha una risposta diversa: si puo', a patto che la
+    pagina lo dica. Il conto che interessa pero' e' l'altro, e sta in fondo:
+    quante parole dichiarate **non** suonano, e perche'.
+    """
+    sintesi = Sintesi.da_file(PERCORSI["sintesi"])
+    stato = sintesi.stato(WEB)
+    if args.json:
+        print(json.dumps({"stato": stato,
+                          "suoni": [s.come_dict() for s in sintesi.suoni]},
+                         ensure_ascii=False, indent=2))
+        return 0
+    for chiave, valore in stato.items():
+        print("%-16s %s" % (chiave, valore))
+    print()
+    print("%-8s %-12s %-14s %s" % ("id", "forma", "ipa", "file"))
+    for suono in sintesi.suoni:
+        print("%-8s %-12s %-14s %s" % (suono.id, suono.forma, suono.ipa,
+                                       suono.file or "(senza file)"))
+    print()
+    print("Nessuno di questi suoni verifica la trascrizione da cui nasce. Le")
+    print("righe restano attendibilita I e da verificare, e un file generato")
+    print("non entra mai in audio/, che e' la cartella delle persone vere.")
+    return 0
+
+
 def comando_stato(args) -> int:
     motore = carica(modello_attivo=False)
     cosa = motore.cosa_sa()
@@ -716,6 +774,11 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p = sotto.add_parser("audio", help="che brani audio ci sono e quali si pubblicano")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_audio)
+
+    p = sotto.add_parser(
+        "sintesi", help="i suoni generati: quante parole suonano e quante no")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_sintesi)
 
     p = sotto.add_parser("proposte", help="la coda di revisione del livello IA")
     p.add_argument("--json", action="store_true")

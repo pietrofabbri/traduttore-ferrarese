@@ -80,6 +80,35 @@ Le fonti attualmente nel registro (`dati/fonti.json`):
 
 ## Audio e immagini
 
+Ci sono due cose diverse, e la sezione le tiene separate perche' hanno
+regole opposte.
+
+### I suoni generati in `web/sintesi/`
+
+I dodici file in `web/sintesi/` sono **l'output di un programma**, non una
+registrazione. Il programma e' `espeak-ng`, che il progetto non include e non
+modifica: e' un programma installato a parte, dichiarato qui perche' la sua
+licenza e' nota ed e' una licenza forte.
+
+- **licenza del programma**: `espeak-ng` 1.52.0 e' **GPL-3.0-or-later**, letta
+  dall'installazione stessa (`/opt/homebrew/Cellar/espeak-ng/1.52.0/COPYING` e
+  l'inventario SPDX che Homebrew scrive accanto al pacchetto). Non e' una
+  deduzione: e' il testo della licenza che c'e' sulla macchina;
+- **licenza dei file**: un suono generato non e' coperto dalla GPL, perche' la
+  GPL copre i programmi e i loro sorgenti, non cio' che un programma produce
+  quando gira. Quindi **nessuna licenza di questo progetto puo' pretendere di
+  coprirli**, e per questo non si dichiarano MIT: si dichiarano come quello che
+  sono, l'output di un programma GPL;
+- **perche' non e' un problema per la GPL**: il progetto non distribuisce
+  `espeak-ng`, non lo modifica e non lo incorporate in `sorgenti/`. Chi genera
+  i suoni deve avere il programma installato, e il comando dice che manca se
+  manca invece di produrre un suono con un altro programma;
+- **che cosa non puo' fare**: questi file non verificano la trascrizione da
+  cui nascono, e non sono un attestato. Restano `attendibilita: "I"` e
+  `da_verificare: true`, e la pagina lo dice accanto al pulsante.
+
+### Le registrazioni in `web/audio/`
+
 Non ci sono ancora. Quando ci saranno:
 
 - **ogni brano porta la licenza nel manifest**, e la licenza non e' quella del

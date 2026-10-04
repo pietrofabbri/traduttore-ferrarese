@@ -232,6 +232,64 @@ jobs:
           print("nessuna registrazione pubblicata senza consenso: %d pronti" % len(pronti))
           PY
 
+      - name: Nessun suono generato si fa passare per una persona
+        # Il controllo che tiene separate le due cartelle di suoni.
+        # `web/audio/` contiene registrazioni di persone vere e conta solo
+        # quelle che hanno consenso, licenza e una decisione di pubblicazione;
+        # `web/sintesi/` contiene voci fatte da `espeak-ng`. Un suono generato
+        # che finisca nella prima cartella renderebbe falso un conto che il
+        # progetto mostra pubblicamente, quindi qui si controlla che i due
+        # insiemi non si tocchino.
+        #
+        # Il confronto e' per nome, non per contenuto: dentro un `wav` generato
+        # non c'e' la parola «espeak» neanche una volta, quindi la domanda
+        # «da quale programma viene questo file» non ha risposta sul file.
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli sintesi
+          python3 - <<'PY'
+          import os, sys
+          sys.path.insert(0, "sorgenti")
+          from traduttore.sintesi import CARTELLA, CARTELLA_BRANI, Sintesi
+
+          radice = os.path.join("web", CARTELLA)
+          sintesi = Sintesi.da_file("dati/sintesi.jsonl")
+          dichiarati = {s.file for s in sintesi if s.file}
+          trovati = set()
+          if os.path.isdir(radice):
+              trovati = {n for n in os.listdir(radice) if n.endswith(".wav")}
+
+          # Le due meta' che mancano sono un suono che la pagina offre e non
+          # suona, e un file che nessuno dichiara.
+          if dichiarati - trovati:
+              print("ERRORE: righe senza file: %s"
+                    % ", ".join(sorted(dichiarati - trovati)))
+              sys.exit(1)
+          if trovati - dichiarati:
+              print("ERRORE: file che nessuna riga dichiara: %s"
+                    % ", ".join(sorted(trovati - dichiarati)))
+              print("        rigenera con `python3 raccolta/sintetizza.py`.")
+              sys.exit(1)
+
+          # La porta chiusa. Un wav nella cartella delle persone vere che ha
+          # un nome gia' dichiarato come generato e' il caso da prendere.
+          brani = os.path.join("web", CARTELLA_BRANI)
+          finiti = []
+          if os.path.isdir(brani):
+              finiti = [n for n in os.listdir(brani)
+                        if n.endswith(".wav") and n in dichiarati]
+          if finiti:
+              print("ERRORE: suoni generati dentro %s/: %s"
+                    % (CARTELLA_BRANI, ", ".join(sorted(finiti))))
+              sys.exit(1)
+
+          peso = sum(os.path.getsize(os.path.join(radice, n)) for n in trovati)
+          print("%d suoni generati, %.0f KB, %d dichiarazioni di sintesi"
+                % (len(trovati), peso / 1024.0, len(dichiarati)))
+          print("nessuno e' un parlante ferrarese: la pagina lo dice accanto "
+                "a ogni pulsante")
+          PY
+
       - name: Ogni voce ha la sua fonte
         # Il controllo che il progetto considera non negoziabile. Una voce senza
         # fonte non blocca, ma il conto si stampa e resta nel log, cosi' non

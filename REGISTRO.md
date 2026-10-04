@@ -86,6 +86,86 @@ copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
+## 0.16 — 2026-10-04 · Il pulsante che fa sentire la parola, e le tre frasi che diventavano false
+
+**Perché.** La pagina aveva un riproduttore che poteva suonare **zero** cose,
+e una trascrizione IPA accanto a ogni parola: 28 simboli che descrivono un
+suono che nessuno poteva sentire. Il gioco è per ragazzi che imparano una
+lingua a orecchio. Un gioco di lingua che non si può ascoltare è un gioco di
+lettura con la fotografia accanto.
+
+**Che cosa è stato fatto.** Dodici parole suonano, in `web/sintesi/`, e
+accanto al pulsante c'è scritto che il suono l'ha fatto un programma. Il
+manifesto è `dati/sintesi.jsonl`, generato da `raccolta/sintetizza.py`, e la
+pagina lo legge da lì.
+
+**Le tre frasi che il pulsante rendeva false.** Non sono state scritte da
+qualcuno che non sapeva: erano la versione corretta di un'altra idea, e quella
+idea era sbagliata.
+
+1. `modello.html` diceva: «nessuna voce sintetica può fare da ferrarese, e
+   questo progetto non lo prova». Il principio è giusto, la soluzione no: un
+   suono generato **esiste**, esisteva già prima che il progetto se ne
+   accorgesse, e non metterlo non è onesto, è solo più muto. La regola vera è
+   un'altra: il suono si mostra, ma non può passare per una persona.
+2. Il commento del riproduttore diceva: «non mette una voce sintetica al posto
+   di una persona: non esiste e non si può fingere che esista». Il secondo
+   membro è giusto e il primo no, perché **se lo mette al posto di** è proprio
+   quello che va evitato, non quello che va evitato da metterlo.
+3. `sorgenti/traduttore/audio.py` diceva che mettere una voce sintetica è
+   «l'opposto di quello che fanno i progetti che mettono una voce sintetica e
+   la chiamano «il ferrarese»». La frase è giusta sul **come** e sbagliata sul
+   **se**: il progetto mette una voce sintetica e la chiama «il ferrarese» in
+   tre posti. Quindi l'ha fatto, dichiarandolo.
+
+**Due cartelle, e perché.** `web/audio/` sono registrazioni di persone vere e
+i controlli A1-A10 contano i file che ci trovano chiedendo consenso, licenza e
+pubblicazione. `web/sintesi/` sono voci di programma. Un suono generato nella
+prima cartella renderebbe falso un conto che il progetto mostra pubblicamente,
+quindi i due insiemi non si toccano: **Y3b**.
+
+**Perché dodici, e non tutte.** Suonare tutte le 10401 parole costerebbe circa
+**493 megabyte**, che non è una pagina. Quindi il suono esiste solo dove il
+progetto ha già scritto come la parola si pronuncia: le 28 trascrizioni
+dichiarate. E anche lì non tutte: delle 28, **16 non suonano**, perché hanno un
+dubbio che le regole di lettura segnalano — la `gn` davanti ad `à` di
+`magnàr`, l'accento non marcato di `principiar`. Suonarle produrrebbe uno
+studente che impara un suono sbagliato con la stessa efficacia con cui avrebbe
+imparato quello giusto, e senza potersene accorgere. **Y4** verifica che quei
+file non comparano.
+
+**Un difetto mio, trovato guardando il file.** Avevo scritto, e pubblicato nel
+docstring di `sintesi.py`, che `espeak-ng` scrive il proprio nome nel commento
+del formato RIFF e che quindi si poteva riconoscere un suono generato
+guardando dentro il file. Ho aperto il file: dentro un `wav` generato non c'è
+la parola «espeak» **nemmeno una volta**, e il formato è un RIFF con quattro
+campi e nient'altro. Il controllo che si basava su quella frase non poteva
+scattare mai, e sarebbe passato per sempre senza aver guardato niente. Ora
+Y3b confronta i **nomi** dei file, che è l'unica cosa che il file non
+dichiara, e c'è un test che verifica la cosa negativa: dentro il `wav` non c'è
+«espeak».
+
+**Un altro difetto, trovato guardando la pagina.** «portàr» e «portar» sono due
+forme scritte della stessa voce e hanno due trascrizioni diverse,
+`/portˈar/` e `/porˈtar/`. La scheda mostrava la seconda e il suono era della
+prima: due righe che si contraddicono nella stessa scheda. Ora la scheda del
+suono porta **la sua** trascrizione e, quando differisce, dice perché.
+
+**Che cosa non cambia.** Un suono generato non verifica niente. Le righe
+restano `attendibilita: "I"` e `da_verificare: true`, e l'unica cosa che chiude
+la domanda è un parlante ferrarese che dica la parola.
+
+**Verifiche.** 152 test (erano 137). `verifica`: 0 errori, 8 avvisi, e i
+controlli Y1-Y4 non trovano niente sui dodici suoni. Equivalenza Python e
+JavaScript: 12 frasi, 0 divergenze. Il passo nuovo della CI confronta il
+manifesto con `web/sintesi/` nelle due direzioni ed e' stato provato nelle due
+sense: con un file in piu' in `audio/` esce diversamente da zero.
+
+**Il costo.** dodici file, 523 KB. Il generatore cancella `web/sintesi/` prima
+di riscrivere, così un file che non è più dichiarato non sopravvive. La CI
+confronta il manifesto con la cartella nelle due direzioni: una riga senza file
+e un file senza riga sono entrambi un errore.
+
 ## 0.15 — 2026-10-04 · Il numero di copertura che si alzava perché qualcosa non era guardato
 
 **Perché.** Pietro ha provato a tradurre «sono seduto sulla sedia» e il

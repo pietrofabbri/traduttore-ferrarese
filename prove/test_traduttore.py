@@ -58,6 +58,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 
 from traduttore import morfologia, normalizza, verifica_dati  # noqa: E402
 from traduttore.audio import Archivio, Brano, controlla_archivo  # noqa: E402
+from traduttore.sintesi import (CARTELLA, NOTA_SINTETICA,  # noqa: E402
+                              PESO_MAX, Sintesi, Suono, controlla_sintesi)
 from traduttore.corpora import Coppia, Corpus, Proverbio  # noqa: E402
 from traduttore.fonetica import Fonetica, Trascrizione, ipa_valida  # noqa: E402
 from traduttore.glossario import FE_IT, IT_FE, Glossario, Voce, _voce_da_dict  # noqa: E402
@@ -448,10 +450,11 @@ class TestSignificatoModerno(unittest.TestCase):
         # calcolati, non ricalcolati in JavaScript: se la pagina contasse da
         # sola, un giorno i due numeri direbbero cose diverse.
         import costruisci_web
-        glossario, corpus, regole, varieta, fonetica, archivio = \
-            costruisci_web.carica_tutto(RADICE)
+        (glossario, corpus, regole, varieta, fonetica, archivio,
+         sintesi) = costruisci_web.carica_tutto(RADICE)
         dati = costruisci_web._dati_per_la_pagina(
-            glossario, corpus, regole, varieta, fonetica, archivio)
+            glossario, corpus, regole, varieta, fonetica, archivio,
+            None, sintesi, os.path.join(RADICE, "web"))
         atteso = sum(1 for v in glossario.voci if not v.moderno)
         self.assertEqual(dati["moderno_buchi"], atteso)
         self.assertEqual(dati["moderno_con_sinonimi"],
@@ -1816,6 +1819,221 @@ class TestVoceSintetica(unittest.TestCase):
                 esito = scrivi_wav("magnàr", os.path.join(dove, "x.wav"))
         self.assertIn("espeak-ng non e' installato", esito["problema"])
         self.assertEqual(esito["wav"], "")
+
+    def test_il_pannello_conta_anche_i_suoni_generati(self):
+        # Due numeri che la pagina mostra e che il progetto dichiara altrove:
+        # i brani di persone vere e i suoni di programma. Devono restare due
+        # numeri separati, perche' sommarli darebbe un numero che non
+        # descrive niente: nessuno dei due e' una persona.
+        with open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                  encoding="utf-8") as f:
+            modello = f.read()
+        self.assertIn('["brani audio pronti", brani]', modello)
+        self.assertIn('["suoni generati"', modello)
+
+    def test_una_virgola_mancante_nel_pannello_non_e_un_errore_di_sintassi(self):
+        # Difetto vero, di questa sessione. Ho aggiunto una riga al pannello
+        # senza la virgola finale, e `["a"] ["b"]` in JavaScript non e' un
+        # errore di sintassi: e' un'indicizzazione. Il codice restava valido,
+        # `new Function()` lo accettava, e il difetto compariva lontano,
+        # dentro `pannello`, nel conteggio. L'unico controllo che l'ha preso
+        # e' `controlla_equivalenza.py`, che esegue la pagina per davvero.
+        #
+        # Qui il controllo e' sul difetto esatto e non su tutta la lista: un
+        # controllo che tentasse divalidare ogni elemento della lista con la
+        # sola lettura delle righe sbaglierebbe appena un elemento occupa
+        # piu' di una riga, che e' il caso normale e legittimo.
+        with open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                  encoding="utf-8") as f:
+            modello = f.read()
+        self.assertIn("}).length],", modello,
+                      "l'elemento dei suoni generati deve chiudersi con una "
+                      "virgola: senza diventa un'indicizzazione")
+
+    def test_i_buchi_e_i_suoni_non_si_pontano_luno_con_l_altro(self):
+        # Il buco dichiara quante tracrizioni non hanno un suono, e lo conta
+        # con le regole di lettura. Il manifesto dichiara quante ne hanno
+        # uno, e lo conta scrivendo i file. Se i due conti non sommano alle
+        # trascrizioni dichiarate, uno dei due e' sbagliato — e nessuno dei
+        # due e' un errore, quindi nessuno dei due fa scattare un controllo.
+        # Questa e' la riga che tiene insieme i due numeri.
+        from traduttore import verifica_dati as vd
+        from traduttore.corpora import Corpus
+        from traduttore.glossario import Glossario
+        from traduttore.fonetica import Fonetica
+        radice_dati = os.path.join(RADICE, "dati")
+        fonetica = Fonetica.da_file(os.path.join(radice_dati, "fonetica.jsonl"))
+        sintesi = Sintesi.da_file(os.path.join(radice_dati, "sintesi.jsonl"))
+        buchi = vd.buchi_dichiarati(
+            Glossario.da_file(os.path.join(radice_dati, "glossario.jsonl")),
+            Corpus.da_file(os.path.join(radice_dati, "coppie.jsonl"),
+                           os.path.join(radice_dati, "proverbi.jsonl")),
+            fonetica)
+        riga = [b for b in buchi
+                if b["nome"] == "trascrizioni che non hanno un suono generato"]
+        self.assertTrue(riga, "il buco dei suoni mancanti non c'e' piu'")
+        riga = riga[0]
+        self.assertEqual(riga["quanti"] + len(sintesi), len(fonetica),
+                         "il buco dice %d e il manifesto %d, e insieme non "
+                         "fanno le %d trascrizioni dichiarate"
+                         % (riga["quanti"], len(sintesi), len(fonetica)))
+class TestSintesi(unittest.TestCase):
+    """I suoni generati, e la separazione dalle voci vere.
+
+    I test non verificano che il suono sia giusto: non si puo', e non e' il
+    punto. Verificano che il suono **dica quello che e'**. Ogni controllo qui
+    sotto e' la risposta a un modo in cui una voce di programma potrebbe
+    presentarsi come una persona, o come qualcosa che il progetto sa e non
+    dichiara.
+    """
+
+    def _suono(self, **cambi):
+        base = dict(id="Y0001", riferimento="V0001", forma="portàr",
+                    ipa="/port\u02c8ar/", file="T0001.wav", varieta="cittadino",
+                    fonte="Biondelli 1853, pag. 204", nota=NOTA_SINTETICA)
+        base.update(cambi)
+        return Suono(**base)
+
+    def test_un_suono_senza_dichiarazione_e_un_errore(self):
+        # Il campo `nota` e' l'unica cosa che distingue un programma da una
+        # persona. Se sparisce, il pulsante suona senza dire niente, ed e' il
+        # modo in cui una voce di macchina diventa «il ferrarese».
+        archivio = Sintesi([self._suono(nota="")])
+        codici = [p.codice for p in controlla_sintesi(archivio)]
+        self.assertIn("Y1d", codici)
+
+    def test_il_manifesto_di_adesso_dichiara_tutti_i_suoni(self):
+        # Sui dati veri, non su una costruzione di prova: se `sintetizza.py`
+        # smette di scrivere la dichiarazione, questo test lo vede.
+        sintesi = Sintesi.da_file(os.path.join(RADICE, "dati", "sintesi.jsonl"))
+        self.assertTrue(len(sintesi) > 0, "il manifesto dei suoni e' vuoto")
+        for suono in sintesi:
+            self.assertTrue(suono.nota, "%s suona senza dichiararlo" % suono.id)
+            self.assertTrue(suono.sintetica,
+                            "%s non si dichiara sintetico" % suono.id)
+            # Un suono non verifica la sua stessa trascrizione. Se un giorno
+            # `attendibilita` passasse a `D`, questa riga cadrebbe: ed e' il
+            # modo che ha il progetto di accorgersene.
+            self.assertEqual(suono.attendibilita, "I")
+            self.assertTrue(suono.da_verificare)
+
+    def test_il_percorso_nel_nome_del_file_e_un_errore(self):
+        # Su `file://` la pagina puo' aprire qualunque cosa sul disco dello
+        # studente, quindi il nome dichiarato non puo' contenere percorsi.
+        archivio = Sintesi([self._suono(file="../../etc/passwd")])
+        self.assertIn("Y2b", [p.codice for p in controlla_sintesi(archivio)])
+
+    def test_un_suono_dichiarato_senza_file_e_un_errore(self):
+        archivio = Sintesi([self._suono()])
+        codici = [p.codice for p in
+                  controlla_sintesi(archivio, os.path.join(RADICE, "web"))]
+        self.assertIn("Y2g", codici)
+
+    def test_un_suono_per_una_parola_con_dubbio_e_un_errore(self):
+        # Il controllo che chiude la strada alla comodo'. `forme_senza_dubbio`
+        # e' quello che il progetto riesce a pronunciare: se la parola non c'e'
+        # dentro, il file non doveva esserci. E' il buco che il pulsante
+        # apriva, dichiarato una volta sola.
+        archivio = Sintesi([self._suono(forma="magnàr")])
+        codici = [p.codice for p in
+                  controlla_sintesi(archivio, None, forme_senza_dubbio={"portàr"})]
+        self.assertIn("Y4", codici)
+
+    def test_una_parola_senza_dubbi_passa_Y4(self):
+        archivio = Sintesi([self._suono()])
+        codici = [p.codice for p in
+                  controlla_sintesi(archivio, None, forme_senza_dubbio={"portàr"})]
+        self.assertNotIn("Y4", codici)
+
+    def test_un_suono_troppo_pesante_e_un_errore(self):
+        # 493 megabyte per tutte le parole del glossario non sono una pagina.
+        archivio = Sintesi([self._suono()])
+        codici = [p.codice for p in controlla_sintesi(
+            archivio, None) if p.codice == "Y3"]
+        # Senza la radice il peso non si puo' misurare: nessun Y3, e nessun
+        # errore inventato. Il tetto resta dichiarato in `PESO_MAX`.
+        self.assertEqual(codici, [])
+        self.assertEqual(PESO_MAX, 120 * 1024)
+
+    def test_un_suono_generato_finito_in_audio_e_un_errore(self):
+        # Il controllo che tiene separate le due cartelle. Il file di un
+        # suono generato dentro `audio/` renderebbe falso il conto dei brani
+        # di persone vere, che e' un conto che il progetto fa pubblicamente.
+        import shutil
+        import tempfile
+        with tempfile.TemporaryDirectory() as dove:
+            os.makedirs(os.path.join(dove, "audio"))
+            os.makedirs(os.path.join(dove, CARTELLA))
+            # Il nome e' quello che dichiara il manifesto di prova (`T0001`):
+            # Y3b confronta i nomi, quindi un file con un altro nome non
+            # dimostrerebbe niente.
+            shutil.copyfile(
+                os.path.join(RADICE, "web", CARTELLA, "T0002.wav"),
+                os.path.join(dove, "audio", "T0001.wav"))
+            archivio = Sintesi([self._suono()])
+            codici = [p.codice for p in controlla_sintesi(archivio, dove)]
+        self.assertIn("Y3b", codici)
+
+    def test_un_wav_qualunque_in_audio_non_e_un_Y3b(self):
+        # Il contrario, che e' la parte che rende il controllo utile: una
+        # registrazione vera dentro `audio/` non viene segnalata come se fosse
+        # un suono generato. Un controllo che segnalasse anche questi
+        # inutilizzerebbe il conto delle persone vere invece di proteggerlo.
+        import tempfile
+        with tempfile.TemporaryDirectory() as dove:
+            os.makedirs(os.path.join(dove, "audio"))
+            with open(os.path.join(dove, "audio", "voce.mp3"), "wb") as f:
+                f.write(b"una registrazione vera")
+            archivio = Sintesi([self._suono()])
+            codici = [p.codice for p in controlla_sintesi(archivio, dove)]
+        self.assertNotIn("Y3b", codici)
+
+    def test_il_wav_generato_non_dice_da_che_programma_e_come(self):
+        # Difetto vero, trovato guardando il file. Avevo scritto — e nel
+        # docstring del modulo anche **pubblicato** — che `espeak-ng` scrive
+        # il proprio nome nel commento del RIFF, e che quindi si poteva
+        # riconoscere un suono generato guardando dentro il file. Il file
+        # non contiene quella stringa: e' un RIFF con quattro campi e
+        # nient'altro. Il controllo che si basava su quella frase non poteva
+        # scattare mai, e sarebbe passato per sempre senza guardare niente.
+        with open(os.path.join(RADICE, "web", CARTELLA, "T0002.wav"), "rb") as f:
+            corpo = f.read()
+        self.assertTrue(corpo.startswith(b"RIFF"))
+        self.assertNotIn(b"espeak", corpo.lower())
+        # Quindi la domanda «da dove viene» non si puo' fare sul contenuto:
+        # si fa sul nome, e su quello si basa Y3b.
+        self.assertFalse(hasattr(__import__("traduttore.sintesi",
+                                             fromlist=["x"]),
+                                 "_e_generato"))
+
+    def test_il_manifesto_e_la_cartella_concordano(self):
+        # Ogni riga deve avere il suo file e non deve esserci un file senza
+        # riga: una delle due metà che manca è un suono che la pagina offre
+        # e non suona, o un file che nessuno dichiara.
+        sintesi = Sintesi.da_file(os.path.join(RADICE, "dati", "sintesi.jsonl"))
+        radice = os.path.join(RADICE, "web")
+        dichiarati = {s.file for s in sintesi}
+        percorso = os.path.join(radice, CARTELLA)
+        trovati = set()
+        if os.path.isdir(percorso):
+            trovati = {n for n in os.listdir(percorso) if n.endswith(".wav")}
+        self.assertEqual(dichiarati - trovati, set(),
+                         "righe senza file")
+        self.assertEqual(trovati - dichiarati, set(),
+                         "file che nessuna riga dichiara")
+
+    def test_la_pagina_non_mette_il_suono_generato_dove_c_e_un_brano(self):
+        # Il file di `modello.html` che disegna la scheda del suono e quello
+        # che disegna la scheda del brano devono restare due funzioni diverse.
+        # Sono state due, per qualche tempo, una sola.
+        with open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                  encoding="utf-8") as f:
+            modello = f.read()
+        # Il chiamante sceglie fra i due con `||`, non con il ternario: col
+        # ternario il messaggio «nessun suono generato» finiva accanto al
+        # suono che nega.
+        self.assertIn("suonoDi(v.id, t) ||", modello)
+
 
 
 if __name__ == "__main__":

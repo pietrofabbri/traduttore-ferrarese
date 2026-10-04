@@ -97,6 +97,11 @@
   .scheda h3 { margin: 0 0 .2rem; font-size: 1rem; }
   .scheda .riga-sotto { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
   audio { width: 100%; margin-top: .4rem; }
+  /* La scheda del suono generato porta un bordo diverso da quella del brano
+     vero: la differenza deve vedersi prima di leggere qualsiasi testo. */
+  .scheda.sintesi { background:#eef1f4; border-left:3px solid #7d8794; }
+  .etichetta-sintesi { font-size:.72rem; letter-spacing:.06em;
+    text-transform:uppercase; color:#4a5158; font-weight:700; }
   .vuoto-varieta { border-left: 4px solid var(--tacchino); padding: .5rem .8rem; background: #f5f1e6; margin-bottom: .6rem; }
   select { font-family: inherit; font-size: .9rem; padding: .35rem; border: 1px solid var(--bordo); border-radius: 4px; background: #fff; }
   label.scelta { font-size: .85rem; color: var(--tacchino); display: inline-flex; gap: .3rem; align-items: center; }
@@ -160,9 +165,15 @@
 
   <h2>Il riproduttore</h2>
   <p class="occhiello" style="margin:.4rem 0 1rem">
-    La trascrizione IPA dice <em>come si scrive il suono</em>. L'audio, quando
-    ci sara', sara' la voce di una persona che ha detto di sì: nessuna voce
-    sintetica puo' fare da ferrarese, e questo progetto non lo prova.
+    La trascrizione IPA dice <em>come si scrive il suono</em>. Qui ci sono due
+    suoni, e sono due cose diverse. Quello che arriva quando qualcuno parla e
+    ha detto di sì non c'e' ancora: <code>web/audio/</code> è vuota e resta
+    vuota finché qualcuno chiede il permesso alle persone che hanno registrato.
+    Quello che c'è adesso è un suono <strong>fatto da un programma</strong>,
+    dichiarato accanto al tasto e in una cartella separata. Non è un
+    ferrarese che parla, è la lettura di una grafia: serve a sentire come
+    suona, non a imparare come parlano. Una voce di macchina che si fa passare
+    per una persona è la cosa che questo progetto non fa.
   </p>
   <div class="riga">
     <input type="search" id="cercaSuono" placeholder="cerca una parola da ascoltare" size="30">
@@ -689,10 +700,19 @@ function tokenizza(t) {
     }).join("");
   }
 
-  // Il riproduttore. Fa tre cose e una non la fa: mette accanto la parola la
-  // sua trascrizione, dice da quale varieta' viene, e suona **solo** le
-  // registrazioni vere. Non mette una voce sintetica al posto di una persona:
-  // non esiste e non si puo' fingere che esista.
+  // Il riproduttore. Mette accanto alla parola la sua trascrizione, dice da
+  // quale varieta' viene, e suona quello che c'e' **dichiarando di che cosa
+  // si tratta**.
+  //
+  // Prima questo progetto non metteva nessun suono generato, e il commento
+  // diceva perche': «non si puo' fingere che esista». La frase era giusta sul
+  // principio e sbagliata sulla soluzione: un suono generato esiste, esiste
+  // gia' da prima che il progetto se ne accorgesse, e non metterlo non e'
+  // onesto, e' solo piu' muto. La regola vera e' un'altra: il suono generato
+  // si mostra, ma **non puo' passare per una persona**. Non sta nella stessa
+  // cartella di `web/audio/`, non ha il nome di un brano, e porta scritto che
+  // e' un programma. Tolta la parola non resta un falso Ferrara: resta un
+  // suono con la sua etichetta.
   function riproduttore(filtro) {
     var scelta = document.getElementById("filtroVarietaSuono");
     var varieta = scelta ? scelta.value : "";
@@ -721,9 +741,16 @@ function tokenizza(t) {
             (t.da_verificare ? ' <span class="varieta">trascrizione non verificata</span>' : ' <span class="varieta">verificata da un parlante</span>') +
             (t.nota ? '<br><span class="vuoto">' + scappa(t.nota) + '</span>' : '') + '</p>'
           : (t ? '' : '<p class="vuoto">trascrizione assente: e\' un buco dichiarato.</p>')) +
-        '<div class="vuoto">audio: nessuna registrazione di questa parola. ' +
-        'Nessuna voce sintetica la sostituisce: un falso Ferrara e\' peggio del silenzio.</div>' +
-        (branoDi(v.id) ? schedaBrano(branoDi(v.id)) : '') +
+        // Il messaggio di «non c'e' niente» lo dice `suonoDi` restituendo
+        // una stringa vuota, e qui si usa `||` per mostrarlo. Con il ternario
+        // finiva accanto al suono che nega: due righe che si contraddicono
+        // nella stessa scheda, che e' peggio di non dire niente.
+        (branoDi(v.id) ? schedaBrano(branoDi(v.id))
+          : suonoDi(v.id, t) ||
+          '<div class="vuoto">audio: nessuna registrazione di questa parola, e ' +
+          'nessun suono generato. Le due cose mancano per motivi diversi: ' +
+          "l'una aspetta una persona che dica la parola, l'altra aspetta che " +
+          'il progetto sappia pronunciarla senza dubbi.</div>') +
         '<div class="riga"><button type="button" class="leggiItaliano" data-testo="' +
         scappa(v.it) + '">leggi l\'italiano</button></div>' +
         '</div>');
@@ -743,6 +770,62 @@ function tokenizza(t) {
     return (DATI.audio || []).filter(function (b) { return b.riferimento === id; })[0] || null;
   }
 
+  // Il suono generato che corrisponde a una parola. `null` se non c'e': e'
+  // un caso normale, non un errore, e per meta' delle trascrizioni dichiarate
+  // il progetto sa di non poter pronunciare la parola con sicurezza.
+  //
+  // La tracrizione che la scheda del riproduttore mostra e' quella che `ipaDi`
+  // sceglie fra quelle dichiarate, e non per forza quella che il suono
+  // riproduce: una voce puo' avere piu' forme scritte e ognuna con la sua.
+  // «portàr» e «portar» hanno due trascrizioni diverse, /port\u02c8ar/ e
+  // /por\u02c8tar/, e senza avvisare lo studente ne vede due contraddittorie
+  // sulla stessa riga. Per questo la scheda del suono porta **la sua**, e
+  // quando le due differiscono lo dice.
+  function suonoDi(id, traccia) {
+    var s = (DATI.sintesi || []).filter(function (x) {
+      return x.riferimento === id && x.file_playable;
+    })[0];
+    if (s) return schedaSuono(s, traccia);
+    // Se la parola ha una trascrizione dichiarata ma nessun suono, il motivo
+    // e' quasi sempre un dubbio. Dirlo qui vale piu' di lasciare uno spazio
+    // vuoto: lo studente deve capire perche' quella parola non suona.
+    if (traccia && traccia.da_verificare) {
+      return '<div class="vuoto">questa parola non ha un suono generato: la ' +
+        'trascrizione non e\' ancora verificata da un parlante, e un suono ' +
+        'costruito su una trascrizione non verificata insegnerebbe il suono ' +
+        'sbagliato.</div>';
+    }
+    return "";
+  }
+
+  // La scheda del suono generato. La dichiarazione sta **dentro** la scheda e
+  // non in un pie' di pagina: chi clicca il tasto e' li', e li' deve leggerla.
+  function schedaSuono(s, traccia) {
+    var diverso = traccia && traccia.ipa && traccia.ipa !== s.ipa;
+    return '<div class="scheda sintesi">' +
+      '<div class="riga-sotto">' +
+      '<span class="etichetta-sinteti">voce di programma</span>' +
+      '<span class="ipa">' + scappa(s.ipa) + '</span>' +
+      '<span class="vuoto">' + scappa(s.fonte || "") + '</span></div>' +
+      // `preload="metadata"` e non `"none"` come per i brani veri: il file
+      // e' di 45 KB, sta nella stessa cartella e non costa nulla a leggerne
+      // l'intestazione. Con `"none"` il lettore resta su `0:00 / 0:00` e
+      // sembra rotto, e uno studente che crede sia rotto non lo preme.
+      '<audio controls preload="metadata" src="' +
+      scappa(s.file_playable) + '"></audio>' +
+      (diverso
+        ? '<p class="vuoto">Il suono e\' della forma <strong>' +
+          scappa(s.forma) + '</strong> (' + scappa(s.ipa) + '), non della ' +
+          'trascrizione mostrata sopra (' + scappa(traccia.ipa) + '): sono due ' +
+          'forme scritte diverse della stessa voce, e due trascrizioni ' +
+          'diverse.</p>'
+        : '') +
+      '<p class="vuoto">' + scappa(s.avvertimento || DATI.sintesi_avviso || "") +
+      (s.nota ? '<br>' + scappa(s.nota) : '') + '</p></div>';
+  }
+
+  // La scheda del suono generato. La dichiarazione sta **dentro** la scheda e
+  // non in un pie' di pagina: chi clicca il tasto e' li', e li' deve leggerla.
   function schedaBrano(b) {
     return '<div class="scheda" style="background:#f5f1e6">' +
       '<h3>' + scappa(b.testo || b.id) + '</h3>' +
@@ -841,6 +924,12 @@ function tokenizza(t) {
       ["trascrizioni IPA", troncazioni],
       ["verificate da un parlante", verificate],
       ["brani audio pronti", brani],
+      // La virgola dopo questo elemento non e' una formalita': senza, la
+      // riga seguente diventa un'indicizzazione (`["a"] ["b"]`), il codice
+      // resta sintatticamente valido e il difetto compare lontano, nel
+      // conteggio. E' successo, e nessun controllo di sintassi lo aveva visto.
+      ["suoni generati", (DATI.sintesi || []).filter(function (x) {
+        return x.file_playable; }).length],
       ["varieta' vuote", vuote + " su " + ((DATI.varieta || {}).codici || []).length]
     ];
     document.getElementById("pannello").innerHTML = voci.map(function (p) {

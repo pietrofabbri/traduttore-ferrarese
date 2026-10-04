@@ -62,7 +62,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py           # 137 test
+python3 prove/test_traduttore.py           # 152 test
 python3 -m traduttore.cli verifica         # i controlli sui dati
 python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
 ```
@@ -203,7 +203,19 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
-6. **Le parole funzionali entrano nel glossario o no.** Il glossario non ne
+6. **Un suono generato puo' passare per una voce?** La domanda ha gia' una
+   risposta — no — ma il **come** merita di stare scritto, perche' e' il punto
+   dove questo progetto rischia di mentire. Le due cartelle di suoni sono
+   separate dal manifesto e dai **nomi dei file**, non dal contenuto: dentro
+   un `wav` generato non c'e' la parola «espeak» e un controllo che la
+   cercasse passerebbe per sempre senza guardare niente. I tre controlli che
+   tengono la separazione sono **Y1d** (ogni suono dichiara che e' generato),
+   **Y3b** (nessun nome di un suono generato dentro `web/audio/`) e **Y4**
+   (nessun suono per una parola con un dubbio dichiarato). Se un giorno
+   diventassero solo una convenzione scritta qui, il conto dei brani di persone
+   vere diventerebbe falso e nessuno se ne accorgerebbe.
+
+7. **Le parole funzionali entrano nel glossario o no.** Il glossario non ne
    ha quasi nessuna: fra 131 parole funzionali dell'elenco di `copertura.py`,
    38 ci sono e 93 passano invariate, quindi una frase come «il cane e' a casa»
    esce con due buchi. La domanda **non e'** «quale fonte le dichiara»: la

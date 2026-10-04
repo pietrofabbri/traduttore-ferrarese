@@ -39,6 +39,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from traduttore import morfologia  # noqa: E402
 from traduttore.audio import Archivio  # noqa: E402
+from traduttore.sintesi import Sintesi  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
 from traduttore.fonetica import Fonetica  # noqa: E402
 from traduttore import verifica_dati  # noqa: E402
@@ -48,14 +49,23 @@ from traduttore.varieta import NOMI, Varieta  # noqa: E402
 
 TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modello.html")
 
+# La frase che dichiara che il suono non e' una persona. Vive qui e nella
+# pagina la legge: due posti, uno solo da tenere d'accordo.
+AVVERTIMENTO_SINTESI = (
+    "Attenzione: questo suono lo ha fatto un programma, non una persona "
+    "di Ferrara. Serve per sentire come suona la grafia, non per imparare "
+    "come parlano i ferraresi.")
+
 
 def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
                         varieta: Varieta = None, fonetica: Fonetica = None,
-                        archivio: Archivio = None, audio_disponibili=None) -> dict:
+                        archivio: Archivio = None, audio_disponibili=None,
+                        sintesi: Sintesi = None, radice_web: str = None) -> dict:
     """Raccoglie tutto quello che la pagina deve sapere, in un solo JSON."""
     varieta = varieta or Varieta([])
     fonetica = fonetica or Fonetica([])
     archivio = archivio or Archivio([])
+    sintesi = sintesi or Sintesi([])
     audio_disponibili = set(audio_disponibili or [])
     conteggi = varieta.conteggi(glossario=glossario, coppie=corpus.coppie,
                                 audio=list(archivio))
@@ -134,6 +144,20 @@ def _dati_per_la_pagina(glossario: Glossario, corpus: Corpus, regole: list,
                  if b.id in audio_disponibili else "")
             for b in archivio.brani
         ],
+        # I suoni generati. `file_playable` vale solo se il file c'e': senza,
+        # la pagina non mette un pulsante che porta da nessuna parte, che e'
+        # il modo peggiore di offrire un suono. Ogni riga porta la dichiarazione
+        # di sintesi, e la pagina la mostra accanto al pulsante.
+        "sintesi": [
+            dict(s.come_dict(),
+                 file_playable=("sintesi/" + s.file)
+                 if radice_web and s.esiste(radice_web) else "")
+            for s in sintesi.suoni
+        ],
+        # L'avviso e' un dato e non una frase scritta a mano nella pagina: sta
+        # nel manifesto accanto al suono che descrive, e cosi' non puo' succedere
+        # che la pagina dica una cosa e il manifesto un'altra.
+        "sintesi_avviso": AVVERTIMENTO_SINTESI,
         "nomi_varieta": NOMI,
         "origine": ORIGINE,
         "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
@@ -153,12 +177,13 @@ def carica_tutto(radice: str):
     varieta = Varieta.da_file(os.path.join(dati, "varieta.json"))
     fonetica = Fonetica.da_file(os.path.join(dati, "fonetica.jsonl"))
     archivio = Archivio.da_file(os.path.join(dati, "audio.jsonl"))
+    sintesi = Sintesi.da_file(os.path.join(dati, "sintesi.jsonl"))
     percorso_regole = os.path.join(dati, "regole.json")
     regole = []
     if os.path.exists(percorso_regole):
         with open(percorso_regole, "r", encoding="utf-8") as f:
             regole = [morfologia.Regola(**r) for r in json.load(f).get("regole", [])]
-    return glossario, corpus, regole, varieta, fonetica, archivio
+    return glossario, corpus, regole, varieta, fonetica, archivio, sintesi
 
 
 def copia_audio(archivio: Archivio, radice_audio: str, web_dir: str) -> list:
@@ -187,11 +212,12 @@ def copia_audio(archivio: Archivio, radice_audio: str, web_dir: str) -> list:
 def costruisci(radice: str = None, destinazione: str = None) -> str:
     radice = radice or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     destinazione = destinazione or os.path.join(radice, "web", "index.html")
-    glossario, corpus, regole, varieta, fonetica, archivio = carica_tutto(radice)
-    copiati = copia_audio(archivio, os.path.join(radice, "audio"),
-                          os.path.dirname(destinazione))
+    web_dir = os.path.dirname(destinazione)
+    (glossario, corpus, regole, varieta, fonetica, archivio,
+     sintesi) = carica_tutto(radice)
+    copiati = copia_audio(archivio, os.path.join(radice, "audio"), web_dir)
     dati = _dati_per_la_pagina(glossario, corpus, regole, varieta, fonetica,
-                               archivio, copiati)
+                               archivio, copiati, sintesi, web_dir)
     with open(TEMPLATE, "r", encoding="utf-8") as f:
         modello = f.read()
     grezzo = json.dumps(dati, ensure_ascii=False, indent=1)

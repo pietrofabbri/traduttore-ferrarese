@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.15
+versione: 0.16
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -200,9 +200,16 @@ Due cose, distinte, che non si confondono:
   `pubblicabile`), e il file in `audio/` viene copiato in `web/audio/` solo se
   le tre ci sono. Il protocollo e' in `audio/README.md`.
 
+- **`dati/sintesi.jsonl` — il suono di un programma, dichiarato come tale.**
+  Dodici parole suonano, e accanto al pulsante c'e' scritto che le ha fatte
+  `espeak-ng`. Non e' un brano e non entra mai in `web/audio/`: sta in
+  `web/sintesi/`, porta `sintetica: true` e la dichiarazione in pagina. Vedi
+  la sezione sotto.
+
 ```bash
 python3 -m traduttore.cli pronuncia magnar
 python3 -m traduttore.cli audio
+python3 -m traduttore.cli sintesi
 ```
 
 ```
@@ -251,6 +258,54 @@ wav non verifica niente, e i file escono in `raccolta/lavorato/voci/` che non
 e' tracciata, **mai** in `web/audio/`: copiare li' significa pubblicarli, e la
 regola A1-A10 vuole consenso, licenza e `pubblicabile`, e qui nessuna persona
 ha parlato, quindi nessuno ha acconsentito a nulla.
+
+## Il pulsante che fa sentire la parola, e che cosa non è
+
+Nella pagina, accanto a una parola con una trascrizione dichiarata, c'è un
+tasto che la fa suonare. **Non è una persona.** È `espeak-ng` che legge la
+grafia attraverso le regole di `dati/fonetica.jsonl`, e la pagina lo scrive
+accanto al pulsante, non in un documento che nessuno legge.
+
+La distinzione che regge tutto è fra due cartelle che non si toccano mai:
+
+| | `web/audio/` | `web/sintesi/` |
+|---|---|---|
+| chi ha parlato | una persona | un programma |
+| cosa serve per entrarci | consenso, licenza, decisione di pubblicazione | una trascrizione dichiarata **senza dubbi** |
+| com'è dichiarato | `consenso`, `licenza`, `pubblicabile` | `sintetica: true` e la dichiarazione in pagina |
+| quante adesso | **0** | **12** |
+
+**Perché dodici e non tutte.** Suonare tutte le 10401 parole del glossario
+costerebbe circa **493 megabyte**, che non è una pagina. Quindi il suono esiste
+solo dove il progetto ha già scritto *come* la parola si pronuncia: le 28
+trascrizioni dichiarate. E anche lì non tutte: delle 28, **16 non suonano**,
+perché hanno un dubbio che le regole di lettura segnalano. Una parola con un
+dubbio non ha un file, e la pagina dice perché.
+
+La ragione è che suonare una pronuncia che il progetto *non sa* dare è peggio
+che non suonare: lo studente impara il suono sbagliato con la stessa efficacia
+con cui avrebbe imparato quello giusto, e non ha modo di accorgersene. Il
+controllo **Y4** verifica che nessun file sia comparso per una parola con un
+dubbio: è il buco che il pulsante avrebbe aperto, chiuso e dichiarato.
+
+Si generano con un comando, e il manifesto è generato insieme:
+
+```bash
+python3 raccolta/sintetizza.py            # scrive i wav e dati/sintesi.jsonl
+python3 raccolta/sintetizza.py --prova    # dice i numeri, non scrive
+```
+
+**Che cosa non cambia.** Un suono generato non verifica niente. Le righe di
+`dati/fonetica.jsonl` restano `attendibilita: "I"` e `da_verificare: true`, i
+suoni restano `I`, e l'unica cosa che chiude la domanda è un parlante ferrarese
+che dica la parola.
+
+**Una cosa che non si può fare.** Il suono non dice da quale programma è stato
+prodotto: dentro il `wav` non c'è la parola «espeak» nemmeno una volta, e il
+formato è un RIFF con quattro campi e nient'altro. Un controllo che volesse
+distinguere le due cartelle guardando il contenuto del file non potrebbe
+funzionare, e passerebbe per sempre senza aver guardato niente. La separazione
+è quindi sui **nomi** e sui **manifesti**, ed è il controllo Y3b a tenerla.
 
 ## Le regole morfologiche si imparano, non si scrivono
 
@@ -327,6 +382,8 @@ si segue è `audio/SESSIONE.md`.
 
 ```
 traduttore-ferrarese/
+  dati/sintesi.jsonl    i suoni generati: generato, non scritto a mano
+  web/sintesi/          i dodici wav che la pagina fa suonare
   README.md            questo file
   RACCOLTA.md          dove si accumulano vocabolari, testi e registrazioni
   REGISTRO.md          che cosa e' cambiato, e perche'
@@ -484,7 +541,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 137 test
+python3 prove/test_traduttore.py     # 152 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.15
+versione: 0.17
 data: 2026-10-04
 ---
 
@@ -155,13 +155,22 @@ che sono successe con la divisione gia' scritta.
    dichiarato e generato ma **non compariva in nessuna pagina**. Ora la scheda
    mappa tutti i suoni di tutte le forme.
 8. Il messaggio di ricerca di cui sopra, che negava l'esistenza di voci che
-   c'erano.
+   c'erano.**Il frontmatter che mentiva.** Questo file si dichiarava `versione: 0.15`
+mentre le sue voci erano arrivate alla 0.17, e nessun controllo lo guardava:
+la regola del progetto vieta i numeri che mentono, e valeva per i buhi
+dichiarati ma non per la versione del registro stesso. Ora il frontmatter
+dice 0.17 e c'e' un test che lo confronta con la voce piu' recente del
+file — **senza scrivere la versione nel test**, perche' una lista di numeri
+in un test diventa a sua volta un numero da correggere a mano, e il difetto
+che il test cerca tornerebbe dalla porta da cui l'ho visto entrare. Il test
+e' stato provato ricreando il difetto: fallisce con `'0.15' != '0.17'`.
 
-**Verifiche.** 164 test (erano 155). `verifica`: 0 errori, 8 avvisi.
+**Verifiche.** 165 test (erano 155). `verifica`: 0 errori, 8 avvisi.
 Equivalenza: 12 frasi confrontate, 0 divergenze. Scanner: 67 file
-tracciati, 0 ideogrammi. Un passo nuovo della CI controlla che ogni pagina contenga i
-suoi dati, che nessuna superi i 3 megabyte, che ogni fetta abbia le sue voci
-e la sua barra, e che ogni link della barra apra un file che esiste.
+tracciati, 0 ideogrammi. Un passo nuovo della CI controlla che ogni pagina
+contenga i suoi dati, che nessuna superi i 3 megabyte, che ogni fetta abbia
+le sue voci e la sua barra, e che ogni link della barra apra un file che
+esiste.
 
 ## 0.16 — 2026-10-04 · Il pulsante che fa sentire la parola, e le tre frasi che diventavano false
 

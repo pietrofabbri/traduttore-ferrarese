@@ -788,6 +788,34 @@ class TestConteggiDichiarati(unittest.TestCase):
         self.assertEqual(int(dichiarato.group(1)), _quanti_test(),
                          "la voce %s dice %s test" % (ultima, dichiarato.group(1)))
 
+    def test_il_frontmatter_del_registro_concorda_con_la_voce_piu_recente(self):
+        # Difetto vero, di questa sessione: il frontmatter di `REGISTRO.md`
+        # diceva `versione: 0.15` mentre le voci erano arrivate a 0.17. Il
+        # numero che mente e' il peggiore, e il regolamento del progetto vieta
+        # esplicitamente i numeri che mentono — vale per i buhi dichiarati e
+        # vale anche per la versione del registro stesso.
+        #
+        # Il numero NON e' scritto qui: il controllo lo prende dal registro,
+        # perche' una lista di versioni in un test diventa a sua volta un
+        # numero da aggiornare a mano, e il difetto che questo test cerca
+        # tornerebbe esattamente dalla porta da cui l'ho visto entrare.
+        testo = open(os.path.join(RADICE, "REGISTRO.md"),
+                     encoding="utf-8").read()
+        frontmatter = re.match(r"^---\n(.*?)\n---\n", testo, re.S)
+        self.assertIsNotNone(frontmatter,
+                             "REGISTRO.md non ha il frontmatter")
+        dichiarata = re.search(r"^versione: (\d+\.\d+)$",
+                               frontmatter.group(1), re.M)
+        self.assertIsNotNone(dichiarata,
+                             "REGISTRO.md non dichiara la sua versione")
+        voci = re.findall(r"^## (\d+\.\d+) — .*$", testo, re.M)
+        self.assertTrue(voci, "il registro non ha nessuna voce")
+        ultima = max(voci, key=lambda v: tuple(int(x) for x in v.split(".")))
+        self.assertEqual(dichiarata.group(1), ultima,
+                         "REGISTRO.md si dichiara %s mentre la voce piu' "
+                         "recente e' la %s"
+                         % (dichiarata.group(1), ultima))
+
 class TestLetturaDelWikitext(unittest.TestCase):
     """Come il modulo `raccolta/moderni.py` legge una pagina.
 

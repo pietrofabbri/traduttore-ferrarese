@@ -37,6 +37,12 @@
   },
   "assegnazioni": [
     {
+      "fonte": "S019",
+      "varieta": "cittadino",
+      "attendibilita": "I",
+      "motivo": "La pagina di Wikiquote non dichiara dove i modi di dire sono stati raccolti e non distingue le varieta' territoriali. Si assume il cittadino e l'assunzione viene dichiarata come memoria, non come fatto documentato: l'attendibilita' resta `I` anche per la varieta', perche' nessuno ha ascoltato un ferrarese che usi queste frasi."
+    },
+    {
       "fonte": "S020",
       "varieta": "cittadino",
       "attendibilita": "M",

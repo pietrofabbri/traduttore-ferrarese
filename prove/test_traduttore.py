@@ -3761,5 +3761,285 @@ class TestLaVoceDichiarata(unittest.TestCase):
 
 
 
+class TestIModiDiDire(unittest.TestCase):
+    """S019: le frasi di Wikiquote lette dalla pagina, e non dalla regex.
+
+    I due difetti che questi test prendono sono reali e sono già successi:
+
+    - il lettore contava i `<dd>` senza distinguere quelli annidati, quindi
+      diceva 37 modi di dire dove ce n'erano 35, e due dei 37 erano le
+      spiegazioni italiane, non delle voci;
+    - la regola che scarta le spiegazioni mozzate guardava la prima parola,
+      quindi buttava via «Come viene viene, alla grossa» e «Furbo come l'oca
+      di Fergnani», che sono frasi intere, per salvare due voci rotte.
+
+    Un lettore di dati che sbaglia il conto e butta via parole buone è peggio
+    di un lettore che non esiste, perché il suo errore è invisibile: sembra
+    lavoro fatto.
+
+    **Una nota sull'interprete, non sul codice.** Con l'interprete di questa
+    macchina (Python 3.9 dei CommandLineTools) la forma
+    `x = modulo._esterni(s)` seguita da `len(x)`, dentro un metodo di questa
+    classe, mette `x` sia fra le variabili locali del codice compilato sia fra i
+    nomi globali: a runtime `len(x)` solleva `NameError`. La stessa riga
+    compilata da sola da' `LOAD_FAST`, quindi non e' un errore di scrittura. Il
+    metodo che ne soffre chiama la funzione due volte invece di tenere il
+    risultato in una variabile, e la nota è qui dentro perché nessuno ci
+    creda sulla parola.
+    """
+
+    def _modulo(self):
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "da_modi.py")
+        spec = importlib.util.spec_from_file_location("da_modi", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo
+
+    def test_i_dd_annidati_non_sono_voci(self):
+        modulo = self._modulo()
+        # Una voce sola con tre spiegazioni annidate dentro: il lettore ne deve
+        # restituire **due** voci, non cinque. Il difetto vero era il contrario
+        # — contare tutti i `<dd>` e chiamarli 37 modi di dire quando erano 35
+        # — e questa casella e' scelta perche' un lettore che conta i tag non
+        # puo' passarla: ne troverebbe cinque, e direbbe che la pagina ha cinque
+        # modi di dire dove ce n'e' uno.
+        segmento = ("<dd>Uno<i>a</i><dl>"
+                    "<dd>prima spiegazione</dd>"
+                    "<dd>seconda spiegazione</dd>"
+                    "<dd>terza spiegazione</dd>"
+                    "</dl></dd>"
+                    "<dd>Due<i>b</i><dl><dd>spiegazione</dd></dl></dd>")
+        # La chiamata e' ripetuta invece di tenere il risultato in una
+        # variabile: vedi la nota della classe, l'interprete sbaglia quella forma.
+        self.assertEqual(len(modulo._esterni(segmento)), 2,
+                         "una voce con tre spiegazioni dentro deve contare "
+                         "una, non tre: ha contato i <dd> annidati")
+        self.assertIn("prima spiegazione", modulo._esterni(segmento)[0],
+                      "la spiegazione annidata resta dentro la sua voce")
+
+    def test_una_spiegazione_intera_non_viene_scartata(self):
+        modulo = self._modulo()
+        # Il difetto: la regola guardava la prima parola e scartava le frasi
+        # che cominciano con «come», che è una congiunzione d'inizio frase.
+        intere = ["Come viene viene, alla grossa, a occhio e croce",
+                  "Furbo come l'oca di Fergnani che era il più furbo di tutti",
+                  "Su per giù, all'incirca, pressappoco",
+                  "Essere baciati dalla fortuna",
+                  "Andare a pampògne"]
+        for spiegazione in intere:
+            self.assertFalse(modulo._mozzata(spiegazione),
+                             "scartata una spiegazione intera: %r" % spiegazione)
+
+    def test_una_spiegazione_mozzata_viene_scartata(self):
+        modulo = self._modulo()
+        mozzate = [", andare a zonzo",
+                   "o Dai, picchia e martella. Dopo tanto penare",
+                   "- cioè, senza fretta"]
+        for spiegazione in mozzate:
+            self.assertTrue(modulo._mozzata(spiegazione),
+                            "tenuta una coda di frase: %r" % spiegazione)
+
+    def test_il_grezzo_dichiara_i_35_e_i_due_scarti(self):
+        modulo = self._modulo()
+        # Il conto e' dichiarato nel file e nel docstring: se la pagina cambia,
+        # il numero esce diverso e questo test lo dice invece di lasciare che
+        # i dati cambino in silenzio.
+        voci = modulo.voci()
+        mozzate = [v for v in voci if modulo._mozzata(v[1])]
+        senza = [v for v in voci if not v[1]]
+        nuove = [v for v in voci if v[1] and not modulo._mozzata(v[1])]
+        self.assertEqual(len(voci), 35)
+        self.assertEqual(len(senza), 2)
+        self.assertEqual(len(mozzate), 2)
+        self.assertEqual(len(nuove), 31)
+
+    def test_ogni_modo_di_dire_che_entra_e_nella_pagina(self):
+        modulo = self._modulo()
+        # Ogni riga scritta deve trovarsi in `dati/coppie.jsonl`, e viceversa:
+        # una riga copiata a mano fuori dal lettore non si riconosce.
+        scritte = []
+        with io.open(os.path.join(RADICE, "dati", "coppie.jsonl"),
+                     encoding="utf-8") as f:
+            for riga in f:
+                riga = riga.strip()
+                if not riga or riga.lstrip().startswith("//"):
+                    continue
+                coppia = json.loads(riga)
+                if modulo.ID_FONTE in coppia.get("fonte", ""):
+                    scritte.append(coppia)
+        voci = modulo.voci()
+        attese = [v for v in voci
+                  if v[1] and not modulo._mozzata(v[1])]
+        self.assertEqual(len(scritte), len(attese))
+        chiavi = set(coppia["ferrarese"] for coppia in scritte)
+        for ferrarese, _ in attese:
+            self.assertIn(ferrarese, chiavi,
+                          "%s e' nella pagina ma non nelle coppie" % ferrarese)
+        for coppia in scritte:
+            self.assertEqual(coppia["tipo"], modulo.TIPO)
+            self.assertEqual(coppia["attendibilita"], "I")
+            self.assertTrue(coppia["varieta"], "una coppia senza varieta'")
+            self.assertTrue(coppia["nota"], "una coppia senza nota")
+
+    def test_la_varieta_di_s019_e_dichiarata_in_un_file(self):
+        modulo = self._modulo()
+        # La riga di `varieta.json` e' cio' che permette a `da_modi.py` di
+        # scrivere: senza, il generatore si ferma e lo dice invece di indovinare.
+        with io.open(os.path.join(RADICE, "dati", "varieta.json"),
+                     encoding="utf-8") as f:
+            grezzo = json.load(f)
+        assegnazioni = [a for a in grezzo["assegnazioni"]
+                        if a.get("fonte") == modulo.ID_FONTE]
+        self.assertEqual(len(assegnazioni), 1,
+                         "S019 deve avere una sola riga in varieta.json")
+        self.assertEqual(assegnazioni[0]["varieta"], "cittadino")
+        self.assertTrue(assegnazioni[0]["motivo"].strip(),
+                        "una variante dichiarata senza motivo e' una variante "
+                        "indovinata")
+
+
+class TestLaScritturaDeiModiDiDire(unittest.TestCase):
+    """Il generatore di `da_modi.py`, eseguito davvero.
+
+    Qui non si guarda il file di dati, che e' gia' scritto e non si riscrive: si
+    guarda **la scrittura**, in un file di temporaneo. E' l'unico modo per
+    prendere un difetto che sta nel decidere — tenere una spiegazione mozzata,
+    scrivere una riga senza nota — invece che nel leggere.
+    """
+
+    def _scrive_in(self, percorso):
+        """Esegue il generatore con `dati/coppie.jsonl` spostato altrove."""
+        import importlib.util
+        specifica = importlib.util.spec_from_file_location(
+            "da_modi", os.path.join(RADICE, "raccolta", "da_modi.py"))
+        modulo = importlib.util.module_from_spec(specifica)
+        specifica.loader.exec_module(modulo)
+        modulo.COPPIE = percorso
+        argv = sys.argv
+        sys.argv = ["da_modi.py"]
+        try:
+            codice = modulo.main()
+        finally:
+            sys.argv = argv
+        return modulo, codice
+
+    def _righe(self, percorso):
+        righe = []
+        with io.open(percorso, encoding="utf-8") as f:
+            for riga in f:
+                riga = riga.strip()
+                if riga and not riga.lstrip().startswith("//"):
+                    righe.append(json.loads(riga))
+        return righe
+
+    def test_il_generatore_scrive_tutto_cio_che_decide_di_scrivere(self):
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "coppie.jsonl")
+            modulo, codice = self._scrive_in(percorso)
+            self.assertEqual(codice, 0)
+            righe = self._righe(percorso)
+        self.assertEqual(len(righe), 31, "la pagina ha 35 modi di dire, meno "
+                                        "due senza spiegazione e due mozzati")
+        for riga in righe:
+            self.assertTrue(riga["nota"],
+                            "una riga senza nota non dice da dove viene: %r"
+                            % riga["ferrarese"])
+            self.assertEqual(riga["tipo"], modulo.TIPO)
+            self.assertEqual(riga["attendibilita"], "I")
+            self.assertIn(modulo.ID_FONTE, riga["fonte"])
+            self.assertTrue(riga["varieta"])
+            self.assertTrue(riga["italiano"].strip())
+            self.assertTrue(riga["ferrarese"].strip())
+
+    def test_una_spiegazione_mozzata_non_arriva_ma_un_intera_sì(self):
+        # Le due righe che la regola troppo larga scartava per errore. Se la
+        # regola torna a guardare la prima parola, questo test lo dice con i
+        # nomi delle voci che perdevamo, non con un numero.
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "coppie.jsonl")
+            self._scrive_in(percorso)
+            scritte = [r["ferrarese"] for r in self._righe(percorso)]
+        for tenuta in ("Un tanto al braccio",
+                       "Furbo come l'oca di Fergnani che era i 'cani'",
+                       "Andare in oca"):
+            self.assertTrue(
+                any(t.startswith(tenuta[:20]) for t in scritte),
+                "%s e' una spiegazione intera e non deve perdersi" % tenuta)
+
+    def test_riscrivere_non_duplica(self):
+        # Due giri sullo stesso file: il secondo non aggiunge niente. Il
+        # generatore deve riconoscere le righe sue, perche' il progetto non
+        # riscrive quello che ha gia' scritto.
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "coppie.jsonl")
+            self._scrive_in(percorso)
+            primo = self._righe(percorso)
+            self._scrive_in(percorso)
+            secondo = self._righe(percorso)
+        self.assertEqual(primo, secondo, "il secondo giro ha riscritto qualcosa")
+
+    def test_gli_id_continuano_e_non_ricominciano(self):
+        # Il difetto che questo test prende: ricominciare la numerazione da F0001
+        # in un file che ha gia' delle righe produce due righe con lo stesso id,
+        # e un id doppio non si vede leggendo il file — si vede solo quando
+        # qualcuno ci fa riferimento. Il numero si legge dal file, quindi il
+        # file di prova parte gia' con una riga che arriva da un'altra strada.
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "coppie.jsonl")
+            with io.open(percorso, "w", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "id": "F0100", "varieta": "cittadino",
+                    "italiano": "una riga che era gia' li",
+                    "ferrarese": "Na penna", "tipo": "conversazione",
+                    "fonte": "manoscritto", "nota": "riga di prova",
+                    "attendibilita": "D", "ricorrenze": 1},
+                    ensure_ascii=False) + "\n")
+            self._scrive_in(percorso)
+            righe = self._righe(percorso)
+        self.assertEqual(len(righe), 32)
+        self.assertEqual(righe[0]["id"], "F0100", "la riga di prova e' stata "
+                                                 "mossa")
+        self.assertEqual(righe[1]["id"], "F0101",
+                         "gli id devono continuare dopo l'ultimo, non "
+                         "ricominciare da F0001")
+        numeri = [r["id"] for r in righe]
+        self.assertEqual(len(set(numeri)), len(numeri),
+                         "due righe con lo stesso id: %r" % numeri)
+
+    def test_una_voce_gia_scritta_non_viene_riscritta(self):
+        # Il generatore deve riconoscere le righe sue dal lato **ferrarese**,
+        # non dal loro numero. Il caso provato e' quello vero: una riga di
+        # coppie che arriva da un'altra strada, con un altro id.
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "coppie.jsonl")
+            self._scrive_in(percorso)
+            riga = self._righe(percorso)[0]
+            self.assertTrue(riga["ferrarese"])
+            with io.open(percorso, "a", encoding="utf-8") as f:
+                f.write(json.dumps({
+                    "id": "F9001", "varieta": "cittadino",
+                    "italiano": "confondersi, dimenticarsi",
+                    "ferrarese": riga["ferrarese"],
+                    "tipo": "conversazione",
+                    "fonte": "manoscritto", "nota": "riga di prova",
+                    "attendibilita": "D", "ricorrenze": 1},
+                    ensure_ascii=False) + "\n")
+            _, codice = self._scrive_in(percorso)
+            righe = self._righe(percorso)
+        self.assertEqual(codice, 0)
+        # 31 della prima scrittura piu' la riga aggiunta a mano: se il
+        # generatore riscrivesse la voce, il file ne avrebbe 33.
+        self.assertEqual(len(righe), 32,
+                         "una voce gia' nel file non deve essere riscritta")
+        # La voce e' nel file due volte per costruzione — la riga aggiunta a
+        # mano e quella del generatore — quindi qui si conta un'altra cosa: che
+        # il generatore non abbia scritto un secondo F0001.
+        numeri = [r["id"] for r in righe if r["id"] == "F0001"]
+        self.assertEqual(len(numeri), 1,
+                         "il generatore ha riscritto la voce che era gia' "
+                         "nel file")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

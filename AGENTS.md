@@ -62,7 +62,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py           # 226 test
+python3 prove/test_traduttore.py           # 237 test
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
 python3 prove/scanner.py                   # caratteri sbagliati
 python3 -m traduttore.cli verifica         # i controlli sui dati

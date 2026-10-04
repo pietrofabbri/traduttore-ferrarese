@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.21
-data: 2026-10-04
+versione: 0.22
+data: 2026-10-05
 ---
 
 # Registro delle modifiche
@@ -85,6 +85,91 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.22 — 2026-10-05 · Trentuno modi di dire entrano nelle coppie, e il lettore che li leggeva sbagliava
+
+**La fonte era gia' dichiarata, il lavoro no.** S019 — Wikiquote «Modi di dire
+ferraresi», CC BY-SA 4.0 dichiarata dalla pagina stessa — era in
+`dati/fonti.json` dalla voce 0.21 e non aveva prodotto niente. Il motivo e'
+che sono **frasi**, e il glossario del progetto e' fatto di voci che il gioco
+fa ripetere: ripetere «buttare le carte in tavola» non e' un esercizio di
+pronuncia, e' un esercizio di memoria. Quindi vanno in `dati/coppie.jsonl`, che
+e' il corpus delle frasi, ed e' la prima volta che una fonte interamente nuova
+viene esercitata su quel file invece che su quello delle parole. Adesso
+`dati/coppie.jsonl` ha **47 righe** (erano 16) e `frasi.html` passa da 88 a
+**111 KB**.
+
+**Il tipo e' `narrativa`, non `attestato`, e la scelta e' dichiarata perche'
+conta.** `attestato` vuol dire «voce di dizionario con frase d'esempio»; un modo
+di dire e' un proverbio sciolto, e il corpus mette quelli sotto `narrativa`. Il
+tipo non e' cosmetico: decide a chi la frase viene offerta.
+
+**Un lettore che contava i tag invece che la struttura.** La pagina mette la
+spiegazione italiana dentro un `<dl>` dentro il `<dd>` della voce, quindi
+contando i `<dd>` si contano anche le spiegazioni: 37 elementi per **35 voci**.
+La prima versione del lettore contava i tag e diceva 37. Ora conta la
+**profondita'** e prende solo i `<dd>` che non sono dentro un altro `<dd>`, e il
+numero esce dalla struttura del documento e non da una regex che arriva a una
+conclusione fortunata.
+
+**La regola che scartava le voci giuste.** Quattro delle 35 non entrano: due non
+hanno spiegazione (la pagina rimanda e basta) e due hanno la spiegazione tagliata
+— «, andare a zonzo», «o Dai, picchia e martella» — cioe' la coda di una frase.
+La prima regola che ho scritto riconosceva quelle per la **prima parola**, e
+buttava via anche «Come viene viene, alla grossa, a occhio e croce» e «Furbo come
+l'oca di Fergnani», che sono frasi intere: quattro scarti per due salvataggi. La
+regola adesso guarda il **segno** iniziale — un punto che non e' una lettera, o
+una congiunzione stretta e minuscola incollata a una maiuscola seguita da
+virgola — che e' la prova vera. Il numero degli scarti viene stampato ogni
+volta, perche' chi decide debba poterli vedere: sono **2 senza spiegazione** e
+**2 mozzate**, e quindi **31** righe scritte, da F0019 a F0049.
+
+**Tutto `attendibilita: "I"`.** Una pagina collaborativa non e' una fonte
+documentata: nessuno ha ascoltato un ferrarese che dica queste frasi. Sono
+interpretazioni, e il progetto le chiama cosi'. La varieta' e' `cittadino`
+dichiarata in `dati/varieta.json` con la sua riga e il suo motivo, perche' la
+pagina non dice dove i modi di dire sono stati raccolti: l'assunzione e' nostra e
+resta dichiarata come memoria.
+
+**Tre difetti presi dai controlli mentre si scriveva, non da me.**
+
+- Il generatore **non reggeva un file di coppie che non esiste**: il primo giro
+  su un corpus vuoto finiva in `FileNotFoundError`. Non e' un difetto del
+  generatore, e' un crash.
+- La decisione era dentro `main()`, quindi l'unica cosa verificabile era il file
+  finale, gia' scritto e non riscritto piu': tenere una spiegazione mozzata o
+  scrivere una riga senza nota non si vedeva. Ora la decisione e' in
+  `classifica()`, che non scrive niente e restituisce i quattro mucchi — quello
+  che entra, quello che c'e' gia', quello che la pagina non spiega, quello che
+  la pagina spiega a meta' — ed e' provata da quattro test che **eseguono il
+  generatore** in un file di temporaneo e guardano quello che esce.
+- Un test che avevo scritto contava un `<dd>` esterno e uno annidato: un lettore
+  che sbaglia in quel modo lo passava lo stesso. La casella e' cambiata in una
+  che **non puo' passare**: una voce con tre spiegazioni dentro deve contare
+  una, e chi conta i tag ne trova tre.
+
+**I test prendono i difetti, misurato.** Ho mutato il codice di proposito — la
+regola torna a guardare la prima parola, il lettore conta tutti i `<dd>`, il tipo
+torna a `attestato`, la nota sparisce, gli id ricominciano da `F0001`, una voce
+gia' scritta viene riscritta — e ho guardato quali test falliscono: **sette
+mutazioni su sette prese**, ciascuna da un test che nomina la voce o il numero
+colpito, non da un test che dice «il conteggio non torna».
+
+**Una nota sull'interprete, che ha mangiato un'ora e va scritta.** Con
+l'interprete di questa macchina (Python 3.9 dei CommandLineTools) la forma
+`x = modulo._esterni(s)` seguita da `len(x)`, dentro un metodo di una classe di
+test, mette `x` sia fra le variabili locali del codice compilato sia fra i nomi
+globali: a runtime `len(x)` solleva `NameError`. La stessa riga compilata da sola
+da' `LOAD_FAST`, quindi non e' un errore di scrittura. Il metodo chiama la
+funzione due volte invece di tenere il risultato, e la nota e' nel docstring
+della classe. Il sintomo che faceva perdere tempo e' un altro: il traceback
+mostrava il sorgente **nuovo** mentre eseguiva il bytecode **vecchio**, perche'
+la cache accettava un file la cui dimensione non era cambiata. Da allora, prima
+di ogni verifica, le cache si cancellano.
+
+**Verifiche.** 237 test (erano 226): undici nuovi, sei sul lettore e cinque sulla
+scrittura. `verifica`: 0 errori, 8 avvisi. Scanner: 0 righe sospette. Il
+generatore, rieseguito, trova **0** righe da scrivere: le 31 sono gia' nel file.
 
 ## 0.21 — 2026-10-05 · Il ciclo parte dall'italiano, e la prima fonte che va nella direzione giusta
 

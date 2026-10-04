@@ -94,7 +94,7 @@ Ora il sito è ramificato, e ogni pagina porta dentro quello che le serve:
 | `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa | 2,3 MB |
 | `glossario.html` | l'indice delle fette | 70 KB |
 | `glossario-01.html` … `-21.html` | una fetta di 500 voci, con ricerca dentro | ~250 KB |
-| `frasi.html` | coppie parallele e proverbi | 88 KB |
+| `frasi.html` | coppie parallele e proverbi | 111 KB |
 | `suoni.html` | le cinque varietà e i suoni | 101 KB |
 | `regole.html` | le regole del ferrarese, con la fonte su ognuna | 87 KB |
 
@@ -152,7 +152,7 @@ python3 -m traduttore.cli varieta
 ```
 
 ```
-cittadino    cittadino                      17370 voci  16 coppie, 0 brani
+cittadino    cittadino                      17370 voci  47 coppie, 0 brani
 centrale     centrale, detto anche arioso    VUOTA     0 coppie, 0 brani
 occidentale  occidentale                     VUOTA     0 coppie, 0 brani
 orientale    orientale                       VUOTA     0 coppie, 0 brani
@@ -588,7 +588,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 226 test
+python3 prove/test_traduttore.py     # 237 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

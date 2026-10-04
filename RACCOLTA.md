@@ -503,3 +503,34 @@ esiste e per cui queste parole sono queste.
 Una riga senza motivo non entra nella pool. Una lista di parole a caso sembra
 una pool e non distingue niente.
 
+## I modi di dire: `raccolta/da_modi.py`
+
+**Perche' una fonte a se'.** S019 e' la prima fonte che entra tutta in
+`dati/coppie.jsonl` e non nel glossario, e quindi ha un generatore proprio. Il
+suo lettore e' diverso da tutti gli altri perche' la pagina e' **strutturata**,
+non continua: ogni voce e' un `<dd>` e la spiegazione italiana sta in un `<dl>`
+annidato dentro. Contare i `<dd>` conta anche le spiegazioni.
+
+Le quattro regole di chiama, in una riga ciascuna:
+
+1. la voce e' il `<dd>` **esterno**, cioe' quello che non e' dentro un altro
+   `<dd>`; si conta la profondita', non i tag;
+2. la spiegazione che comincia con un **segno** e' la coda di una frase e non
+   entra; se comincia con una lettera entra, perche' «Come viene viene, alla
+   grossa» e' una frase intera anche se comincia con una congiunzione;
+3. tutto esce `attendibilita: "I"` e `tipo: "narrativa"`, che e' il tipo dei
+   proverbi sciolti;
+4. la varieta' viene da `dati/varieta.json`, che deve avere la riga di S019: se
+   non ce l'ha, il generatore **si ferma e lo dice**, invece di indovinare.
+
+Uso:
+
+```
+python3 raccolta/da_modi.py --prova    # mostra i quattro mucchi, non scrive
+python3 raccolta/da_modi.py            # scrive in dati/coppie.jsonl
+```
+
+Il generatore non riscrive quello che ha gia' scritto e non crasha se il file
+non esiste. Il numero degli scarti viene stampato ogni volta: **2** senza
+spiegazione, **2** mozzate, **31** scritti.
+

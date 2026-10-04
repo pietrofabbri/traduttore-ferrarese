@@ -85,15 +85,34 @@ AVVERTIMENTO_SINTESI = (
     "come parlano i ferraresi.")
 
 # Le voci del glossario in **array**, non in oggetti: i nomi dei campi si
-# ripetono 10387 volte in un JSON di oggetti e sono 150 KB di sovrapprezzo.
+# ripetono una volta per voce in un JSON di oggetti e sono qualche
+# centinaio di kilobyte di sovrapprezzo.
 # Dichiarandoli una volta sola si risparmia il 23%, che su 5,6 megabyte fa
 # oltre un megabyte. Il prezzo e' che la pagina deve leggere per posizione,
 # e quindi `intestazione` e `voci` non possono separarsi.
 CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
                  "attendibilita", "da_verificare", "fonte", "moderno",
                  "fonte_moderno", "sinonimi", "principale_it", "principale_fe")
+# I campi che la pagina del traduttore riceve. Dieci, e non undici: `note`
+# e' stato tolto, e la ragione sta nel peso.
+#
+# Le note del glossario sono 1,4 megabyte di testo, quasi il 47% di tutto
+# quello che la pagina trasporta, e **nessun codice della pagina le legge**:
+# il motore cerca per `id`, `fe`, `it`, `varianti`, `campo` e `principale_*`,
+# e la tabella del glossario non usa i campi di questa lista. La nota era
+# dentro per completezza dello schema, non perche' serviva.
+#
+# Senza di essa `traduttore.html` pesa 2,5 MB invece di 3,9. Il tetto di 3 MB
+# nella CI e' dichiarato e non si alza: «sopra, la pagina non si apre subito
+# e il progetto smette di essere consultabile», che era il motivo per cui il
+# sito era stato diviso. Il glossario e' passato da 10387 a 16739 voci, quindi
+# il peso e' cresciuto davvero, e la risposta non e' spostare la soglia ma
+# togliere il campo che nessuno leggeva.
+#
+# Le note restano tutte in `dati/glossario.jsonl` e nelle pagine del
+# glossario: questo e' solo il trasporto della pagina del traduttore.
 CAMPI_MOTORE = ("id", "fe", "it", "varianti", "campo", "varieta",
-                "attendibilita", "da_verificare", "note", "principale_it",
+                "attendibilita", "da_verificare", "principale_it",
                 "principale_fe")
 
 # Le pagine del sito. `sezioni` sono i marcatori di `modello.html` che la

@@ -689,12 +689,58 @@ class TestConteggiDichiarati(unittest.TestCase):
             os.path.join(RADICE, "dati", "fonetica.jsonl"), encoding="utf-8")
             if riga.strip() and not riga.lstrip().startswith("//"))
         self.assertTrue(veri > 0, "il file delle trascrizioni e' vuoto")
-        trovati = re.findall(r"(\d+) righe", testo)
-        self.assertTrue(trovati, "RACCOLTA.md non dichiara quante righe ha")
-        for dichiarato in trovati:
-            self.assertEqual(int(dichiarato), veri,
-                             "RACCOLTA.md dice %s trascrizioni e sono %d"
-                             % (dichiarato, veri))
+        # Il pattern guarda **la frase sulle trascrizioni**, non qualsiasi
+        # «N righe» del documento.
+        #
+        # Difetto vero, di questa sessione: `re.findall(r"(\d+) righe")`
+        # prendeva ogni numero seguito dalla parola «righe» in tutto il
+        # file, e li confrontava con il numero delle trascrizioni. Bastava
+        # che la sezione sulla raccolta di Bigoni dicesse «10431 righe di
+        # dati» — cosa vera e dichiarata li — per far fallire il test con un
+        # messaggio che diceva «RACCOLTA.md dice 10431 trascrizioni». Un
+        # controllo che legge il numero sbagliato nel posto sbagliato non
+        # protegge niente e blocca tutto: peggio di non averlo, perche'
+        # costringe a riformulare il testo invece di correggere il dato.
+        #
+        # Ora il pattern e' ancorato alla parola che dice *cosa* e' contato,
+        # e ogni frase trovata viene controllata perche' parli delle
+        # trascrizioni.
+        # Le frasi sono agganciate al **file** che contengono, non a una
+        # parola: il documento dichiara il numero in due modi diversi — la
+        # riga che apre `dati/fonetica.jsonl` («ha gia' 28 righe») e un
+        # inciso piu' in la' («in un file di 28 righe») — e nessuna delle due
+        # nomina la parola «trascrizione». Un pattern che cerca quella parola
+        # non trova niente, che e' un test che non gira senza dirlo.
+        #
+        # Il numero viene contato su tutto il documento e poi attribuito al
+        # file giusto: e' l'unico modo che non si spegne quando il documento
+        # riformula la frase.
+        numeri = re.findall(r"(\d+) righe", testo)
+        self.assertTrue(numeri,
+                        "RACCOLTA.md non dichiara quante righe ha il file "
+                        "delle trascrizioni")
+        for dichiarato in numeri:
+            if int(dichiarato) == veri:
+                continue
+            # Un numero diverso e' sbagliato solo se la frase parla delle
+            # trascrizioni: altrove puo' essere qualsiasi altro conteggio, e
+            # segnalarlo e' il modo di costringere a togliere un numero
+            # dichiarato e vero dal documento.
+            # La finestra e' il **paragrafo**, non la frase: il documento
+            # va a capo a meta' frase, e dividere sui punti e sui ritorni
+            # metteva il numero in un pezzo senza il nome del file. La
+            # prima versione di questo controllo faceva cosi' e passava
+            # anche con un numero sbagliato: un test che non fallisce
+            # quando il dato e' falso e' peggio di nessun test, perche'
+            # fa credere che il numero sia guardato.
+            posizione = testo.find(dichiarato + " righe")
+            contesto = testo[max(0, posizione - 220):posizione + 220]
+            if "fonetica" in contesto or "trascrizion" in contesto:
+                self.fail(
+                    "RACCOLTA.md dice %s righe del file delle trascrizioni "
+                    "e sono %d, vicino a: %s"
+                    % (dichiarato, veri,
+                       " ".join(contesto.split())[:200]))
 
     def test_il_titolo_delle_cartelle_e_il_numero_delle_righe(self):
         # `RACCOLTA.md` si intitolava «Le sette cartelle» e la tabella ne
@@ -979,10 +1025,22 @@ class TestRaccoltaBigoni(unittest.TestCase):
         self.assertNotEqual(voci[0]["italiano"], "bac",
                             "il latino del bottone non e' la traduzione")
 
-    def test_il_suffisso_dell_omonimo_viene_tolto_prima_del_confronto(self):
-        # Difetto vero: `ancora-1` dentro la stringa `ancora` non c'e', e
-        # confrontando prima si scartavano 315 righe che erano a posto.
-        # Lo script avrebbe detto che la fonte non tornava.
+    def test_il_suffisso_dell_omonimo_si_legge_dal_bottone(self):
+        # Difetto vero, di questa sessione: il suffisso si cercava nella
+        # **cella** dei significati, dove non compare mai — il sito lo scrive
+        # solo nel primo argomento del bottone. Il risultato era che su 7307
+        # righe gli omonimi trovati erano **zero**, e nessun controllo lo
+        # diceva, perche' zero sembrava un numero giusto.
+        #
+        # Il test precedente esisteva gia' e **passava per il motivo sbagliato**
+        # verificando la cella, che non ha mai avuto il suffisso: guardava il
+        # posto dove il codice non guardava. Il numero dichiarato nella nota
+        # della fonte — «315 righe salvate» — era falso per la stessa
+        # ragione: nessuna riga era mai stata salvata da quel fix.
+        #
+        # Il numero vero e' 186 (170 col trattino e 16 senza), misurato sul
+        # sito. Qui si verifica il caso, e `test_quanti_omonomi_troviamo`
+        # verifica il numero quando il grezzo c'e'.
         modulo = self._modulo()
         riga = ('<tr><td>174</td><td >àŋkura '
                 "<button onclick='mostraEtimoFerrarese(\"ancora-1\","
@@ -993,6 +1051,56 @@ class TestRaccoltaBigoni(unittest.TestCase):
         self.assertEqual(len(voci), 1)
         self.assertEqual(voci[0]["italiano"], "ancora",
                          "il suffisso -1 e' del sito, non della parola")
+        self.assertEqual(voci[0]["omonimo"], 1,
+                         "il numero dell'omonimo deve essere letto dal bottone")
+
+    def test_il_suffisso_senza_trattino_e_riconosciuto(self):
+        # Il sito scrive anche attaccato: `acciarino1`, `brocca1`,
+        # `pidocchioso1` — 16 righe su 186. Un'espressione che accetta solo il
+        # trattino manca queste e nessuno se ne accorge, perche' il resto
+        # torna.
+        modulo = self._modulo()
+        riga = ('<tr><td>1</td><td >azalìŋ '
+                "<button onclick='mostraEtimoFerrarese(\"acciarino1\","
+                '"azalìŋ","acciarino")>etimologia</button></td>'
+                '<td>acciarino</td></tr>')
+        voci, _ = modulo.voci_da_html(riga)
+        self.assertEqual(len(voci), 1, "la riga senza trattino deve entrare")
+        self.assertEqual(voci[0]["omonimo"], 1)
+
+    def test_una_parola_senza_omonimo_non_ha_numero(self):
+        # Il contrario del test precedente, che e' quello che rende il primo
+        # significativo: se `omonimo` valesse zero quando non c'e' nessun
+        # suffisso, il campo non distinguerebbe «non applica» da «il primo»,
+        # e due righe diverse sembrerebbero la stessa.
+        modulo = self._modulo()
+        riga = ('<tr><td>1</td><td >abàt '
+                "<button onclick='mostraEtimoFerrarese(\"abate\","
+                '"abàt","abbatia")>etimologia</button></td>'
+                '<td>abate</td></tr>')
+        voci, _ = modulo.voci_da_html(riga)
+        self.assertIsNone(voci[0]["omonimo"])
+
+    def test_quanti_omonomi_troviamo_sul_grezzo_raccolto(self):
+        # Il numero vero, quando il file grezzo c'e'. Se non c'e' il test
+        # salta e lo dice: un controllo che non puo' girare non deve far
+        # fallire niente, ma non deve nemmeno fingere di essere passato.
+        grezzo = os.path.join(RADICE, "raccolta", "grezzi",
+                              "bigoni_ferrarese_italiano.jsonl")
+        if not os.path.exists(grezzo):
+            self.skipTest("il grezzo non e' nel repository: "
+                          "si raccoglie con `python3 raccolta/bigoni.py`")
+        con_omonimo = 0
+        with io.open(grezzo, encoding="utf-8") as f:
+            for riga in f:
+                if not riga.strip():
+                    continue
+                if json.loads(riga).get("omonimo") is not None:
+                    con_omonimo += 1
+        self.assertEqual(con_omonimo, 186,
+                         "gli omonimi dichiarati sono 186 (170 col trattino "
+                         "e 16 senza): se il numero e' zero il codice sta "
+                         "guardando nel posto sbagliato")
 
     def test_compatta_tiene_gli_accenti_e_lassa_serve_solo_a_segnalare(self):
         # Difetto vero, e il piu' subdolo: la prima versione di `compatta`
@@ -1039,6 +1147,498 @@ class TestRaccoltaBigoni(unittest.TestCase):
         self.assertTrue(any("consecutivi" in p for p in problemi),
                         "il problema deve nominare la consecutivita': %s"
                         % problemi)
+
+
+class TestLettereDellAlfabeto(unittest.TestCase):
+    """Le lettere che l'indice di ricerca buttava via.
+
+    Difetto vero, di questa sessione: `normalizza.chiave()` e `tokenizza()`
+    filtravano con l'intervallo `\u00c0-\u024f`, che finisce a U+024F. Ma
+    l'alfabeto ferrarese dichiarato in `dati/regole_grammaticali.json` (fonte
+    S015) contiene due lettere **fuori** da quell'intervallo: `ɣ` (U+0263) e
+    `ʎ` (U+028E). Erano trattate come punteggiatura e cancellate in silenzio.
+
+    La cancellazione silenziosa e' la cosa piu' pericolosa che possa fare
+    una chiave di confronto: `àɣar` e `àar` diventavano la stessa chiave
+    `aar`, e la ricerca del glossario restituiva la voce sbagliata **senza
+    dire niente**. Nessun test lo prendeva, perche' il glossario del 1889
+    non usa queste lettere e quindi il difetto era dormiente.
+
+    Il numero che rende la cosa seria: 908 occorrenze di `ɣ` e `ʎ` sulle
+    7307 coppie raccolte da S006, cioe' quasi una parola su otto.
+    """
+
+    def test_il_confronto_non_cancella_la_gutturale(self):
+        # `àɣar` = «duecento» e `àar` sono due voci diverse. Con la `ɣ`
+        # cancellata diventavano la stessa.
+        from traduttore.normalizza import chiave
+        self.assertEqual(chiave("àɣar"), "aɣar")
+        self.assertNotEqual(chiave("àɣar"), chiave("àar"),
+                            "la ɣ distingue due parole diverse")
+        self.assertEqual(chiave("àɣar"), chiave("ÀɣÁR"))
+
+    def test_il_confronto_non_cancella_la_laterale_palatale(self):
+        from traduttore.normalizza import chiave
+        self.assertEqual(chiave("àʎà"), "aʎa")
+        self.assertNotEqual(chiave("àʎà"), chiave("àaà"))
+
+    def test_il_confronto_ancora_toglie_punteggiatura_e_apostrofi(self):
+        # La correzione non deve aver perso quello che la funzione faceva.
+        from traduttore.normalizza import chiave
+        self.assertEqual(chiave("l'a"), "la")
+        # `gh'` cade in `g`, per la regola dichiarata in `_sciogli`: non e'
+        # una regola della lingua ferrarese ma della raccolta, e il modulo la
+        # dichiara. Il risultato e' `ghege`, non `gheghe`, e il test lo scrive
+        # perche' e' il modo di non accorgersi se un giorno la regola cambia.
+        self.assertEqual(chiave("ghe gh'e"), "ghege")
+        self.assertEqual(chiave("città"), "citta")
+        self.assertEqual(chiave("a_b"), "ab")
+        self.assertEqual(chiave("portar (col marchio)"), "portarcolmarchio")
+
+    def test_la_tokenizzazione_tiene_le_stesse_lettere(self):
+        from traduttore.normalizza import tokenizza
+        self.assertEqual(tokenizza("àɣar"), ["àɣar"])
+        self.assertEqual(tokenizza("l'àɣar"), ["l'àɣar"])
+
+    def test_ogni_lettera_dichiarata_survive_al_confronto(self):
+        # Il controllo che avrebbe dovuto esistere: si prende l'alfabeto
+        # dai dati e si verifica che ogni lettera che il progetto dichiara
+        # sopravviva al confronto. Una lettera aggiunta all'alfabeto senza
+        # aggiornare il filtro fallisce qui, e non in fase di ricerca con
+        # uno studente davanti.
+        import unicodedata
+        from traduttore.normalizza import chiave
+        percorso = os.path.join(RADICE, "dati", "regole_grammaticali.json")
+        with io.open(percorso, encoding="utf-8") as f:
+            alfabeto = json.load(f)["alfabeto"]
+        perse = []
+        for gruppo in ("consonanti", "vocali"):
+            for voce in alfabeto[gruppo]:
+                carattere = voce["carattere"]
+                nudo = "".join(
+                    c for c in unicodedata.normalize("NFKD", carattere.lower())
+                    if not unicodedata.combining(c))
+                if nudo and nudo not in chiave(carattere.lower()):
+                    perse.append("%s (U+%04X)" % (carattere, ord(carattere)))
+        self.assertEqual(perse, [],
+                         "lettere dell'alfabeto dichiarato che il confronto "
+                         "cancella: %s" % ", ".join(perse))
+
+    def test_il_confronto_cambia_poco_e_solo_come_deve(self):
+        # La correzione **cambia** delle chiavi gia' esistenti, ed e' il
+        # punto: la versione vecchia cancellava `ɣ`, quindi `braɣ` diventava
+        # `bra` e non trovava niente in indice. Un test che dicesse «non
+        # cambia niente» sarebbe falso — e una versione di questo test ha
+        # detto proprio quello, perche' l'avevo scritto credendo che il
+        # glossario del 1889 non usasse queste lettere. Non le usa quasi
+        # mai: `braɣ` c'e' e basta.
+        #
+        # Quello che si controlla e' la **misura**: quante stringhe cambiano,
+        # e se sono tutte e sole quelle che contengono una delle due lettere.
+        # Una correzione che cambiasse qualcos'altro — una vocale, una
+        # punteggiatura — fallirebbe qui, che e' il posto giusto per
+        # accorgersene.
+        import unicodedata
+        from traduttore.normalizza import chiave
+        cambiate, con_lettera, ingannevoli = 0, 0, []
+        for nome in ("glossario.jsonl", "coppie.jsonl", "proverbi.jsonl"):
+            percorso = os.path.join(RADICE, "dati", nome)
+            with io.open(percorso, encoding="utf-8") as f:
+                for riga in f:
+                    if not riga.strip() or riga.lstrip().startswith("//"):
+                        continue
+                    voce = json.loads(riga)
+                    testi = [voce.get("ferrarese", ""), voce.get("italiano", "")]
+                    testi += list(voce.get("varianti") or [])
+                    for testo in testi:
+                        if not testo:
+                            continue
+                        if _chiave_vecchia(testo) == chiave(testo):
+                            continue
+                        cambiate += 1
+                        if any(c in testo.lower() for c in
+                   ("\u0263", "\u028e", "\u03bb")):
+                            con_lettera += 1
+                        else:
+                            ingannevoli.append((nome, voce.get("id"), testo))
+        self.assertEqual(ingannevoli, [],
+                         "stringhe cambiate senza contenere \u0263 o \u028e: "
+                         "la correzione ha toccato qualcos'altro -> %s"
+                         % ingannevoli[:5])
+        self.assertEqual(cambiate, con_lettera,
+                         "tutte le chiavi cambiate devono contenere una "
+                         "delle tre lettere fuori dall'intervallo")
+        # Il numero, dichiarato: 861 chiavi su 10431 righe. Serve perche' un
+        # numero che si muove senza che nessuno lo dica e' un numero che
+        # smette di essere controllato, e qui il cambiamento e' reale: sono
+        # le parole che l'indice non trovava piu'.
+        self.assertEqual(cambiate, 861,
+                         "le chiavi che il filtro vecchio perdeva sono 861")
+        self.assertEqual(con_lettera, 861)
+
+
+def _chiave_vecchia(testo):
+    """La chiave che la versione precedente produceva, per confronto.
+
+    Replica il percorso di allora per intero — `normale()`, poi NFKD, poi il
+    filtro sull'intervallo — e non solo l'ultimo passo. Una replica che salta
+    `normale()` non confronta niente: senza la sostituzione `gh'` → `g` ogni
+    `gh'e` sembra una stringa cambiata, e il test segnalava otto falsi
+    positivi invece di dire la verita'. E' successo: la prima versione di
+    questa funzione faceva esattamente quello, e il numero che dichiarava
+    («il glossario del 1889 non usa queste lettere») era falso — `braɣ` e
+    `biλjét` ci sono, e da li' il numero vero e' **861**.
+    """
+    import unicodedata
+    from traduttore.normalizza import normale
+    nudo = unicodedata.normalize("NFKD", normale(testo))
+    senza = "".join(c for c in nudo if not unicodedata.combining(c))
+    return re.sub(r"[^0-9a-z\u00c0-\u024f]+", "", senza)
+
+class TestLeDueCopieDellaNormalizzazione(unittest.TestCase):
+    """La normalizzazione esiste in Python e in JavaScript, e devono coincidere.
+
+    Difetto vero, di questa sessione, e la lezione piu' utile del lavoro:
+    il filtro che cancellava `ɣ` e `ʎ` era in **entrambe le copie**. La pagina
+    e il terminale sbagliavano allo stesso modo, quindi
+    `prove/controlla_equivalenza.py` non aveva niente da dire: confronta le
+    risposte, e due copie che sbagliano insieme rispondono uguale.
+
+    «Le due copie devono essere identiche» e' la regola, e questa era la
+    prova che non basta. Un controllo di equivalenza sulle risposte verifica
+    che le due copie **dicano** la stessa cosa, non che **paghino** lo stesso
+    prezzo: due implementazioni che perdono la stessa lettera dicono la stessa
+    cosa e sono entrambe sbagliate.
+
+    Qui il confronto e' sulla funzione, parola per parola, e su un campione
+    che contiene le due lettere dell'alfabeto che il filtro vecchio perdeva.
+    Se il JavaScript torna indietro, questo test lo dice.
+    """
+
+    def _js(self):
+        """Il `node` di sistema, o `None`. Non e' una dipendenza del progetto."""
+        import shutil
+        return shutil.which("node")
+
+    def _valuta_js(self, espressione, variabili=None):
+        import subprocess
+        with io.open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                     encoding="utf-8") as f:
+            pagina = f.read()
+        # Il blocco di script del modello, da solo: e' quello che la pagina
+        # esegue, quindi e' quello che va interrogato.
+        inizio = pagina.find("function chiave(")
+        if inizio < 0:
+            self.fail("modello.html non ha piu' la funzione chiave")
+        # Si prende il **contenuto** del blocco `<script>` che non e' quello
+        # dei dati, e non la pagina: prendere l'HTML fa fallire node sul primo
+        # `<`, e un test che non gira e non lo dice e' peggio di un test che
+        # non gira e lo dice.
+        import re as _re
+        blocchi = _re.findall(r'<script(?![^>]*id="dati")[^>]*>(.*?)</script>',
+                              pagina, _re.S)
+        self.assertTrue(blocchi, "modello.html non ha nessun blocco di codice")
+        codice = "\n".join(blocchi)
+
+        # Lo script della pagina e' una IIFE: `chiave` e `tokenizza` sono
+        # locali e non si raggiungono da fuori. Percio' l'espressione viene
+        # iniettata **dentro** la funzione, subito prima della fine, e non
+        # appesa in coda. Le due copie si confrontano sul codice che il
+        # browser esegue, non su una ricostruzione.
+        fine = codice.rfind("})();")
+        self.assertGreater(fine, 0,
+                           "modello.html non chiude la IIFE: il confronto "
+                           "delle due copie non si puo' fare")
+        # Le variabili di ingresso si dichiarano **dentro** la IIFE, accanto
+        # all'espressione: il contesto e' quello della pagina, quindi e' li'
+        # che le parole da confrontare devono stare.
+        if variabili:
+            # Le dichiarazioni stanno **fuori** da `JSON.stringify`: dentro
+            # diventerebbero un argomento, e `JSON.stringify(var x = 1)` e'
+            # un errore di sintassi. Dichiararle fuori e usare l'espressione
+            # dentro e' l'unico ordine che si puo' eseguire.
+            programma = (codice[:fine]
+                         + "var %s; " % ", ".join(
+                             "%s = %s" % (nome, json.dumps(valore,
+                                                             ensure_ascii=False))
+                             for nome, valore in sorted(variabili.items()))
+                         + "console.log(JSON.stringify(%s));" % espressione
+                         + codice[fine:])
+        else:
+            programma = (codice[:fine]
+                         + "console.log(JSON.stringify(%s));" % espressione
+                         + codice[fine:])
+
+        # `document` e' l'unica cosa che lo script tocca subito, perche'
+        # legge il blocco dei dati. Se ne dà uno vuoto: e' un test della
+        # normalizzazione, e il glossario non c'entra.
+        stub = ("var document = { getElementById: function () { "
+                "return { textContent: '{\"glossario\":null}', "
+                "appendChild: function () {}, addEventListener: function () {}, "
+                "createElement: function () { return {}; }, "
+                "style: {}, value: '', checked: false, innerHTML: '' }; }, "
+                "addEventListener: function () {}, createElement: function () "
+                "{ return {}; } };\n")
+        programma = stub + programma
+        # `node -e` di default legge l'input come TypeScript su queste versioni,
+        # e il `<` di un confronto diventa un errore di sintassi. Il flag lo
+        # dice: e' JavaScript, che e' quello che il browser esegue.
+        fatto = subprocess.run([self._js(), "--input-type=commonjs", "-e", programma],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if fatto.returncode != 0:
+            self.fail("node ha fallito: %s"
+                      % fatto.stderr.decode("utf-8", "replace")[:400])
+        return json.loads(fatto.stdout.decode("utf-8"))
+
+    PAROLE = ["àɣar", "àʎà", "alòž", "magnàr", "l'a", "ghe gh'e", "città",
+              "škaba", "aŋkóra", "àldàm", "portar", "zzz"]
+
+    def test_le_due_chiavi_dicono_la_stessa_cosa(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato: il confronto delle due "
+                          "copie non puo' girare, e non finge di essere passato")
+        from traduttore.normalizza import chiave
+        parole = self.PAROLE
+        mine = [chiave(p) for p in parole]
+        loro = self._valuta_js("parole.map(chiave)", {"parole": parole})
+        for parola, mio, loro_ in zip(parole, mine, loro):
+            self.assertEqual(mio, loro_,
+                             "%r: Python fa %r, JavaScript fa %r" % (parola, mio, loro_))
+
+    def test_la_cripta_non_e_piu_perduta_in_nessuna_delle_due_copie(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        from traduttore.normalizza import chiave
+        self.assertEqual(chiave("àɣar"), "aɣar",
+                         "la ɣ deve sopravvivere al confronto")
+        loro = self._valuta_js('chiave("\u00e0\u0273ar")')
+        self.assertEqual(loro, "a\u0273ar",
+                         "in JavaScript la \u0273 deve sopravvivire al confronto")
+
+    def test_la_tokenizzazione_concorda_sulle_lettere(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        from traduttore.normalizza import tokenizza
+        parole = ["àɣar", "l'àɣar", "doman l'a", "a ŋ k", "portar"]
+        mine = [tokenizza(p) for p in parole]
+        loro = self._valuta_js("parole.map(tokenizza)", {"parole": parole})
+        for parola, mio, loro_ in zip(parole, mine, loro):
+            self.assertEqual(mio, loro_,
+                             "%r: Python %r, JavaScript %r" % (parola, mio, loro_))
+
+    def test_il_filtro_javascript_non_e_piu_l_intervallo_del_vecchio(self):
+        # Un controllo sul sorgente, che non ha bisogno di node: se qualcuno
+        # rimette l'intervallo chiuso, il difetto torna anche senza che i test
+        # con node girino (su una macchina senza node quei test saltano, e un
+        # difetto che torna solo li' tornerebbe libero).
+        import re as _re
+        with io.open(os.path.join(RADICE, "sorgenti", "modello.html"),
+                     encoding="utf-8") as f:
+            pagina = f.read()
+        # I **commenti** si tolgono prima di guardare: il commento che spiega
+        # il difetto contiene per forza la sequenza che il difetto è, quindi
+        # un controllo che non li ignora fallisce perche' qualcuno ha scritto
+        # la spiegazione. Il difetto da cercare e' quello che gira, non quello
+        # che e' stato descritto.
+        codice = _re.sub(r"//[^\n]*", "", pagina)
+        codice = _re.sub(r"/\*.*?\*/", "", codice, flags=_re.S)
+        self.assertNotIn("\\u024f", codice,
+                         "l'intervallo chiuso e' il difetto: toglie le lettere "
+                         "fuori da U+024F, cioe' quelle dell'alfabeto")
+
+
+class TestGeneratoreDaBigoni(unittest.TestCase):
+    """`raccolta/da_bigoni.py`: le 6352 voci che porta dentro il glossario.
+
+    Il generatore ha avuto **tre difetti veri** in questa sessione, e tutti
+    e tre producevano righe ben formate: sono il tipo di difetto che i
+    controlli non prendono e che un secondo giro di script scopre.
+
+    Qui si provano le quattro cose che devono valere: il generatore non
+    duplica, non sceglie fra due fonti in disaccordo, rispetta l'idempotenza
+    e non scrive una parola funzionale.
+    """
+
+    def _modulo(self):
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "da_bigoni.py")
+        spec = importlib.util.spec_from_file_location("da_bigoni", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo
+
+    def _voce(self, ferrarese, italiano, **extra):
+        voce = {"numero": 1, "ferrarese": ferrarese, "significati": italiano,
+                "italiano": italiano.split(",")[0].strip(),
+                "etimologia": "", "omonimo": None}
+        voce.update(extra)
+        return voce
+
+    def test_una_parola_gia_presente_con_lo_stesso_significato_non_e_ripetuta(self):
+        modulo = self._modulo()
+        attive = [{"id": "V0001", "ferrarese": "àɣar", "italiano": "duecento"}]
+        raccolte = [self._voce("àɣar", "duecento")]
+        esiti = modulo.confronta(raccolte, attive)
+        self.assertEqual(esiti["nuove"], [],
+                         "la stessa parola con lo stesso significato e' gia' li'")
+        self.assertEqual(len(esiti["gia_presenti"]), 1)
+
+    def test_un_disaccordo_fra_due_fonti_non_viene_deciso(self):
+        # `Anèl` e' «anello» per il Ferri e «agnello» per Bigoni. Il
+        # generatore non sceglie: segnala e lascia la voce esistente dov'e'.
+        # Il motivo e' che nessuno dei due numeri dice quale sia il ferrarese,
+        # e scegliere a caso produce una parola sbagliata che non si vede.
+        modulo = self._modulo()
+        attive = [{"id": "V0520", "ferrarese": "Anél", "italiano": "Anello"}]
+        raccolte = [self._voce("añèl", "agnello")]
+        esiti = modulo.confronta(raccolte, attive)
+        self.assertEqual(esiti["nuove"], [], "un disaccordo non si riscrive")
+        self.assertEqual(len(esiti["disaccordi"]), 1)
+        voce, esistenti = esiti["disaccordi"][0]
+        self.assertEqual(esistenti[0]["id"], "V0520")
+
+    def test_una_doppia_nella_fonte_si_tiene_una_voce(self):
+        modulo = self._modulo()
+        raccolte = [self._voce("ašnàda", "asinata", numero=398),
+                    self._voce("ašnàda", "asinata", numero=399)]
+        esiti = modulo.confronta(raccolte, [])
+        self.assertEqual(len(esiti["nuove"]), 1)
+        self.assertEqual(len(esiti["doppie"]), 1)
+
+    def test_due_omonimi_della_fonte_sono_due_voci(self):
+        # Stessa parola, significati diversi: la fonte li distingue e sono
+        # due voci. Unirle sarebbe una scelta che nessuno ha chiesto.
+        modulo = self._modulo()
+        raccolte = [self._voce("alvàr", "levare", numero=133),
+                    self._voce("alvàr", "sollevare, allevare", numero=134)]
+        esiti = modulo.confronta(raccolte, [])
+        self.assertEqual(len(esiti["nuove"]), 2)
+
+    def test_il_secondo_giro_non_scrive_niente(self):
+        # Il difetto piu' costoso: il generatore scriveva 194 righe duplicate
+        # alla seconda esecuzione, di parole che aveva scritto lui stesso un
+        # giro prima. La voce non era neanche malformata, quindi nessun
+        # controllo se ne accorgeva.
+        modulo = self._modulo()
+        raccolte = [self._voce("àɣar", "duecento", numero=61),
+                    self._voce("àɣar", "acre", numero=62),
+                    self._voce("abadìŋ", "abbandono", numero=63)]
+        prime = modulo.confronta(raccolte, [])
+        righe = modulo.costruisci(prime["nuove"], 10405,
+                                  modulo.gemelli_per_chiave(raccolte))
+        seconde = modulo.confronta(raccolte, righe)
+        self.assertEqual(seconde["nuove"], [],
+                         "il secondo giro deve trovare tutto gia' scritto")
+
+    def test_una_funzionale_non_diventa_voce(self):
+        # `kóŋ` = «con»: la parola ferrarese e' vera ma la traduzione e' una
+        # funzionale, e il glossario la indicizzerebbe dal lato italiano dove
+        # il motore non deve trovarla.
+        modulo = self._modulo()
+        esiti = modulo.confronta(
+            [self._voce("kóŋ", "con"), self._voce("àrba", "albero")], [])
+        self.assertEqual([v["ferrarese"] for v in esiti["nuove"]], ["àrba"])
+        self.assertEqual(len(esiti["funzionali"]), 1)
+
+    def test_il_filtro_sulle_funzionali_scarta_sul_lato_indicizzato(self):
+        # Il filtro guarda la **traduzione**, non la parola ferrarese, e la
+        # ragione la dice il test `TestCopertura`: `cerca_italiano("con")`
+        # non deve trovare niente, perche' il motore tratta le preposizioni
+        # a parte e una voce che le indicizza gliele toglie.
+        #
+        # Un filtro che guardasse la parola ferrarese avrebbe scartato anche
+        # `kóŋ` — che e' una parola ferrarese vera, e che `al` invece non
+        # avrebbe scartato, perche' `al` non e' un articolo italiano. Avrebbe
+        # passato lo stesso test di qui sotto e fatto il contrario di quello
+        # che serve: un filtro che fa passare il controllo senza fare il suo
+        # lavoro e' peggio di nessun filtro.
+        modulo = self._modulo()
+        # La parola ferrarese non conta: `kóŋ` non e' nell'elenco, `al`
+        # invece c'e', e nonostante cio' entrambe le righe vengono scartate
+        # perche' la loro **traduzione** e' una funzionale.
+        self.assertNotIn("kóŋ", modulo.FUNZIONALI,
+                         "se questa asserzione regge, il filtro non guarda "
+                         "la parola ferrarese")
+        self.assertTrue(modulo.funzionale(self._voce("kóŋ", "con")))
+        self.assertTrue(modulo.funzionale(self._voce("al", "il")))
+        # E la prova che il filtro non guarda la parola ferrarese: due righe
+        # con la stessa parola, una sola scartata.
+        scartate = [v for v in (self._voce("kóŋ", "con"),
+                                self._voce("kóŋ", "coglione"))
+                    if modulo.funzionale(v)]
+        self.assertEqual(len(scartate), 1,
+                         "la stessa parola con due traduzioni diverse dà "
+                         "due risposte diverse: guarda la traduzione")
+
+    def test_una_funzionale_e_un_significato_abbastanza_per_scartare(self):
+        # «in, dentro»: uno dei due significati e' una funzionale, e la riga
+        # non entra. Guardare solo il primo significato la lascerebbe passare.
+        modulo = self._modulo()
+        self.assertTrue(modulo.funzionale(self._voce("dréint", "dentro, in")))
+
+    def test_il_prossimo_id_cede_il_passo_alla_fila_d_attesa(self):
+        # Difetto vero: `prossimo_id()` guardava solo il glossario attivo, e
+        # la fila d'attesa ha cinque id (V10400-V10404) piu' alti di tutti
+        # quelli attivi. Il generatore ha quindi **ridescritto quei cinque
+        # id**, e i 6426 avvisi D1 sono arrivati solo dopo, quando il lavoro
+        # era gia' fatto.
+        modulo = self._modulo()
+        attive = [{"id": "V10389", "ferrarese": "Zzupgàr", "italiano": "zop"}]
+        in_attesa = modulo.id_in_attesa()
+        self.assertGreaterEqual(in_attesa, 10404,
+                                "la fila d'attesa deve arrivare almeno a V10404")
+        self.assertGreaterEqual(max(modulo.prossimo_id(attive), in_attesa + 1),
+                                10405,
+                                "il primo id libero deve stare dopo la fila "
+                                "d'attesa, non dentro")
+
+    def test_le_voci_scritte_dichiarano_fonte_e_varieta(self):
+        # Una voce senza fonte non entra: e' il G4. E la `varieta` viene
+        # dai dati, non da una costante scritta qui.
+        modulo = self._modulo()
+        righe = modulo.costruisci(
+            [self._voce("àɣar", "duecento", numero=61)],
+            10405, {"aɣar": 1})
+        self.assertEqual(len(righe), 1)
+        riga = righe[0]
+        self.assertTrue(riga["fonte"].strip(), "una voce senza fonte non entra")
+        self.assertIn("S006", riga["fonte"])
+        self.assertIn("61", riga["fonte"])
+        self.assertEqual(riga["varieta"], modulo.CODICE_VARIETA_ATTESA)
+        self.assertTrue(riga["da_verificare"],
+                        "una voce raccolta e non confrontata si dichiara")
+
+    def test_la_varieta_viene_dai_dati_e_non_dal_generatore(self):
+        # Se `dati/varieta.json` non dichiara la varieta' per S006, il
+        # generatore si ferma invece di indovinare. E se la dichiarazione
+        # cambia, il generatore segue quella e non un numero scritto qui.
+        modulo = self._modulo()
+        dichiarazione = modulo.varieta_dichiarata(modulo.VARIETA, "S006")
+        self.assertEqual(dichiarazione["varieta"],
+                         modulo.CODICE_VARIETA_ATTESA)
+        self.assertEqual(dichiarazione["attendibilita"], "M",
+                         "una fonte che non dichiara il territorio dà una "
+                         "scelta dichiarata come memoria, non documentata")
+        with self.assertRaises(SystemExit):
+            modulo.varieta_dichiarata(modulo.VARIETA, "S999")
+
+    def test_il_significato_moderno_e_il_flag_restano_quelli_del_glossario(self):
+        # La voce di Bigoni non ha significato moderno e non puo' inventarne
+        # uno: `moderno` vuoto e `fonte_moderno` vuoto insieme, come vuole
+        # il G10.
+        modulo = self._modulo()
+        righe = modulo.costruisci([self._voce("àɣar", "duecento")], 10405, {})
+        # La voce non si inventa un significato moderno: `moderno` e
+        # `fonte_moderno` semplicemente non ci sono, e il G11 non ha niente da
+        # segnalare. Il campo non scritto vale vuoto in `Voce`, ed e'
+        # quello che il glossario deve dire: qui il buco e' dichiarato.
+        self.assertNotIn("moderno", righe[0],
+                         "il generatore non scrive il significato moderno")
+        self.assertNotIn("fonte_moderno", righe[0])
+
 
 
 class TestLetturaDelWikitext(unittest.TestCase):

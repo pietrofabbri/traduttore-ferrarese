@@ -37,7 +37,22 @@ USER_AGENT = "traduttore-ferrarese/0.17 (raccolta; Pietro Fabbri)"
 # l'italiano e' `ancora-1` e `ancora-2` per due significati diversi della
 # stessa parola. Il suffisso e' del sito, non dell'italiano: entra
 # nell'estrazione ma non nella parola.
-SUFFISSO_OMONIMO = re.compile(r"-(\d+)$")
+#
+# Due cose che il primo tentativo aveva sbagliate, e che sono la ragione per
+# cui questa espressione non e' quella che sembrava:
+#
+# - il suffisso sta **nel bottone**, non nella cella dei significati. Il
+#   codice lo cercava nella cella, dove non compare mai: su 7307 righe il
+#   numero degli omonimi trovati era **zero**, e nessun controllo lo diceva,
+#   perche' zero e' un numero che sembra giusto. Il conto vero e' **186
+#   righe** (170 col trattino e 16 senza);
+# - il sito scrive anche senza trattino (`acciarino1`, `brocca1`,
+#   `pidocchioso1`), quindi `-(\d+)$` da solo manca 16 righe su 186.
+#
+# La forma e' una alternativa, non due ricerche: `-(\d+)$` per il trattino e
+# `(\d+)$` per il numero attaccato. Il risultato e' il numero, e il
+# chiamante non deve sapere quale delle due forme aveva trovato.
+SUFFISSO_OMONIMO = re.compile(r"(?:-|)(\d+)$")
 
 RIGA = re.compile(r"<tr>(.*?)</tr>", re.S)
 CELLA = re.compile(r"<td[^>]*>(.*?)</td>", re.S)
@@ -146,9 +161,19 @@ def voci_da_html(html):
             continue
 
         primo_significato = significati.split(",")[0].strip()
-        trovato = SUFFISSO_OMONIMO.search(significati)
+        # Il suffisso si cerca e si toglie **dove sta**: nel primo argomento
+        # del bottone, non nella cella. La cella dice «ancora» in entrambe le
+        # righe e non distingue niente; il bottone dice `ancora-1` e
+        # `ancora-2`, ed e' l'unico posto in cui il sito distingue i due
+        # significati della stessa parola ferrarese.
+        #
+        # Prima il codice guardava la cella e trovava zero omonimi su 7307
+        # righe: nessun errore, nessun avviso, e 186 righe in cui due voci
+        # diverse sembravano una sola voce con due numeri senza significato.
+        # Un numero che arriva a zero quando nessuno lo controlla e' il
+        # modo piu' economico di perdere un intero campo.
+        trovato = SUFFISSO_OMONIMO.search(arg_italiano)
         omonimo = int(trovato.group(1)) if trovato else None
-        italiano = SUFFISSO_OMONIMO.sub("", significati)
 
         voci.append({
             "numero": int(numero),

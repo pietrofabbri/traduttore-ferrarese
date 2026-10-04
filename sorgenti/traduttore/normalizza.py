@@ -28,8 +28,27 @@ import unicodedata
 APOSTROFI = "'’ʼ´`"
 
 _SPAZI = re.compile(r"\s+")
-_NON_PAROLA = re.compile(r"[^0-9a-z\u00c0-\u024f]+")
-_TOKEN = re.compile(r"[0-9a-z\u00c0-\u024f]+(?:[" + APOSTROFI + r"][0-9a-z\u00c0-\u024f]+)*")
+# Difetto vero, di questa sessione: le due espressioni erano scritte con
+# l'intervallo `\u00c0-\u024f`, che finisce a U+024F. Ma l'alfabeto ferrarese
+# dichiarato in `dati/regole_grammaticali.json` (fonte S015) contiene due
+# lettere **fuori** da quell'intervallo: `\u0273` (U+0263) e `\u028e` (U+028E),
+# la gutturale e la laterale palatale. Erano quindi trattate come
+# punteggiatura e **cancellate**, e una cancellazione silenziosa in una
+# chiave di confronto e' la cosa piu' pericolosa che ci sia: `\u00e0\u0273ar` e
+# `\u00e0ar` diventavano la stessa chiave `aar`, quindi la ricerca del
+# glossario restituiva la voce sbagliata senza dire niente.
+#
+# Il numero non e' un dettaglio: **908 occorrenze** di queste due lettere
+# sulle 7307 coppie raccolte da S006. Sui dati gia' presenti la differenza
+# e' zero, perche' il glossario del 1889 non le usa: la correzione non
+# riscrive niente di esistente, smette solo di perdere quello che arriva.
+#
+# La forma e' `\W` con il flag unicode: tiene **qualsiasi** lettera e butta
+# solo quello che non e' lettera ne' cifra. Una lista di lettere ammesse
+# funziona finche' nessuno aggiunge un carattere, e il progetto perde una
+# lettera dell'alfabete ogni volta che qualcuno lo fa.
+_NON_PAROLA = re.compile(r"[\W_]+", re.UNICODE)
+_TOKEN = re.compile(r"[^\W_]+(?:[" + APOSTROFI + r"][^\W_]+)*", re.UNICODE)
 
 # Sostituzioni che valgono solo per il confronto. `gh'` cade, perche' il
 # ferrarese scrive `ghe` e `gh'e` per la stessa cosa, ma non e' una regola

@@ -372,7 +372,40 @@
   // una cosa e il terminale un'altra, ed e' il difetto peggiore che un
   // traduttore possa avere. Per questo sono poche righe e sono scritte una
   // volta sola.
-  var RE_NON = /[^0-9a-z\u00c0-\u024f]+/g;
+  //
+  // Difetto vero, di questa sessione, e presente **in entrambe le copie**:
+  // il filtro era l'intervallo `\u00c0-\u024f`, che finisce a U+024F, e
+  // l'alfabeto ferrarese dichiarato in `dati/regole_grammaticali.json` ha
+  // due lettere fuori da quell'intervallo: `\u0273` (gutturale) e `\u028e`
+  // (laterale palatale). Erano trattate come punteggiatura e cancellate, e
+  // una cancellazione silenziosa in una chiave e' la cosa peggiore che possa
+  // fare un indice: `\u00e0\u0273ar` e `\u00e0ar` diventavano la stessa
+  // chiave e la ricerca restituiva la voce sbagliata senza dire niente.
+  //
+  // Il fatto che fosse in entrambe le copie e' la parte che insegnava di
+  // piu': la pagina e il terminale sbagliavano **allo stesso modo**, quindi
+  // `controlla_equivalenza.py` non aveva niente da dire — confronta le
+  // risposte, e due copie che sbagliano insieme rispondono uguale. Le copie
+  // identiche sono la regola, ma non la prova: servono controlli separati
+  // sulle due, e `prove/test_traduttore.py` ora li fa.
+  //
+  // In JavaScript il modo di tenere qualsiasi lettera e' la property escape
+  // `\p{L}`, non `\w`.
+  //
+  // Difetto vero, di questa sessione, e scoperto dal confronto con Python:
+  // la prima correzione aveva messo `/[^\w_]+/gu`, cioe' il complementare di
+  // `\w`, che sembrava la stessa cosa di `\W` in Python. Non lo e':
+  // `\w` in JavaScript riconosce solo [A-Za-z0-9_] e le lettere dei blocchi
+  // che Unicode considera alfabetiche **in modo predefinito**, e `\u0273`
+  // (la gutturale del ferrarese) non c'e' fra quelle. Quindi `\w` la
+  // trattava come punteggiatura esattamente come faceva il difetto
+  // originale: la correzione passava il test sul sorgente — l'intervallo
+  // chiuso era sparito — e non cambiava niente in fase di ricerca.
+  //
+  // `\p{L}` e' quello che si voleva: ogni lettera Unicode. Verificato:
+  // `/^\p{L}$/u.test("\u0273")` e' `true`, `/\w/u.test("\u0273")` e'
+  // `false`.
+  var RE_NON = /[^\p{L}\p{N}]+/gu;
   function chiave(t) {
     return String(t).toLowerCase().trim()
       .replace(/gh'/g, "g").replace(/ch'/g, "c")
@@ -473,7 +506,7 @@
 function tokenizza(t) {
     return String(t).toLowerCase().trim()
       .replace(/[’ʼ´`]/g, "'").replace(/gh'/g, "g").replace(/ch'/g, "c")
-      .match(/[0-9a-z\u00c0-\u024f]+(?:'[0-9a-z\u00c0-\u024f]+)*/g) || [];
+      .match(/[\p{L}\p{N}]+(?:'[\p{L}\p{N}]+)*/gu) || [];
   }
 
   // Una regola morfologica applicata dal basso: si prova dalla piu' lunga.

@@ -113,10 +113,18 @@ prima:
 - la traduzione va letta dalla **cella**, non dagli argomenti del bottone: in
   156 delle 7307 voci il bottone porta la parola da cui parte l'etimologia
   (`bak` -> `bac`, il latino) e non la traduzione, che e' «bastone, mazza»;
-- il sito distingue gli omonimi con un **suffisso numerato** (`ancora-1`,
-  `acciarino1`): va tolto prima di confrontare;
+- il sito distingue gli omonimi con un **suffisso numerato**, e quel
+  suffisso sta **nel primo argomento del bottone**, non nella cella dei
+  significati: `ancora-1` e `ancora-2` per due parole ferraresi diverse
+  (`àŋkura` e `aŋkóra`), e senza trattino in altri casi
+  (`acciarino1`). Sono **186 casi su 7307**: il difetto di questa raccolta e' stato cercarlo
+  nella cella, dove non compare mai: il campo leggeva zero omonimi e zero
+  sembrava un numero giusto;
 - l'**accento** segna l'accento tonico e va tenuto nelle chiavi: `àɣar`
-  (acre) e `ar` non sono la stessa parola.
+  (acre) e `ar` non sono la stessa parola;
+- le lettere `ɣ` e `ʎ` sono **fuori** dall'intervallo `À-ɏ` che il
+  confronto del glossario usava, e ci finivano cancellate: `àɣar` diventava
+  `aar`, uguale a `àar`. Le chiavi perse sono **861**, su 10431 righe di dati.
 
 Come si riempie il glossario da un vocabolario:
 
@@ -132,6 +140,53 @@ esempio con una voce di Bondeno), la voce va messa **due volte**, con due id e
 due `varieta`, e non una volta con due varieta' dentro: una riga sola che
 dichiara «cittadino e occidentale» non dice quale delle due forme si scrive
 come nel libro.
+
+**Dal grezzo al glossario (`raccolta/da_bigoni.py`).** `bigoni.py` raccoglie e
+basta; il passaggio che fa diventare una coppia una voce e' un altro script,
+come `costruisci_da_ferri.py` per il Ferri. Dalle 7307 coppie di S006 ne
+entrano **6352**. Le altre si contano e si dichiarano, e sono cinque esiti
+distinti perche' chiedono azioni diverse:
+
+| esito | quante | cosa succede |
+|---|---|---|
+| nuove | 6352 | entrano nel glossario |
+| gia' nel glossario, stesso significato | 590 | non si aggiungono: due righe che dicono la stessa cosa non sono due voci |
+| disaccordo con una voce esistente | 316 | **nessuno sceglie**: si stampa e resta |
+| doppia nella stessa fonte | 12 | se ne tiene una |
+| parola funzionale | 34 | non e' una voce: sono gia' in `morfologia.py` |
+
+Quattro cose che il generatore fa e che vanno scritte perche' ognuna e' stata
+un difetto:
+
+1. **L'id si calcola sui due file insieme.** `dati/da_verificare/glossario.jsonl`
+   ha cinque id piu' alti di tutti quelli attivi: guardando solo il glossario
+   attivo il generatore li riscrive, e i 6352 avvisi D1 arrivano quando il
+   lavoro e' gia' fatto. Un id non e' un contatore, e' un'identita' che due
+   file si contendono.
+2. **Prima si guarda l'attivo, poi la fonte.** Nell'ordine inverso il secondo
+   giro riscriveva **194 righe duplicate** di parole scritte un giro prima:
+   tutte ben formate, nessun controllo che le fermasse.
+3. **La `varieta` viene dai dati.** `dati/varieta.json` dichiara S006 come
+   `cittadino` con `attendibilita M`, e il generatore si ferma se quella riga
+   manca invece di indovinare.
+4. **`attendibilita I` e `da_verificare: true`.** La fonte si puo' aprire, ma
+   nessuno ha controllato che la riga letta corrisponda a quello che c'e'
+   scritto: dichiararle `D` sarebbe dichiarare una verifica non avvenuta.
+
+`italiano` prende **tutti** i significati che la fonte elenca e
+`principale_italiano` il primo, come fa gia' il glossario (V0287). Prendere
+solo il primo sembra una pulizia e non lo e': al giro dopo il confronto non
+riconosce piu' la propria voce e la riscrive.
+
+Il comando stampa i numeri e non li corregge:
+
+```bash
+python3 raccolta/bigoni.py        # raccoglie ( serve il grezzo )
+python3 raccolta/da_bigoni.py --prova   # dice cosa farebbe, non scrive
+python3 raccolta/da_bigoni.py            # scrive
+```
+
+E' idempotente come gli altri due: il secondo giro scrive zero righe.
 
 Il campo `fonte` **deve** avere l'edizione e la pagina. `attendibilita: D`
 senza pagina non passa il controllo, e il controllo esiste perche' una voce

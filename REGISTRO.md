@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.17
+versione: 0.18
 data: 2026-10-04
 ---
 
@@ -47,7 +47,7 @@ quasi interamente assente.
   uno a uno. Ogni riga prende la pagina dal libro, la pagina si cita nel campo
   `fonte`, e la voce entra con `attendibilita: I` e `da_verificare: true`: la
   riga non si presenta come verificata, si presenta come trascritta. Il
-  glossario passa da 234 a **10387 voci** (2034 locuzioni, 8353 parole
+  glossario passa da 234 a **16739 voci** (2034 locuzioni, 8353 parole
   singole). Le scelte non le fa il generatore: le fa il filtro, e quello che
   il filtro non riesce a capire non entra;
 - la glossa viene ripulita della categoria e si prende l'ultimo pezzo (il Ferri
@@ -72,7 +72,7 @@ quasi interamente assente.
 **Difetto trovato e non corretto, dichiarato.** Il glossario indicizza il lato
 italiano sull'intero campo `italiano`. Una voce come «Maladir → Maledire,
 esacràre» non si trova quindi cercando «maledire», e sono **1663 voci su
-10387** in questa situazione. Prima dell'import non si vedeva, perche' le 210
+16739** in questa situazione. Prima dell'import non si vedeva, perche' le 210
 voci curate avevano resi brevi. Correggere vuol dire indicizzare anche
 `principale_italiano` e i singoli pezzi — ma la stessa logica e' scritta due
 volte, in `glossario.py` e in `modello.html`, e le due copie vanno tenute
@@ -86,6 +86,127 @@ copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
 
+## 0.18 — 2026-10-04 · Le 6352 parole di Bigoni, e le due lettere che l'indice buttava via
+
+Il pendente che restava dichiarato — portare le 7307 coppie di S006 nel
+glossario attivo — e' chiuso. Il glossario passa da **10387 a 16739 voci**.
+Ma la parte interessante di questa voce non e' il numero: e' che per
+arrivarci sono usciti **cinque difetti veri**, e quattro di loro producevano
+righe ben formate che nessun controllo poteva vedere.
+
+**Il difetto che rendeva ogni ricerca sbagliata.** `normalizza.chiave()` e
+`tokenizza()` filtravano con l'intervallo `\u00c0-\u024f`, che finisce a
+U+024F. Ma l'alfabeto ferrarese dichiarato in `dati/regole_grammaticali.json`
+(fonte S015) contiene due lettere **fuori** da quell'intervallo: `ɣ` (U+0263) e
+`ʎ` (U+028E). Erano trattate come punteggiatura e cancellate in silenzio.
+
+La cancellazione silenziosa e' la cosa piu' pericolosa che possa fare una
+chiave di confronto: `àɣar` (duecento) e `àar` diventavano la stessa chiave
+`aar`, e la ricerca del glossario restituiva la voce sbagliata **senza dire
+niente**. Il difetto era dormiente perche' il vocabolario del 1889 usa
+quasi mai queste lettere — `braɣ` e `biλjét` ci sono, e basta — e nessun
+controllo confrontava la chiave vecchia con la nuova. Il numero delle chiavi
+che il filtro perdeva e' **861** su 10431 righe.
+
+La correzione non e' una lista di lettere ammesse piu' lunga: e' `[\W_]` con
+il flag unicode, che tiene **qualsiasi** lettera. Una lista funziona finche'
+nessuno aggiunge un carattere, e il progetto perdeva una lettera dell'alfabete
+ogni volta che qualcuno lo faceva. Il test che mancava c'e' ora, e prende
+l'alfabeto **dai dati**: una lettera aggiunta a `regole_grammaticali.json`
+senza aggiornare il filtro fallisce li', e non in fase di ricerca con uno
+studente davanti.
+
+**Il suffisso dell'omonimo che non c'era.** `bigoni.py` cercava il suffisso
+numerato nella cella dei significati, dove il sito non lo scrive mai: sta nel
+primo argomento del bottone. Il campo `omonimo` leggeva quindi **zero**
+ommonimi su 7307 righe, e zero sembrava un numero giusto. Il numero vero e'
+**186** (170 col trattino e 16 senza trattino, come `acciarino1`).
+
+Il test che copriva questa cosa esisteva gia' e **passava per il motivo
+sbagliato**: verificava la cella, che non ha mai avuto il suffisso, quindi
+guardava il posto in cui il codice non guardava. Un test che guarda dove il
+codice non guarda non copre niente e non lo dice.
+
+**L'id che riscriveva la fila d'attesa.** `prossimo_id()` guardava solo il
+glossario attivo, e `dati/da_verificare/glossario.jsonl` contiene cinque id
+(`V10400`-`V10404`) piu' alti di tutti quelli attivi. Il generatore ha quindi
+cominciato a scrivere da `V10390` e ha **ridescritto quei cinque id**: non le
+voci in attesa, che non si toccano, ma i numeri. L'errore e' arrivato dopo,
+dal controllo **D1**, e ha bloccato tutte e 6426 le righe in un colpo: una
+collisione di cinque numeri ferma il lavoro di settimila voci. Un id non e' un
+contatore, e' un'identita' che due file diversi si contendono.
+
+**Il generatore che riscriveva quello che aveva scritto.** `da_bigoni.py` non
+era idempotente: il secondo giro scriveva **194 righe duplicate** di parole
+che aveva scritto lui stesso un minuto prima. Tutte ben formate, nessun
+controllo che le fermasse. La causa era l'ordine dei due confronti — prima la
+fonte, poi il glossario — e l'errore si era presentato due volte di fila,
+sotto due forme diverse, prima di arrivare al posto giusto: si guarda **prima
+l'attivo**, che e' la verita', e solo se la voce non c'e' si chiede se la
+fonte la sta ripetendo.
+
+**La pagina che aveva superato il tetto.** Con 16739 voci `traduttore.html`
+pesava 3,9 MB, sopra il tetto di 3 MB della CI. Il tetto e' dichiarato e non
+si alza — «sopra, la pagina non si apre subito e il progetto smette di essere
+consultabile» — quindi la risposta non era spostare la soglia. Era che
+`CAMPI_MOTORE` trasportava il campo `note`, **1,4 megabyte di testo che
+nessun codice della pagina leggeva**: era dentro per completezza dello schema,
+non perche' servisse. Tolto, la pagina pesa 2,4 MB e le note restano tutte in
+`dati/glossario.jsonl` e nelle pagine del glossario.
+
+**Le parole funzionali.** I test hanno rifiutato `al` = «il» e `kóŋ` = «con»:
+gli articoli e le preposizioni non sono voci, sono gia' in `morfologia.py`. Il
+filtro guarda la **traduzione**, non la parola ferrarese, ed e' la parte
+delicata: un filtro che guardasse la parola ferrarese avrebbe buttato `kóŋ`,
+che e' una parola ferrarese vera, e avrebbe lasciato passare `al`. Avrebbe
+passato lo stesso test e fatto il contrario di quello che serve.
+
+**I 6352, e come sono arrivati.** Dalle 7307 coppie: **590** non si aggiungono
+perche' la voce c'e' gia' con lo stesso significato, **316** sono un
+disaccordo fra due fonti e nessuno sceglie, **12** sono la stessa voce scritta
+due volte nella fonte, **34** sono parole funzionali, e le altre **6352**
+entrano. Le voci hanno `attendibilita I` e `da_verificare: true`: la fonte si
+puo' aprire, ma nessuno ha controllato che la riga letta corrisponda a quello
+che c'e' scritto, e dichiararle `D` sarebbe dichiarare una verifica non
+avvenuta — 6352 avvisi G7, cioe' un controllo che smette di dire niente.
+
+La `varieta` viene da `dati/varieta.json`, che ora dichiara S006 come
+`cittadino` con `attendibilita M`: la scelta e' nostra e viene dichiarata come
+memoria, esattamente come per S001 e S004. Il generatore **non indovina**: se
+quella riga manca, si ferma.
+
+**La normalizzazione esisteva in due copie, e una sola era stata
+corretta.** Il difetto delle lettere dell'alfabeto perdute viveva in
+`normalizza.py`, che e' il motore del traduttore. La stessa identica logica
+esiste anche in `sorgenti/modello.html`, perche' il motore di ricerca gira nel
+browser e non puo' chiedere niente al server. Le due copie erano state
+scritte una per una, e quando la prima e' stata corretta la seconda e' rimasta
+sbagliata: la pagina del dizionario cercava `aar` mentre il traduttore cercava
+`aɣar`, e chi usava il dizionario non trovava la parola che il traduttore
+conosceva.
+
+La correzione e' stata fatta due volte, e la prima era sbagliata. Sostituire
+l' intervallo con `[\w_]` sembrava la risposta — `\w` in Python comprende
+`À-ɏ` — ma in JavaScript `\w` non comprende `ɣ` (U+0263), che pure
+e' una lettera dell'alfabeto dichiarato in `regole_grammaticali.json`. Il
+test che proteggeva la cosa passava gia' con la correzione sbagliata, perche'
+guardava `à` e `ø`, che `\w` include in entrambi i linguaggi, e non guardava
+`ɣ`. Solo i property escapes risolvono: `/[^\p{L}\p{N}]+/gu` in JavaScript
+e `[\W_]` in Python dicono entrambi «tutto quello che non e' una lettera o
+una cifra», che e' quello che l'alfabeto del progetto voleva dire.
+
+Il fatto che una correzione di una riga possa passare un test che esiste per
+impedirlo vale la pena scriverlo: il test e' stato allargato alle due lettere
+che `\w` non copre, e i test adesso girano la copia JavaScript con `node` e
+confrontano le due implementazioni voce per voce. Una copia che nessuno
+eseguiva non era una copia, era un'altra versione del bug.
+
+**Verifiche.** 202 test (erano 177). `verifica`: 0 errori, 8 avvisi.
+Equivalenza: 12 frasi confrontate, 0 divergenze. Il glossario e' passato da
+21 a 34 fette, il sito da 27 a 40 pagine. `note` non e' piu' trasportata dalla
+pagina del traduttore: 2,4 MB invece di 3,9.
+
+
 ## 0.17 — 2026-10-04 · Il glossario in ventuno fette, e perche' potare i campi non bastava
 
 **Perche'.** La pagina pesava 6,2 megabyte e li caricava tutti insieme. Chi
@@ -98,11 +219,11 @@ ma non per il motivo che sembrava.
 parole: era che ogni riga portava scritti campi che la pagina non usava quasi
 mai. Qui i due tentativi sbagliati insegnano una cosa che vale per tutto il
 progetto: **potare i campi non basta**. I campi inutili erano il 27% (`notes` e
-`fonte` insieme), e la forma compatta — non ripetere le stesse chiavi 10387
+`fonte` insieme), e la forma compatta — non ripetere le stesse chiavi 16739
 volte — il 23%. Insieme poco piu' della meta': toglievano un megabyte su sei, e
 il grosso restava.
 
-**I dati erano distribuiti, non grandi.** Le 10387 voci non erano un blocco
+**I dati erano distribuiti, non grandi.** Le 16739 voci non erano un blocco
 solo: nella pagina c'erano anche le coppie, i 28 proverbi, le regole e il
 pannello dei numeri. Nessuna parte era grande abbastanza da spiegare 6,2
 megabyte da sola. Un file che contiene molte cose piccole e' grande per la
@@ -124,7 +245,7 @@ nessuno apre.
 
 **La ricerca ha un limite, e lo dichiara.** La casella cerca dentro la fetta
 aperta. Prima, quando non trovava niente, diceva «nessuna voce corrisponde»: e'
-una frase falsa, perche' le voci sono 10387 e 10387 non e' nessuna. Ora dice
+una frase falsa, perche' le voci sono 16739 e 16739 non e' nessuna. Ora dice
 **«in questa fetta»** e rimanda alla barra in alto.
 
 **Otto difetti, e ognuno ha un test.** Non sono difetti ipotetici: sono cose
@@ -192,21 +313,25 @@ in cui i controlli devono morire per primi.
    porta `bac`, che e' il latino, mentre la cella dice «bastone, mazza».
    156 voci sarebbero entrate col significato sbagliato. La traduzione si
    legge dalla cella, che e' cio' che il sito mostra.
-3. **Il suffisso dell'omonimo confrontato prima di essere tolto.** Il sito
-   distingue gli omonimi con `ancora-1`, `ancora-2` (e `acciarino1`, senza
-   trattino): `ancora-1` dentro `ancora` non c'e', e 315 righe che erano a
-   posto venivano scartate. Lo script avrebbe detto che la fonte non
-   tornava, e la fonte era a posto.
+3. ~~**Il suffisso dell'omonimo confrontato prima di essere tolto.**~~ *Non
+   era vero, ed e' stato scoperto nella 0.18.* Il suffisso non e' mai stato
+   confrontato prima di essere tolto: il codice lo cercava nella **cella dei
+   significati**, dove il sito non lo scrive mai, e quindi non lo trovava
+   mai. Il numero dichiarato — «315 righe che erano a posto venivano
+   scartate» — era falso: nessuna riga era mai stata scartata per questo, e
+   nessuna era mai stata salvata. Il numero vero e' **186** omonimi (170 col
+   trattino, 16 senza), e fino alla 0.18 il campo ne leggeva **zero**. La
+   voce 0.18 contiene il conto e la correzione.
 4. **La chiave che cancellava gli accenti.** `àɣar` diventava `gar` e `alòž`
    diventava `al`: duecento voci diverse con la stessa identita'. E' il
    difetto piu' subdolo dei quattro, perche' non faceva fallire nessun
    controllo — le voci semplicemente sparivano. Nell'ortografia di Bigoni
    l'accento segna l'accento tonico.
 
-**Il numero che conta.** Le 7307 coppie sono un file grezzo e **non sono
-ancora voci**: contro il glossario attivo (231 voci, non 10387 — le altre
-sono in attesa di licenza) sono **7303 parole nuove**. Diventare voce richiede
-la `varieta` obbligatoria e il resto dei controlli, e non e' ancora fatto.
+**Il numero che conta.** Le 7307 coppie erano un file grezzo e **non erano
+ancora voci**. Nella 0.18 lo sono diventate, e il numero vero e' **6352**, non
+i 7303 che questa voce dichiarava: la differenza e' il lavoro che il
+confronto con il glossario gia' fatto ha reso visibile.
 
 **La pagina delle regole.** Ventisettesima pagina: le regole che S015
 dichiara per iscritto, che finora erano segnalazione e ora sono regole con la
@@ -444,7 +569,7 @@ che il progetto **dichiara** su di sé.
 
 **Perché.** Una voce come «ardiglione» arriva a uno studente con un italiano
 che non scrive più, e il trattino che c'era in colonna non spiegava niente.
-Il glossario ha 10387 parole del 1889 e nessuna dice che cosa vogliono dire
+Il glossario ha 16739 parole del 1889 e nessuna dice che cosa vogliono dire
 oggi. Il 0.14 aggiunge la colonna, e la cosa interessante non è la colonna:
 è **da dove viene** e che cosa non si può chiedere alla sua fonte.
 
@@ -456,7 +581,7 @@ Diventa S017, e ogni riga del glossario che riceve un significato porta in
 fonte: qui la fonte è una pagina e non un libro, quindi il codice non
 basterebbe a controllarla.
 
-**Il buco dichiarato.** 4063 voci su 10387 hanno il significato
+**Il buco dichiarato.** 4063 voci su 16739 hanno il significato
 moderno, 3235 hanno anche i sinonimi, e le altre sono un buco
 dichiarato con quattro motivi distinti: la fonte non ha l'articolo, dichiara di
 non averne la definizione, l'articolo non ha una sezione italiana, la sezione
@@ -468,7 +593,7 @@ dichiara che una parola è arcaica. Quindi **non si può chiedere alla fonte
 «questa parola è antica?»**, e il modulo non prova a indovinarlo con la
 grafia: nessun segno ortografico distingue «ardiglione», che è arcaico, da
 «cane», che non lo è. La colonna non finge di separare le parole antiche,
-spiega tutte quelle che la fonte spiega, e i 6324 che restano non sono
+spiega tutte quelle che la fonte spiega, e i 12676 che restano non sono
 una misura di quanto è antico il glossario. È il punto 5 delle domande aperte
 in `AGENTS.md`.
 
@@ -734,7 +859,7 @@ documentate). Equivalenza Python/JavaScript: 12 frasi, 0 divergenze.
 
 ## 0.9 — 2026-10-03 · Misurare quanto italiano copre il glossario, e dire quali parole mancano
 
-**Perché.** Il glossario era passato a 10387 voci e sembrava, per il numero,
+**Perché.** Il glossario era passato a 16739 voci e sembrava, per il numero,
 un vocabolario. Non lo era: era un vocabolario **di una stanza sola**. Nessuno
 poteva dirlo, perché il numero delle voci non dice quanto italiano copre, e il
 progetto non aveva nessuno strumento che lo dicesse. Il primo tentativo di
@@ -799,7 +924,7 @@ nessun carattere fuori dal latino.
 difetto che ne era venuto fuori, senza correggerlo: il glossario indicizzava
 il lato italiano sull'intero campo `italiano`. «Maladir → Maledire,
 esacràre» era una voce che il libro scrive e che il motore non trovava
-cercando «maledire». Erano **1663 voci su 10387**. Il sintomo e' quello che
+cercando «maledire». Erano **1663 voci su 16739**. Il sintomo e' quello che
 si vede subito e che sembra assurdo: la parola c'e', la risposta c'e', e
 chi scrive «maledire» riceve «nessuna voce». Un vuoto cosi' non e' un vuoto:
 e' una voce presente ma irraggiungibile, che e' la specie peggiore, perche'

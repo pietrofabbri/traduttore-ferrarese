@@ -65,6 +65,12 @@
       "varieta": "cittadino",
       "attendibilita": "D",
       "motivo": "Il Nannini scrive: «Quando dico raccolta di voci ferraresi intendo di parlare di quelle che formano il Dialetto della Citta' di Ferrara». E' l'unica fonte del progetto che dichiara il proprio territorio in modo esplicito, e questa riga e' quella che regge la scelta `cittadino` per tutto il resto."
+    },
+    {
+      "fonte": "S006",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Il vocabolario di Bigoni e' un lavoro di Ferrara citta' e non distingue le cinque varieta': non c'e' nessuna riga che dica «questa parola e' di Bondeno». La scelta e' quindi nostra e viene dichiarata come memoria, non come fatto documentato, esattamente come per S001 e S004. Il seguito del ragionamento e' la riga che rende questa scelta controllabile: quello che distingue il cittadino dagli altri quattro e' che il glossario dell'Ottocento (S004, che dichiara `cittadino` anch'esso) contiene gia' 591 delle 7307 coppie di S006 con lo stesso significato, e le 321 righe in cui i due vocabolari non concordano sono un disaccordo fra due fonti, non una scelta di varieta'. Se le prime 591 combaciano e le altre 321 no, il conto che regge e' «due fonti che descrivono la stessa citta'», e non «due territori»."
     }
   ],
   "altre_zone": [

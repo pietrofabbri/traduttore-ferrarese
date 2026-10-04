@@ -17,7 +17,7 @@ non sono le parole di cui si accorge qualcuno che sta giocando.
 La misura della copertura è di `raccolta/copertura.py`, che confronta il
 glossario con i **lemmi** dell'ItWaC (Baroni, Bernardini, Ferraresi,
 Zanchetta 2009, via `franfranz/Word_Frequency_Lists_ITA`, licenza MIT). Il
-numero di oggi: **23,7% dei lemmi frequenti italiani sono coperti**.
+numero di oggi: **38,4% dei lemmi frequenti italiani sono coperti**.
 
 ## Perché la copertura è bassa e non è un difetto del vocabolario
 

@@ -47,7 +47,7 @@ quasi interamente assente.
   uno a uno. Ogni riga prende la pagina dal libro, la pagina si cita nel campo
   `fonte`, e la voce entra con `attendibilita: I` e `da_verificare: true`: la
   riga non si presenta come verificata, si presenta come trascritta. Il
-  glossario passa da 234 a **16739 voci** (2034 locuzioni, 8353 parole
+  glossario passa da 234 a **10387 voci** (2034 locuzioni, 8353 parole
   singole). Le scelte non le fa il generatore: le fa il filtro, e quello che
   il filtro non riesce a capire non entra;
 - la glossa viene ripulita della categoria e si prende l'ultimo pezzo (il Ferri
@@ -72,7 +72,7 @@ quasi interamente assente.
 **Difetto trovato e non corretto, dichiarato.** Il glossario indicizza il lato
 italiano sull'intero campo `italiano`. Una voce come «Maladir → Maledire,
 esacràre» non si trova quindi cercando «maledire», e sono **1663 voci su
-16739** in questa situazione. Prima dell'import non si vedeva, perche' le 210
+10387** in questa situazione. Prima dell'import non si vedeva, perche' le 210
 voci curate avevano resi brevi. Correggere vuol dire indicizzare anche
 `principale_italiano` e i singoli pezzi — ma la stessa logica e' scritta due
 volte, in `glossario.py` e in `modello.html`, e le due copie vanno tenute
@@ -93,6 +93,15 @@ glossario attivo — e' chiuso. Il glossario passa da **10387 a 16739 voci**.
 Ma la parte interessante di questa voce non e' il numero: e' che per
 arrivarci sono usciti **cinque difetti veri**, e quattro di loro producevano
 righe ben formate che nessun controllo poteva vedere.
+
+Il glossario conta **2329 locuzioni** e **14410 parole singole**. Il numero
+e' contato con `tokenizza()`, la funzione che il motore usa per accorpare le
+locuzioni, e non con uno `split` di comodo: i due non contano le stesse
+cose, perche' `split` spaccia l'apostrofo interno (`d\'avril` diventano due
+parole) e `tokenizza` lo tiene dentro, che e' come funziona il ferrarese. Il
+numero che la voce 0.7 dichiara — 2034 locuzioni su 10387 — era vero per
+quel glossario, ed e' falso per questo: non e' che il conto sbagli e'
+cambiato, e' che il conto era fatto con un altro criterio.
 
 **Il difetto che rendeva ogni ricerca sbagliata.** `normalizza.chiave()` e
 `tokenizza()` filtravano con l'intervallo `\u00c0-\u024f`, che finisce a
@@ -165,6 +174,10 @@ passato lo stesso test e fatto il contrario di quello che serve.
 perche' la voce c'e' gia' con lo stesso significato, **316** sono un
 disaccordo fra due fonti e nessuno sceglie, **12** sono la stessa voce scritta
 due volte nella fonte, **34** sono parole funzionali, e le altre **6352**
+entrano. Nessuna delle 6352 ha il significato moderno: la fonte non lo
+porta e il campo resta vuoto. E' per questo che il **4063** della voce
+0.14 e' ancora il numero vero, e non un numero rimasto indietro: il
+numeratore e' rimasto quello e il denominatore e' cresciuto di 6352.
 entrano. Le voci hanno `attendibilita I` e `da_verificare: true`: la fonte si
 puo' aprire, ma nessuno ha controllato che la riga letta corrisponda a quello
 che c'e' scritto, e dichiararle `D` sarebbe dichiarare una verifica non
@@ -187,7 +200,7 @@ conosceva.
 
 La correzione e' stata fatta due volte, e la prima era sbagliata. Sostituire
 l' intervallo con `[\w_]` sembrava la risposta — `\w` in Python comprende
-`À-ɏ` — ma in JavaScript `\w` non comprende `ɣ` (U+0263), che pure
+`\u00c0-\u024f` — ma in JavaScript `\w` non comprende `ɣ` (U+0263), che pure
 e' una lettera dell'alfabeto dichiarato in `regole_grammaticali.json`. Il
 test che proteggeva la cosa passava gia' con la correzione sbagliata, perche'
 guardava `à` e `ø`, che `\w` include in entrambi i linguaggi, e non guardava
@@ -201,10 +214,55 @@ che `\w` non copre, e i test adesso girano la copia JavaScript con `node` e
 confrontano le due implementazioni voce per voce. Una copia che nessuno
 eseguiva non era una copia, era un'altra versione del bug.
 
-**Verifiche.** 202 test (erano 177). `verifica`: 0 errori, 8 avvisi.
+**Verifiche.** 204 test (erano 177). `verifica`: 0 errori, 8 avvisi.
 Equivalenza: 12 frasi confrontate, 0 divergenze. Il glossario e' passato da
 21 a 34 fette, il sito da 27 a 40 pagine. `note` non e' piu' trasportata dalla
 pagina del traduttore: 2,4 MB invece di 3,9.
+
+**Il difetto che stavo per introdurre.** Nessuno dei quattro precedenti e' un
+difetto di questo progetto: sono difetti che il glossario aveva. Questo e'
+mio, e l'ho fatto mentre scrivevo questa voce.
+
+Portando il glossario da 10387 a 16739 voci ho fatto una sostituzione globale
+di «10387» in «16739» in tutto il registro, e una parte di quelle
+sostituzioni ha reso false frasi che erano vere. Il registro **racconta** — ogni
+voce dice quello che era quando e' stata scritta — quindi sostituire anche i
+denominatori significa far dire alla voce 0.14 che 4063 voci su 16739 hanno il
+significato moderno, quando 4063 era vero **su 10387**: le 6352 voci di S006 non
+hanno il significato moderno, il numeratore e' rimasto, il denominatore no, e
+la frase prometteva il 24% mentre il vero e' il 41%. Sono tornati indietro i
+numeri delle voci 0.7, 0.8, 0.9, 0.14 e 0.17; i due che restano, nella voce
+0.18, sono gli unici che descrivono lo stato di oggi e li' sono giusti.
+
+Il numero delle locuzioni era inoltre sbagliato per un motivo che si vede solo
+guardando **come** era contato: con `split()`, che spaccia l'apostrofo interno
+(`d'avril` diventano due parole), mentre il motore usa `tokenizza()`, che lo
+tiene dentro. Quindi non era un numero da aggiornare ma un numero da ricontare
+con la funzione giusta: 2329 non e' «2034 piu' 295», e' un conteggio fatto
+altrimenti.
+
+E la copertura. `README.md` e `lacune.md` dichiaravano **23,7%**, il numero di
+quando il glossario aveva 10387 voci; adesso e' **38,4%** su 16739, cioe' che
+le 6352 nuove voci hanno coperte 1577 parole dell'ItWaC che il glossario del
+1889 non copriva. Il numero era rimasto fermo perche' nessuno lo guardava: il
+numero dei test era sorvegliato, il frontmatter del registro anche, la copertura
+no. E la copertura e' l'unico numero che `README.md` chiama «il numero che
+`buchi` non da'», cioe' quello su cui si regge la promessa del progetto. Ora c'e'
+un test che lo confronta con `copertura.py`; salta quando gli elenchi ItWaC non
+sono presenti e **dichiara di saltare**, perche' la CI non li ha e un test che
+non puo' girare non deve fingere di essere passato. In CI la copertura resta
+quindi senza guardia, e va detto: il metro e' un elenco di terzi che il progetto
+non puo' dichiarare come fonte.
+
+Quattro difetti in questa voce, e tre dei quattro hanno una cosa in comune: non
+producevano una riga malformata. Il quarto, il piu' subdolo, produceva
+righe **bene** formate che nessun controllo poteva vedere. Un difetto che
+appare in un numero scritto e in un documento e' meno rumoroso di uno che
+appare in un dato, e pero' e' piu' pericoloso: il dato sbagliato lo prende
+qualche controllo, il numero sbagliato no, perche' nessun controllo legge i
+numeri scritti a mano se non li si e' deciso di sorvegliarli. E la sorveglianza
+non si eredita: il numero dei test e' sorvegliato perche' qualcuno ha deciso di
+sorvegliarlo, e non perche' i numeri si sorveglino da soli.
 
 
 ## 0.17 — 2026-10-04 · Il glossario in ventuno fette, e perche' potare i campi non bastava
@@ -219,11 +277,11 @@ ma non per il motivo che sembrava.
 parole: era che ogni riga portava scritti campi che la pagina non usava quasi
 mai. Qui i due tentativi sbagliati insegnano una cosa che vale per tutto il
 progetto: **potare i campi non basta**. I campi inutili erano il 27% (`notes` e
-`fonte` insieme), e la forma compatta — non ripetere le stesse chiavi 16739
+`fonte` insieme), e la forma compatta — non ripetere le stesse chiavi 10387
 volte — il 23%. Insieme poco piu' della meta': toglievano un megabyte su sei, e
 il grosso restava.
 
-**I dati erano distribuiti, non grandi.** Le 16739 voci non erano un blocco
+**I dati erano distribuiti, non grandi.** Le 10387 voci non erano un blocco
 solo: nella pagina c'erano anche le coppie, i 28 proverbi, le regole e il
 pannello dei numeri. Nessuna parte era grande abbastanza da spiegare 6,2
 megabyte da sola. Un file che contiene molte cose piccole e' grande per la
@@ -245,7 +303,7 @@ nessuno apre.
 
 **La ricerca ha un limite, e lo dichiara.** La casella cerca dentro la fetta
 aperta. Prima, quando non trovava niente, diceva «nessuna voce corrisponde»: e'
-una frase falsa, perche' le voci sono 16739 e 16739 non e' nessuna. Ora dice
+una frase falsa, perche' le voci sono 10387 e 10387 non e' nessuna. Ora dice
 **«in questa fetta»** e rimanda alla barra in alto.
 
 **Otto difetti, e ognuno ha un test.** Non sono difetti ipotetici: sono cose
@@ -569,7 +627,7 @@ che il progetto **dichiara** su di sé.
 
 **Perché.** Una voce come «ardiglione» arriva a uno studente con un italiano
 che non scrive più, e il trattino che c'era in colonna non spiegava niente.
-Il glossario ha 16739 parole del 1889 e nessuna dice che cosa vogliono dire
+Il glossario ha 10387 parole del 1889 e nessuna dice che cosa vogliono dire
 oggi. Il 0.14 aggiunge la colonna, e la cosa interessante non è la colonna:
 è **da dove viene** e che cosa non si può chiedere alla sua fonte.
 
@@ -581,7 +639,7 @@ Diventa S017, e ogni riga del glossario che riceve un significato porta in
 fonte: qui la fonte è una pagina e non un libro, quindi il codice non
 basterebbe a controllarla.
 
-**Il buco dichiarato.** 4063 voci su 16739 hanno il significato
+**Il buco dichiarato.** 4063 voci su 10387 hanno il significato
 moderno, 3235 hanno anche i sinonimi, e le altre sono un buco
 dichiarato con quattro motivi distinti: la fonte non ha l'articolo, dichiara di
 non averne la definizione, l'articolo non ha una sezione italiana, la sezione
@@ -593,7 +651,7 @@ dichiara che una parola è arcaica. Quindi **non si può chiedere alla fonte
 «questa parola è antica?»**, e il modulo non prova a indovinarlo con la
 grafia: nessun segno ortografico distingue «ardiglione», che è arcaico, da
 «cane», che non lo è. La colonna non finge di separare le parole antiche,
-spiega tutte quelle che la fonte spiega, e i 12676 che restano non sono
+spiega tutte quelle che la fonte spiega, e i 6324 che restano non sono
 una misura di quanto è antico il glossario. È il punto 5 delle domande aperte
 in `AGENTS.md`.
 
@@ -859,7 +917,7 @@ documentate). Equivalenza Python/JavaScript: 12 frasi, 0 divergenze.
 
 ## 0.9 — 2026-10-03 · Misurare quanto italiano copre il glossario, e dire quali parole mancano
 
-**Perché.** Il glossario era passato a 16739 voci e sembrava, per il numero,
+**Perché.** Il glossario era passato a 10387 voci e sembrava, per il numero,
 un vocabolario. Non lo era: era un vocabolario **di una stanza sola**. Nessuno
 poteva dirlo, perché il numero delle voci non dice quanto italiano copre, e il
 progetto non aveva nessuno strumento che lo dicesse. Il primo tentativo di
@@ -924,7 +982,7 @@ nessun carattere fuori dal latino.
 difetto che ne era venuto fuori, senza correggerlo: il glossario indicizzava
 il lato italiano sull'intero campo `italiano`. «Maladir → Maledire,
 esacràre» era una voce che il libro scrive e che il motore non trovava
-cercando «maledire». Erano **1663 voci su 16739**. Il sintomo e' quello che
+cercando «maledire». Erano **1663 voci su 10387**. Il sintomo e' quello che
 si vede subito e che sembra assurdo: la parola c'e', la risposta c'e', e
 chi scrive «maledire» riceve «nessuna voce». Un vuoto cosi' non e' un vuoto:
 e' una voce presente ma irraggiungibile, che e' la specie peggiore, perche'

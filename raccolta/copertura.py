@@ -42,11 +42,21 @@ che stanno in `morfologia.py`: quel modulo impara desinenze dal corpus e non
 contiene nessun elenco di articoli o preposizioni.
 
 Quindi adesso la pagina non asserisce niente: **misura** quante di queste
-parole il glossario trova davvero e stampa il numero. Il 23,7% resta il
-conteggio dei **lemmi di contenuto**, e la pagina dice chiaramente che è
+parole il glossario trova davvero e stampa il numero. Quella percentuale è
+il conteggio dei **lemmi di contenuto**, e la pagina dice chiaramente che è
 quello che è. Escludere parole che non sono coperte fa salire la percentuale,
 e una percentuale che sale perché si nasconde una parte è una percentuale
 falsa — per quanto sia comoda da guardare.
+
+**Il numero non e' scritto qui, e questa volta e' una scelta.** Il
+docstring di un modulo viene letto una volta, all'inizio; il glossario cresce
+ogni volta che una fonte entra, e un numero scritto qui sarebbe falso dal
+momento dopo. Il numero vive dove si misura — nell'output del comando — e
+dov'e' ripetuto (`README.md`, `lacune.md`) un test lo confronta con quello,
+saltando quando gli elenchi ItWaC non sono presenti e dichiarando di
+saltare. Un numero che resta in due posti e' un numero che invecchia in
+due posti: 23,7% e' rimasto scritto per mesi dopo che il glossario era
+passato da 10387 a 16739 voci, e nessuno lo guardava.
 
 Uso:
     python3 copertura.py                 # il quadro

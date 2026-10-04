@@ -53,7 +53,7 @@ nella pagina.
 `copertura` dice **quanto italiano copre il glossario**: è il numero che
 `buchi` non dà, perché `buchi` sa quello che il progetto *sa* di non sapere,
 mentre `copertura` sa quello che il progetto *non sapeva di non sapere*. Il
-metro sono i **lemmi** dell'ItWaC (Baroni 2009, licenza MIT): oggi **23,7%**
+metro sono i **lemmi** dell'ItWaC (Baroni 2009, licenza MIT): oggi **38,4%**
 dei lemmi italiani frequenti sono coperti. Le parole mancanti sono elencate in
 `dati/da_verificare/lacune.md`, con quello che la ricerca online ha trovato e
 quello che non ha trovato. Senza quei file il comando dice che mancano e non
@@ -587,7 +587,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 202 test
+python3 prove/test_traduttore.py     # 204 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

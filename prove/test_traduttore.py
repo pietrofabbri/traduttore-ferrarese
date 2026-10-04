@@ -862,6 +862,121 @@ class TestConteggiDichiarati(unittest.TestCase):
                          "recente e' la %s"
                          % (dichiarata.group(1), ultima))
 
+    def test_il_numero_di_locuzioni_nei_documenti_e_quello_del_motore(self):
+        # Difetto vero, di questa sessione: il registro dichiarava 2034
+        # locuzioni e 8353 parole singole. Il totale tornava, perche' i due
+        # numeri si compensavano, ma nessuno dei due era vero: erano contati con
+        # `split()`, che spaccia l'apostrofo interno, mentre il motore usa
+        # `tokenizza`, che considera `d\'avril` una parola sola.
+        #
+        # Il conto quindi non era solo vecchio: era **metodologicamente
+        # sbagliato**, e il documento descriveva un accorpamento che il motore
+        # non fa. Per questo il confronto e' con `tokenizza` e non con uno
+        # `split` di comodo: il numero deve contare quello che il motore
+        # accorpa davvero, altrimenti la frase «il motore le accorpa» e'
+        # falsa anche quando il numero e' aggiornato.
+        import sys as _sys
+        if _sys.path[:1] != [os.path.join(RADICE, "sorgenti")]:
+            _sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+        from traduttore.normalizza import tokenizza
+
+        locuzioni = singole = 0
+        for riga in io.open(os.path.join(RADICE, "dati", "glossario.jsonl"),
+                            encoding="utf-8"):
+            riga = riga.strip()
+            if not riga or riga.startswith("//"):
+                continue
+            if len(tokenizza(json.loads(riga).get("ferrarese") or "")) > 1:
+                locuzioni += 1
+            else:
+                singole += 1
+
+        testo = open(os.path.join(RADICE, "REGISTRO.md"),
+                     encoding="utf-8").read()
+        # Solo la voce piu' recente: il registro racconta anche cio' che era,
+        # e riscrivere i numeri delle voci passate farebbe di un registro un
+        # elenco senza tempo.
+        voci = re.findall(r"^## (\d+\.\d+) — .*$", testo, re.M)
+        ultima = max(voci, key=lambda v: tuple(int(x) for x in v.split(".")))
+        blocco = testo.split("## %s" % ultima, 1)[1].split("\n## ", 1)[0]
+
+        dichiarate = re.search(r"conta \*\*(\d+) locuzioni\*\* e "
+                               r"\*\*(\d+) parole singole\*\*", blocco)
+        self.assertIsNotNone(dichiarate,
+                             "la voce %s non dichiara locuzioni e parole "
+                             "singole" % ultima)
+        self.assertEqual(int(dichiarate.group(1)), locuzioni,
+                         "la voce %s dice %s locuzioni e tokenizza() ne trova %d"
+                         % (ultima, dichiarate.group(1), locuzioni))
+        self.assertEqual(int(dichiarate.group(2)), singole,
+                         "la voce %s dice %s parole singole e ne sono %d"
+                         % (ultima, dichiarate.group(2), singole))
+        # E la somma deve essere il glossario: due numeri che tornano fra
+        # loro ma non col totale sono due numeri inventati che si fanno
+        # da garanzia a vicenda.
+        self.assertEqual(locuzioni + singole,
+                         sum(1 for r in io.open(
+                             os.path.join(RADICE, "dati", "glossario.jsonl"),
+                             encoding="utf-8")
+                             if r.strip() and not r.lstrip().startswith("//")))
+
+    def test_la_copertura_dichiarata_e_quella_di_copertura_py(self):
+        # Difetto vero, di questa sessione: `README.md` e `lacune.md`
+        # dichiaravano 23,7% di copertura, il numero di quando il glossario
+        # aveva 10387 voci. Le voci sono diventate 16739 e il numero e' rimasto
+        # com'era, perche' nessun test guardava la copertura: il numero dei
+        # test era sorvegliato, quello del frontmatter anche, quello della
+        # copertura no.
+        #
+        # Il perche' e' la parte che vale: la copertura e' l'unico numero che
+        # `README.md` chiama «il numero che `buchi` non da'», cioe' quello su
+        # cui si regge la promessa del progetto. Un numero non sorvegliato non
+        # dura quanto dura il dato sotto: dura quanto dura l'ultima volta che
+        # qualcuno lo ha riguardato.
+        import subprocess
+        import sys as _sys
+        percorso = os.path.join(RADICE, "raccolta", "copertura.py")
+        grezzi = os.path.join(RADICE, "raccolta", "grezzi", "itwac_noun.csv")
+        if not os.path.exists(grezzi):
+            # Il metro non e' nel repository, e la CI non lo ha. Un test che
+            # non puo' girare deve dirlo e non fingere di essere passato:
+            # questo progetto vieta il falso verde, quindi si salta e si dice.
+            self.skipTest("gli elenchi ItWaC non sono presenti: la copertura "
+                          "non e' misurabile qui")
+        risultato = subprocess.run([_sys.executable, percorso],
+                                  capture_output=True, text=True)
+        self.assertEqual(risultato.returncode, 0, risultato.stdout)
+        m = re.search(r"coperte dal glossario\s+(\d+)\s+([\d.]+)%",
+                      risultato.stdout)
+        self.assertIsNotNone(m, risultato.stdout)
+        # `copertura.py` stampa il punto decimale e i documenti la virgola:
+        # lo stesso numero nelle due forme che si usano. Si confrontano i
+        # numeri, non le stringhe, perche' la resa non e' il dato.
+        vera = float(m.group(2))
+        for nome in ("README.md", os.path.join("dati", "da_verificare",
+                                               "lacune.md")):
+            testo = open(os.path.join(RADICE, nome), encoding="utf-8").read()
+            # Il numero puo' comparire in due forme: `38,4` (come lo scrive
+            # un italiano) e `38.4` (come lo stampa lo script). Il confronto
+            # accetta entrambe perche' quello che si verifica e' il dato, e
+            # rescrivere la punteggiatura di un documento non e' un difetto.
+            # La percentuale puo' stare dentro i marcatori (`**38,4%**`) o
+            # fuori, e il `%` puo' andare a capo prima di «dei lemmi»: in
+            # `README.md` e' `**38,4%**` a fine riga e «dei lemmi» comincia
+            # alla successiva. Il numero resta stretto — due cifre, un
+            # separatore decimale, un `%` — e l'ancoraggio a «dei lemmi»
+            # e' quello che conta: senza, il pattern prenderebbe anche le
+            # altre percentuali del documento, che sono altre misure.
+            dichiarate = re.findall(r"(\d+[.,]\d)\s*%\**\s+dei\s+lemmi",
+                                    testo)
+            self.assertTrue(dichiarate,
+                            "%s non dichiara la copertura" % nome)
+            for d in dichiarate:
+                self.assertEqual(float(d.replace(",", ".")), vera,
+                                 "%s dice %s%% e copertura.py dice %s%%"
+                                 % (nome, d, m.group(2)))
+
+
 
 
 class TestPaginaRegole(unittest.TestCase):

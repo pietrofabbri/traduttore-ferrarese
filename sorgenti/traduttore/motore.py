@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import morfologia, normalizza
+from . import morfologia, normalizza, verbi
 from .glossario import IT_FE
 
 # Le quattro origini, e la confidenza che portano con se'.
@@ -42,6 +42,11 @@ ORIGINE = {
     # frase intera che qualcuno ha scritto a memoria non vale piu' di un
     # frammento.
     "corpo_frase": 0.92,
+    # `verbo` e' una forma verbale coniugata che una fonte scrive per iscritto.
+    # Vale meno di una voce di dizionario, perche' copre una persona sola e non
+    # la parola, e vale piu' di una regola imparata, perche' qualcuno l'ha
+    # scritta: e' un'attestazione, non un calcolo.
+    "verbo": 0.75,
     "regola": 0.55,
     "modello": 0.50,
     "nessuna": 0.0,
@@ -166,6 +171,14 @@ class Motore:
             t for _, t, origine, _, _ in corrispondenze
             if origine == "nessuna" or origine == "modello"
         ]
+        # Il buco dei verbi e' **uno solo per traduzione** e non uno per parola:
+        # dodici parole non tradotte danno dodici frasi uguali, e un elenco di
+        # frasi uguali nasconde l'unica informazione che serve, che e' «quante
+        # forme e su quanti verbi stanno scritte, e quali caselle mancano».
+        if direzione == IT_FE and buchi:
+            spiegazione = verbi.spiega_buco(buchi[0])
+            if spiegazione:
+                buchi = buchi + [spiegazione]
         return Risposta(testo, tradotto, direzione, corrispondenze, buchi)
 
     # --- i quattro livelli ------------------------------------------------
@@ -270,6 +283,22 @@ class Motore:
                 regola.etichetta(), regola.supporto, regola.accordo)
             if confidenza >= self.soglia_rifiuto:
                 return prodotto, "regola", confidenza, dettaglio
+
+        # Livello 3 bis: le forme verbali attestate. Sta **prima** del modello
+        # perche' e' una fonte e il modello e' un calcolo, e **dopo** le regole
+        # imparate perche' una regola che ha visto venti esempi non vale meno di
+        # una forma che qualcuno ha scritto una volta sola.
+        #
+        # Il verso e' uno solo: si cerca dall'italiano al ferrarese. Dall'altra
+        # parte la domanda sarebbe «quale forma ferrarese e' questa?», e per
+        # rispondere servirebbe riconoscere la forma, che e' esattamente cio'
+        # che le fonti non documentano.
+        if direzione == IT_FE:
+            attestata = verbi.dall_italiano(parola)
+            if attestata["forma"]:
+                dettaglio = "forma attestata da %s: %s" % (
+                    attestata["fonte"], attestata["nota"] or "senza nota")
+                return (attestata["forma"], "verbo", ORIGINE["verbo"], dettaglio)
 
         # Livello 4: il modello, solo se c'e' e solo se non ha gia' risposto
         # nessuno dei precedenti.

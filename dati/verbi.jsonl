@@ -1,0 +1,60 @@
+// --- IL SISTEMA, dichiarato perché si possa controllarlo -----------------------------
+//
+// **Che cosa è questo file.** Le forme verbali **finite e non finite** che le fonti
+// del repository attestano per iscritto, con la fonte accanto a ogni riga. Non è un
+// coniugatore e nonvuole esserlo: è un indice di ciò che è documentato.
+//
+// **Che cosa non è.** Non c'è il paradigma. Nel repository non esiste una fonte che
+// tabelli la coniugazione ferrarese: non la prima, né la seconda, né la terza, né
+// l'imperativo oltre la seconda persona, né il futuro, né il condizionale. Quello
+// che si trova è sparso in due fonti che il progetto ha già, e sono poche forme vere.
+//
+// **Perché questo file esiste comunque.** Perché il traduttore smetta di fallire in
+// silenzio. Una parola coniugata che il motore non sa tradurre è un buco; un buco
+// dichiarato è un lavoro da fare, e questa riga è il posto dove il lavoro è scritto.
+//
+// Le forme entrano solo da `raccolta/da_verbi.py`, che cita la frase della fonte e
+// la verifica: per S015 dentro `dati/regole_grammaticali.json`, per S001 dentro il
+// grezzo di Biondelli, con il numero di riga. Una forma che non si trova nella fonte
+// non entra.
+//
+// Personas: 1sing, 2sing, 3sing, 1plur, 2plur, 3plur, imperativo, infinito.
+// Tempi: presente, passato, gerundio, participio.
+// Tempi che non hanno persona, perché sono gli stessi per tutti: gerundio, participio.
+//
+// **I buchi dichiarati.** Non c'è nessuna fonte che scriva queste caselle, quindi
+// nessuna riga le riempe e nessun codice le ricava:
+//
+// //   - 2sing presente
+//   - 2plur presente
+//   - 3plur presente
+//   - 2sing passato
+//   - 2plur passato
+//   - 3plur passato
+//   - futuro presente
+//   - condizionale presente
+//
+// **Un disaccordo fra due fonti, non risolto.** Il noi plurale: S015 (R035) lo
+// scrive in «-ŋ» — «nu a kaŋtéŋ» — e S001 lo scrive con una proclitica «i»
+// — «i andò». Le due forme sono in questo file e il controllo F16 lo segnala.
+// Sceglierefra le due è una decisione che spetta a un parlante, non a un programma.
+// ---------------------------------------------------------------------------------
+// SISTEMA {"persone": ["1sing", "2sing", "3sing", "1plur", "2plur", "3plur", "imperativo", "infinito"], "tempi": ["presente", "passato", "gerundio", "participio"], "senza_persona": ["gerundio", "participio"], "vuoto": [["2sing", "presente"], ["2plur", "presente"], ["3plur", "presente"], ["2sing", "passato"], ["2plur", "passato"], ["3plur", "passato"], ["futuro", "presente"], ["condizionale", "presente"]], "forme": 18}
+{"id": "C0001", "lemma": "pjóvar", "lemma_id": "V14162", "persona": "3sing", "tempo": "presente", "forma": "pióv", "clitico": "", "italiano": "piove", "fonte": "S015", "dove": "§4", "nota": "Terza persona singolare. Il soggetto e' la proclitica «a».", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0002", "lemma": "vlér", "lemma_id": "V16513", "persona": "1sing", "tempo": "presente", "forma": "vój", "clitico": "", "italiano": "voglio", "fonte": "S015", "dove": "§4", "nota": "La negazione e' «aŋ» attaccata alla proclitica: non e' parte del verbo.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0003", "lemma": "avér", "lemma_id": "", "persona": "1sing", "tempo": "presente", "forma": "ò", "clitico": "aj", "italiano": "ho", "fonte": "S015", "dove": "§4", "nota": "Ausiliare. Il clitico «aj» precede il verbo e ne cambia la forma: la stessa persona e lo stesso tempo hanno due forme diverse, quindi il clitico fa parte della chiave. Il lemma non e' nel glossario: la riga porta solo la forma attestata e il nome che le ha dato questa fonte.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": false}
+{"id": "C0004", "lemma": "avér", "lemma_id": "", "persona": "1sing", "tempo": "presente", "forma": "o", "clitico": "ɣ", "italiano": "ne ho", "fonte": "S015", "dove": "§4", "nota": "Stessa persona, forma diversa: e' quello che dichiara R036, «avér» si raddoppia con una «ɣ» quando e' dimostrativo. Il lemma non e' nel glossario: la riga porta solo la forma attestata e il nome che le ha dato questa fonte.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": false}
+{"id": "C0005", "lemma": "kaŋtàr", "lemma_id": "V11302", "persona": "1plur", "tempo": "presente", "forma": "kaŋtéŋ", "clitico": "", "italiano": "cantiamo", "fonte": "S015", "dove": "§4", "nota": "Il noi plurale in «-ŋ», dove l'italiano ha la «m».", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0006", "lemma": "sér", "lemma_id": "V15207", "persona": "1plur", "tempo": "presente", "forma": "séŋ", "clitico": "", "italiano": "siamo", "fonte": "S015", "dove": "§4", "nota": "Ausiliare «èsar» di R036, scritto «sér» nel glossario. Il nome e' diverso fra la regola e il glossario e il progetto non li concilia: entrambe le forme sono dichiarate.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0007", "lemma": "aŋdàr", "lemma_id": "V10559", "persona": "", "tempo": "participio", "forma": "aŋdà", "clitico": "", "italiano": "sono andato, andai", "fonte": "S015", "dove": "§4", "nota": "La frase porta anche l'ausiliare «són», che e' una forma finita di essere; l'italiano non ha soggetto in «sono andato» e quindi **la persona e' vuota**, perche' determinarne una sarebbe inventarla. Nessuna coniugazione regolare e' ipotizzata per il passato prossimo.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0008", "lemma": "Caminàr", "lemma_id": "V1511", "persona": "imperativo", "tempo": "presente", "forma": "kamìna", "clitico": "", "italiano": "cammina!", "fonte": "S015", "dove": "§4", "nota": "All'imperativo il soggetto si omette: e' quello che dichiara R030.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0009", "lemma": "aŋdàr", "lemma_id": "V10559", "persona": "1sing", "tempo": "passato", "forma": "andò", "clitico": "", "italiano": "andai", "fonte": "S001", "dove": "pag. 497, riga 15815", "nota": "Biondelli: il passato finisce in «-ò», come il bolognese. «andai» e' l'italiano della stessa casella.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0010", "lemma": "bašàr", "lemma_id": "V10935", "persona": "1sing", "tempo": "passato", "forma": "basò", "clitico": "", "italiano": "baciò", "fonte": "S001", "dove": "pag. 497, riga 15815", "nota": "Stessa riga della precedente: Biondelli elenca i tre esempi nella stessa tabella.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0011", "lemma": "portàr", "lemma_id": "V0002", "persona": "1sing", "tempo": "passato", "forma": "purtò", "clitico": "", "italiano": "portò", "fonte": "S001", "dove": "pag. 497, riga 15815", "nota": "Stessa riga: terzo esempio della tabella.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0012", "lemma": "aŋdàr", "lemma_id": "V10559", "persona": "1plur", "tempo": "passato", "forma": "i andò", "clitico": "i", "italiano": "andammo", "fonte": "S001", "dove": "pag. 497, riga 15815", "nota": "**In disaccordo con S015.** Bigoni scrive il noi plurale in «-ŋ» (R035), Biondelli lo scrive con una proclitica «i» davanti: «i andò» contro «nu a kaŋtéŋ». Il progetto non sceglie, le due forme restano e il disaccordo e' dichiarato qui e dal controllo F16.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0013", "lemma": "portàr", "lemma_id": "V0002", "persona": "1plur", "tempo": "passato", "forma": "i purtò", "clitico": "i", "italiano": "portammo", "fonte": "S001", "dove": "pag. 497, riga 15815", "nota": "Secondo esempio del noi plurale, stesso disaccordo con S015.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0014", "lemma": "sér", "lemma_id": "V15207", "persona": "infinito", "tempo": "gerundio", "forma": "essènd", "clitico": "", "italiano": "essendo", "fonte": "S001", "dove": "pag. 499, riga 15897", "nota": "Gerundio in «-ènd».", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0015", "lemma": "Dir", "lemma_id": "V2583", "persona": "infinito", "tempo": "gerundio", "forma": "disènd", "clitico": "", "italiano": "dicendo", "fonte": "S001", "dove": "pag. 499, riga 15897", "nota": "Stessa riga: cinque verbi nella stessa tabella.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0016", "lemma": "Far", "lemma_id": "V3159", "persona": "infinito", "tempo": "gerundio", "forma": "fasènd", "clitico": "", "italiano": "facendo", "fonte": "S001", "dove": "pag. 499, riga 15897", "nota": "Stessa riga.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0017", "lemma": "Tgnìr", "lemma_id": "V9350", "persona": "infinito", "tempo": "gerundio", "forma": "tulènd", "clitico": "", "italiano": "togliendo", "fonte": "S001", "dove": "pag. 499, riga 15897", "nota": "Il glossario scrive «Tgnìr» per il lemma di «tenere» (V9350) e qui Biondelli elenca «togliendo»: e' la stessa voce solo se si accetta che il glossario e la tavola dicano cose diverse. La riga resta, e il nome del lemma e' quello del glossario.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}
+{"id": "C0018", "lemma": "vñir", "lemma_id": "V16516", "persona": "infinito", "tempo": "gerundio", "forma": "vegnènd", "clitico": "", "italiano": "venendo", "fonte": "S001", "dove": "pag. 499, riga 15897", "nota": "Stessa riga.", "attendibilita": "I", "da_verificare": true, "lemma_nel_glossario": true}

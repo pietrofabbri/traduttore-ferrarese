@@ -31,7 +31,7 @@ import os
 import subprocess
 import sys
 
-from . import morfologia, verifica_dati
+from . import morfologia, verifica_dati, verbi
 from . import voce as voce_modulo
 from .audio import Archivio, controlla_archivo
 from .sintesi import Sintesi, controlla_sintesi
@@ -394,6 +394,8 @@ def comando_verifica(args) -> int:
                 + verifica_dati.controlla_glossario(glossario)
                 + verifica_dati.controlla_corpora(corpus)
                 + verifica_dati.controlla_fonetica(fonetica, glossario, corpus, varieta)
+                + verifica_dati.controlla_verbi(
+                    None, verifica_dati.fonti_dichiarate())
                 + controlla_archivo(archivio, AUDIO)
                 + controlla_sintesi(sintesi, WEB,
                                     forme_senza_dubbio=_senza_dubbio(fonetica))
@@ -496,6 +498,62 @@ def _provata(voto: str, radice: str, parola: str = "majàl") -> dict:
     esito["nome"] = voto
     esito["impronta"] = _impronta(esito["wav"])
     return esito
+
+
+def comando_verbi(args) -> int:
+    """Le forme verbali che le fonti attestano, e i buchi che dichiarano.
+
+    Il comando esiste perche' «il traduttore non coniuga» e' una frase che si
+    può intendere in due modi: che il progetto non abbia le regole, o che le
+    regole non ci siano nelle fonti. La risposta e' la seconda, e questa stampa
+    e' la prova: ogni forma porta la fonte e il punto in cui la fonte la
+    scrive, e sotto c'e' la lista delle caselle che **nessuna** fonte scrive.
+
+    Con `--lemma` si chiede una casella sola. La risposta e' sempre una delle
+    due: la forma che la fonte scrive, o il buco che dice perche' quella non la
+    scrive nessuna.
+    """
+    sa = verbi.cosa_sa()
+    if not sa["forme"]:
+        print("dati/verbi.jsonl non ha forme: la riga SISTEMA manca, e senza "
+              "di essa non si sa nemmeno che persone e tempi esistano.")
+        return 1
+
+    if args.lemma:
+        esito = verbi.coniuga(args.lemma, args.persona, args.tempo,
+                             args.clitico or "")
+        if esito["forma"]:
+            print("%s %s %s -> %s" % (args.lemma, args.persona or "(senza "
+                                   "persona)", args.tempo, esito["forma"]))
+            print("fonte: %s" % esito["fonte"])
+            if esito["nota"]:
+                print("nota: %s" % esito["nota"])
+            return 0
+        print("nessuna forma: %s" % esito["problema"])
+        return 1
+
+    print("forme attestate dalle fonti %4d   su %d verbi"
+          % (sa["forme"], sa["verbi"]))
+    print()
+    print("%-6s %-11s %-9s %-9s %-11s %-24s %s"
+          % ("id", "lemma", "persona", "tempo", "forma", "italiano", "fonte"))
+    for riga in verbi.carica()["righe"]:
+        print("%-6s %-11s %-9s %-9s %-11s %-24s %s"
+              % (riga["id"], riga["lemma"], riga["persona"] or "-",
+                 riga["tempo"], riga["forma"], riga["italiano"][:24],
+                 "%s %s" % (riga["fonte"], riga["dove"])))
+    print()
+    print("Le caselle che nessuna fonte scrive, e che il progetto non indovina:")
+    for persona, tempo in sa["vuoto"]:
+        print("  %-9s %s" % (persona, tempo))
+    print()
+    print("Persone dichiarate: %s" % ", ".join(sa["persone"]))
+    print("Tempi dichiarati: %s" % ", ".join(sa["tempi"]))
+    print()
+    print("Nessuna di queste forme e' verificata da un parlante: sono "
+          "interpretazioni")
+    print("di due fonti, e il progetto le chiama cosi'.")
+    return 0
 
 
 def comando_voci(args) -> int:
@@ -899,6 +957,18 @@ def costruisci_parser() -> argparse.ArgumentParser:
                         % (voce_modulo.voce_dichiarata() or "non dichiarata"))
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_voce)
+
+    p = sotto.add_parser(
+        "verbi", help="le forme verbali attestate dalle fonti, e i buchi")
+    p.add_argument("--lemma", help="un lemma, per chiedere una casella")
+    p.add_argument("--persona", default="1sing",
+                   help="1sing, 2sing, 3sing, 1plur, 2plur, 3plur, "
+                        "imperativo, infinito")
+    p.add_argument("--tempo", default="presente",
+                   help="presente, passato, gerundio, participio")
+    p.add_argument("--clitico", default="",
+                   help="il clitico, quando la fonte lo scrive")
+    p.set_defaults(func=comando_verbi)
 
     p = sotto.add_parser(
         "voci", help="i riproduttori dichiarati, e se suonano davvero")

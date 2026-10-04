@@ -222,13 +222,19 @@ class TestMotore(unittest.TestCase):
         self.assertEqual(len(risposta.per_corrispondenza), 1)
 
     def test_l_accorpamento_e_avido_e_non_mangia_troppo(self):
-        # «voglio a braccia aperte»: l'accorpamento parte dalla parola piu'
+        # «vorrei a braccia aperte»: l'accorpamento parte dalla parola piu'
         # lunga e torna indietro finche' non trova. «a braccia» da sola non e'
         # nel glossario e non deve diventare una risposta.
-        risposta = self.motore.traduci("voglio a braccia aperte", IT_FE)
+        #
+        # La parola di guardia e' «vorrei» e non «voglio» perche' «voglio» e'
+        # una delle forme verbali che le fonti attestano: il motore la
+        # traduce, e questo test che parla solo di accorpamento fallirebbe per
+        # una cosa che non sta provando. Il livello delle forme attestate ha il
+        # suo test in `TestLeFormeVerbali`.
+        risposta = self.motore.traduci("vorrei a braccia aperte", IT_FE)
         testi = [c[0] for c in risposta.per_corrispondenza]
-        self.assertEqual(testi, ["voglio", "a braccia aperte"])
-        self.assertEqual(risposta.testo, "voglio a brazz avèrti")
+        self.assertEqual(testi, ["vorrei", "a braccia aperte"])
+        self.assertEqual(risposta.testo, "vorrei a brazz avèrti")
 
     def test_una_parola_sola_non_e_mai_un_accorpamento(self):
         # «mangiare» e' una voce da sola: l'accorpamento comincia da due
@@ -4039,6 +4045,166 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
         self.assertEqual(len(numeri), 1,
                          "il generatore ha riscritto la voce che era gia' "
                          "nel file")
+
+
+class TestLeFormeVerbali(unittest.TestCase):
+    """Le forme verbali attestate, e i buchi che le circondano.
+
+    Il difetto che questi test prendono e' quello che ha fatto prendere il
+    traduttore: **il progetto non coniugava e non lo diceva**. Una parola
+    coniugata non tradotta tornava come trattino, e il trattino non dice se il
+    progetto non sa o se la fonte non c'e'. Qui si controllano le tre cose che
+    rendono la differenza visibile:
+
+    - la risposta alla casella che la fonte scrive e' la forma, con la fonte;
+    - la risposta alla casella che nessuna fonte scrive e' un buco che **nomina**
+      la casella, e non una forma inventata;
+    - il buco che finisce nella risposta del motore dice quanti verbi e quante
+      forme ci sono, e quali caselle mancano.
+    """
+
+    def setUp(self):
+        from traduttore import verbi
+        self.verbi = verbi
+        self.sistema, self.righe = verbi.leggi()
+
+    def test_il_file_dichiara_il_sistema(self):
+        # Senza la riga SISTEMA il modulo non sa che persone e tempi esistono,
+        # e ogni ricerca risponde «non so» per la ragione sbagliata.
+        self.assertTrue(self.sistema, "manca la riga // SISTEMA")
+        for chiave in ("persone", "tempi", "senza_persona", "vuoto", "forme"):
+            self.assertIn(chiave, self.sistema,
+                          "il sistema non dichiara %r" % chiave)
+        self.assertEqual(self.sistema["forme"], len(self.righe))
+
+    def test_ogni_forma_porta_la_fonte_e_il_punto(self):
+        # Una forma senza «dove» non si puo' controllare: chi la legge fra
+        # vent'anni non puo' tornare a guardare la pagina.
+        for riga in self.righe:
+            self.assertIn(riga["fonte"], ("S001", "S015"), riga["id"])
+            self.assertTrue(riga["dove"].strip(), riga["id"])
+            self.assertTrue(riga["nota"].strip(), riga["id"])
+            self.assertEqual(riga["attendibilita"], "I", riga["id"])
+
+    def test_una_casella_documented_risponde_la_forma(self):
+        esito = self.verbi.coniuga("aŋdàr", "1sing", "passato")
+        self.assertEqual(esito["forma"], "andò")
+        self.assertEqual(esito["problema"], "")
+        self.assertIn("S001", esito["fonte"])
+
+    def test_una_casella_non_documentata_dice_che_buco_e(self):
+        # Il buco deve **nominare** la casella: un messaggio generico
+        # («non so») fa perdere il posto dove intervenire.
+        esito = self.verbi.coniuga("aŋdàr", "2sing", "presente")
+        self.assertEqual(esito["forma"], "",
+                         "ha restituito una forma: buco dichiarato vuol dire "
+                         "nessuna")
+        self.assertIn("2sing", esito["problema"])
+        self.assertIn("presente", esito["problema"])
+
+    def test_un_verbo_che_nessuna_fonte_coniuga_si_distingue(self):
+        # «il verbo non c'e'» e «la casella non c'e'» sono due lavori diversi, e
+        # il buco deve dire quale dei due e'.
+        esito = self.verbi.coniuga("magnàr", "3sing", "presente")
+        self.assertEqual(esito["forma"], "")
+        self.assertIn("non è fra i", esito["problema"])
+
+    def test_il_clitico_fa_parte_della_chiave(self):
+        # S015 dichiara (R036) che `avér` cambia forma con la «ɣ». Una chiave
+        # senza clitico restituirebbe «ò» anche per «mi a ɣ o».
+        con = self.verbi.coniuga("avér", "1sing", "presente", "aj")
+        senza = self.verbi.coniuga("avér", "1sing", "presente", "ɣ")
+        self.assertEqual(con["forma"], "ò")
+        self.assertEqual(senza["forma"], "o")
+
+    def test_una_persona_inventata_non_va_neanche_provata(self):
+        esito = self.verbi.coniuga("aŋdàr", "terza", "presente")
+        self.assertEqual(esito["forma"], "")
+        self.assertIn("non è fra le persone", esito["problema"])
+        esito = self.verbi.coniuga("aŋdàr", "1sing", "futuro")
+        self.assertEqual(esito["forma"], "")
+        self.assertIn("non è fra i tempi", esito["problema"])
+
+    def test_il_disaccordo_sul_noi_plurale_e_dichiarato(self):
+        # Due fonti, due modi di marcare il noi plurale: «-ŋ» per S015 e la
+        # proclitica «i» per S001. Il progetto non sceglie, ma la scelta deve
+        # essere visibile dove si legge la forma, non in una nota una volta sola.
+        noi = [r for r in self.righe if r["persona"] == "1plur"]
+        self.assertTrue(noi)
+        self.assertEqual({r["fonte"] for r in noi}, {"S001", "S015"},
+                         "il disaccordo dichiarato deve restare fra le due fonti")
+        for riga in [r for r in noi if r["fonte"] == "S001"]:
+            self.assertIn("disaccordo", riga["nota"].lower(),
+                          "la riga di S001 non dichiara il disaccordo: %s"
+                          % riga["id"])
+
+    def test_il_motore_risponde_con_una_forma_attestata(self):
+        # Il caso che riguarda lo studente: scrive una parola coniugata che una
+        # fonte ha messo accanto alla forma ferrarese, e riceve la forma.
+        from traduttore.motore import Motore
+        motore = Motore(glossario_di_prova(), corpus_di_prova())
+        risposta = motore.traduci("voglio")
+        coppie = dict((originale, (tradotto, origine)) for originale, tradotto,
+                      origine, _, _ in risposta.per_corrispondenza)
+        self.assertEqual(coppie["voglio"][0], "vój")
+        self.assertEqual(coppie["voglio"][1], "verbo")
+
+    def test_il_buco_del_motore_dice_quanti_verbi_e_quali_caselle_mancano(self):
+        from traduttore.motore import Motore
+        motore = Motore(glossario_di_prova(), corpus_di_prova())
+        risposta = motore.traduci("dormimmo")
+        buchi = " ".join(risposta.buchi)
+        self.assertIn("non coniuga", buchi)
+        self.assertIn(str(len(self.righe)), buchi)
+        self.assertIn("2sing", buchi)
+
+    def test_il_buco_non_accusa_una_parola_che_non_e_un_verbo(self):
+        # I buchi di una traduzione sono anche «il» e «di». Una frase che
+        # dicesse «questa parola non è una forma attestata» sarebbe falsa per
+        # meta' dei buchi, quindi la frase parla del progetto e non della parola.
+        frase = self.verbi.spiega_buco("il")
+        self.assertIn("il progetto non coniuga", frase)
+        self.assertNotIn("questa parola", frase)
+
+    def test_il_controllo_F16_e_contento(self):
+        from traduttore import verifica_dati
+        fonti = verifica_dati.fonti_dichiarate()
+        self.assertTrue(fonti, "dati/fonti.json non si legge: il controllo "
+                               "passerebbe sul vuoto")
+        problemi = verifica_dati.controlla_verbi(None, fonti)
+        errori = [p for p in problemi
+                  if p.codice == "F16" and p.gravita == "errore"]
+        self.assertEqual(errori, [],
+                         "F16 segnala un errore sulle forme attestate: %s"
+                         % errori)
+
+    def test_una_fonte_inventata_e_una_casella_inventata_sono_errori(self):
+        from traduttore import verifica_dati
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as cartella:
+            finto = os.path.join(cartella, "verbi.jsonl")
+            righe = [dict(r) for r in self.righe]
+            # Tre difetti, su tre righe diverse: metterli sulla stessa riga
+            # nasconderebbe il secondo, perche' il controllo che guarda la
+            # fonte e' il primo e gli altri due non li guarda affatto.
+            righe[0]["fonte"] = "S999"
+            righe[1]["dove"] = ""
+            righe[2]["persona"] = "terza"
+            righe[3]["persona"] = ""
+            righe[3]["tempo"] = "presente"
+            with io.open(finto, "w", encoding="utf-8") as f:
+                f.write("// SISTEMA %s\n"
+                        % json.dumps(self.sistema, ensure_ascii=False))
+                for riga in righe:
+                    f.write(json.dumps(riga, ensure_ascii=False) + "\n")
+            problemi = verifica_dati.controlla_verbi(
+                None, verifica_dati.fonti_dichiarate(), percorso=finto)
+        messaggi = " ".join(p.messaggio for p in problemi)
+        self.assertIn("S999", messaggi)
+        self.assertIn("dove** la fonte", messaggi)
+        self.assertIn("terza", messaggi)
+        self.assertIn("casella inventata", messaggi)
 
 
 if __name__ == "__main__":

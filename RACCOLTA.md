@@ -534,3 +534,30 @@ Il generatore non riscrive quello che ha gia' scritto e non crasha se il file
 non esiste. Il numero degli scarti viene stampato ogni volta: **2** senza
 spiegazione, **2** mozzate, **31** scritti.
 
+## Le forme verbali: `raccolta/da_verbi.py`
+
+**Il buco e la sua dichiarazione.** Nel repository non c'è una fonte che tabelli
+la coniugazione ferrarese. Quello che c'è sono poche forme vere, in due fonti:
+
+- **S015**, Bigoni, note linguistiche, sezione 4 — le frasi sono già in
+  `dati/regole_grammaticali.json`, quindi sono una seconda copia della fonte
+  dentro il repository e il generatore le verifica lì;
+- **S001**, Biondelli 1853 — le tavole di confronto sul ferrarese, nel grezzo,
+  con il numero di riga nella voce di ogni forma.
+
+Ogni riga di `raccolta/da_verbi.py` è una **citazione**: la frase, la regola o
+il numero di riga in cui compare, e la forma che se ne ricava. Se la fonte non
+contiene più la frase, il generatore **non scrive niente** e lo dice: è il
+comportamento giusto, perché il file deve dire solo ciò che le fonti scrivono.
+
+Uso:
+
+```
+python3 raccolta/da_verbi.py --prova    # i quattro conti, non scrive
+python3 raccolta/da_verbi.py            # scrive in dati/verbi.jsonl
+```
+
+Le righe hanno `persona`, `tempo`, `forma`, `clitico`, `italiano`, `fonte` e
+`dove`. Una persona vuota è ammessa solo con `gerundio` e `participio`, che non
+hanno persona; la regola è dichiarata nella riga `// SISTEMA`, non nel codice.
+

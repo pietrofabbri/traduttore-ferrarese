@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.22
+versione: 0.23
 data: 2026-10-05
 ---
 
@@ -85,6 +85,77 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.23 — 2026-10-05 · Il traduttore non coniugava e non lo diceva
+
+**Il buco vero, e perché non era un codice mancante.** «Non sa coniugare molti
+verbi» è un sintomo; la causa è che **nel repository non c'è il paradigma**.
+Ho cercato in tutte le fonti che il progetto ha: Biondelli, Nannini, Azzi,
+Gaia, il Ferri. Nessuna tabella la coniugazione ferrarese. Quello che c'è è
+sparse in due fonti, e sono poche forme vere: la sezione 4 di Bigoni (S015),
+che è già dentro `dati/regole_grammaticali.json`, e le tavole di confronto sul
+ferrarese di Biondelli (S001), che sono in `raccolta/grezzi/biondelli_1853.txt`.
+
+Un coniugatore che ricava le desinenze dall'italiano produrrebbe forme
+ferraresi che nessuno ha mai scritto. Il progetto non mette in `dati/` niente
+che non sia in una fonte, quindi **non si ricava niente**.
+
+**Che cosa è cambiato, allora.** Tre cose, e la prima è la più importante.
+
+1. **Il buco si dichiara.** `dati/verbi.jsonl` è un indice delle forme che le
+   fonti attestano per iscritto, con la fonte e il punto in cui la fonte le
+   scrive: **18 forme su 13 verbi**. Sotto, la lista delle caselle che
+   **nessuna** fonte scrive — 2sing, 2plur e 3plur del presente e del passato,
+   il futuro, il condizionale — e nessun codice le riempe. Una parola
+   coniugata che il motore non sa tradurre ora torna con la spiegazione: quante
+   forme ci sono, su quanti verbi, e quali caselle mancano. Prima tornava come
+   trattino, e un trattino non distingue «non so» da «non c'è».
+2. **Dove le fonti scrivono una forma, il motore la usa.** `voglio` → `vój`
+   (S015, §4), con confidenza 0,75: meno di una voce di dizionario, perché
+   copre una persona sola, e più di una regola imparata, perché qualcuno l'ha
+   scritta. Il comando `python3 -m traduttore.cli verbi` stampa la tabella e i
+   buchi; con `--lemma`, `--persona` e `--tempo` chiede una casella sola e la
+   risposta è sempre una delle due: la forma, o il buco che dice perché quella
+   non la scrive nessuna.
+3. **Il controllo **F16** verifica ogni riga**: la fonte è fra quelle
+   dichiarate in `dati/fonti.json`, la riga dice **dove** la fonte scrive la
+   forma, la persona e il tempo sono fra quelli dichiarati, e una persona
+   vuota è ammessa solo con i due tempi che non ne hanno — il gerundio e il
+   participio. Una forma senza pagina non è un dato che si possa controllare.
+
+**Il clitico fa parte della chiave, e non è una pignoleria.** S015 (R036)
+dichiara che `avér` si raddoppia con una «ɣ» quando è dimostrativo: «mi aj ò»
+e «mi a ɣ o» sono la stessa persona e lo stesso tempo con due forme diverse.
+Una chiave senza clitico restituirebbe «ò» per entrambe.
+
+**Un disaccordo fra due fonti, dichiarato e non risolto.** Il noi plurale:
+S015 lo scrive in «-ŋ» — «nu a kaŋtéŋ» — e S001 con una proclitica «i» —
+«i andò». Le due forme sono nel file e il disaccordo è scritto nella nota
+delle due righe di S001. Scegliere è una decisione che spetta a un parlante.
+
+**Una verifica ha preso me, e la prova che serve.** Avevo scritto a mano la
+frase di Bigoni come `a sąm aŋdà`. La fonte scrive `a són aŋdà`: avevo letto
+`ón` come `ąm` nel terminale e copiato l'errore. Il generatore se n'è accorto
+da solo, perché confronta ogni frase con la fonte invece di fidarsi di quello
+che ho scritto — e per questo `raccolta/da_verbi.py` **cita** la frase invece
+di cercarla con una regex: una regex aggiunge forme che la fonte non scrive e
+perde forme che scrive.
+
+**Un difetto che i controlli non avrebbero preso, e che ho preso io.** Il primo
+test sull'accorpamento usava «voglio» come parola di guardia, e quando il
+motore ha iniziato a tradurla il test è fallito. Non era un test rotto: era un
+test che, senza saperlo, provava due cose. La parola di guardia è diventata
+«vorrei», e il motivo è scritto nel test.
+
+**Verifiche.** 250 test (erano 237): tredici nuovi sulle forme verbali.
+`verifica`: 0 errori, 8 avvisi noti, e F16 non segnala nulla sulle 18 forme.
+Il generatore, rieseguito, scrive **0** righe: sono già tutte dentro.
+
+**Il limite, dichiarato e non aggirabile.** Con questi dati il progetto sa 18
+forme verbali. Le altre caselle del paradigma restano scritte come buchi, e a
+riempirle serve una fonte che le scriva: una grammatica del ferrarese con le
+tabelle, o un vocabolario che per ogni verbo dia le forme. Nessun programma
+può produrre quella fonte, e il progetto non la inventa.
 
 ## 0.22 — 2026-10-05 · Trentuno modi di dire entrano nelle coppie, e il lettore che li leggeva sbagliava
 

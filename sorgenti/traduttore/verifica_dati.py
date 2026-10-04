@@ -15,6 +15,9 @@ perche' il glossario e' un fatto e i fatti non si correggono in automatico.
 
 from __future__ import annotations
 
+import io
+import json
+import os
 from dataclasses import dataclass
 
 from .corpora import TIPI
@@ -426,6 +429,136 @@ def _controlla_varieta_delle_trascrizioni(fonetica, glossario, varieta) -> list:
                 "F14", codice,
                 "%d voci in questa varieta' e nessuna trascrizione: le parole ci "
                 "sono, i suoni no" % conteggi[codice]["glossario"],
+                gravita="avviso"))
+    return problemi
+
+
+DATI = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))), "dati")
+
+
+def fonti_dichiarate(percorso: str = None) -> list:
+    """Le fonti di `dati/fonti.json`, come lista di dizionari.
+
+    Va qui e non nella CLI perche' un controllo che non sa da solo quali sono
+    le fonti dichiarate va chiamato con una lista che qualcuno ha passato a
+    mano, e basta un richiamo sbagliato perche' il controllo diventi verde
+    perche' nessuno gli ha dato niente da controllare. Se il file non c'e', la
+    lista e' vuota e **il controllo se ne accorge**: e' il caso peggiore, e lo
+    dice perche' e' meglio di un controllo che passa sul vuoto.
+    """
+    percorso = percorso or os.path.join(DATI, "fonti.json")
+    if not os.path.exists(percorso):
+        return []
+    with io.open(percorso, encoding="utf-8") as f:
+        return json.load(f).get("fonti", [])
+
+
+def controlla_verbi(verbi, fonti=None, percorso: str = None) -> list:
+    """**F16**: le forme verbali attestate sono verificabili una per una.
+
+    Il controllo non guarda se la coniugazione e' giusta — quello lo fa un
+    parlante, e nessun programma lo puo' fare al posto suo. Guarda tre cose
+    che sono verificabili meccanicamente e che, se mancano, rendono la riga
+    inutilizzabile:
+
+    - **la fonte** e' fra quelle dichiarate in `dati/fonti.json`, e la sua riga
+      dice **dove** scrive la forma: una forma senza pagina e senza riga non si
+      puo' controllare, e chi la legge fra vent'anni non puo' tornare a
+      guardarla;
+    - **la persona** e' fra quelle dichiarate, o e' vuota e il tempo e' uno dei
+      due che non hanno persona (gerundio e participio): una casella inventata
+      e' una riga che nessuno potra' usare;
+    - **il tempo** e' fra quelli dichiarati.
+
+    E poi una cosa che non e' un errore ma un disaccordo: due fonti che scrivono
+    la stessa casella in due modi diversi. Non e' un errore perche' il progetto
+    non sceglie fra due fonti, e segnalarlo come errore obbligherebbe a scegliere.
+    """
+    from . import verbi as verbi_modulo
+    problemi = []
+    # Il percorso e' un parametro perche' un controllo che si puo' chiamare
+    # solo sul file dichiarato si puo' provare solo sul file dichiarato, e
+    # quindi non si puo' provare con un file che abbia un difetto. Il parametro
+    # serve per quello, e non a girare il controllo su un file qualsiasi.
+    sistema, righe = verbi_modulo.leggi(percorso or verbi_modulo.PERCORSO)
+    if not sistema:
+        return [Problema(
+            "F16", percorso or verbi_modulo.PERCORSO,
+            "manca la riga `// SISTEMA`: senza di essa il modulo non sa che "
+            "persone e tempi esistono, e ogni ricerca su una forma coniugata "
+            "risponde «non so» per la ragione sbagliata",
+            gravita="avviso")]
+
+    persone = sistema.get("persone") or []
+    tempi = sistema.get("tempi") or []
+    # Quali tempi non hanno persona e' una **dichiarazione del file**, non una
+    # costante del codice: se un giorno una fonte documenta il gerundio con
+    # una persona, la riga che lo dice e' quella giusta e va cambiata la' con
+    # la fonte, non qui.
+    senza_persona = sistema.get("senza_persona") or []
+    if not senza_persona:
+        problemi.append(Problema(
+            "F16", percorso or verbi_modulo.PERCORSO,
+            "la riga SISTEMA non dichiara `senza_persona`: senza sapere quali "
+            "tempi non hanno persona il controllo non puo' distinguere una "
+            "forma finita senza persona — che e' una casella inventata — da un "
+            "participio che ce l'ha per natura",
+            gravita="avviso"))
+    conosciute = {f.get("id"): f for f in (fonti or [])}
+
+    for riga in righe:
+        dove = riga.get("id", "senza id")
+        fonte = riga.get("fonte", "")
+        if fonte not in conosciute:
+            problemi.append(Problema(
+                "F16", dove,
+                "la fonte %r non è fra quelle dichiarate in dati/fonti.json: "
+                "una forma che non si può attribuire a nessuna fonte non entra"
+                % fonte))
+        elif not (riga.get("dove") or "").strip():
+            problemi.append(Problema(
+                "F16", dove,
+                "la fonte %s c'è, ma la riga non dice **dove** la fonte scrive "
+                "la forma: senza pagina e riga il dato non si può controllare"
+                % fonte))
+        if riga.get("tempo") not in tempi:
+            problemi.append(Problema(
+                "F16", dove,
+                "il tempo %r non è fra quelli dichiarati (%s)"
+                % (riga.get("tempo"), ", ".join(tempi))))
+        persona = riga.get("persona") or ""
+        if persona and persona not in persone:
+            problemi.append(Problema(
+                "F16", dove,
+                "la persona %r non è fra quelle dichiarate (%s)"
+                % (persona, ", ".join(persone))))
+        if not persona and riga.get("tempo") not in senza_persona:
+            problemi.append(Problema(
+                "F16", dove,
+                "la persona è vuota e il tempo %r non è fra %s: una forma "
+                "finita senza persona è una casella inventata"
+                % (riga.get("tempo"), ", ".join(senza_persona))))
+
+    # Il disaccordo fra due fonti. Due righe con la stessa chiave e due fonti
+    # diverse non sono un errore: sono due attestazioni che il progetto non
+    # sa mettere d'accordo, e che deve tenere visibili.
+    per_casella = {}
+    for riga in righe:
+        chiave = verbi_modulo.chiave_forma(riga["lemma"], riga.get("persona", ""),
+                                          riga["tempo"], riga.get("clitico", ""))
+        per_casella.setdefault(chiave, []).append(riga)
+    for chiave, gruppo in sorted(per_casella.items()):
+        fonti_diverse = {r["fonte"] for r in gruppo}
+        if len(fonti_diverse) > 1:
+            forme = ", ".join("%s (%s)" % (r["forma"], r["fonte"])
+                              for r in gruppo)
+            problemi.append(Problema(
+                "F16", gruppo[0].get("id", "senza id"),
+                "la casella %s è scritta da %d fonti diverse: %s. Il progetto "
+                "non sceglie e le due forme restano; decidere spetta a un "
+                "parlante" % (chiave.replace("|", " "), len(fonti_diverse),
+                              forme),
                 gravita="avviso"))
     return problemi
 

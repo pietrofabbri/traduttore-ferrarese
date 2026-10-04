@@ -60,10 +60,22 @@ INTERESSANTI = (
 NON_TESTO = (".wav", ".mp3", ".ogg", ".m4a", ".png", ".jpg", ".jpeg", ".gz",
              ".pdf", ".zip")
 
+# **L'unico file che lo scanner non scandisce e' se stesso**, e il motivo e' il
+# primo dei tre: per cercare un ideogramma e un cirillico questo file li deve
+# contenere, nelle sue classi di caratteri e nella sua prosa. La prima
+# esecuzione dopo che il file e' stato committato lo ha segnalato — undici
+# righe, tutte qui dentro — e ha reso il controllo inutilizzabile: un controllo
+# che segnala se stesso va spento, e un controllo spento non controlla niente.
+# Quindi l'eccezione e' dichiarata qui, nel codice, e non in una riga di
+# configurazione che qualcuno puo' dimenticare.
+NON_SI_SCANDE = os.path.basename(__file__)
+
 
 def _file_sospetti(percorso: str, espressioni) -> list:
     """Le righe sospette di un file, con il motivo."""
-    if not os.path.isfile(percorso) or percorso.endswith(NON_TESTO):
+    nome = os.path.basename(percorso)
+    if (not os.path.isfile(percorso) or percorso.endswith(NON_TESTO)
+            or nome == NON_SI_SCANDE):
         return []
     try:
         with io.open(percorso, encoding="utf-8") as f:
@@ -95,6 +107,8 @@ def main() -> int:
     for riga in trovate:
         print(riga)
     print("%d file tracciati, %d righe sospette" % (len(tracciati), len(trovate)))
+    print("non scandito: %s, perche' contiene per forza quello che cerca"
+          % NON_SI_SCANDE)
     print("ammessi: %s" % ", ".join("%s (%s)" % (c, m)
                                     for c, m in sorted(AMMESSI.items())))
     return 1 if trovate else 0

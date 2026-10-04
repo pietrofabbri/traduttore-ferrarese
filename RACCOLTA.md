@@ -428,6 +428,35 @@ python3 raccolta/moderni.py --scrivi   # il significato moderno dalla fonte
 Il primo, il quarto e il quinto si possono fare in parallelo, e il quarto e'
 quello che manca di piu'.
 
+## Il ciclo sulle parole frequenti
+
+`raccolta/cerca_nelle_fonti.py` parte dalle parole italiane piu' frequenti che
+il glossario non trova e chiede, per ognuna, in quali fonti si trova:
+
+```bash
+PYTHONPATH=sorgenti python3 raccolta/cerca_nelle_fonti.py --limite 100
+```
+
+Il primo giro del 5 ottobre 2026: **2759 delle 6598 parole non coperte sono
+gia' in una fonte**, e 197 di queste sono in S020 (Musacchi), che va
+dall'italiano al ferrarese e quindi le puo' prendere senza decisione.
+
+Lo script **non scrive in `dati/`**: conta e dice dove. La decisione la prende
+chi guarda la fonte citata accanto alla parola.
+
+`raccolta/da_musacchi.py` e' il generatore che porta S020 dentro il glossario,
+e ha `--prova` per contare senza scrivere:
+
+```bash
+python3 raccolta/da_musacchi.py --prova
+```
+
+Il grezzo si ricrea dal `.doc`:
+
+```bash
+textutil -convert txt -output raccolta/grezzi/musacchi_italiano_ferrarese.txt "<il .doc>"
+```
+
 ## L'audizione delle voci, e cosa ci si aspetta di trovare
 
 `raccolta/audizione.py` genera una griglia di parole per voci in

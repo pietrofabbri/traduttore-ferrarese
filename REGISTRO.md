@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.20
+versione: 0.21
 data: 2026-10-04
 ---
 
@@ -85,6 +85,75 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.21 — 2026-10-05 · Il ciclo parte dall'italiano, e la prima fonte che va nella direzione giusta
+
+**Il problema non era la ricerca, era l'ordine.** Il glossario si riempiva
+nell'ordine in cui le fonti si incontravano: 16739 voci piene di `scaranna`,
+`majàl`, `biondelli`, e con un buco sulle parole che uno studente usa tutti i
+giorni. Il metro di `raccolta/copertura.py` lo misurava — 38,4% dei 10744
+lemmi italiani sopra la soglia — ma nessuno ci aveva costruito **sopra** un
+giro di lavoro. Adesso c'e': `raccolta/cerca_nelle_fonti.py` parte dalle parole
+italiane piu' frequenti e chiede, per ognuna, in quali fonti si trova. Il primo
+giro dice **2759 delle 6598 parole non coperte sono gia' in qualche fonte**, e
+**197 di quelle sono in Musacchi**, che si possono prendere senza decisione.
+
+**La fonte che cambia la direzione: S020, Musacchi.** Tutte le fonti precedenti
+sono state costruite **dal ferrarese verso l'italiano**: si leggeva una parola
+dialettale e si scriveva cosa significasse. Il motore fa il contrario, e una
+fonte nella direzione sbagliata non puo' coprire una parola che in ferrarese non
+ha un lemma. Musacchi scrive dall'italiano al ferrarese, e copre 631 parole che
+il glossario non aveva.
+
+**Il numero e' cresciuto di venti punti base, e va detto perche' e' cosi'
+piccolo.** Le 631 voci nuove hanno fatto salire la copertura dal 38,4% al **38,6%**:
+le altre **582 erano gia' c'**. Il valore di questa fonte non e' il numero di
+parole nuove, e' che **582 parole hanno adesso una seconda fonte indipendente**:
+il Ferri del 1889 e il vocabolario di oggi dicono la stessa cosa, e una parola
+con due attestazioni non e' piu' una parola che qualcuno ha scritto una volta.
+
+**Le tre fonti nuove e la licenza di ognuna, che sono tre storie diverse.**
+
+- **S019, Wikiquote «Modi di dire ferraresi»** — CC BY-SA 4.0 dichiarata dalla
+  pagina stessa. 37 modi di dire. Non sono parole singole: sono frasi, quindi
+  nel corpus delle coppie e non nel glossario, perche' il gioco fa ripetere
+  parole e una frase intera non e' una parola.
+- **S020, Musacchi** — l'autore scrive nell'introduzione: «Questo mezzo
+  consentirà a chi vorrà utilizzare questo mio lavoro, di aggiungere, correggere
+  porvi miglioramenti a piacere, senza problemi». Il file che il progetto ha e'
+  arrivato da un sito di download, non da una pagina dell'autore, e
+  l'autorizzazione l'ha data il titolare del progetto. Quindi `fonti.json` dice
+  `licenza_verificata: true` **per dichiarazione del titolare**, non per lettura
+  di una pagina pubblica: chi legge fra vent'anni ha bisogno di sapere quale
+  delle due e'. Il permesso e' scritto testualmente **nella fonte di ogni
+  riga**, cosi' una riga copiata in un altro contesto porta con se' la ragione
+  per cui puo' essere copiata.
+- **S021, «Al Tréb dal Tridèl»** — il sito non dichiara licenza, come S011. Ma
+  il titolare del progetto fa parte dell'associazione e autorizza, quindi la
+  fonte passa a `esaminata` con la ragione scritta. Le sue 51 pagine sono quasi
+  tutte eventi e archivi; il lessico sta in `/vocabolari`, `/gocce-di-dialetto`,
+  `/dialetto-in-pillole` e `/filastrocche`, e le pagine si rendono con
+  JavaScript, quindi un `curl` non le vede. Il sito chiede `Crawl-delay: 30`, e
+  per quello va consultato a mano e non a raffica.
+
+**Quello che `da_musacchi.py` non fa, e dichiara di non fare.** Non sceglie
+quando la fonte da due forme (`Usta. Soramanagh.` le mette entrambe nella stessa
+voce), non distingue la parola dalla sua definizione (`Battuto, Impasto interno
+dei cappelletti` produce una voce che si cerca con «battuto» e una nota che
+porta la definizione), e **non tocca le 286 righe che non si dividono in due**:
+sono quasi tutte l'introduzione e le intestazioni di lettera, e il numero è
+stampato invece di essere nascosto. 31 righe sono scartate perche' non sono una
+parola, e anche quelle sono stampate con il numero di riga.
+
+Il glossativo conta **2606 locuzioni** e **14764 parole singole**.
+
+**Verifiche.** 226 test (erano 226): nessuno nuovo, perche' le fonti sono
+dati e i dati li controlla `verifica`; i tre test che sono falliti durante
+questo lavoro — copertura, locuzioni, test dichiarati — hanno fatto il loro
+compito e ora confrontano il numero vero. `verifica`: 0 errori, 8 avvisi.
+Copertura: 4146 su 10744, **38,6%** (era 38,4%). Glossario: 17370 voci (erano
+16739). Scanner: 0 righe sospette.
+
 
 ## 0.20 — 2026-10-04 · La voce si sceglie nelle regole, e una voce che non suona si dichiara
 

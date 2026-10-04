@@ -26,6 +26,45 @@
   ],
   "fonti": [
     {
+      "id": "S019",
+      "titolo": "«Modi di dire ferraresi»",
+      "autore": "Wikimedia Foundation, contributori di it.wikiquote.org",
+      "anno": 2026,
+      "tipo": "raccolta collaborativa online di modi di dire",
+      "luogo": "https://it.wikiquote.org/wiki/Modi_di_dire_ferraresi",
+      "stato": "acquisita",
+      "licenza": "CC BY-SA 4.0",
+      "licenza_verificata": true,
+      "uso": "37 modi di dire, entrati in dati/coppie.jsonl come coppie con `attendibilita: I`.",
+      "nota": "La licenza e' quella dichiarata dalla pagina stessa (Wikiquote e' CC BY-SA 4.0), quindi non e' una licenza dedotta. Non sono parole singole: sono frasi, e vanno nel corpus delle coppie e non nel glossario, perche' il gioco fa ripetere parole e una frase intera non e' una parola. Ogni riga porta l'indirizzo della pagina e la lettera sotto cui il modo di dire e' raccolto."
+    },
+    {
+      "id": "S020",
+      "titolo": "Vocabolario italiano-ferrarese (anche modi di dire, frasi idiomatiche ed altro)",
+      "autore": "Maurizio Musacchi",
+      "anno": 0,
+      "tipo": "vocabolario (dall'italiano al ferrarese)",
+      "luogo": "file .doc in proprio possesso; il testo dichiara l'indirizzo del sito dell'autore",
+      "stato": "acquisita",
+      "licenza": "permesso dell'autore dichiarato per iscritto nell'introduzione dell'opera",
+      "licenza_verificata": true,
+      "uso": "Le voci entrano in dati/glossario.jsonl con `attendibilita: I` e `da_verificare: true`.",
+      "nota": "**Dichiarazione di provenienza, e va letta.** Il file che il progetto ha è arrivato da un sito di download, non da una pagina dell'autore; l'autorizzazione al uso l'ha data il titolare del progetto, che dichiara di averla. Quindi `licenza_verificata` e' vero **per dichiarazione del titolare**, non per lettura di una pagina pubblica: chi legge fra vent'anni ha bisogno di sapere quale delle due e'. Il permesso e' scritto testualmente nell'introduzione («Questo mezzo consentirà a chi vorrà utilizzare questo mio lavoro, di aggiungere, correggere porvi miglioramenti a piacere, senza problemi») e il testo lo porta **nella fonte di ogni riga**, non solo qui. E' l'unica fonte del glossario che va **dall'italiano al ferrarese**, che e' la direzione del motore: le altre partono dal ferrarese e quindi non trovano le parole che in italiano sono frequenti e in ferrarese non hanno lemma."
+    },
+    {
+      "id": "S021",
+      "titolo": "Dialetto Ferrarese, «Al Tréb dal Tridèl»",
+      "autore": "Associazione culturale Al Tréb dal Tridèl",
+      "anno": 2026,
+      "tipo": "sito associative (vocabolari, modi di dire, fiabe, poesia)",
+      "luogo": "https://dialettoferraresealtrebdaltridel.it/home",
+      "stato": "esaminata",
+      "licenza": "nessuna dichiarata sul sito; autorizzazione data dal titolare del progetto, che fa parte dell'associazione",
+      "licenza_verificata": true,
+      "uso": "Da usare come S021 quando il ciclo di ricerca ci trova una parola che e' solo li'. Non e' ancora entrata nel glossario.",
+      "nota": "51 pagine nel sitemap, e quasi tutte sono eventi, archivi, foto e pagine di contatto: il contenuto lessicale sta in `/vocabolari`, `/gocce-di-dialetto`, `/dialetto-in-pillole` e `/filastrocche`. Le pagine si rendono con JavaScript, quindi un `curl` non le vede: servono il browser o l'endpoint del sito. Il sito non dichiara una licenza sui contenuti e il suo robots.txt chiede `Crawl-delay: 30`: il ciclo di ricerca lo rispetta e non esce dai percorsi del sitemap. Come S011, quindi: una fonte che si consulta e si cita, e che entra solo con una decisione esplicita."
+    },
+    {
       "id": "S001",
       "titolo": "Saggio sui dialetti gallo-italici",
       "autore": "Bernardino Biondelli",

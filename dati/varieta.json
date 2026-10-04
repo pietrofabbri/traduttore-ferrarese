@@ -37,6 +37,12 @@
   },
   "assegnazioni": [
     {
+      "fonte": "S020",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Musacchi scrive per «i ferraresi di oggi» e non distingue le varieta' territoriali: il suo ferrarese e' il cittadino, e la scelta e' nostra. Dichiarata come memoria, non come fatto documentato, come tutte le altre."
+    },
+    {
       "fonte": "S001",
       "varieta": "cittadino",
       "attendibilita": "M",

@@ -46,7 +46,7 @@ nessun server, nessuna richiesta di rete. Su GitHub la pubblica il workflow
 `buchi` non e' un controllo e non fallisce mai: qui non c'e' niente da
 correggere, c'e' solo da sapere. Stampa quello che il progetto **sa di non
 sapere**, con il numero accanto e il motivo per cui quel numero non si riduce
-da solo — «16715 voci su 16739 senza trascrizione IPA» e' una frase che qualcuno
+da solo — «17346 voci su 17370 senza trascrizione IPA» e' una frase che qualcuno
 puo' correggere lunedi', «non abbiamo le trascrizioni IPA» e' una frase che
 resta vera per sempre. Gli stessi numeri compaiono sotto «E che cosa non sa»
 nella pagina.
@@ -54,7 +54,7 @@ nella pagina.
 `copertura` dice **quanto italiano copre il glossario**: è il numero che
 `buchi` non dà, perché `buchi` sa quello che il progetto *sa* di non sapere,
 mentre `copertura` sa quello che il progetto *non sapeva di non sapere*. Il
-metro sono i **lemmi** dell'ItWaC (Baroni 2009, licenza MIT): oggi **38,4%**
+metro sono i **lemmi** dell'ItWaC (Baroni 2009, licenza MIT): oggi **38,6%**
 dei lemmi italiani frequenti sono coperti. Le parole mancanti sono elencate in
 `dati/da_verificare/lacune.md`, con quello che la ricerca online ha trovato e
 quello che non ha trovato. Senza quei file il comando dice che mancano e non
@@ -103,7 +103,7 @@ dice che i dati sono distribuiti e nessun campo, da solo, toglie il peso
 principale. Su 5,6 megabyte, togliere `note` e `fonte` insieme fa risparmiare
 il 27%. L'unica cosa che funziona è **spostare il peso in più pagine**, ognuna
 con la sua. In più i dati viaggiano in forma compatta — i nomi dei campi si
-dicono una volta sola invece di 16739 — e da soli fanno risparmiare il 23%.
+dicono una volta sola invece di 17370 — e da soli fanno risparmiare il 23%.
 
 **Il limite, dichiarato.** La ricerca guarda **solo la fetta aperta**. Una
 parola che cominci con un'altra lettera è in un'altra pagina, e la pagina lo
@@ -152,7 +152,7 @@ python3 -m traduttore.cli varieta
 ```
 
 ```
-cittadino    cittadino                      16739 voci  16 coppie, 0 brani
+cittadino    cittadino                      17370 voci  16 coppie, 0 brani
 centrale     centrale, detto anche arioso    VUOTA     0 coppie, 0 brani
 occidentale  occidentale                     VUOTA     0 coppie, 0 brani
 orientale    orientale                       VUOTA     0 coppie, 0 brani
@@ -204,7 +204,7 @@ python3 raccolta/moderni.py --scrivi     # mette i risultati nel glossario
   mostrarne tre di dieci che ci sono.
 - **Tre sinonimi in colonna, non tutti** (in media la fonte ne dà dodici, e
   arrivano a centosessantatre). Anche questi stanno tutti nel file.
-- **4063 voci su 16739 hanno il significato moderno**, e
+- **4063 voci su 17370 hanno il significato moderno**, e
   3235 hanno anche i sinonimi. Le altre sono un **buco dichiarato**,
   e sotto la tabella la pagina dice quante sono e perche': non «la fonte non
   ha l'articolo» e basta, ma la somma dei quattro motivi distinti, che sono
@@ -531,7 +531,7 @@ ferrarese. In breve:
 - **Non c'e' nessuna registrazione**: `dati/audio.jsonl` e' vuoto e
   `audio/` contiene il protocollo e il modello di consenso, non un brano. Le
   28 trascrizioni IPA ci sono, ma nessuna e' verificata da un parlante
-  (`attendibilita D`), e le altre **16715 voci su 16739 non hanno nessuna
+  (`attendibilita D`), e le altre **17346 voci su 17370 non hanno nessuna
   trascrizione**: `buchi` stampa i due numeri. Finche' il secondo vale zero,
   la pronuncia non e' documentata da
   nessuna parte e la pagina lo dice. Quanto tempo ci vuole davvero e' in
@@ -542,13 +542,13 @@ ferrarese. In breve:
   Dichiarazione universale dei diritti umani (S003), e la licenza di quella
   fonte non e' verificata. Non le usa nessuno, non sono nella pagina e il
   controllo **D1** fallisce se finiscono nei file attivi. Il glossario ha
-  quindi **16739 voci**, **tutte di una sola varieta'**, il cittadino, e
+  quindi **17370 voci**, **tutte di una sola varieta'**, il cittadino, e
   **16508 non verificate da un informatore** (`attendibilita I`,
   `da_verificare`): sono la trascrizione meccanica del vocabolario, non una
   voce controllata. Quattro varieta' su cinque sono vuote dichiarate. Non e'
   un dizionario e non si presenta come tale.
 - **Le locuzioni si cercano solo dalla parte che le contiene.** Duemila
-  trentaquattro delle 16739 voci hanno piu' di una parola **dal lato
+  trentaquattro delle 17370 voci hanno piu' di una parola **dal lato
   ferrarese**, e il motore
   le accorpa prima di tradurre parola per parola: «a braccia aperte» diventa
   `a brazz avèrti` e non tre buchi. Ma l'accorpamento guarda il lato da cui
@@ -591,6 +591,8 @@ ferrarese. In breve:
 python3 prove/test_traduttore.py     # 226 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
+python3 raccolta/copertura.py        # quanto italiano copre il glossario
+python3 raccolta/cerca_nelle_fonti.py  # le parole frequenti non coperte
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

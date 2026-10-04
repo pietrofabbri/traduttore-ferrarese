@@ -36,7 +36,6 @@ from __future__ import annotations
 import argparse
 import html
 import io
-import json
 import os
 import subprocess
 import sys
@@ -135,7 +134,7 @@ def _genera(nome_voce: str, forma: str, percorso: str) -> str:
     return ""
 
 
-def _pagina(varianti, risultati, forme) -> str:
+def _pagina(varianti, risultati) -> str:
     """La pagina dell'audizione: una tabella parole per voci.
 
     Ogni cella e' un file audio e nient'altro. Nessun punteggio e nessuna
@@ -228,7 +227,7 @@ def main() -> int:
 
     pagina = os.path.join(DESTINAZIONE, "index.html")
     with io.open(pagina, "w", encoding="utf-8", newline="\n") as f:
-        f.write(_pagina(varianti, risultati, POOL))
+        f.write(_pagina(varianti, risultati))
 
     print("%d parole × %d voci -> %s" % (len(POOL), len(varianti), pagina))
     for forma, attesa, motivo, suoni in risultati:

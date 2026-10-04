@@ -159,8 +159,10 @@ ascoltato. Quello che lo script produce e' il mezzo, in
 `raccolta/lavorato/audizione/` che e' gitignorato; il risultato — quale voce ha
 scelto una persona e perche' — va scritto in `dati/` e dichiarato qui.
 
-**Verifiche.** 214 test (erano 204). Cinque nuovi sul bottone, ciascuno provato
-ricreando il difetto: togliere la chiamata alla riga fa fallire tre test.
+**Verifiche.** 214 test (erano 204): **sette** sul bottone e **tre** sulla pool
+dell'audizione. I sette sul bottone sono stati provati ricreando il difetto —
+togliere la chiamata alla riga ne fa fallire tre — e uno di loro ha preso un
+difetto vero nella mia implementazione, non nel dato.
 `verifica`: 0 errori, 8 avvisi. Equivalenza: 12 frasi, 0 divergenze. Scanner: 115
 file tracciati, 0 ideogrammi. Sito: 40 pagine, 34 fette, `traduttore.html` a 2,4
 MB sotto il tetto di 3 MB.

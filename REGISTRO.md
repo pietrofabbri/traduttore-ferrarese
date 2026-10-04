@@ -208,7 +208,38 @@ ancora voci**: contro il glossario attivo (231 voci, non 10387 — le altre
 sono in attesa di licenza) sono **7303 parole nuove**. Diventare voce richiede
 la `varieta` obbligatoria e il resto dei controlli, e non e' ancora fatto.
 
-**Verifiche.** 171 test (erano 155). `verifica`: 0 errori, 8 avvisi.
+**La pagina delle regole.** Ventisettesima pagina: le regole che S015
+dichiara per iscritto, che finora erano segnalazione e ora sono regole con la
+fonte dichiarata **regola per regola**. Sono **29 regole** in sei gruppi —
+come si scrive, gli articoli, i nomi e i loro plurali, i verbi, i pronomi, le
+parole — piu' l'alfabeto per capire la pronuncia, che serve a leggere i
+suoni e non a scrivere.
+
+Tre scelte, e ognuna ha una ragione.
+
+1. **La pagina si scrive sul server, senza JavaScript.** Tutte le altre
+   pagine prendono i dati da `/*DATI*/null` e li disegna un motore. Qui no:
+   le regole sono poche e sono note quando la pagina si genera, e una pagina
+   che si legge anche con lo scripting spento serve di piu' in classe.
+2. **La chiave dei dati si chiama `regoleGrammaticali`, non `regole`.**
+   `regole` e' gia' occupata: sono le regole di derivazione che il motore usa
+   per tradurre. Due cose diverse con lo stesso nome, e un giorno qualcuno le
+   avrebbe confuse: e' il nome che collide a essere il difetto.
+3. **Il testo delle regole e' riscritto, non copiato.** Quello che e'
+   copyright e' la pagina di Bigoni, non il fatto che il plurale di
+   `fraréš` sia `frarìš`. Ogni regola porta la fonte con il numero della
+   sezione, cosi' chi legge puo' tornare alla frase originale — e la pagina
+   **dichiara** che il testo e' riscritto, perche' quella dichiarazione
+   diventi falsa nel giorno in cui qualcuno ci mette dentro il testo vero.
+
+**Il difetto che la pagina mostrava e che nessuno aveva visto.** Diceva
+«S015, sezione 3». E' l'identificatore che il registro usa, e a chi sta
+imparando la lingua non dice niente: la fonte di una regola si scrive per
+chi legge. Ora dice «R. Bigoni, «Il Ferrarese», note linguistiche, sezione
+3», e l'identificatore sta nel titolo dell'elemento, dove serve a chi deve
+tornare al registro.
+
+**Verifiche.** 177 test (erano 155). `verifica`: 0 errori, 8 avvisi.
 Equivalenza: 12 frasi confrontate, 0 divergenze. Scanner: 67 file
 tracciati, 0 ideogrammi. Un passo nuovo della CI controlla che ogni pagina
 contenga i suoi dati, che nessuna superi i 3 megabyte, che ogni fetta abbia

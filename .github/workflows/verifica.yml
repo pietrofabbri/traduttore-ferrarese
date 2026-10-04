@@ -163,6 +163,24 @@ jobs:
                   sys.exit(1)
               print("%-20s %7d byte" % (pagina["file"], peso))
 
+          # La pagina delle regole non ha dati da controllare, perche' le
+          # regole sono scritte nel corpo della pagina. Ha quindi un
+          # controllo suo: deve portare le regole, e non deve mostrare il
+          # marcatore che il generatore sostituisce. Una pagina vuota con
+          # un titolo che promette regole e' il difetto che nessuno dei
+          # controlli sui dati avrebbe preso.
+          regole = open(os.path.join("web", "regole.html"),
+                        encoding="utf-8").read()
+          quante = regole.count('class="scheda regola"')
+          if quante < 20:
+              print("ERRORE: regole.html contiene %d regole, attese almeno 20"
+                    % quante)
+              sys.exit(1)
+          if "<!--REGOLE-->" in regole:
+              print("ERRORE: regole.html mostra il marcatore non sostituito")
+              sys.exit(1)
+          print("regole.html              %d regole" % quante)
+
           # Le fette del glossario: ogni pagina deve portare il suo pezzo e la
           # barra che porta alle altre. Una fetta senza voce e' una pagina
           # che non contiene niente, e non si vede.

@@ -1,0 +1,268 @@
+{
+  "_comment": "Le regole del ferrarese, con la fonte dichiarata per ognuna. Il testo di ogni regola e' stato riscritto: quello che e'copyright e' la pagina di R. Bigoni, non il fatto che il plurale di fraréš sia frarìš. Ogni regola porta `fonte` e `sezione` perche' chi legge possa tornare alla pagina e vedere la frase originale, e perche' una regola senza fonte sia una voce che il progetto non accetta.",
+  "fonte": "S015",
+  "opera": "R. Bigoni, «Il Ferrarese», note linguistiche",
+  "ultimo_aggiornamento_della_fonte": "2024-11",
+  "regole": [
+    {
+      "id": "R001",
+      "categoria": "ortografia",
+      "titolo": "Niente consonanti doppie",
+      "regola": "Due consonanti uguali nella stessa posizione non esistono: la parola che in italiano le ha, in ferrarese ne ha una sola. Vale anche per le parole prese dall'italiano.",
+      "esempi": [{"fe": "mašna", "it": "macina"}, {"fe": "màkina", "it": "macchina"}],
+      "fonte": "S015", "sezione": "3"
+    },
+    {
+      "id": "R002",
+      "categoria": "ortografia",
+      "titolo": "Il digramma «sc» non c'e'",
+      "regola": "La consonante che l'italiano scrive con «sc» — quella di scena, scienza — in ferrarese non e' pronunciata.",
+      "esempi": [{"fe": "skara'na", "it": "sedia"}],
+      "fonte": "S015", "sezione": "2"
+    },
+    {
+      "id": "R003",
+      "categoria": "ortografia",
+      "titolo": "Niente vocali turbate",
+      "regola": "Le tre vocali che l'italiano scrive con dieresi — ä, ö, ü — non esistono. E' la differenza che fa riconoscere subito un ferrarese che parla italiano.",
+      "esempi": [],
+      "fonte": "S015", "sezione": "1"
+    },
+    {
+      "id": "R004",
+      "categoria": "ortografia",
+      "titolo": "L'accento conta",
+      "regola": "L'accento dice dove cade la sillaba tonica: e' la stessa informazione che in italiano si dà con l'apostrofo, e va tenuto quando si confrontano due scritte della stessa parola.",
+      "esempi": [{"fe": "aràdàr", "it": "radere"}, {"fe": "aradar", "it": "— (non la stessa parola)"}],
+      "fonte": "S015", "sezione": "2"
+    },
+    {
+      "id": "R005",
+      "categoria": "ortografia",
+      "titolo": "Ogni suono un solo carattere",
+      "regola": "La scelta di Bigoni evita i digrammi: a ogni suono corrisponde un solo carattere latino, eventualmente con un segno diacritico. Chi ci ha fatto l'abitudine la puo' usare per capire la pronuncia, anche se non e' l'italiano con cui si scrive.",
+      "esempi": [{"fe": "Saŋt'Aŋtòni", "it": "Sant'Antonio"}],
+      "fonte": "S015", "sezione": "2"
+    },
+    {
+      "id": "R010",
+      "categoria": "articoli",
+      "titolo": "L'articolo maschile",
+      "regola": "Il singolare e' «l», che diventa «al» davanti a una consonante. Il plurale e' «i» davanti a consonante e «j» davanti a vocale.",
+      "esempi": [{"fe": "al kavàl", "it": "il cavallo"}, {"fe": "l'òman", "it": "l'uomo"}, {"fe": "j òman", "it": "gli uomini"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R011",
+      "categoria": "articoli",
+      "titolo": "L'articolo femminile",
+      "regola": "Il singolare e' «la», con l'elisione della vocale finale davanti a una parola che comincia per vocale. Il plurale e' «il» davanti a consonante e «j» davanti a vocale.",
+      "esempi": [{"fe": "la kavàla", "it": "una cavalla"}, {"fe": "l'amìɣa", "it": "l'amica"}, {"fe": "il kavàli", "it": "le cavalle"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R012",
+      "categoria": "articoli",
+      "titolo": "L'articolo indeterminativo",
+      "regola": "«un» e «una» si accorciano: davanti a una vocale spesso rimane solo la «n» o la «na».",
+      "esempi": [{"fe": "un can", "it": "un cane"}, {"fe": "n'àrbul", "it": "un albero"}, {"fe": "na vòlta", "it": "una volta"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R020",
+      "categoria": "nomi",
+      "titolo": "Il maschile perde la vocale finale",
+      "regola": "I nomi maschili che vengono da un latino piano perdono la vocale finale e diventano piani. Se il nome resta identico al singolare, e' perche' quella vocale e' sparita: senza di essa il ferrarese si distingue dall'italiano.",
+      "esempi": [{"fe": "ɣal", "it": "gallo"}, {"fe": "kavàl", "it": "cavallo"}],
+      "fonte": "S015", "sezione": "3"
+    },
+    {
+      "id": "R021",
+      "categoria": "nomi",
+      "titolo": "Plurale invariato",
+      "regola": "Il plurale dei maschili appena elencati non cambia: si distingue dal singolare solo dall'articolo o dal numero che lo precede.",
+      "esempi": [{"fe": "un caŋ, du caŋ", "it": "un cane, due cani"}, {"fe": "un póŋt, du póŋt", "it": "un ponte, due ponti"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R022",
+      "categoria": "nomi",
+      "titolo": "Plurale in -ìš",
+      "regola": "Il maschile singolare che finisce in «-éš» al plurale passa a «-ìš».",
+      "esempi": [{"fe": "un fraréš, du frarìš", "it": "un ferrarese, due ferraresi"}, {"fe": "un buluñéš, du buluñìš", "it": "—"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R023",
+      "categoria": "nomi",
+      "titolo": "Plurale in -ùn",
+      "regola": "Il maschile singolare che finisce in «-ón» al plurale passa a «-ùn».",
+      "esempi": [{"fe": "un padrón, du padrùn", "it": "un padrone, due padroni"}, {"fe": "un pitón, du pitùn", "it": "—"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R024",
+      "categoria": "nomi",
+      "titolo": "Plurale in -aj",
+      "regola": "Il maschile singolare che finisce in «-àl» al plurale resta piano e la «l» finale diventa «j».",
+      "esempi": [{"fe": "un kavàl, du kavàj", "it": "un cavallo, due cavalli"}, {"fe": "un baɣàj, du baɣàj", "it": "—"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R025",
+      "categoria": "nomi",
+      "titolo": "Plurale in -jé",
+      "regola": "Il maschile singolare che finisce in «-èl» al plurale diventa «-jé»: la «l» finale si sposta in una sillaba propria.",
+      "esempi": [{"fe": "un fradèl, du fradjé", "it": "—"}, {"fe": "un ušèl, du ušjé", "it": "—"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R026",
+      "categoria": "nomi",
+      "titolo": "Il femminile in -a fa il plurale in -i",
+      "regola": "I femminili che vengono da un latino piano passano dalla «a» finale a una «i», che pero' e' debole e spesso sparisce del tutto, soprattutto se non si sovrappone a un plurale maschile.",
+      "esempi": [{"fe": "ùna putìna, dó putìni", "it": "una pentola, due pentole"}, {"fe": "ùna próva, dó próv", "it": "una prova, due prove"}, {"fe": "ùna kamìša, dó kamìš", "it": "—"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R027",
+      "categoria": "nomi",
+      "titolo": "I giorni della settimana",
+      "regola": "I cinque giorni feriali non prendono la finale dell'italiano.",
+      "esempi": [{"fe": "Lùni, Màrti, Mèrkul, Žòbia, Vènar", "it": "lunedì, martedì, mercoledì, giovedì, venerdì"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R028",
+      "categoria": "nomi",
+      "titolo": "Due e tre hanno due forme",
+      "regola": "I numeri due e tre cambiano col genere, cosa che in italiano non fanno.",
+      "esempi": [{"fe": "du màsc / dó féman", "it": "due maschi / due femmine"}, {"fe": "tri màsc / tré féman", "it": "tre maschi / tre femmine"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R030",
+      "categoria": "verbi",
+      "titolo": "Il soggetto si mette davanti",
+      "regola": "Il verbo finito ha bisogno del soggetto espresso, e il soggetto e' un pronome accompagnato dalla proclitica «a». All'imperativo il soggetto si omette.",
+      "esempi": [{"fe": "a pióv", "it": "piove"}, {"fe": "al va a ka", "it": "va a casa"}, {"fe": "kamìna!", "it": "cammina!"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R031",
+      "categoria": "verbi",
+      "titolo": "Il negativo e' una particella attaccata",
+      "regola": "La negazione e' una «ŋ» che si attacca alla proclitica «a». Si puo' rafforzare con «brìša», che vuol dire «briciola».",
+      "esempi": [{"fe": "aŋ vój brìša", "it": "non voglio"}, {"fe": "aŋ ò brìša dit", "it": "non ho detto"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R032",
+      "categoria": "verbi",
+      "titolo": "Il passato remoto non esiste",
+      "regola": "Non c'e' un tempo che si opponga al presente: quello che in italiano e' il passato remoto si dice come il passato prossimo.",
+      "esempi": [{"fe": "a són aŋdà", "it": "sono andato, andai"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R033",
+      "categoria": "verbi",
+      "titolo": "Il gerundio si costruisce con un'altra parola",
+      "regola": "Dove l'italiano usa «stare» piu' il gerundio, il ferrarese usa «èsar» (letteralmente essere) piu' «dré» (dietro).",
+      "esempi": [{"fe": "a són dré aŋdàr", "it": "sto andando"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R034",
+      "categoria": "verbi",
+      "titolo": "L'infinito della prima coniugazione finisce in -àr",
+      "regola": "Nelle terre emiliane l'infinito presente della prima coniugazione finisce in «-èr»; a Ferrara finisce in «-àr», come nei dialetti veneti.",
+      "esempi": [{"fe": "magnàr", "it": "mangiare"}, {"fe": "kaŋtàr", "it": "cantare"}],
+      "fonte": "S015", "sezione": "1"
+    },
+    {
+      "id": "R035",
+      "categoria": "verbi",
+      "titolo": "Quattro coniugazioni",
+      "regola": "Le coniugazioni regolari sono quattro e discendono da quelle latine. Il noi plurale si riconosce dalla finale in «-ŋ», dove l'italiano e le terre vicine hanno la «m».",
+      "esempi": [{"fe": "nu a kaŋtéŋ", "it": "noi cantiamo"}, {"fe": "nu a séŋ", "it": "noi siamo"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R036",
+      "categoria": "verbi",
+      "titolo": "Gli ausiliari sono due, e il secondo si raddoppia",
+      "regola": "Gli ausiliari sono «èsar» (essere) e «avér» (avere). «avér» si raddoppia con una «ɣ» quando indica dimostrativo, come il «ce» dell'italiano.",
+      "esempi": [{"fe": "mi a ɣ o", "it": "io ne ho"}, {"fe": "mi aj ò", "it": "io ho"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R040",
+      "categoria": "pronomi",
+      "titolo": "Gli aggettivi possessivi",
+      "regola": "Il possessivo non cambia con il genere e nemmeno col numero: e' la stessa parola per «mio, mia, miei, mie».",
+      "esempi": [{"fe": "mjé", "it": "mio, mia, miei, mie"}, {"fe": "sò", "it": "suo, sua, suoi, sue"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R041",
+      "categoria": "pronomi",
+      "titolo": "I pronomi personali",
+      "regola": "I pronomi hanno forma costante e in posizione enclitica vengono spesso troncati.",
+      "esempi": [{"fe": "mi, ti, lu / lié, nu, vu, lór", "it": "io, tu, lui/lei, noi, voi, loro"}, {"fe": "dàmal!", "it": "dammelo!"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R042",
+      "categoria": "pronomi",
+      "titolo": "I dimostrativi",
+      "regola": "« questo » e «quello» hanno forme distinte per genere e numero, e nel plurale la «i» finale diventa «j».",
+      "esempi": [{"fe": "quést, quésta, quìsti, quésti", "it": "questo, questa, questi, queste"}],
+      "fonte": "S015", "sezione": "4"
+    },
+    {
+      "id": "R050",
+      "categoria": "lessico",
+      "titolo": "Le parole entrate dall'italiano recentemente",
+      "regola": "Le parole che l'italiano ha preso a prestare negli ultimi tempi arrivano spesso in ferrarese e vengono rimeccanizzate, ma molte volte non si sostituiscono affatto con la parola che c'era prima: al loro posto si mette una perifrasi.",
+      "esempi": [{"fe": "dar da mañàr", "it": "nutrire (non «alimeŋtàr»)"}, {"fe": "al purè", "it": "la purea di patate"}],
+      "fonte": "S015", "sezione": "3"
+    },
+    {
+      "id": "R051",
+      "categoria": "lessico",
+      "titolo": "Parole longobarde",
+      "regola": "Una parte del vocabolario ferrarese viene dal longobardo e non si riconosce dall'italiano: sono le parole che il glossario cerca e che non trova mai.",
+      "esempi": [{"fe": "busgàt", "it": "maiale"}, {"fe": "skara'na", "it": "sedia"}],
+      "fonte": "S015", "sezione": "1"
+    }
+  ],
+  "alfabeto": {
+    "_comment": "L'alfabeto di Bigoni: a ogni suono un solo carattere. Serve per capire la pronuncia, non per scrivere. E' la stessa pagina che ha generato dati/fonetica.jsonl, e le due non devono essere mescolate: qui il criterio e' la resa udibile, li' il criterio e' una trascrizione confrontabile con l'IPA.",
+    "fonte": "S015",
+    "consonanti": [
+      {"carattere": "k", "suono": "c gutturale, come in cosa"},
+      {"carattere": "c", "suono": "c affricata, come in c'e'"},
+      {"carattere": "ɣ", "suono": "g gutturale, come in gatto"},
+      {"carattere": "g", "suono": "g affricata, come in gelo"},
+      {"carattere": "j", "suono": "i semiconsonantico, come in iosa"},
+      {"carattere": "ʎ", "suono": "laterale palatale, come in paglia"},
+      {"carattere": "ŋ", "suono": "n leggermente nasale, come in anche"},
+      {"carattere": "ñ", "suono": "n palatale nasale, come in campagna"},
+      {"carattere": "s", "suono": "s sorda, come in santo"},
+      {"carattere": "š", "suono": "s sonora, come in rosa"},
+      {"carattere": "z", "suono": "z sorda, come in azione"},
+      {"carattere": "ž", "suono": "z sonora, come in zero"}
+    ],
+    "vocali": [
+      {"carattere": "è", "suono": "e tonica grave, come in presto"},
+      {"carattere": "é", "suono": "e tonica acuta, come in vena"},
+      {"carattere": "ě", "suono": "e atona aperta, come in prestissimo"},
+      {"carattere": "ê", "suono": "e atona chiusa, come in venoso"},
+      {"carattere": "ò", "suono": "o tonica grave, come in porta"},
+      {"carattere": "ó", "suono": "o tonica acuta, come in dove"},
+      {"carattere": "ǒ", "suono": "o atona aperta, come in portare"},
+      {"carattere": "ô", "suono": "o atona chiusa, come in dovunque"}
+    ]
+  }
+}

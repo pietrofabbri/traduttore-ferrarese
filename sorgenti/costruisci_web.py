@@ -122,6 +122,10 @@ PAGINE = (
      "titolo": "Varieta' e suoni",
      "occhiello": "Le cinque varieta' e le poche parole che si possono ascoltare.",
      "sezioni": ("suoni",)},
+    {"file": "regole.html", "chiave": "regole",
+     "titolo": "Le regole",
+     "occhiello": "Che cosa succede a una parola quando la si pluralizza o la si coniuga.",
+     "sezioni": ("regole",)},
 )
 
 # La barra di navigazione: l'ordine in cui le pagine si presentano, e la
@@ -132,6 +136,7 @@ NAVIGAZIONE = (
     ("glossario.html", "Glossario"),
     ("frasi.html", "Coppie e proverbi"),
     ("suoni.html", "Varieta' e suoni"),
+    ("regole.html", "Le regole"),
 )
 
 
@@ -336,10 +341,118 @@ def _navigazione(pagina: str) -> str:
     return "\n    ".join(parti)
 
 
+REGOLE_ORDINE = ("ortografia", "articoli", "nomi", "verbi", "pronomi",
+                 "lessico")
+
+REGOLE_TITOLI = {
+    "ortografia": "Come si scrive",
+    "articoli": "Gli articoli",
+    "nomi": "I nomi e i loro plurali",
+    "verbi": "I verbi",
+    "pronomi": "Pronomi e aggettivi",
+    "lessico": "Le parole",
+}
+
+
+def _fuga(testo: str) -> str:
+    """Il testo va nella pagina: `&`, `<` e `>` vanno scappati."""
+    return (testo.replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;"))
+
+
+def carica_regole_grammaticali(radice: str) -> dict:
+    """Le regole della pagina, dal file in `dati/`.
+
+    Se il file manca la pagina esce lo stesso, con un avviso: una pagina
+    vuota che spiega perche' e' vuota e' meglio di una pagina che non si
+    apre.
+    """
+    percorso = os.path.join(radice, "dati", "regole_grammaticali.json")
+    try:
+        with open(percorso, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (IOError, ValueError) as errore:
+        return {"regole": [], "alfabeto": {}, "errore": str(errore)}
+
+
+def _pagina_regole(dati: dict) -> str:
+    """Le regole diventano html, raggruppate per categoria."""
+    if dati.get("errore"):
+        return ('<p class="vuoto">Le regole non si sono potute leggere '
+                '(%s). Il resto della pagina funziona.</p>'
+                % _fuga(dati["errore"]))
+    parti = []
+    for categoria in REGOLE_ORDINE:
+        gruppo = [r for r in dati.get("regole", [])
+                  if r.get("categoria") == categoria]
+        if not gruppo:
+            continue
+        parti.append("<h3>%s</h3>" % _fuga(REGOLE_TITOLI[categoria]))
+        parti.append('<div class="regole">')
+        for regola in gruppo:
+            righe = []
+            for esempio in regola.get("esempi", []):
+                righe.append(
+                    '<tr><td class="fe">%s</td><td class="it">%s</td></tr>'
+                    % (_fuga(esempio.get("fe", "")),
+                       _fuga(esempio.get("it", ""))))
+            esempi = ""
+            if righe:
+                esempi = ('<table class="esempi"><thead><tr>'
+                         '<th>ferrarese</th><th>italiano</th></tr></thead>'
+                         '<tbody>%s</tbody></table>' % "".join(righe))
+            # La fonte si scrive per chi legge, non per il codice: «S015» e'
+            # l'identificatore che il registro usa, e a chi sta imparando la
+            # lingua non dice niente. L'identificatore resta, nel titolo,
+            # per chi deve tornare al registro e capire da dove viene.
+            opera = dati.get("opera") or regola.get("fonte", "")
+            parti.append(
+                '<div class="scheda regola" id="%s">'
+                '<h4>%s</h4><p>%s</p>%s'
+                '<p class="fonte" title="voce %s del registro delle fonti">'
+                '%s, sezione %s</p></div>'
+                % (_fuga(regola.get("id", "")),
+                   _fuga(regola.get("titolo", "")),
+                   _fuga(regola.get("regola", "")), esempi,
+                   _fuga(regola.get("fonte", "")), _fuga(opera),
+                   _fuga(str(regola.get("sezione", "")))))
+        parti.append("</div>")
+
+    alfabeto = dati.get("alfabeto") or {}
+    consonanti = alfabeto.get("consonanti") or []
+    vocali = alfabeto.get("vocali") or []
+    if consonanti or vocali:
+        parti.append("<h3>L'alfabeto per capire la pronuncia</h3>")
+        parti.append(
+            '<p class="occhiello">Non serve per scrivere: serve per capire '
+            'che suono ha una parola. A ogni suono corrisponde un solo '
+            'carattere, e cos&iacute; non ci sono i digrammi.</p>')
+        for titolo, elenco in (("Consonanti", consonanti),
+                               ("Vocali", vocali)):
+            if not elenco:
+                continue
+            righe = "".join(
+                '<tr><td class="carattere">%s</td><td>%s</td></tr>'
+                % (_fuga(v["carattere"]), _fuga(v["suono"])) for v in elenco)
+            parti.append('<h4>%s</h4><table class="alfabeto">%s</table>'
+                         % (titolo, righe))
+    return "\n".join(parti)
+
+
 def _pagina(modello: str, sezioni: tuple, dati: dict, titolo: str,
-            occhiello: str, chiave_pagina: str, file_pagina: str) -> str:
-    """Una pagina intera: guscio, sezioni della pagina, navigazione, dati."""
+            occhiello: str, chiave_pagina: str, file_pagina: str,
+            marcatori: dict = None) -> str:
+    """Una pagina intera: guscio, sezioni della pagina, navigazione, dati.
+
+    `marcatori` sostituisce nel corpo pezzi di html che il modello non puo'
+    scrivere da solo, perche' dipendono dai dati: e' il modo in cui la
+    navigazione finisce in tutte le pagine, e il modo in cui questa pagina
+    riceve le regole. Un marcatore che nessuno sostituisce resta nel testo
+    finale, e per questo il test ne cerca uno.
+    """
     testo = _sezioni(modello, sezioni)
+    for marcatore, valore in (marcatori or {}).items():
+        testo = testo.replace(marcatore, valore)
     testo = testo.replace("<!--NAVIGAZIONE-->", _navigazione(file_pagina))
     # Il titolo e l'occhiello stanno nel corpo e cambiano da pagina a pagina:
     # una pagina che si chiama «Traduttore» e si presenta come «Il progetto»
@@ -376,6 +489,7 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
     with open(TEMPLATE, "r", encoding="utf-8") as f:
         modello = f.read()
 
+    regole_grammaticali = carica_regole_grammaticali(radice)
     comuni = _dati_comuni(glossario, corpus, varieta, fonetica, archivio,
                           sintesi, web_dir, copiati, radice)
     comuni["conteggi"]["regole"] = len(regole)
@@ -386,8 +500,9 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
 
     scritte = []
 
-    def scrivi(nome, sezioni, dati, titolo, occhiello):
-        pagina = _pagina(modello, sezioni, dati, titolo, occhiello, nome, nome)
+    def scrivi(nome, sezioni, dati, titolo, occhiello, marcatori=None):
+        pagina = _pagina(modello, sezioni, dati, titolo, occhiello, nome, nome,
+                         marcatori)
         percorso = os.path.join(web_dir, nome)
         with open(percorso, "w", encoding="utf-8") as f:
             f.write(pagina)
@@ -416,6 +531,11 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
         elif chiave_p == "frasi":
             dati["coppie"] = _coppie(corpus)
             dati["proverbi"] = _proverbi(corpus)
+        elif chiave_p == "regole":
+            # La pagina delle regole non ha bisogno di dati nel motore: li
+            # scrive sul corpo del documento. Nessun json, nessun motore,
+            # nessuna pagina che sparisce se lo scripting e' spento.
+            pass
         elif chiave_p == "suoni":
             dati["scontoSuoni"] = {
                 "con_suono": sum(1 for s in sintesi.suoni if s.esiste(web_dir)),
@@ -433,8 +553,11 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
             dati["conteggi"]["voci"] = len(con_trascrizione["voci"])
         elif chiave_p == "index":
             dati["fonetica"] = [t.come_dict() for t in fonetica.trascrizioni]
+        marcatori = None
+        if chiave_p == "regole":
+            marcatori = {"<!--REGOLE-->": _pagina_regole(regole_grammaticali)}
         scrivi(pagina["file"], pagina["sezioni"], dati,
-               pagina["titolo"], pagina["occhiello"])
+               pagina["titolo"], pagina["occhiello"], marcatori)
 
     for f in fette:
         dati = dict(comuni)

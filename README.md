@@ -95,6 +95,7 @@ Ora il sito è ramificato, e ogni pagina porta dentro quello che le serve:
 | `glossario-01.html` … `-21.html` | una fetta di 500 voci, con ricerca dentro | ~250 KB |
 | `frasi.html` | coppie parallele e proverbi | 88 KB |
 | `suoni.html` | le cinque varietà e i suoni | 101 KB |
+| `regole.html` | le regole del ferrarese, con la fonte su ognuna | 87 KB |
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
 dice che i dati sono distribuiti e nessun campo, da solo, toglie il peso
@@ -586,7 +587,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 171 test
+python3 prove/test_traduttore.py     # 177 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

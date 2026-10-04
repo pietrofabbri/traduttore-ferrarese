@@ -817,6 +817,119 @@ class TestConteggiDichiarati(unittest.TestCase):
                          % (dichiarata.group(1), ultima))
 
 
+
+class TestPaginaRegole(unittest.TestCase):
+    """La pagina `regole.html`, che e' la ventisettesima del sito.
+
+    Qui non si prova se la pagina e' bella — quello si guarda a occhio — ma
+    tre cose che, se falliscono, la pagina mente:
+
+    - il marcatore `<!--REGOLE-->` resta nel testo quando qualcuno non lo
+      sostituisce, e resterebbe *senza che nulla se ne accorga*: la pagina
+      si aprirebbe e sarebbe vuota;
+    - una regola senza fonte e' un'opinione, e questo progetto non accetta
+      opinioni travestite da regole;
+    - il testo delle regole e' riscritto, e la pagina lo dichiara: se un
+      giorno qualcuno ci mette dentro il testo della fonte, la pagina
+      continua a dire «il testo e' stato riscritto» e sarebbe falso.
+    """
+    def _web(self):
+        return os.path.join(RADICE, "web", "regole.html")
+
+    def _modulo(self):
+        import importlib.util
+        percorso = os.path.join(RADICE, "sorgenti", "costruisci_web.py")
+        spec = importlib.util.spec_from_file_location("costruisci_web",
+                                                      percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo
+
+    def test_il_marcatore_delle_regole_non_resta_nel_testo(self):
+        for nome in sorted(os.listdir(os.path.join(RADICE, "web"))):
+            if not nome.endswith(".html"):
+                continue
+            testo = io.open(os.path.join(RADICE, "web", nome),
+                            encoding="utf-8").read()
+            # Difetto vero, possibile: `<!--REGOLE-->` sta nel modello e se
+            # la pagina non lo sostituisce resta li'. Una pagina che si
+            # apre e non mostra niente e' la peggiore: sembra rotta.
+            self.assertNotIn("<!--REGOLE-->", testo,
+                             "%s mostra il marcatore delle regole" % nome)
+
+    def test_ogni_regola_dichiara_la_fonte(self):
+        with io.open(os.path.join(RADICE, "dati", "regole_grammaticali.json"),
+                     encoding="utf-8") as f:
+            dati = json.load(f)
+        self.assertTrue(dati.get("regole"), "non c'e' nessuna regola")
+        visti = set()
+        for regola in dati["regole"]:
+            for campo in ("id", "categoria", "titolo", "regola", "fonte",
+                          "sezione"):
+                self.assertTrue(regola.get(campo),
+                                "la regola %s non dichiara %s"
+                                % (regola.get("id", "?"), campo))
+            self.assertNotIn(regola["id"], visti,
+                             "due regole hanno lo stesso id: %s"
+                             % regola["id"])
+            visti.add(regola["id"])
+        # E la fonte deve esistere davvero nel registro: una regola che
+        # cita una fonte inesistente non e' piu' una regola, e' una promessa.
+        with io.open(os.path.join(RADICE, "dati", "fonti.json"),
+                     encoding="utf-8") as f:
+            fonti = {fonte["id"] for fonte in json.load(f)["fonti"]}
+        for regola in dati["regole"]:
+            self.assertIn(regola["fonte"], fonti,
+                          "la regola %s cita la fonte %s che non c'e'"
+                          % (regola["id"], regola["fonte"]))
+
+    def test_il_testo_delle_regole_e_dichiarato_riscritto(self):
+        testo = io.open(self._web(), encoding="utf-8").read()
+        self.assertIn("riscritto", testo,
+                      "la pagina deve dire che il testo e' stato riscritto")
+        # E non deve contenere l'identificatore interno come se fosse
+        # una fonte per chi legge: l'identificatore resta nel titolo.
+        corpo = testo.split('class="fonte" title="')[0]
+        for identificatore in ("S015", "S006"):
+            self.assertNotIn(identificatore, corpo[-4000:],
+                             "la pagina mostra %s come se fosse una fonte "
+                             "per chi legge" % identificatore)
+
+    def test_la_pagina_contiene_tutte_le_regole_del_file(self):
+        with io.open(os.path.join(RADICE, "dati", "regole_grammaticali.json"),
+                     encoding="utf-8") as f:
+            dati = json.load(f)
+        testo = io.open(self._web(), encoding="utf-8").read()
+        for regola in dati["regole"]:
+            self.assertIn('id="%s"' % regola["id"], testo,
+                          "la regola %s non e' nella pagina" % regola["id"])
+
+    def test_il_testo_che_viene_dalla_fonte_e_scappato(self):
+        # Una regola che contiene `<` o `&` romperebbe la pagina: il
+        # renderer deve scappare, e il test glielo dice mettendogliene
+        # dentro uno.
+        modulo = self._modulo()
+        html = modulo._pagina_regole({
+            "opera": "prova",
+            "regole": [{"id": "R999", "categoria": "ortografia",
+                        "titolo": "caratteri <speciali> & altro",
+                        "regola": "segnale < e & dentro",
+                        "esempi": [{"fe": "a<b", "it": "c&d"}],
+                        "fonte": "S999", "sezione": "1"}]})
+        self.assertIn("&lt;speciali&gt;", html)
+        self.assertIn("&amp; altro", html)
+        self.assertNotIn("<b>", html, "il contenuto e' finito nel markup")
+
+    def test_una_pagina_senza_regole_si_apre_e_lo_dice(self):
+        # Se il file delle regole non c'e', la pagina non deve sparire: si
+        # apre e spiega perche' e' vuota. Una pagina che non si apre e'
+        # peggio di una pagina vuota.
+        modulo = self._modulo()
+        html = modulo._pagina_regole({"errore": "file non trovato"})
+        self.assertIn("file non trovato", html)
+        self.assertNotIn('class="scheda regola"', html)
+
+
 class TestRaccoltaBigoni(unittest.TestCase):
     """Lo script che raccoglie il vocabolario di R. Bigoni.
 

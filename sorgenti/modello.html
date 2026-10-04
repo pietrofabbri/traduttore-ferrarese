@@ -102,6 +102,24 @@
   .scheda.sintesi { background:#eef1f4; border-left:3px solid #7d8794; }
   .etichetta-sintesi { font-size:.72rem; letter-spacing:.06em;
     text-transform:uppercase; color:#4a5158; font-weight:700; }
+  /* La pagina delle regole. La regola e' testo e la fonte e' in fondo: la
+     distanza fra le due cose e' voluta, cosi' la fonte non si legge come
+     una parte della regola ma come quello che la sostiene. */
+  .regole { margin-bottom: 1.2rem; }
+  .scheda.regola { border-left: 3px solid var(--tacchino); }
+  .scheda.regola h4 { margin: 0 0 .25rem; font-size: 1rem; }
+  .scheda.regola p { margin: 0 0 .45rem; }
+  .scheda.regola .fonte { font-size: .78rem; color: #6b6255; margin: .35rem 0 0; }
+  table.esempi, table.alfabeto { border-collapse: collapse; margin: .1rem 0 .2rem;
+    font-size: .92rem; }
+  table.esempi th, table.alfabeto th { text-align: left; font-size: .74rem;
+    text-transform: uppercase; letter-spacing: .05em; color: #6b6255;
+    padding: .15rem .8rem .15rem 0; font-weight: 700; }
+  table.esempi td, table.alfabeto td { padding: .12rem .8rem .12rem 0;
+    vertical-align: top; }
+  table.esempi td.fe { font-size: 1.05rem; font-weight: 600; }
+  table.esempi td.it, table.alfabeto td { color: var(--tacchino); }
+  table.alfabeto td.carattere { font-size: 1.15rem; font-weight: 700; width: 2.4rem; }
   .vuoto-varieta { border-left: 4px solid var(--tacchino); padding: .5rem .8rem; background: #f5f1e6; margin-bottom: .6rem; }
   select { font-family: inherit; font-size: .9rem; padding: .35rem; border: 1px solid var(--bordo); border-radius: 4px; background: #fff; }
   label.scelta { font-size: .85rem; color: var(--tacchino); display: inline-flex; gap: .3rem; align-items: center; }
@@ -232,6 +250,24 @@
   <div id="riproduttore"></div>
   <!-- /pagina:suoni -->
 
+
+  <!-- pagina:regole -->
+  <h2>Le regole del ferrarese</h2>
+  <p class="occhiello" style="margin:.4rem 0 1rem">
+    Sono regole, non un vocabolario: dicono che cosa succede alle parole
+    quando si formano il plurale o si coniuga il verbo. Ognuna porta la
+    fonte da cui viene, perche' una regola senza fonte e' un'opinione e
+    questo progetto non accetta opinioni travestite da regole.
+  </p>
+  <p class="vuoto">
+    Il testo e' stato riscritto. La fonte &mdash; R. Bigoni, &laquo;Il
+    Ferrarese&raquo; &mdash; e' indicata su ogni regola con il numero della
+    sezione, e va consultata per la frase originale.
+  </p>
+  <div id="regoleGrammaticali">
+  <!--REGOLE-->
+  </div>
+  <!-- /pagina:regole -->
 
   <!-- pagina:fette -->
   <!-- DIFETTO CORRETTO, e il commento resta perche' la forma e' facilissima da

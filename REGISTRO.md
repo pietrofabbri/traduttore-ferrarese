@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.23
+versione: 0.24
 data: 2026-10-05
 ---
 
@@ -85,6 +85,51 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.24 — 2026-10-05 · S021 aperta davvero: il sito c'è, il lessico no
+
+**Il pendente che avevo lasciato tre volte.** «Rendere il sito «Al Tréb dal
+Tridèl» leggibile a macchina»: era l'unico modo per chiudere S021. L'ho
+chiuso, e il modo è stato il più semplice — l'ho aperto nel browser — con
+l'esito che nessuna delle tre dichiarazioni precedenti aveva previsto.
+
+**Il sito non è un muro.** È un SuperSite Aruba, non un WordPress: `/wp-json/`
+non esiste, non c'è nessun endpoint JSON dietro le pagine, e i dati arrivano
+da una post ad Aruba. Il `curl` della home restituisce 11031 byte e nessun
+testo. Ma nel browser le pagine si leggono: il mio «si rendono con
+JavaScript» era vero e non era l'ostacolo.
+
+**Il lessico non è pubblicato.** `/vocabolari` è una pagina di presentazione:
+dice «alcune pubblicazioni sono state ideate e create da membri della nostra
+associazione» e **non ne elenca nessuna** — i suoi 33 link sono tutti menu. E
+`/gocce-di-dialetto` è un elenco di articoli di blog ed è **vuoto**. Quindi la
+mia dichiarazione, che con una sicurezza che non aveva diceva «il contenuto
+lessicale sta in `/vocabolari`, `/gocce-di-dialetto`, `/dialetto-in-pillole` e
+`/filastrocche`», era un **sospetto travestito da fatto**.
+
+**Una dichiarazione sbagliata è peggio di nessuna dichiarazione**, perché fa
+perdere a chi legge il posto dove guardare: chi l'avrebbe seguita sarebbe
+andato a quelle pagerie, avrebbe visto che sono vuote e avrebbe concluso che
+il progetto aveva raccolto male le fonti. Il sito era guardato male: da lontano.
+
+**Cosa resta dichiarato, e come.** In `dati/fonti.json` S021 ha adesso un
+blocco `verifica_2026_10_05` con il metodo, le due pagine controllate, l'esito e
+la conclusione; il testo di quello che ho letto è in
+`raccolta/grezzi/s021/pagine_verificate.txt`, così chi verifica fra un anno
+verifica le stesse parole e non le mie. Il sito chiede `Crawl-delay: 30` e i
+percorsi visitati sono quelli del sitemap. Lo stato resta `esaminata`: entrare
+nel glossario richiede i documenti, e quelli li si chiede all'associazione.
+
+**Un test che rende la cosa difficile da sbagliare di nuovo.** Quando una fonte
+porta un blocco di verifica, quel blocco deve nominare le **pagine** guardate,
+dire il **metodo**, e riportare un **esito** che non sia una frase di circostanza.
+E per S021 in particolare il test controlla che la dichiarazione continui a dire
+che il **lessico non è pubblicato** — non che le pagine non si vedono: è la
+seconda che una dichiarazione sbagliata confonde con la prima.
+
+**Verifiche.** 256 test (erano 254): due sulle fonti verificate. `verifica`: 0
+errori, 8 avvisi noti. Il glossario non è cambiato di una voce, ed è la misura
+giusta: la fonte non aveva voci da prendere.
 
 ## 0.23 — 2026-10-05 · Il traduttore non coniugava e non lo diceva
 

@@ -4283,5 +4283,70 @@ class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):
             self.assertIn("%s %s" % (persona, tempo), caselle)
 
 
+class TestLeFontiVerificate(unittest.TestCase):
+    """Una fonte dichiarata come verificata deve dire **che cosa** è stato visto.
+
+    Il caso reale è S021. La sua dichiarazione diceva, con una sicurezza che
+    non aveva, che «il contenuto lessicale sta in /vocabolari, /gocce-di-dialetto
+    e così via». Era un sospetto travestito da fatto, e il sospetto era falso:
+    le pagine si aprono, si leggono e sono vuote di lessico. Una dichiarazione
+    di questo genere è peggio di nessuna dichiarazione, perché fa perdere a
+    chi legge il posto dove guardare.
+
+    Quindi: quando una fonte porta un blocco di verifica, quel blocco deve
+    nominare le **pagine** guardate e dire **che cosa** c'era dentro. Una
+    dichiarazione vaga non passa.
+    """
+
+    def _fonti(self):
+        from traduttore import verifica_dati
+        return {f["id"]: f for f in verifica_dati.fonti_dichiarate()}
+
+    def test_una_verifica_dichiara_le_pagine_e_l_esito(self):
+        fonti = self._fonti()
+        verificate = [f for f in fonti.values() if f.get("verifica_2026_10_05")]
+        self.assertTrue(verificate,
+                        "nessuna fonte porta una verifica: il test non "
+                        "controllerrebbe niente")
+        for fonte in verificate:
+            verifica = fonte["verifica_2026_10_05"]
+            where = fonte["id"]
+            pagine = verifica.get("pagine_controllate") or []
+            self.assertTrue(pagine, "%s: la verifica non dice quali pagine ha "
+                                    "guardato" % where)
+            for pagina in pagine:
+                self.assertTrue(pagina.startswith("https://"), where)
+                self.assertIn("/", pagina.split("https://", 1)[1], where)
+            self.assertGreater(len(verifica.get("esito", "")), 80,
+                               "%s: l'esito e' troppo corto per essere una "
+                               "verifica" % where)
+            self.assertTrue(verifica.get("metodo"),
+                            "%s: la verifica non dice come e' stata fatta"
+                            % where)
+            self.assertTrue(verifica.get("conclusione"),
+                            "%s: la verifica non conclude nulla" % where)
+
+    def test_s021_dichiara_che_il_lessico_non_c_e_pagina(self):
+        # Il punto di questa fonte: non e' che le pagine non si vedono, e' che
+        # il lessico non e' pubblicato. Se la dichiarazione torna a dire il
+        # contrario, questo test lo dice.
+        fonte = self._fonti()["S021"]
+        esito = fonte["verifica_2026_10_05"]["esito"].lower()
+        # Le parole che contano sono quelle che distinguono «non si vede» da
+        # «non e' pubblicato»: e' la seconda, ed e' la prima cosa che un
+        # dichiaramento sbagliato confonde.
+        self.assertIn("vuoto", esito)
+        self.assertIn("non ne elenca nessuna", esito)
+        self.assertIn("il lessico non e' pubblicato", esito)
+        self.assertEqual(fonte["stato"], "esaminata",
+                         "una fonte con le pagine vuote non e' «acquisita»")
+        # Il seguito e' chiedere i documenti all'associazione, e va detto in
+        # chiaro: e' una richiesta, non una ricerca, e chi legge deve saperlo
+        # per non andare a cercare un sito che e' gia' stato guardato.
+        seguito = (fonte["uso"] + " " + fonte["nota"]).lower()
+        self.assertIn("chiede", seguito)
+        self.assertIn("associazione", seguito)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

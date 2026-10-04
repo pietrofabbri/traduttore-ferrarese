@@ -61,8 +61,18 @@
       "stato": "esaminata",
       "licenza": "nessuna dichiarata sul sito; autorizzazione data dal titolare del progetto, che fa parte dell'associazione",
       "licenza_verificata": true,
-      "uso": "Da usare come S021 quando il ciclo di ricerca ci trova una parola che e' solo li'. Non e' ancora entrata nel glossario.",
-      "nota": "51 pagine nel sitemap, e quasi tutte sono eventi, archivi, foto e pagine di contatto: il contenuto lessicale sta in `/vocabolari`, `/gocce-di-dialetto`, `/dialetto-in-pillole` e `/filastrocche`. Le pagine si rendono con JavaScript, quindi un `curl` non le vede: servono il browser o l'endpoint del sito. Il sito non dichiara una licenza sui contenuti e il suo robots.txt chiede `Crawl-delay: 30`: il ciclo di ricerca lo rispetta e non esce dai percorsi del sitemap. Come S011, quindi: una fonte che si consulta e si cita, e che entra solo con una decisione esplicita."
+      "uso": "Non e' ancora entrata nel glossario, e dal 2026-10-05 sappiamo perche': le pagine lessicali del sito non hanno contenuto lessicale pubblicato. Non e' piu' una fonte «da aprire», e' una fonte che chiede un documento all'associazione.",
+      "nota": "51 pagine nel sitemap, e quasi tutte sono eventi, archivi, foto e pagine di contatto. **Aggiornato il 2026-10-05, dopo averla aperta davvero.** La dichiarazione precedente diceva che «il contenuto lessicale sta in /vocabolari, /gocce-di-dialetto, /dialetto-in-pillole e /filastrocche»: e' un sospetto, non un fatto, e il sospetto era falso. Le pagine lessicali si aprono e si leggono, e sono vuote di lessico: `/vocabolari` non elenca le pubblicazioni che dice di avere e `/gocce-di-dialetto` e' un blog senza articoli. Il testo di quello che ho letto e' in `raccolta/grezzi/s021/pagine_verificate.txt`, cosi' chi verifica fra un anno verifica le stesse parole e non le mie. Il sito non dichiara una licenza sui contenuti e il suo robots.txt chiede `Crawl-delay: 30`: il ciclo di ricerca lo rispetta e non esce dai percorsi del sitemap. Come S011: una fonte che si consulta e si cita, e che entra solo con una decisione esplicita **e con il documento in mano**.",
+      "verifica_2026_10_05": {
+        "metodo": "browser: le pagine si rendono con JavaScript e un `curl` della pagina restituisce 11031 byte senza testo. Il sito chiede Crawl-delay 30 e i percorsi visitati sono quelli del sitemap.",
+        "pagine_controllate": [
+          "https://dialettoferraresealtrebdaltridel.it/vocabolari",
+          "https://dialettoferraresealtrebdaltridel.it/gocce-di-dialetto"
+        ],
+        "esito": "`/vocabolari` e' una pagina di presentazione che dice «alcune pubblicazioni sono state ideate e create da membri della nostra associazione» e non ne elenca nessuna: i suoi 33 link sono tutti menu. `/gocce-di-dialetto` e' un elenco di articoli di blog ed e' vuoto. Il sito si raggiunge e si legge: l'ostacolo non e' che le pagine non si vedono, e' che il lessico non e' pubblicato.",
+        "grezzo": "raccolta/grezzi/s021/pagine_verificate.txt",
+        "conclusione": "Le pubblicazioni esistono: sono materiale dell'associazione. Per usarle serve chiederle all'associazione, e la domanda e' se le si puo' usare e come. Fino ad allora questa fonte e' una consultazione citabile e nient'altro."
+      }
     },
     {
       "id": "S001",

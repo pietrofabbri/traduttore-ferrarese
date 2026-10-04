@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import json
 import io
+import hashlib
 import os
 import re
 import subprocess
@@ -62,7 +63,9 @@ from traduttore.audio import Archivio, Brano, controlla_archivo  # noqa: E402
 from traduttore.sintesi import (CARTELLA, NOTA_SINTETICA,  # noqa: E402
                               PESO_MAX, Sintesi, Suono, controlla_sintesi)
 from traduttore.corpora import Coppia, Corpus, Proverbio  # noqa: E402
-from traduttore.fonetica import Fonetica, Trascrizione, ipa_valida  # noqa: E402
+from traduttore.fonetica import (Fonetica, Trascrizione,  # noqa: E402
+                                ipa_valida, leggi_sistema)
+from traduttore import voce as voce_modulo  # noqa: E402
 from traduttore.glossario import FE_IT, IT_FE, Glossario, Voce, _voce_da_dict  # noqa: E402
 from traduttore.legge import leggi  # noqa: E402
 from traduttore.motore import Motore  # noqa: E402
@@ -72,6 +75,26 @@ from traduttore.voce import (ipa_a_fonemi, percorso_espeak,  # noqa: E402
                              scrivi_wav, voce)
 
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _voti_dell_audizione() -> list:
+    """I voti che la griglia dell'audizione mette in colonna.
+
+    `raccolta/audizione.py` non e' un pacchetto e non si importa: si prende la
+    sua funzione dal file, che e' come la si verifica davvero.
+    """
+    import ast
+    percorso = os.path.join(RADICE, "raccolta", "audizione.py")
+    with io.open(percorso, encoding="utf-8") as f:
+        albero = ast.parse(f.read())
+    for nodo in albero.body:
+        if isinstance(nodo, ast.FunctionDef) and nodo.name == "voti_dichiarati":
+            spazio = {"voce": voce_modulo}
+            eseguito = compile(ast.Module(body=[nodo], type_ignores=[]),
+                               percorso, "exec")
+            exec(eseguito, spazio)  # noqa: S102
+            return spazio["voti_dichiarati"]()
+    raise AssertionError("audizione.py non ha piu' `voti_dichiarati`")
 
 
 def glossario_di_prova():
@@ -3539,6 +3562,202 @@ class TestSintesi(unittest.TestCase):
         # ternario il messaggio «nessun suono generato» finiva accanto al
         # suono che nega.
         self.assertIn("suonoDi(v.id, t) ||", modello)
+
+
+
+class TestLaVoceDichiarata(unittest.TestCase):
+    """Il riproduttore vocale e' una regola del file, non una scelta del codice.
+
+    Il difetto che questi test prendono: la voce era una costante in
+    `voce.py`. Il giorno in cui la voce e' diventata una cosa che qualcuno
+    sceglie — perche' tutte le prove sembravano uguali — la costante non
+    bastava piu': serviva un posto dove la scelta fosse scritta, e quel posto
+    non poteva essere un altro file, perche' un altro file e' un file che
+    nessuno apre quando cerca le regole di pronuncia.
+
+    Qui le regole stanno in `dati/fonetica.jsonl`, dentro una riga sola che
+    comincia con `// SISTEMA `. Il codice la legge; se manca, lo dice.
+    """
+
+    def _dichiarazione(self):
+        return leggi_sistema(os.path.join(RADICE, "dati", "fonetica.jsonl"))
+
+    def test_il_file_delle_regole_dichiara_una_voce_e_i_voti_fra_cui_scegliere(self):
+        dichiarazione = self._dichiarazione()
+        self.assertTrue(dichiarazione["dichiarata"],
+                        dichiarazione["problema"])
+        self.assertTrue(dichiarazione["voce"])
+        self.assertTrue(dichiarazione["voti"])
+        self.assertIn(dichiarazione["voce"], dichiarazione["voti"])
+        self.assertGreater(dichiarazione["velocita"], 0)
+
+    def test_una_dichiarazione_che_non_e_json_e_un_problema_e_non_una_voce(self):
+        # Una riga rotta non puo' diventare una voce per meta': o si legge, o
+        # non c'e'. Il mezzo e' peggio del silenzio perche' sembra una scelta.
+        with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False,
+                                         encoding="utf-8") as f:
+            f.write("// SISTEMA {voce: it, voti: [it]}\n")
+            percorso = f.name
+        try:
+            dichiarazione = leggi_sistema(percorso)
+            self.assertFalse(dichiarazione["dichiarata"])
+            self.assertIn("non e' JSON", dichiarazione["problema"])
+        finally:
+            os.unlink(percorso)
+
+    def test_una_dichiarazione_assente_non_produce_una_voce(self):
+        with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False,
+                                         encoding="utf-8") as f:
+            f.write("// solo un commento\n")
+            percorso = f.name
+        try:
+            dichiarazione = leggi_sistema(percorso)
+            self.assertFalse(dichiarazione["dichiarata"])
+            self.assertEqual(dichiarazione["voce"], "")
+            # La dichiarazione resta vuota: nessun file, nessuna voce. Il
+            # ripiego pero' c'e' ed e' dichiarato, e `voce_per` lo usa: un
+            # comando che suonasse con una stringa vuota produrrebbe un file
+            # con la voce di default del programma, cioe' un suono che nessuno
+            # ha scelto.
+            self.assertEqual(voce_modulo.voce_per(""),
+                             voce_modulo.VOCE_RIPIEGO)
+        finally:
+            os.unlink(percorso)
+
+    def test_il_comando_usa_la_voce_dichiarata_e_non_una_costante(self):
+        esito = voce_modulo.voce("majàl")
+        self.assertEqual(esito["voce"], self._dichiarazione()["voce"])
+        self.assertEqual(esito["velocita"], self._dichiarazione()["velocita"])
+
+    def test_una_riga_puo_scegliere_la_voce_di_quella_parola_sola(self):
+        # Il campo `voce` della riga: vuoto vuol dire «quella dichiarata»,
+        # e un nome vuol dire «questa». E' la scelta che l'audizione produce.
+        scelta = voce_modulo.voci_dichiarate()[0]
+        altra = voce_modulo.voci_dichiarate()[-1]
+        self.assertEqual(voce_modulo.voce_per(""), scelta)
+        self.assertEqual(voce_modulo.voce_per(altra), altra)
+        esito = voce_modulo.voce("majàl", lingua=altra)
+        self.assertEqual(esito["voce"], altra)
+
+    def test_il_manifesto_dei_suoni_dice_qual_riproduttore_li_ha_fatti(self):
+        # Un suono senza il nome di chi lo ha prodotto non e' verificabile da
+        # nessuno: la dichiarazione «e' una voce sintetica» dice che non e'
+        # una persona, ma non dice quale programma.
+        percorso = os.path.join(RADICE, "dati", "sintesi.jsonl")
+        righe = []
+        with io.open(percorso, encoding="utf-8") as f:
+            for riga in f:
+                riga = riga.strip()
+                if riga and not riga.startswith("//"):
+                    righe.append(json.loads(riga))
+        self.assertTrue(righe)
+        for riga in righe:
+            self.assertIn("voce", riga, riga.get("id"))
+            self.assertTrue(riga["voce"])
+
+    def test_una_voce_scelta_fra_i_voti_nessuno_e_un_errore(self):
+        # Il caso vero: qualcuno scrive `it+inesistente` nella riga. Il nome
+        # non e' fra quelli dichiarati, quindi non e' mai stato ascoltato.
+        fonetica = Fonetica([Trascrizione(
+            id="T1", riferimento="V2", forma="pan", ipa="/pan/",
+            varieta="cittadino", voce="it+inesistente")])
+        problemi = [p for p in verifica_dati.controlla_fonetica(
+            fonetica, glossario_di_prova(), corpus_di_prova())
+            if p.codice == "F15"]
+        self.assertTrue(problemi)
+        self.assertEqual(problemi[0].gravita, "errore")
+
+    def test_un_sistema_che_non_dichiara_nessuna_voce_e_un_errore(self):
+        # Una dichiarazione assente non e' neutra: e' una scelta che nessuno
+        # ha preso, e senza questa riga il codice ne prenderebbe una per
+        # conto suo, che e' esattamente cio' che questo progetto non fa.
+        vuota = {"voce": "", "velocita": 0, "voti": [], "dichiarata": False,
+                 "problema": "assente"}
+        with unittest.mock.patch.object(verifica_dati, "leggi_sistema",
+                                        return_value=vuota):
+            problemi = [p for p in verifica_dati.controlla_fonetica(
+                Fonetica([]), glossario_di_prova(), corpus_di_prova())
+                if p.codice == "F15"]
+        self.assertEqual(len(problemi), 1)
+        self.assertEqual(problemi[0].gravita, "errore")
+
+    def test_la_voce_del_sistema_deve_essere_fra_i_voti(self):
+        # Una dichiarazione che sceglie una voce e poi non la mette fra i voti
+        # e' una dichiarazione che non puo' essere controllata: qualcuno puo'
+        # scegliere quella voce per una parola solo e il controllo non se ne
+        # accorgerebbe.
+        strana = {"voce": "it+fuori", "velocita": 130, "voti": ["it"],
+                  "dichiarata": True, "problema": ""}
+        with unittest.mock.patch.object(verifica_dati, "leggi_sistema",
+                                        return_value=strana):
+            problemi = [p for p in verifica_dati.controlla_fonetica(
+                Fonetica([]), glossario_di_prova(), corpus_di_prova())
+                if p.codice == "F15"]
+        errori = [p for p in problemi if p.gravita == "errore"]
+        self.assertEqual(len(errori), 1)
+        self.assertIn("it+fuori", errori[0].messaggio)
+
+    def test_una_voce_che_il_programma_non_conosce_e_un_avviso(self):
+        # Lo stesso dato puo' essere giusto e l'installazione sbagliata: per
+        # questo e' un avviso e non un errore. Dire che il dato e' falso
+        # quando e' l'installazione a essere diversa sarebbe un controllo che
+        # segnala una cosa che non c'e'.
+        buona = {"voce": "it", "velocita": 130, "voti": ["it"],
+                 "dichiarata": True, "problema": ""}
+        with unittest.mock.patch.object(verifica_dati, "leggi_sistema",
+                                        return_value=buona), \
+                unittest.mock.patch.object(voce_modulo, "percorso_espeak",
+                                           return_value="/usr/bin/espeak-ng"), \
+                unittest.mock.patch.object(voce_modulo, "voci_espeak",
+                                           return_value=set()):
+            problemi = [p for p in verifica_dati.controlla_fonetica(
+                Fonetica([]), glossario_di_prova(), corpus_di_prova())
+                if p.codice == "F15"]
+        self.assertEqual(problemi, [])
+
+        with unittest.mock.patch.object(verifica_dati, "leggi_sistema",
+                                        return_value=buona), \
+                unittest.mock.patch.object(voce_modulo, "percorso_espeak",
+                                           return_value="/usr/bin/espeak-ng"), \
+                unittest.mock.patch.object(voce_modulo, "voci_espeak",
+                                           return_value={"en", "fr"}):
+            problemi = [p for p in verifica_dati.controlla_fonetica(
+                Fonetica([]), glossario_di_prova(), corpus_di_prova())
+                if p.codice == "F15"]
+        self.assertEqual(len(problemi), 1)
+        self.assertEqual(problemi[0].gravita, "avviso")
+
+    @unittest.skipUnless(percorso_espeak(), "espeak-ng non e' installato")
+    def test_i_voti_dichiarati_producono_file_diversi(self):
+        # Il test che prende il difetto vero, e non un difetto di scrittura.
+        # Una voce dichiarata fra i voti che produce **lo stesso file** della
+        # voce dichiarata non e' una scelta: e' una colonna vuota. E' successo
+        # con `it+mbrola3`, che qui e' esattamente quello stesso file di `it`.
+        if sys.platform == "darwin" and os.uname().machine == "x86_64":
+            pass
+        dichiarata = voce_modulo.voce_dichiarata()
+        voti = voce_modulo.voci_dichiarate()
+        with tempfile.TemporaryDirectory() as cartella:
+            impronte = {}
+            for voto in voti:
+                esito = voce_modulo.scrivi_wav(
+                    "majàl", os.path.join(cartella, "prova.wav"), lingua=voto)
+                self.assertEqual(esito["problema"], "", voto)
+                with open(esito["wav"], "rb") as f:
+                    impronte[voto] = hashlib.md5(f.read()).hexdigest()
+        for voto, impronta in impronte.items():
+            if voto == dichiarata:
+                continue
+            self.assertNotEqual(
+                impronta, impronte[dichiarata],
+                "%s produce lo stesso file di %s: e' una voce che non cambia "
+                "niente e non puo' stare fra i voti" % (voto, dichiarata))
+
+    def test_la_griglia_dell_audizione_confronta_le_voci_dichiarate(self):
+        # Una griglia che confronta voci diverse da quelle che il progetto
+        # puo' usare e' una griglia che non serve a niente: i voti vengono dal
+        # file delle regole, e la lista scritta a mano e' solo il ripiego.
+        self.assertEqual(_voti_dell_audizione(), voce_modulo.voci_dichiarate())
 
 
 

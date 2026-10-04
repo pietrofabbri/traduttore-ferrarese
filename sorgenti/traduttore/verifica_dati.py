@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .corpora import TIPI
-from .fonetica import ipa_valida
+from .fonetica import ipa_valida, leggi_sistema
 from .glossario import ATTENDIBILITA
 from .varieta import VARIETA, _nome_valido, codice_valido
 
@@ -253,6 +253,76 @@ def controlla_fonetica(fonetica, glossario, corpus, varieta=None) -> list:
     if varieta is not None:
         problemi += _controlla_varieta_delle_trascrizioni(fonetica, glossario, varieta)
     problemi += _controlla_grafia_contro_trascrizione(fonetica)
+    problemi += _controlla_voci_dichiarate(fonetica)
+    return problemi
+
+
+def _controlla_voci_dichiarate(fonetica) -> list:
+    """**F15**: il riproduttore che suona e' uno che qualcuno ha dichiarato.
+
+    `dati/fonetica.jsonl` dichiara in una riga quale voce suona il sistema e
+    fra quali nomi si puo' scegliere. Il controllo chiede tre cose, e sono le
+    tre cose che rendono la dichiarazione vera:
+
+    1. la riga c'e' e dice qualcosa. Una dichiarazione assente non e' una
+       dichiarazione neutra: e' una scelta che nessuno ha preso, e il file
+       deve dirlo invece di lasciare che il codice ne prenda una per conto
+       suo;
+    2. ogni voce — quella del sistema e quella di una riga — sta fra i voti.
+       Un nome che non e' fra i voti e' un nome che nessuno ha messo in
+       confronto, quindi una scelta fatta a caso;
+    3. il programmatore di sintesi, **se c'e'**, conosce quel nome. Il terzo
+       punto e' un avviso e non un errore perche' la stessa macchina puo'
+       avere un `espeak-ng` diverso: dire che il dato e' sbagliato quando e'
+       l'installazione a essere diversa sarebbe un controllo che segnala
+       una cosa che non c'e'.
+    """
+    problemi = []
+    dichiarazione = leggi_sistema()
+    dove = "dati/fonetica.jsonl"
+    if not dichiarazione["dichiarata"]:
+        problemi.append(Problema(
+            "F15", dove,
+            "il file non dichiara la voce che suona: %s. Senza la riga "
+            "`// SISTEMA` il progetto usa il ripiego e non lo sa."
+            % (dichiarazione["problema"] or "la dichiarazione e' vuota")))
+        return problemi
+
+    voti = dichiarazione["voti"]
+    if not dichiarazione["velocita"] > 0:
+        problemi.append(Problema(
+            "F15", dove,
+            "velocita' dichiarata %r: una velocita' di %d parole al minute fa "
+            "suonare tutto uguale"
+            % (dichiarazione["velocita"], dichiarazione["velocita"])))
+
+    scelte = [("il sistema", dichiarazione["voce"])]
+    for t in fonetica.trascrizioni:
+        if t.voce:
+            scelte.append((t.id or t.forma or "(senza id)", t.voce))
+    for chi, nome in scelte:
+        if nome not in voti:
+            problemi.append(Problema(
+                "F15", dove if chi == "il sistema" else chi,
+                "voce %r scelta da %s che non e' fra i voti dichiarati (%s)"
+                % (nome, chi, ", ".join(voti))))
+
+    from . import voce
+    if not voce.percorso_espeak():
+        return problemi
+    conosciute = voce.voci_espeak("it")
+    if not conosciute:
+        return problemi
+    ignoti = []
+    for _, nome in scelte:
+        if nome not in conosciute and nome not in ignoti:
+            ignoti.append(nome)
+    if ignoti:
+        problemi.append(Problema(
+            "F15", dove,
+            "voci scelte che questo espeak-ng non conosce: %s. Se il nome e' "
+            "giusto, l'installazione e' quella che non le ha."
+            % ", ".join(ignoti), gravita="avviso"))
     return problemi
 
 

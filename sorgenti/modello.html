@@ -1208,7 +1208,14 @@ function tokenizza(t) {
           'diverse.</p>'
         : '') +
       '<p class="vuoto">' + scappa(s.avvertimento || DATI.sintesi_avviso || "") +
-      (s.nota ? '<br>' + scappa(s.nota) : '') + '</p></div>';
+      (s.nota ? '<br>' + scappa(s.nota) : '') +
+      // Quale riproduttore ha fatto questo file, e a che velocita'. La
+      // dichiarazione «e' una voce sintetica» dice che non e' una persona; il
+      // nome del riproduttore dice chi ha suonato, e sono due domande diverse.
+      (s.voce ? '<br>Riproduttore: ' + scappa(s.voce) +
+       (s.velocita ? ' a ' + s.velocita + ' parole al minuto' : '') +
+       ', dichiarato in <code>dati/fonetica.jsonl</code>.' : '') +
+      '</p></div>';
   }
 
   // La scheda del suono generato. La dichiarazione sta **dentro** la scheda e

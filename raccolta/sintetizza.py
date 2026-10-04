@@ -79,6 +79,8 @@ def _riga(t: dict, esito: dict, nome_file: str) -> dict:
         "forma": t.forma,
         "ipa": esito["ipa"],
         "fonemi": esito["fonemi"],
+        "voce": esito["voce"],
+        "velocita": esito["velocita"],
         "file": nome_file,
         "varieta": t.varieta or "cittadino",
         "fonte": t.fonte,
@@ -106,7 +108,7 @@ def main() -> int:
     fonetica = Fonetica.da_file(TRASCRIZIONI)
     righe, rifiutate = [], {}
     for t in fonetica.trascrizioni:
-        esito = voce.voce(t.forma)
+        esito = voce.voce(t.forma, lingua=t.voce)
         if esito["problema"]:
             rifiutate["non suonabile"] = rifiutate.get("non suonabile", 0) + 1
             continue
@@ -118,6 +120,10 @@ def main() -> int:
             continue
         righe.append((t, esito))
 
+    print("voce dichiarata         %6s   in dati/fonetica.jsonl, "
+          "a %d parole al minuto"
+          % (voce.voce_dichiarata() or "(nessuna)",
+             voce.velocita_dichiarata() or voce.VELOCITA_RIPIEGO))
     print("trascrizioni dichiarate   %4d" % len(fonetica.trascrizioni))
     print("suonate                  %4d   un file per parola, in web/sintesi/"
           % len(righe))
@@ -145,7 +151,9 @@ def main() -> int:
     scritte = []
     for t, esito in righe:
         nome_file = "%s.wav" % t.id
-        fatto = voce.scrivi_wav(t.forma, os.path.join(DESTINAZIONE, nome_file))
+        fatto = voce.scrivi_wav(t.forma,
+                                os.path.join(DESTINAZIONE, nome_file),
+                                lingua=t.voce)
         if not fatto["wav"]:
             rifiutate["espeak-ng ha fallito"] = \
                 rifiutate.get("espeak-ng ha fallito", 0) + 1

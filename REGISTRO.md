@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.19
+versione: 0.20
 data: 2026-10-04
 ---
 
@@ -85,6 +85,105 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.20 — 2026-10-04 · La voce si sceglie nelle regole, e una voce che non suona si dichiara
+
+**La domanda.** «Tutte le prove che ho fatto somigliano molto e fanno
+abbastanza schifo: fai che io possa scegliere tra vari riproduttori vocali, nelle
+regole che tu stesso hai scritto.» La voce era una **costante** in
+`sorgenti/traduttore/voce.py` (`VOCE_DEFAULT = "it"`): si poteva cambiare solo
+modificando il codice, e il posto in cui le regole di pronuncia sono scritte —
+`dati/fonetica.jsonl` — non diceva niente di come il suono venga prodotto.
+
+La scelta e' adesso **nel file delle regole**, in una riga sola:
+
+    // SISTEMA {"voce": "it", "velocita": 130, "voti": [...]}
+
+`dati/fonetica.jsonl` ha gia' dentro le regole di lettura della grafia, le
+regole che la fonte dichiara e quelle che non dichiara. Una voce scelta in un
+altro file sarebbe una regola che nessuno apre, quindi una regola che non c'e'.
+La riga comincia con `// SISTEMA ` ed e' l'unica riga del file che il programma
+legge invece di ignorarla come un commento; se manca o e' rotta, il programma
+**dichiara** che il file non lo dice e usa il ripiego — `it` a 130 parole al
+minuto — che e' dichiarato con la stessa prosa nel codice.
+
+**Ogni parola puo' scegliere la sua.** Ogni riga ha adesso il campo facoltativo
+`voce`: vuoto vuol dire «quella dichiarata qui sopra». Nel file nessuna riga lo
+riempie, e quel vuoto e' dichiarato per iscritto: scegliere la voce di una parola
+e' una decisione che prende un orecchio, e la griglia di
+`raccolta/audizione.py` e' lo strumento con cui prenderla.
+
+**La misura che mancava, e la scoperta che e' costata.** «Quale voce e' la
+migliore?» era una domanda senza verifica, perche' nessuno controllava se una
+voce **suonasse**. Il comando `voci` adesso lo fa, e la prima esecuzione ha
+detto due cose:
+
+- tutte le varianti italiane producono **lo stesso IPA** (`maɡnˈar` con `it`,
+  `it+f2..f5`, `it+adam`, `it+croak`): cambiano il timbro, i suoni no. Il
+  confronto fra timbri era cio' che l'audizione mostrava, e la sua conclusione
+  — «tutte somigliano» — era giusta per una ragione che nessuno aveva scritta;
+- le quattro voci `it+mbrola1..4`, che sono italiano **parlato** e non sintesi e
+  sarebbero la risposta giusta, qui non suonano: il `wav` che ne esce e'
+  **identico byte per byte** a quello di `it`. Non e' una configurazione da
+  correggere: `espeak-ng` pilota mbrola da `mbrowrap.c`, tutto sotto `#if
+  defined(_WIN32)`, quindi su macOS ricade in silenzio sulla voce di sintesi.
+  Per questo lo stesso `espeak-ng --voices` non le elenca piu'.
+
+**Mbrola e' installato, e non serve a niente: si dice anche questo.** Il
+programma `mbrola` e i quattro database italiani (`it1`, `it2` dell'Istituto di
+Fonetica di Padova, `it3` dell'Universita' di Trento, `it4` dell'ITC-irst) sono
+stati scaricati e compilati sulla macchina, con la licenza accanto a ciascuno:
+gratuiti per uso non commerciale, vietati in un prodotto venduto, che per un
+progetto didattico va bene. Eppure non suonano, per la ragione di sopra: servirebbe
+un `espeak-ng` costruito con il supporto mbrola, e quel codice su macOS non
+esiste. Il progetto **non redistribuisce** nulla di tutto questo e non lo
+dichiara come una sua dipendenza: resta una prova, e la prova e' scritta nel file
+delle regole accanto alla voce che si usa davvero.
+
+**Un controllo in piu', F15.** Chiede che la dichiarazione ci sia, che la voce del
+sistema e quella di ogni riga stiano fra i voti, e che la velocita' sia un
+numero. Se `espeak-ng` c'e' ed è installato, chiede anche che conosca quei nomi:
+e' un **avviso** e non un errore, perche' lo stesso dato puo' essere giusto e
+l'installazione sbagliata.
+
+**Il test che prende il difetto vero.** Dodici test, e due di loro prendono il
+difetto e non uno sbaglio di scrittura: quello che verifica che i voti
+dichiarati **producono file diversi** fra loro, e quello che verifica che una
+voce fuori dai voti e' un errore. Il primo e' la misura resa regola: se un
+giorno una voce accettata dal programma producesse di nuovo lo stesso file, il
+test fallisce invece di lasciare una colonna vuota in una griglia.
+
+**Le versioni non erano d'accordo.** `pyproject.toml`,
+`sorgenti/traduttore/__init__.py` e la frontmatter di `README.md` dicevano
+`0.17` mentre il registro era a `0.19`: la regola del registro chiede che le
+tre concordino e due rilasci non le avevano allineate. Ora sono tutte a `0.20`,
+e la prossima riga che cambia il comportamento le aggiorna con se'.
+
+**Verifiche.** 226 test (erano 214): **dodici** sulla voce dichiarata.
+`verifica`: 0 errori, 8 avvisi. Equivalenza: 12 frasi, 0 divergenze. Scanner: 115
+file tracciati, **0 righe sospette**. Sito: 40 pagine, 34 fette,
+`traduttore.html` a 2385 KB sotto il tetto di 3 MB.
+
+**Lo scanner, e le sue tre eccezioni dichiarate.** `prove/scanner.py` cerca nei
+file tracciati da git gli ideogrammi, il cirillico, il greco, il kana e la
+scrittura coreana: caratteri che si somigliano a una lettera italiana e che
+bastano a rendere una parola falsa senza che nessuno se ne accorga. Passa con
+**zero** righe sospette, e le sue eccezioni sono tre, scritte dentro il file e
+non nella testa di chi lo gira: `χ` e `β`, che sono simboli IPA e senza dei
+quali `ipa_valida` non accetterebbe niente, e `λ`, che compare in due voci del
+glossario — `biλjét` e `biλjêtàri` — perche' **la fonte** (Bigoni, S006, voci
+701 e 702) usa la lambda per il suono che l'italiano scrive `gl`. Il progetto
+lo dichiara: la chiave di ricerca di quelle due voci e' `bijét`, cioe' senza
+lambda, e la `fonte` dice quale vocabolario le ha scritte.
+
+**Un controllo che mancava: girare il workflow in locale.** `prove/ci_locale.py`
+estrae i passi `run:` da `.github/workflows/*.yml` e li esegue con la shell,
+uno alla volta, fermandosi al primo che esce diversi da zero e dicendo quale.
+Non e' un sostituto del workflow — non usa `actions/checkout` e non ha
+`ubuntu-latest` — ma evita la cosa peggiore: scoprire che una riga di un passo
+e' rotta solo quando GitHub la esegue. Per il rilascio di questa versione: 16
+passi (quindici del workflow e lo scanner), tutti usciti con zero.
+
 
 ## 0.19 — 2026-10-04 · Il bottone che mancava, e la voce che non puo' essere quella giusta
 

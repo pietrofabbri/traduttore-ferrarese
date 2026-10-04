@@ -92,6 +92,12 @@ class Suono:
     sintetica: bool = True
     nota: str = ""
     avvertimento: str = ""
+    # Il riproduttore che ha fatto questo file, e le parole al minuto con cui
+    # l'ha fatto. Non sono curiosita': senza questi due campi un suono non
+    # dice chi lo ha prodotto, e chi lo ascolta non ha modo di sapere se sta
+    # sentendo la voce che il progetto dichiara o un'altra.
+    voce: str = ""
+    velocita: int = 0
 
     def come_dict(self) -> dict:
         return {
@@ -108,6 +114,8 @@ class Suono:
             "sintetica": self.sintetica,
             "nota": self.nota,
             "avvertimento": self.avvertimento,
+            "voce": self.voce,
+            "velocita": self.velocita,
         }
 
     def esiste(self, radice: str) -> bool:
@@ -191,7 +199,23 @@ def _suono_da_dict(grezzo: dict) -> Suono:
         sintetica=bool(sintetica),
         nota=str(grezzo.get("nota", "") or "").strip(),
         avvertimento=str(grezzo.get("avvertimento", "") or "").strip(),
+        voce=str(grezzo.get("voce", "") or "").strip(),
+        velocita=_intero(grezzo.get("velocita", 0)),
     )
+
+
+def _intero(grezzo) -> int:
+    """Un intero, o zero se non e' un intero.
+
+    Il campo arriva da un file generato, quindi non dovrebbe mai essere
+    spazzatura: ma un file che non si puo' leggere non deve far cadere la
+    pagina, e il valore che manca e' zero, che e' anche quello che la pagina
+    usa per non scrivere niente.
+    """
+    try:
+        return int(grezzo)
+    except (TypeError, ValueError):
+        return 0
 
 
 def controlla_sintesi(sintesi: "Sintesi", radice_web: str = None,

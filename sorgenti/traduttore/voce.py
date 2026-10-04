@@ -51,6 +51,27 @@ import shutil
 import subprocess
 
 from traduttore import legge
+from traduttore.fonetica import leggi_sistema
+
+# La dichiarazione di `dati/fonetica.jsonl` letta una volta sola. Il file non
+# cambia mentre il programma gira, quindi rileggerlo a ogni parola sarebbe
+# solo un modo per impiegare il disco. Il valore vuoto vuol dire «il file non
+# l'ha ancora detto»: le funzioni sotto lo dicono, non lo indovinano.
+_SISTEMA = None
+
+
+def sistema() -> dict:
+    """La dichiarazione di `dati/fonetica.jsonl`: voce, velocita', voti."""
+    global _SISTEMA
+    if _SISTEMA is None:
+        _SISTEMA = leggi_sistema()
+    return _SISTEMA
+
+
+def azzera_sistema() -> None:
+    """Dimentica la dichiarazione letta. Serve ai test e a chi la cambia."""
+    global _SISTEMA
+    _SISTEMA = None
 
 # L'alfabeto di `espeak-ng`, non l'IPA. Ogni chiave e' un simbolo IPA che il
 # modulo `legge` puo' produrre; il valore e' come quell'unico programma lo
@@ -75,14 +96,99 @@ DA_IPA = {
 # su una, e segnarlo produrrebbe una sillaba che nella lingua non esiste.
 VOCALI_ESPEAK = set("aeiouE")
 
-# La velocita' di default. Piu' lenta della parla di tutti e di proposito:
-# chi ascolta una voce che non conosce ha bisogno di tempo, e il gioco chiede
-# di far **ripetere**, non di far capire al volo. Si puo' cambiare.
-VELOCITA_DEFAULT = 130
+# La velocita' e la voce di quando `dati/fonetica.jsonl` **non** dichiara
+# niente. Sono il ripiego, non la scelta: la scelta sta nel file delle regole,
+# accanto alle regole di pronuncia che quella voce deve rendere, e la legge
+# `F15` controlla che le due cose tornino.
+#
+# Il ripiego e' `it` a 130 parole al minuto, e i due numeri sono voluti:
+# `it` perche' non esiste un italiano ferrarese che possa fingere di essere
+# ferrarese, e dirlo e' piu' onesto che sceglierne una; 130 perche' e' piu'
+# lenta della parla di tutti e di proposito, perche' chi ascolta una voce che
+# non conosce ha bisogno di tempo e il gioco chiede di far **ripetere**, non
+# di far capire al volo.
+VELOCITA_RIPIEGO = 130
+VOCE_RIPIEGO = "it"
+VELOCITA_DEFAULT = VELOCITA_RIPIEGO
+VOCE_DEFAULT = VOCE_RIPIEGO
 
-# La voce di base. `it` e' italiano: non esiste un italiano ferrarese che possa
-# fingere di essere ferrarese, e dirlo e' piu' onesto che sceglierne una.
-VOCE_DEFAULT = "it"
+
+def voce_dichiarata() -> str:
+    """Il riproduttore che il sistema suona, o `''` se nessuno l'ha dichiarato.
+
+    Il vuoto e' una risposta, non un incidente: e' quello che dice un file di
+    regole che non sceglie, e va detto invece di riempirlo con `it` in
+    silenzio perche' viene comodo.
+    """
+    return sistema()["voce"]
+
+
+def velocita_dichiarata() -> int:
+    """Le parole al minuto dichiarate, o zero se nessuno le ha dichiarate."""
+    return sistema()["velocita"]
+
+
+def voci_dichiarate() -> list:
+    """I riproduttori fra cui il file delle regole permette di scegliere."""
+    return list(sistema()["voti"])
+
+
+def voce_per(parola_voce: str = "") -> str:
+    """La voce che suona una riga: la sua, o quella dichiarata per il sistema."""
+    return (parola_voce or "").strip() or voce_dichiarata() or VOCE_RIPIEGO
+
+
+def voci_espeak(lingua: str = "it") -> set:
+    """I nomi che `espeak-ng` accetta davvero per questa lingua.
+
+    Il programma li pubblica con due elenchi: `--voices`, dove una riga e' una
+    lingua con il nome del file che la contiene, e `--voices=variant`, dove
+    una riga e' una variazione che si applica a qualunque lingua. I due
+    elenchi si uniscono cosi': `it`, `it+mbrola3`, `it+Adam`. Non e' una lista
+    scritta qui: e' quello che il programma dice adesso, quindi se il programma
+    cambia la lista cambia e il controllo `F15` se ne accorge.
+
+    Vuoto se `espeak-ng` non c'e': nessun programma, nessun elenco.
+    """
+    programma = percorso_espeak()
+    if not programma:
+        return set()
+    nomi = set()
+    for argomento, suffisso in (("--voices", ""), ("--voices=variant", "+")):
+        try:
+            fatto = subprocess.run([programma, argomento, "--version"],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        except OSError:
+            return set()
+        for riga in fatto.stdout.decode("utf-8", "replace").splitlines()[1:]:
+            campi = riga.split()
+            if len(campi) < 4:
+                continue
+            lingua_riga, nome = campi[1], campi[3]
+            if suffisso:
+                if nome:
+                    nomi.add("%s%s%s" % (lingua, suffisso, nome))
+            elif lingua_riga == lingua:
+                nomi.add(lingua_riga)
+                # Le voci mbrola hanno nel campo lingua lo stesso codice della
+                # voce di sintesi e differiscono solo nel file: la riga `it`
+                # col file `mb/mb-it3` si chiama `it+mbrola3`. Senza questa
+                # riga `it+mbrola3` sembrerebbe una voce che il programma non
+                # conosce, e il controllo F15 segnalerebbe un voto che invece
+                # funziona.
+                #
+                # Il programma elenca queste voci **solo se il database e'
+                # installato**: senza il file non compare, quindi un nome
+                # assente qui vuol dire che il database manca, non che il
+                # progetto abbia sbagliato a scriverlo.
+                if len(campi) > 4 and campi[4].startswith("mb/"):
+                    database = os.path.basename(campi[4])
+                    if database.startswith("mb-" + lingua):
+                        cifre = database[len("mb-" + lingua):]
+                        if cifre.isdigit():
+                            nomi.add("%s+mbrola%s" % (lingua, cifre))
+    return nomi
 
 
 def percorso_espeak() -> str:
@@ -161,13 +267,19 @@ def _ultimo(pezzi: list) -> str:
     return pezzi[-1] if pezzi else ""
 
 
-def voce(parola: str, velocita: int = VELOCITA_DEFAULT,
-         lingua: str = VOCE_DEFAULT) -> dict:
+def voce(parola: str, velocita: int = None,
+         lingua: str = None) -> dict:
     """La parola ferrarese, con la sua IPA e la voce che la direbbe.
 
     Ritorna sempre un dizionario, anche quando non e' andata: quando non e'
     andata, `wav` e' vuoto e `problema` spiega perche'. La funzione non
     solleva e non indovina.
+
+    `velocita` e `lingua` lasciati a `None` non sono «il ripiego»: sono
+    **quello che `dati/fonetica.jsonl` dichiara**, e il ripiego c'e' solo se
+    il file non dichiara niente. Il risultato porta in `voce` e `velocita` la
+    voce che ha suonato davvero, cosi' chi ascolta un wav sa quale riproduttore
+    lo ha fatto senza doverlo indovinare dal suono.
     """
     esito = {
         "forma": parola or "",
@@ -178,6 +290,9 @@ def voce(parola: str, velocita: int = VELOCITA_DEFAULT,
         "dubbi": [],
         "attendibilita": "I",
         "da_verificare": True,
+        "voce": voce_per(lingua or ""),
+        "velocita": int(velocita) if velocita else (velocita_dichiarata()
+                                                     or VELOCITA_RIPIEGO),
         "problema": "",
     }
     if not (parola or "").strip():
@@ -207,8 +322,8 @@ def voce(parola: str, velocita: int = VELOCITA_DEFAULT,
     return esito
 
 
-def scrivi_wav(parola: str, percorso: str, velocita: int = VELOCITA_DEFAULT,
-               lingua: str = VOCE_DEFAULT) -> dict:
+def scrivi_wav(parola: str, percorso: str, velocita: int = None,
+               lingua: str = None) -> dict:
     """La parola suonata, con il `wav` scritto dove si e' chiesto.
 
     Il comando esterno e' dichiarato qui, non nascosto: se manca
@@ -230,7 +345,11 @@ def scrivi_wav(parola: str, percorso: str, velocita: int = VELOCITA_DEFAULT,
     if cartella and not os.path.isdir(cartella):
         os.makedirs(cartella)
 
-    comando = [programma, "-v", lingua, "-s", str(velocita),
+    # La voce e' quella **risolta**, non il parametro: il parametro puo' essere
+    # vuoto, e passare a `espeak-ng` un nome vuoto produrrebbe un wav con la
+    # voce di default del programma, cioe' un suono diverso da quello
+    # dichiarato senza che nessuno lo dica.
+    comando = [programma, "-v", esito["voce"], "-s", str(esito["velocita"]),
                "-w", percorso, "[[%s]]" % esito["fonemi"]]
     try:
         fatto = subprocess.run(comando, stdout=subprocess.PIPE,
@@ -251,6 +370,6 @@ def scrivi_wav(parola: str, percorso: str, velocita: int = VELOCITA_DEFAULT,
     # Il dubbio resta anche adesso che il suono c'e'. E' il punto del
     # modulo: un wav non verifica niente, e non e' un attestato.
     esito["nota"] = (esito["nota"] + "; " if esito["nota"] else "") + (
-        "voce sintetica: non e' un parlante ferrarese e non verifica la "
-        "trascrizione")
+        "voce sintetica %s: non e' un parlante ferrarese e non verifica la "
+        "trascrizione" % esito["voce"])
     return esito

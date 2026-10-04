@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.17
+versione: 0.20
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -27,6 +27,7 @@ python3 -m traduttore.cli cerca magnar
 python3 -m traduttore.cli varieta
 python3 -m traduttore.cli pronuncia magnar
 python3 -m traduttore.cli voce magnàr
+python3 -m traduttore.cli voci
 python3 -m traduttore.cli audio
 python3 -m traduttore.cli proposte
 python3 -m traduttore.cli stato
@@ -587,7 +588,9 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 214 test
+python3 prove/test_traduttore.py     # 226 test
+python3 prove/ci_locale.py           # i passi del workflow, in locale
+python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

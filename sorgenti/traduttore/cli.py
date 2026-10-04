@@ -12,6 +12,7 @@ programma che sistema un glossario senza chiedere lo rovina.
     buchi         quello che il motore non sa, in numeri, e perche'
     varieta       le cinque varieta' del ferrarese, e quante voci ha ciascuna
     pronuncia     la trascrizione IPA di una parola, e quanto e' sicura
+    voci          i riproduttori dichiarati, e se suonano davvero
     audio         che brani audio ci sono, e quali si possono pubblicare
     proposte      la coda di revisione delle risposte del modello
     web           genera il sito statico
@@ -466,6 +467,113 @@ def comando_varieta(args) -> int:
     return 0
 
 
+def _impronta(percorso: str) -> str:
+    """L'impronta del file, o `''` se il file non c'e'.
+
+    Serve a una cosa sola: dire se due riproduttori hanno prodotto **lo
+    stesso file**. E' la domanda che l'audizione non puo' fare e che qui e'
+    una riga di codice, ed e' la domanda che ha mostrato che `it+mbrola3` non
+    suona niente di nuovo.
+    """
+    import hashlib
+    if not (percorso and os.path.isfile(percorso)):
+        return ""
+    with open(percorso, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+
+def _provata(voto: str, radice: str, parola: str = "majàl") -> dict:
+    """Suona davvero questo riproduttore? E come, rispetto alla voce dichiarata.
+
+    Non e' un punteggio e non e' una classifica: e' una misura. La domanda e'
+    "suoni qualcosa di diverso dalla voce dichiarata", e la risposta e' un
+    fatto — l'impronta del file — non un giudizio di questo programma su un
+    orecchio che non ha.
+    """
+    nome = voto.replace("+", "-").replace("/", "-")
+    esito = voce_modulo.scrivi_wav(
+        parola, os.path.join(radice, "%s.wav" % nome), lingua=voto)
+    esito["nome"] = voto
+    esito["impronta"] = _impronta(esito["wav"])
+    return esito
+
+
+def comando_voci(args) -> int:
+    """I riproduttori che `dati/fonetica.jsonl` dichiara, e se suonano.
+
+    Il comando esiste perche' una voce che il programma **dichiara** e una
+    voce che **suona** sono due cose diverse, e solo la seconda e' quella che
+    si sente. Il caso reale e' `it+mbrola3`: il programma la conosce, la voce
+    esiste in un archivio di mbrola, e il file che ne esce e' identico a
+    quello della voce di sintesi. Senza questa misura, «scegli la voce» e'
+    una frase che non si puo' controllare.
+    """
+    sistema = voce_modulo.sistema()
+    voti = sistema["voti"]
+    scelta = sistema["voce"]
+
+    if not sistema["dichiarata"]:
+        print("dati/fonetica.jsonl non dichiara la voce: %s"
+              % (sistema["problema"] or "dichiarazione vuota"))
+        print("il ripiego e' %s a %d parole al minuto, dichiarato in "
+              "sorgenti/traduttore/voce.py."
+              % (voce_modulo.VOCE_RIPIEGO, voce_modulo.VELOCITA_RIPIEGO))
+        return 1
+
+    if not voce_modulo.percorso_espeak():
+        print("espeak-ng non e' installato: nessun riproduttore suona, e non "
+              "si scrive un suono che non si e' sentito.")
+        print("dichiarato in dati/fonetica.jsonl: %s a %d parole al minuto"
+              % (scelta, sistema["velocita"]))
+        return 1
+
+    radice = os.path.join(RADICE, "raccolta", "lavorato", "voci")
+    if not os.path.isdir(radice):
+        os.makedirs(radice)
+    conosciute = voce_modulo.voci_espeak("it")
+    prove = [_provata(voto, radice) for voto in voti]
+    impronta_scelta = ""
+    for p in prove:
+        if p["nome"] == scelta:
+            impronta_scelta = p["impronta"]
+
+    righe = []
+    for p in prove:
+        if p["problema"]:
+           che = "NON suona: %s" % p["problema"]
+        elif not p["impronta"]:
+            che = "NON suona: nessun file scritto"
+        elif p["nome"] == scelta:
+            che = "suona: e' la voce dichiarata"
+        elif p["impronta"] == impronta_scelta:
+            che = "suona: file identico a quello di `%s`" % scelta
+        else:
+            che = "suona: un file diverso"
+        righe.append({"voce": p["nome"], "esito": che,
+                      "dal_programma": p["nome"] in conosciute})
+
+    if args.json:
+        print(json.dumps({"dichiarata": scelta,
+                          "velocita": sistema["velocita"],
+                          "voti": righe}, ensure_ascii=False, indent=2))
+        return 0
+
+    print("voce dichiarata   %s" % scelta)
+    print("parole al minuto  %d" % sistema["velocita"])
+    print("voti dichiarati   %d   in dati/fonetica.jsonl" % len(voti))
+    print("dal programma     %d su %d   espeak-ng conosce questi nomi"
+          % (sum(1 for r in righe if r["dal_programma"]), len(righe)))
+    print()
+    for r in righe:
+        print("  %-14s %s" % (r["voce"], r["esito"]))
+    print()
+    print("«file identico a quello di `%s`» vuol dire che il nome e' accettato"
+          % scelta)
+    print("ma il suono non cambia: cambiare riproduttore non e' ancora la via")
+    print("per una pronuncia piu' ferrarese. Quella si corregge nelle regole.")
+    return 0
+
+
 def comando_voce(args) -> int:
     """Fa suonare una parola ferrarese, e dice subito che non e' un parlante.
 
@@ -505,6 +613,7 @@ def comando_voce(args) -> int:
     if esito["problema"]:
         print("non suona: %s" % esito["problema"])
         return 1
+    print("voce %s a %d parole al minuto" % (esito["voce"], esito["velocita"]))
     print("fonemi per il sintetizzatore: %s" % esito["fonemi"])
     if esito["wav"]:
         print("suono scritto in: %s" % esito["wav"])
@@ -779,12 +888,22 @@ def costruisci_parser() -> argparse.ArgumentParser:
                    help="la parola, in ferrarese")
     p.add_argument("--suona", action="store_true",
                    help="scrive il wav e dice dove (non va in web/audio/)")
-    p.add_argument("--velocita", type=int, default=voce_modulo.VELOCITA_DEFAULT,
-                   help="parole al minuto (%d)" % voce_modulo.VELOCITA_DEFAULT)
-    p.add_argument("--lingua", default=voce_modulo.VOCE_DEFAULT,
-                   help="voce del sintetizzatore (%s)" % voce_modulo.VOCE_DEFAULT)
+    p.add_argument("--velocita", type=int, default=None,
+                   help="parole al minuto; quella dichiarata in "
+                        "dati/fonetica.jsonl (%d)"
+                        % (voce_modulo.velocita_dichiarata()
+                           or voce_modulo.VELOCITA_RIPIEGO))
+    p.add_argument("--lingua", default=None,
+                   help="voce del sintetizzatore; quella dichiarata in "
+                        "dati/fonetica.jsonl (%s)"
+                        % (voce_modulo.voce_dichiarata() or "non dichiarata"))
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_voce)
+
+    p = sotto.add_parser(
+        "voci", help="i riproduttori dichiarati, e se suonano davvero")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_voci)
 
     p = sotto.add_parser("audio", help="che brani audio ci sono e quali si pubblicano")
     p.add_argument("--json", action="store_true")

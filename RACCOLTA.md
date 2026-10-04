@@ -438,6 +438,22 @@ risultato.
 PYTHONPATH=sorgenti python3 raccolta/audizione.py
 ```
 
+Le voci in colonna sono quelle che **`dati/fonetica.jsonl` dichiara** nella
+riga `// SISTEMA {...}`, non una lista scritta qui dentro: una griglia che
+confronta voci diverse da quelle che il progetto puo' usare non serve a
+niente. Se il file non dichiara nessun voto, la lista scritta nel codice e' il
+ripiego e lo dice.
+
+Nella griglia, sotto ogni cella, c'e' scritto quando il file prodotto e'
+**identico** a quello della voce dichiarata. Una colonna che suona come un'altra
+non e' una scelta, e una scelta che non cambia niente e' peggio di nessuna
+scelta: e' successo con `it+mbrola3`, che produce lo stesso `wav` di `it` byte
+per byte. Il comando `voci` fa la stessa misura e la stampa:
+
+```bash
+PYTHONPATH=sorgenti python3 -m traduttore.cli voci
+```
+
 Serve a una domanda sola — **quale di queste voci suona meno falsa** — e la
 risposta e' un timbro. Non e' la domanda «come si fa a suonare ferrarese?»:
 questa seconda non ha risposta dentro i vincoli del progetto, e va detto prima

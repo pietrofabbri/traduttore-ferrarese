@@ -54,6 +54,72 @@ PERMESSI = set("/-().[] \u2016\u2015")
 
 PREDEFINITO = "ferrarese, trascrizione fonematica di comodo"
 
+# L'unica riga di `dati/fonetica.jsonl` che il codice legge invece di
+# ignorarla come un commento. Porta dentro una riga sola la dichiarazione di
+# **come** si suona — il riproduttore vocale, la velocita' e l'elenco dei
+# voti — e la mette li' perche' le regole di questo progetto stanno tutte
+# nello stesso file: una voce scelta in un altro file sarebbe una regola che
+# nessuno apre, quindi una regola che non c'e'.
+MARCATORE_SISTEMA = "// SISTEMA "
+
+
+def percorso_fonetica() -> str:
+    """Il percorso di `dati/fonetica.jsonl`, preso dalla radice del progetto."""
+    radice = os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))))
+    return os.path.join(radice, "dati", "fonetica.jsonl")
+
+
+def leggi_sistema(percorso: str = "") -> dict:
+    """Che cosa il file dichiara di se' stesso: la voce, la velocita', i voti.
+
+    Ritorna sempre un dizionario, anche quando la dichiarazione non c'e' o e'
+    rotta: in quel caso `dichiarata` resta falso e `problema` dice perche'.
+    **Non si indovina**: se il file non dichiara la voce, questa funzione non ne
+    sceglie una, e chi la cerca deve poter vedere che non c'e'.
+    """
+    percorso = percorso or percorso_fonetica()
+    esito = {"voce": "", "velocita": 0, "voti": [],
+             "dichiarata": False, "problema": ""}
+    if not (percorso and os.path.exists(percorso)):
+        esito["problema"] = "il file delle trascrizioni non c'e': %r" % percorso
+        return esito
+
+    dichiarazione = ""
+    with open(percorso, "r", encoding="utf-8") as f:
+        for riga in f:
+            if riga.startswith(MARCATORE_SISTEMA):
+                dichiarazione = riga[len(MARCATORE_SISTEMA):].strip()
+                break
+    if not dichiarazione:
+        esito["problema"] = ("nessuna riga `%s` con la dichiarazione della voce"
+                             % MARCATORE_SISTEMA.strip())
+        return esito
+    try:
+        grezzo = json.loads(dichiarazione)
+    except ValueError as errore:
+        esito["problema"] = ("la dichiarazione della voce non e' JSON leggibile: "
+                             "%s" % errore)
+        return esito
+    voti = grezzo.get("voti")
+    if not isinstance(voti, list):
+        esito["problema"] = "`voti` non e' un elenco di nomi di voce"
+        return esito
+    try:
+        velocita = int(grezzo.get("velocita", 0) or 0)
+    except (TypeError, ValueError):
+        esito["problema"] = "`velocita` non e' un numero di parole al minuto"
+        return esito
+
+    esito["voce"] = str(grezzo.get("voce", "") or "").strip()
+    esito["velocita"] = velocita
+    esito["voti"] = [str(v).strip() for v in voti if str(v).strip()]
+    esito["dichiarata"] = bool(esito["voce"] and esito["voti"])
+    if not esito["dichiarata"]:
+        esito["problema"] = ("la dichiarazione non dice quale voce suona, o non "
+                             "elenca nessun voto fra cui scegliere")
+    return esito
+
 
 def ipa_valida(ipa: str) -> tuple:
     """Dice se una trascrizione usa solo simboli che le si puo' dare.
@@ -88,6 +154,10 @@ class Trascrizione:
     attendibilita: str = "I"
     nota: str = ""
     da_verificare: bool = True
+    # Il riproduttore vocale che suona **questa** parola, quando e' diverso da
+    # quello dichiarato per il sistema. Vuoto vuol dire «quello dichiarato in
+    # testa al file»: una riga non sceglie una voce, la eredita.
+    voce: str = ""
 
     def come_dict(self) -> dict:
         return {
@@ -100,6 +170,7 @@ class Trascrizione:
             "attendibilita": self.attendibilita,
             "nota": self.nota,
             "da_verificare": self.da_verificare,
+            "voce": self.voce,
         }
 
 
@@ -185,4 +256,5 @@ def _trascrizione_da_dict(grezzo: dict) -> Trascrizione:
         attendibilita=str(grezzo.get("attendibilita", "I") or "I").strip().upper()[:1],
         nota=str(grezzo.get("nota", "") or "").strip(),
         da_verificare=bool(da_verificare),
+        voce=str(grezzo.get("voce", "") or "").strip(),
     )

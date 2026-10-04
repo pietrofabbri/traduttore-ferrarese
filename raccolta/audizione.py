@@ -96,8 +96,18 @@ POOL = [
 # romagnolo, che e' la famiglia giusta, quindi qui si puo' scegliere il timbro
 # e non la lingua. Il nome di ogni variante porta con se' `+`, e con `-v` vuol
 # dire «questa voce applicata a questa lingua».
+# La lista **di riserva**, per quando `dati/fonetica.jsonl` non dichiara
+# nessun voto. Quando il file li dichiara, sono quelli che si sentono: una
+# griglia che confronta voci diverse da quelle che il progetto puo' usare
+# e' una griglia che non serve a niente.
 VOCI = ["it", "it+f2", "it+f3", "it+f4", "it+f5",
         "it+adam", "it+Antonio", "it+Belinda", "it+Denis", "it+croak"]
+
+
+def voti_dichiarati() -> list:
+    """I voti che il file delle regole dichiara, o la lista di riserva."""
+    from traduttore import voce
+    return voce.voci_dichiarate() or list(VOCI)
 
 NOTA_VOCE = (
     "Nessuna di queste voci parla ferrarese: e' un italiano che pronuncia "
@@ -105,6 +115,21 @@ NOTA_VOCE = (
     "quelle dell'italiano. Il timbro si sceglie qui; la pronuncia si "
     "corregge nelle regole, e quello e' lavoro di una persona."
 )
+
+
+def _impronta(percorso: str) -> str:
+    """L'impronta del file generato, o `''` se il file non c'e'.
+
+    Serve a una cosa sola, e serve perche' e' gia' successo: una voce
+    che il programma accetta puo' produrre **lo stesso file** di un'altra,
+    e allora la colonna della griglia e' identica a tutte le altre e
+    sembra una scelta che non c'e'. Il file e' la prova.
+    """
+    import hashlib
+    if not (percorso and os.path.isfile(percorso)):
+        return ""
+    with open(percorso, "rb") as f:
+        return hashlib.md5(f.read()).hexdigest()
 
 
 def _genera(nome_voce: str, forma: str, percorso: str) -> str:
@@ -134,7 +159,7 @@ def _genera(nome_voce: str, forma: str, percorso: str) -> str:
     return ""
 
 
-def _pagina(varianti, risultati) -> str:
+def _pagina(varianti, risultati, uguali, dichiarata) -> str:
     """La pagina dell'audizione: una tabella parole per voci.
 
     Ogni cella e' un file audio e nient'altro. Nessun punteggio e nessuna
@@ -155,6 +180,7 @@ def _pagina(varianti, risultati) -> str:
              "audio{width:9rem;height:2rem}",
              ".vuoto{color:#666;font-size:.85rem}",
              ".motivo{font-size:.8rem;color:#555}",
+             ".uguale{font-size:.75rem;color:#a33}",
              "</style>", "</head>", "<body>",
              "<h1>Audizione delle voci</h1>",
              '<p class="vuoto">%s</p>' % sc(NOTA_VOCE),
@@ -176,8 +202,14 @@ def _pagina(varianti, risultati) -> str:
                 # `metadata` scarica solo le intestazioni: la durazione si vede
                 # e l'audio no, che per una griglia da confrontare e' quello
                 # che serve.
-                parti.append('<td><audio controls preload="metadata" src="%s"></audio></td>'
-                             % sc(file_))
+                suono = ('<audio controls preload="metadata" src="%s"></audio>'
+                         % sc(file_))
+                if file_ in uguali:
+                    # La colonna che sembra una scelta e non lo e'. Meglio
+                    # una riga in piccolo che una scelta che non c'e'.
+                    suono += ('<br><span class="uguale">file identico a quello '
+                              'di `%s`</span>' % sc(dichiarata))
+                parti.append("<td>%s</td>" % suono)
             else:
                 parti.append('<td class="vuoto">—</td>')
         parti.append("</tr>")
@@ -193,12 +225,13 @@ def _pagina(varianti, risultati) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--voce", action="append",
-                    help="una voce sola; ripetibile. Se non si dice, la lista dichiarata")
+                    help="una voce sola; ripetibile. Se non si dice, quella "
+                         "che dichiara dati/fonetica.jsonl")
     ap.add_argument("--apri", action="store_true",
                     help="stampa il percorso della pagina")
     args = ap.parse_args()
 
-    varianti = args.voce or VOCI
+    varianti = args.voce or voti_dichiarati()
 
     from traduttore import voce as modulo_voce  # noqa: E402
     if not modulo_voce.percorso_espeak():
@@ -209,13 +242,22 @@ def main() -> int:
     if not os.path.isdir(DESTINAZIONE):
         os.makedirs(DESTINAZIONE)
 
+    dichiarata = (varianti[0] if len(varianti) == 1
+                  else (modulo_voce.voce_dichiarata()
+                        if modulo_voce.voce_dichiarata() in varianti
+                        else varianti[0]))
+
+    def _nome(voce, forma):
+        return "%s_%s.wav" % (voce.replace("+", "-"), _pulito(forma))
+
     risultati = []
+    impronte = {}
     for forma, attesa, motivo in POOL:
         suoni = {}
         for v in varianti:
-            nome = "%s_%s.wav" % (v.replace("+", "-"), _pulito(forma))
-            percorso = os.path.join(DESTINAZIONE, nome)
+            percorso = os.path.join(DESTINAZIONE, _nome(v, forma))
             nota = _genera(v, forma, percorso)
+            impronte[_nome(v, forma)] = _impronta(percorso)
             if not nota:
                 # Il percorso nella pagina e' **relativo**, non `file://` con
                 # l'indirizzo assoluto: cosi' la pagina si apre sia con un
@@ -225,11 +267,38 @@ def main() -> int:
                 suoni[(forma, v)] = os.path.basename(percorso)
         risultati.append((forma, attesa, motivo, suoni))
 
+    # Le colonne che suonano come la voce dichiarata: una colonna e' una
+    # scelta solo se produce un suono che le altre non producono. Il
+    # confronto e' fra file e non fra giudizi.
+    prima = _nome(dichiarata, POOL[0][0])
+    riferimento = impronte.get(prima)
+    uguali = set()
+    if riferimento:
+        uguali = set(n for n, i in impronte.items()
+                      if i and i == riferimento)
+        uguali.discard(prima)
+    per_voce = {}
+    for v in varianti:
+        mio = impronte.get(_nome(v, POOL[0][0]))
+        per_voce[v] = sum(1 for n, i in impronte.items()
+                          if mio and i == mio and n != _nome(v, POOL[0][0]))
+
     pagina = os.path.join(DESTINAZIONE, "index.html")
     with io.open(pagina, "w", encoding="utf-8", newline="\n") as f:
-        f.write(_pagina(varianti, risultati))
+        f.write(_pagina(varianti, risultati, uguali, dichiarata))
 
-    print("%d parole × %d voci -> %s" % (len(POOL), len(varianti), pagina))
+    print("%d parole × %d voci -> %s"
+          % (len(POOL), len(varianti), pagina))
+    se_niente = [v for v, n in sorted(per_voce.items()) if n]
+    if se_niente:
+        print()
+        print("Queste colonne hanno prodotto **lo stesso file** di `%s`:"
+              % dichiarata)
+        for v in se_niente:
+            print("  %s" % v)
+        print("Una colonna che suona come un'altra non e' una scelta: in "
+              "griglia e' scritto sotto la cella, perche' una scelta che non "
+              "cambia niente e' peggio di nessuna scelta.")
     for forma, attesa, motivo, suoni in risultati:
         mancanti = [v for v in varianti if (forma, v) not in suoni]
         if mancanti:

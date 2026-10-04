@@ -112,12 +112,71 @@
 // fonte rende /ɲ/ e la regola 3, che parla solo di vocale anteriore, tace.
 // Se la fonte tace non si sceglie: si scrive che tace.
 //
-// **LA VOCE.** Il comando `voce` trasforma la grafia in suono con
-// `espeak-ng`, in locale e senza rete:
+// **LA VOCE, e dove si sceglie.** Il comando `voce` trasforma la grafia in
+// suono con `espeak-ng`, in locale e senza rete:
 //
 //   python3 -m traduttore.cli voce magnàr            # legge, non scrive
 //   python3 -m traduttore.cli voce magnàr --suona    # scrive il wav
+//   python3 -m traduttore.cli voci                   # i riproduttori, e se
+//                                                    # suonano davvero
 //
+// **La scelta sta in questo file, non nel codice.** Questa e' la riga che la
+// dichiara, e il codice la legge:
+//
+// SISTEMA {"voce": "it", "velocita": 130, "voti": ["it", "it+f2", "it+f3", "it+f4", "it+f5", "it+adam", "it+Antonio", "it+Belinda", "it+Denis", "it+croak"]}
+//
+//   voce      il riproduttore che suona le parole che non ne scelgono uno
+//   velocita  parole al minuto
+//   voti      fra quali nomi si puo' scegliere, per il sistema o per una
+//             parola
+//
+// La riga comincia con `// SISTEMA ` ed e' l'unica di questo file che il
+// programma legge invece di ignorarla come un commento: il resto dei
+// commenti resta per chi legge, quella resta per chi esegue. Se la riga
+// manca o e' rotta, il comando **dice** che il file non lo dichiara e usa il
+// ripiego — `it` a 130 parole al minuto — che e' dichiarato con la stessa
+// prosa in `sorgenti/traduttore/voce.py`. Non lo indovina.
+//
+// Qui sta e non in un file a parte perche' questo file e' il posto dove
+// stanno gia' le regole di **come** si pronuncia: una voce scelta altrove
+// sarebbe una regola che nessuno apre. Il controllo **F15** chiede che la voce
+// dichiarata sia fra i voti e che ogni riga che ne sceglie una la scelga fra
+// gli stessi.
+//
+// **Il campo `voce` di una riga e' facoltativo**, e vuoto vuol dire «quello
+// dichiarato qui sopra». Nessuna riga di questo file lo riempie: scegliere la
+// voce di una parola sola e' una decisione che prende un orecchio, e la
+// griglia di `raccolta/audizione.py` e' lo strumento con cui prenderla. Il
+// campo vuoto non e' un dimenticato: e' la dichiarazione che la scelta non
+// e' ancora stata fatta.
+//
+// **Che cosa una voce sia, e che cosa non sia.** Una voce e' un timbro. Le
+// misure sono qui sotto e non le ho tolte perche' erano scomode; tutte fatte
+// il 4 ottobre 2026 con espeak-ng 1.52.0:
+//
+//   - tutte le varianti italiane producono **lo stesso IPA**: `espeak-ng -v
+//     it --ipa "[[magnar]]"`, `-v it+f4`, `-v it+croak` e `-v it+adam` danno
+//     tutte e quattro `maɡnˈar`. Cambiare voce cambia il timbro e i suoni no,
+//     quindi non e' la via per cancellare quello che il gioco chiede;
+//   - le quattro voci `it+mbrola1..4` sono italiano **parlato**, non sintesi, e
+//     sarebbero la risposta giusta. Qui non suonano: il `wav` che esce da
+//     `-v it+mbrola3` e' identico **byte per byte** a quello di `-v it`,
+//     stesso md5. Non e' una configurazione da correggere: `espeak-ng` pilota
+//     mbrola da `mbrowrap.c`, che e' tutto sotto `#if defined(_WIN32)`, quindi
+//     su macOS ricade in silenzio sulla voce di sintesi senza dire niente;
+//   - per questo `espeak-ng --voices` non elenca piu' le voci mbrola. Il
+//     programma `mbrola` e i quattro database italiani — installati, gratuiti
+//     per uso non commerciale, con la licenza accanto a ciascuno — **non
+//     bastano**: serve un `espeak-ng` che li sappia pilotare, e qui non
+//     c'e'.
+//
+// Queste righe non sono un rimpianto e non sono una scusa: sono le misure. E
+// misurate le misure, quello che resta e' che il suono migliore che si puo'
+// produrre qui e' un italiano che legge una grafia ferrarese con le regole
+// 1-6 di questo file. Se suona inglese, e' cosi' che suona, e la parte che si
+// puo' correggere e' la pronuncia, non la voce.
+//
+// Quello che il suono **non** e', e va detto perche' e' la cosa che conta:
 // Quello che il suono **non** e', e va detto perche' e' la cosa che conta:
 // non e' un parlante ferrarese. Una voce sintetica conosce le regole di
 // *lettura* di una grafia, e il parlato non le segue: non sa che la `s`
@@ -140,6 +199,8 @@
 //   riferimento   l'id della voce (V0001) o della coppia (F0001)
 //   forma         la forma scritta, come la scrive la fonte
 //   ipa           la trascrizione, fra slash
+//   voce          facoltativa: il riproduttore per questa parola sola. Vuota
+//                 = quello dichiarato in testa a questo file.
 //   varieta       una delle cinque, come nel glossario
 //   fonte         da dove viene la SCRITTURA
 //   attendibilita I qui sotto; D solo dopo l'ascolto di un parlante

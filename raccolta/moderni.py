@@ -29,11 +29,26 @@ significato di **tutte** le voci con una sola parola italiana, e tiene la rispos
 solo dove dice qualcosa. Il filtro non e' mio, e' della fonte. Il numero di
 risposte e' il risultato; il resto resta un buco dichiarato.
 
-**Cosa non viene scritto.** Se la fonte dichiara `{{Nodef}}` — cioe' che non ha
-la definizione — la riga resta vuota e il vuoto viene contato. Non viene
-trovato un sostituto, non viene data una definizione «di senso comune», e non
-viene scritta la definizione di una parola vicina: quello che non c'e' si
-dichiara.
+**Cosa non viene scritto.** Non viene trovato un sostituto, non viene data una
+definizione «di senso comune», e non viene scritta la definizione di una parola
+vicina: quello che non c'e' si dichiara, e ogni motivo di vuoto si conta
+separato dagli altri.
+
+**Attenzione a `{{Nodef}}`, che vuol dire una cosa sola.** Il template non
+significa «questa pagina non ha definizioni»: significa «non le ha **per quel
+senso**». In «fungo» c'e' `{{Nodef}}` accanto a «botanica» e le definizioni di
+medicina ci sono lo stesso. Quindi il template viene tolto dalla riga e si legge
+il resto; se non resta niente, allora e' un vuoto vero e viene detto. La prima
+stesura di questo modulo scartava l'articolo intero appena trovava un `{{Nodef}}`
+e perdeva parole come «fungo», «arcangelo», «sorriso» e «falda» — cioe' quasi
+tutto il glossario, per un motivo che non aveva niente a che fare con quello che
+la fonte scriveva. Era una frase nel docstring che descriveva un difetto, non
+una regola: il docstring e' stato corretto insieme al codice.
+
+**Cosa viene tagliato, e dichiarato.** In colonna si vedono tre definizioni e
+tre sinonimi; nel file ci sono tutti. Il taglio si dichiara perche' una colonna
+che mostra tre pezzi senza dire che sono tre sembra mostrarne tre di dieci che
+ci sono.
 """
 
 from __future__ import annotations
@@ -167,29 +182,21 @@ def _riga_definizione(riga: str) -> str:
     return _pulito(riga[1:])
 
 
-def _capolavoro(sezione: str) -> str:
-    """Non piu' usata, e si sa perche'.
-
-    La prima versione di questo modulo tagliava la sezione al primo
-    `{{-...-}}` per escludere le tabelle di coniugazione, e il test l'ha fatta
-    buttare: le sotto-sezioni di Wiktionary sono anche **sezioni di
-    significato** — `{{-bot-}}`, `{{-med-}}`, `{{-cul-}}` — e in «fungo» le
-    definizioni di botanica stanno *dopo* quella intestazione. Tagliando li si
-    perdevano proprio le parole che si volevano spiegare.
-
-    Si filtra quindi la **riga**, non la sezione: una riga che descrive una
-    forma del verbo («terza persona singolare dell'indicativo presente di
-    calunniare») si scarta, e una riga che dice che cosa significa la parola
-    si tiene, ovunque si trovi. Il taglio per sezione e' rimasto qui per un
-    po' solo perche' si capisse perche' non si usa, e non lo si usa piu'.
-    """
-    return sezione
-
-
 # Le righe che la fonte scrive per dire **come si declina** la parola e non
 # che cosa significa. Non sono definizioni, e in colonna sono un danno: fanno
 # credere che «calunniare» voglia dire «seconda persona singolare
 # dell'imperativo di calunniare».
+#
+# **Perche' si filtra la riga e non la sezione.** Una versione di questo modulo
+# tagliava la sezione al primo `{{-...-}}` per escludere le tabelle di
+# coniugazione, ed era una correzione che sembrava giusta e non lo era: le
+# sotto-sezioni di Wiktionary sono anche **sezioni di significato** —
+# `{{-bot-}}`, `{{-med-}}`, `{{-cul-}}` — e in «fungo» le definizioni di
+# botanica stanno *dopo* quella intestazione. Tagliando li si perdevano
+# proprio le parole che si volevano spiegare, e per far notare che il numero
+# era sceso bastava un test su «fungo». Quindi si scarta la **riga** che
+# descrive una forma del verbo, e si tiene quella che dice che cosa significa
+# la parola, ovunque si trovi nella sezione.
 MORFOLOGICI = re.compile(
     r"^(participio|aggettivo|avverbio|sostantivo|verbo|preposizione|"
     r"congiunzione|pronome|interiezione|articolo|locuzione|prefisso|suffisso)\b",

@@ -468,6 +468,43 @@ class TestSignificatoModerno(unittest.TestCase):
         self.assertIn("moderno_buchi", modello)
 
 
+class TestConteggiDichiarati(unittest.TestCase):
+    """Il numero di test che i documenti dichiarano deve essere quello vero.
+
+    E' successo due volte in una sessione: si scrive «115 test», se ne
+    aggiungono venti, e `README.md`, `AGENTS.md` e `REGISTRO.md` continuano a
+    dire 115 per settimane. Un numero che mente non e' un numero, e questo
+    progetto non accetta numeri che mentono — vale per i buchi dichiarati, e
+    vale anche per la propria dimensione.
+    """
+
+    def test_il_numero_di_test_nei_documenti_e_quello_vero(self):
+        veri = _quanti_test()
+        # Il pattern dei documenti e' `# <numero> test` in coda a un comando.
+        for documento in ("README.md", "AGENTS.md"):
+            testo = open(os.path.join(RADICE, documento),
+                         encoding="utf-8").read()
+            trovati = re.findall(r"# (\d+) test", testo)
+            self.assertTrue(trovati,
+                            "%s non dichiara alcun numero di test" % documento)
+            for dichiarato in trovati:
+                self.assertEqual(int(dichiarato), veri,
+                                 "%s dice %s test e i test sono %d"
+                                 % (documento, dichiarato, veri))
+
+    def test_il_registro_dichiara_quanti_test_aveva_il_rilascio(self):
+        # La voce 0.14 dichiara i suoi test. Se il numero e' sbagliato, il
+        # registro diventa una raccolta di numeri inventati, che e' la cosa
+        # peggiore che un registro possa essere.
+        testo = open(os.path.join(RADICE, "REGISTRO.md"),
+                     encoding="utf-8").read()
+        voce = testo.split("## 0.14")[1].split("## 0.13")[0]
+        dichiarato = re.search(r"\*\*Verifiche\.\*\* (\d+) test \(erano (\d+)\)",
+                               voce)
+        self.assertIsNotNone(dichiarato, "la voce 0.14 non dichiara i test")
+        self.assertEqual(int(dichiarato.group(1)), _quanti_test(),
+                         "la voce 0.14 dice %s test" % dichiarato.group(1))
+
 class TestLetturaDelWikitext(unittest.TestCase):
     """Come il modulo `raccolta/moderni.py` legge una pagina.
 
@@ -642,6 +679,22 @@ class TestLetturaDelWikitext(unittest.TestCase):
         finally:
             modulo.CACHE = vecchio
             os.unlink(nome)
+
+
+def _quanti_test() -> int:
+    """Quanti test ci sono davvero in questo file.
+
+    Si conta l'albero sintattico e non la discovery di unittest perche' la
+    discovery trova anche quello che non si chiama `test_`, e quello che cerca
+    qui e' uno solo: quante funzioni di test sono state scritte.
+    """
+    import ast
+    albero = ast.parse(open(os.path.abspath(__file__), encoding="utf-8").read())
+    quanti = 0
+    for nodo in ast.walk(albero):
+        if isinstance(nodo, ast.FunctionDef) and nodo.name.startswith("test_"):
+            quanti += 1
+    return quanti
 
 
 def _dati_del_repository():

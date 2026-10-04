@@ -160,7 +160,7 @@ e lo fa una volta, in locale, con i lotti da 50 e una pausa fra lotti. Il
 processo si sgancia dal terminale con un doppio fork, altrimenti un lavoro di
 un'ora viene ucciso dalla shell che lo ha lanciato.
 
-**Verifiche.** 133 test (erano 115). `verifica`: 0 errori, 8 avvisi.
+**Verifiche.** 136 test (erano 115). `verifica`: 0 errori, 8 avvisi.
 Equivalenza Python/JavaScript: 12 frasi, 0 divergenze. Nessuna risorsa esterna,
 nessun carattere fuori dal latino.
 

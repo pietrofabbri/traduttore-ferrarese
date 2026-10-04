@@ -165,7 +165,50 @@ in un test diventa a sua volta un numero da correggere a mano, e il difetto
 che il test cerca tornerebbe dalla porta da cui l'ho visto entrare. Il test
 e' stato provato ricreando il difetto: fallisce con `'0.15' != '0.17'`.
 
-**Verifiche.** 165 test (erano 155). `verifica`: 0 errori, 8 avvisi.
+**La fonte che era gia' nel registro e che nessuno aveva aperto.** S006 e
+S015 sono le due pagine di R. Bigoni: erano state *esaminate*, e la nota di
+S006 diceva che «non si puo' costruire un vocabolario da qui, perche' il sito
+non lo mette in una pagina». Era **falso**, e si poteva dimostrare: il
+vocabolario arriva da uno script che la pagina chiama, e ne dà **7307**
+coppie numerate da 1 a 7307 con l'etimologia per voce. La nota era stata
+scritta guardando la pagina invece di guardare che cosa la pagina chiede.
+
+Con il permesso dell'autore le due fonti escono dalla fila d'attesa. Il
+permesso e' dichiarato come dichiarato: chi l'ha concesso e quando, e che nel
+repository **non c'e' il documento scritto**.
+
+**Quattro difetti, e ognuno ha un test.** Sono della raccolta, e sono il caso
+in cui i controlli devono morire per primi.
+
+1. **Le colonne lette nel verso sbagliato.** Gli argomenti del bottone del
+   sito erano nel verso opposto a quanto avevo supposto: il risultato sarebbe
+   stato 7307 voci capovolte, ognuna ben formata e tutte sbagliate. Nessun
+   controllo sui numeri e nessun controllo sui campi obbligatori lo prende,
+   perche' una voce capovolta e' una voce perfetta. Ora ogni riga si legge
+   due volte — dalla cella e dagli argomenti — e le due letture devono
+   coincidere. Sulla parola ferrarese coincidono in tutte e 7307 le righe.
+2. **La traduzione presa dal posto sbagliato.** In 156 righe il bottone non
+   porta la traduzione ma la parola da cui l'etimologia parte: per `bak`
+   porta `bac`, che e' il latino, mentre la cella dice «bastone, mazza».
+   156 voci sarebbero entrate col significato sbagliato. La traduzione si
+   legge dalla cella, che e' cio' che il sito mostra.
+3. **Il suffisso dell'omonimo confrontato prima di essere tolto.** Il sito
+   distingue gli omonimi con `ancora-1`, `ancora-2` (e `acciarino1`, senza
+   trattino): `ancora-1` dentro `ancora` non c'e', e 315 righe che erano a
+   posto venivano scartate. Lo script avrebbe detto che la fonte non
+   tornava, e la fonte era a posto.
+4. **La chiave che cancellava gli accenti.** `àɣar` diventava `gar` e `alòž`
+   diventava `al`: duecento voci diverse con la stessa identita'. E' il
+   difetto piu' subdolo dei quattro, perche' non faceva fallire nessun
+   controllo — le voci semplicemente sparivano. Nell'ortografia di Bigoni
+   l'accento segna l'accento tonico.
+
+**Il numero che conta.** Le 7307 coppie sono un file grezzo e **non sono
+ancora voci**: contro il glossario attivo (231 voci, non 10387 — le altre
+sono in attesa di licenza) sono **7303 parole nuove**. Diventare voce richiede
+la `varieta` obbligatoria e il resto dei controlli, e non e' ancora fatto.
+
+**Verifiche.** 171 test (erano 155). `verifica`: 0 errori, 8 avvisi.
 Equivalenza: 12 frasi confrontate, 0 divergenze. Scanner: 67 file
 tracciati, 0 ideogrammi. Un passo nuovo della CI controlla che ogni pagina
 contenga i suoi dati, che nessuna superi i 3 megabyte, che ogni fetta abbia

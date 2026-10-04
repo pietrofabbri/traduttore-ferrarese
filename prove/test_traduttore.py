@@ -816,6 +816,118 @@ class TestConteggiDichiarati(unittest.TestCase):
                          "recente e' la %s"
                          % (dichiarata.group(1), ultima))
 
+
+class TestRaccoltaBigoni(unittest.TestCase):
+    """Lo script che raccoglie il vocabolario di R. Bigoni.
+
+    I test non chiamano la rete: prendono il modulo e gli iniettano pezzi
+    di html scritti a mano, presi dalle righe che hanno fatto scorrere la
+    raccolta per davvero. Una prova che va a prendere il sito ogni volta
+    sarebbe una prova che fallisce quando la rete e' lenta, e che non puo'
+    essere eseguita in un repository copiato da un altro.
+    """
+    def _modulo(self):
+        import importlib.util
+        percorso = os.path.join(RADICE, "raccolta", "bigoni.py")
+        spec = importlib.util.spec_from_file_location("bigoni", percorso)
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo
+
+    def test_le_colonne_legge_nel_verso_sbagliato_non_passano(self):
+        # Difetto vero: gli argomenti del bottone erano stati letti nel
+        # verso opposto, e il risultato sarebbe stato un glossario di 7307
+        # voci capovolte. Ogni voce ben formata, nessuna sbagliata in modo
+        # che si vedesse: si traduceva semplicemente dalla lingua sbagliata.
+        modulo = self._modulo()
+        capovolta = ('<tr><td>1</td><td >cane '
+                     "<button onclick='mostraEtimoFerrarese(\"cane\","
+                     '"can","x")>etimologia</button></td>'
+                     '<td>can</td></tr>')
+        voci, incoerenti = modulo.voci_da_html(capovolta)
+        self.assertEqual(voci, [], "una riga capovolta non deve entrare")
+        self.assertEqual(incoerenti, 1, "e deve essere contata")
+
+    def test_la_traduzione_viene_dalla_cella_e_non_dal_bottone(self):
+        # Difetto vero, di 156 righe su 7307: il bottone non porta sempre la
+        # traduzione, porta la parola da cui l'etimologia parte. Per `bak`
+        # porta `bac`, che e' il latino, mentre la cella dice
+        # «bastone, mazza». Prendendo l'italiano dal bottone, questa voce
+        # entrava col significato sbagliato.
+        modulo = self._modulo()
+        riga = ('<tr><td>505</td><td >bak '
+                "<button onclick='mostraEtimoFerrarese(\"bac\",\"bak\","
+                '"bacus")>etimologia</button></td>'
+                '<td>bastone, mazza</td></tr>')
+        voci, _ = modulo.voci_da_html(riga)
+        self.assertEqual(len(voci), 1, "la riga deve entrare")
+        self.assertEqual(voci[0]["ferrarese"], "bak")
+        self.assertEqual(voci[0]["italiano"], "bastone")
+        self.assertNotEqual(voci[0]["italiano"], "bac",
+                            "il latino del bottone non e' la traduzione")
+
+    def test_il_suffisso_dell_omonimo_viene_tolto_prima_del_confronto(self):
+        # Difetto vero: `ancora-1` dentro la stringa `ancora` non c'e', e
+        # confrontando prima si scartavano 315 righe che erano a posto.
+        # Lo script avrebbe detto che la fonte non tornava.
+        modulo = self._modulo()
+        riga = ('<tr><td>174</td><td >àŋkura '
+                "<button onclick='mostraEtimoFerrarese(\"ancora-1\","
+                '"àŋkura","ancora")>etimologia</button></td>'
+                '<td>ancora</td></tr>')
+        voci, incoerenti = modulo.voci_da_html(riga)
+        self.assertEqual(incoerenti, 0, "la riga dell'omonimo deve entrare")
+        self.assertEqual(len(voci), 1)
+        self.assertEqual(voci[0]["italiano"], "ancora",
+                         "il suffisso -1 e' del sito, non della parola")
+
+    def test_compatta_tiene_gli_accenti_e_lassa_serve_solo_a_segnalare(self):
+        # Difetto vero, e il piu' subdolo: la prima versione di `compatta`
+        # toglieva anche `à`, `é`, `ò`. `àɣar` diventava `gar` e `alòž`
+        # diventava `al`, quindi duecento voci diverse trovavano la stessa
+        # chiave. Nessun controllo falliva: le voci sparivano e basta.
+        # Nell'ortografia di Bigoni l'accento segna l'accento tonico, e
+        # `àɣar` (acre) ed `ar` non sono la stessa parola.
+        modulo = self._modulo()
+        self.assertNotEqual(modulo.compatta("àɣar"), modulo.compatta("ar"))
+        self.assertNotEqual(modulo.compatta("aràdàr"),
+                            modulo.compatta("aradar"))
+        # Lo spirito e l'apostrofo invece sono la stessa parola: e' il caso
+        # per cui la chiave esiste.
+        self.assertEqual(modulo.compatta("skara'na"),
+                         modulo.compatta("skarana"))
+        # La chiave lassa serve a dire «potrebbe essere la stessa», e non
+        # a decidere che lo sia.
+        self.assertEqual(modulo.lassa("àɣar"), modulo.lassa("àgar"))
+
+    def test_una_raccolta_vuota_non_e_una_raccolta_riuscita(self):
+        # Se il download fallisce o il sito cambia formato, lo script non
+        # deve scrivere un file vuoto: un file vuoto sembra una raccolta
+        # riuscita, e il giorno dopo nessuno si ricorda che era gia' vuoto.
+        modulo = self._modulo()
+        self.assertTrue(modulo.controlla([], 0))
+        voci, incoerenti = modulo.voci_da_html(
+            '<tr><td>1</td><td>a</td></tr>')
+        self.assertTrue(modulo.controlla(voci, incoerenti))
+
+    def test_i_numeri_devono_essere_consecutivi_e_partire_da_uno(self):
+        # 7307 righe numerate da 1 a 7307: se un giorno arrivassero 6797
+        # righe numerate da 1 a 7307, il conto tornerebbe lo stesso e
+        # nessuno si accorgerebbe che mancano 510 voci. Il numero massimo
+        # e' l'unico che se ne accorge.
+        modulo = self._modulo()
+        voci = [{"numero": 1, "ferrarese": "can", "italiano": "cane",
+                 "chiave": "can"},
+                {"numero": 3, "ferrarese": "ka", "italiano": "capo",
+                 "chiave": "ka"}]
+        problemi = modulo.controlla(voci, 0)
+        self.assertTrue(problemi,
+                        "due numeri non consecutivi devono essere un problema")
+        self.assertTrue(any("consecutivi" in p for p in problemi),
+                        "il problema deve nominare la consecutivita': %s"
+                        % problemi)
+
+
 class TestLetturaDelWikitext(unittest.TestCase):
     """Come il modulo `raccolta/moderni.py` legge una pagina.
 

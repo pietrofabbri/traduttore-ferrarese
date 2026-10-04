@@ -98,6 +98,26 @@ all'altra e' `costruisci_da_ferri.py`, che si ferma se non trova la pagina.
 Il resto di `raccolta/grezzi/` non e' tracciato perche' e' ricreabile con una
 riga e pesa 35 megabyte.
 
+**Il vocabolario di R. Bigoni (`raccolta/bigoni.py`).** Un caso diverso dagli
+altri, perche' il vocabolario non e' nella pagina: `VocFeIt.html` contiene la
+descrizione dell'alfabeto e poco d'altro, e l'elenco delle parole arriva da uno
+script che la pagina chiama, `elencoParoleFerraresiPerLettera.php`. Lo script
+raccoglie **7307 coppie** numerate da 1 a 7307, con l'etimologia per voce, e
+scrive `raccolta/grezzi/bigoni_ferrarese_italiano.jsonl` (1,3 MB, non
+tracciato, ricreabile). Come `sintetizza.py` e' idempotente: due giri danno
+file identici byte per byte.
+
+Tre cose che si imparano solo guardando i dati, e che nessuna sembrava vera
+prima:
+
+- la traduzione va letta dalla **cella**, non dagli argomenti del bottone: in
+  156 delle 7307 voci il bottone porta la parola da cui parte l'etimologia
+  (`bak` -> `bac`, il latino) e non la traduzione, che e' «bastone, mazza»;
+- il sito distingue gli omonimi con un **suffisso numerato** (`ancora-1`,
+  `acciarino1`): va tolto prima di confrontare;
+- l'**accento** segna l'accento tonico e va tenuto nelle chiavi: `àɣar`
+  (acre) e `ar` non sono la stessa parola.
+
 Come si riempie il glossario da un vocabolario:
 
 ```json

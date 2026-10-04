@@ -62,7 +62,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py           # 165 test
+python3 prove/test_traduttore.py           # 171 test
 python3 -m traduttore.cli verifica         # i controlli sui dati
 python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
 ```
@@ -90,7 +90,14 @@ file generato come gli altri e va committato insieme al manifesto:
 
 ```bash
 python3 raccolta/sintetizza.py       # rigenera web/sintesi/ e dati/sintesi.jsonl
+python3 raccolta/bigoni.py           # raccoglie il vocabolario di R. Bigoni
 ```
+
+`raccolta/bigoni.py` parla con la rete e scrive in `raccolta/grezzi/`, che
+non e' tracciato perche' si ricrea con una riga. Non scrive mai il
+glossario: raccoglie, e quello che diventa voce e' una decisione che passa
+dai controlli. Lo script **non scrive niente** se quello che arriva non
+tiene: una raccolta vuota sembrerebbe una raccolta riuscita.
 
 Il comando esce con un codice diverso da zero e **non scrive niente** se
 `espeak-ng` non e' installato: un suono prodotto da un programma non

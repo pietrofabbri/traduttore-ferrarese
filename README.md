@@ -586,7 +586,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 165 test
+python3 prove/test_traduttore.py     # 171 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

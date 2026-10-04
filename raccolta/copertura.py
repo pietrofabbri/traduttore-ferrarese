@@ -32,9 +32,21 @@ Quello che la copertura NON dice, e va detto insieme al numero:
   motore quella parola non c'e', e il numero la conta come mancante. E' il
   conteggio severo, ed e' quello giusto.
 
-Le parole funzionali sono contate a parte e non sono mancanze: articoli,
-preposizioni e congiunzioni stanno in `morfologia.py` e nel glossario non ci
-devono stare (vedi `TestVociMeccaniche` in `prove/test_traduttore.py`).
+**Le parole funzionali sono contate a parte, e perché conta dirlo.** La prima
+stesura di questo testo diceva che articoli, preposizioni e congiunzioni «sono
+trattati a parte dal motore» e li escludeva dal conteggio. Ho provato a
+verificarlo e **non è vero**: scrivere «il cane» o «ho un cane» dà
+`il -> il` e `ho -> ho` con confidenza 0, cioè il motore non le traduce e le
+lascia come sono. E non è vero nemmeno la seconda metà della frase, che diceva
+che stanno in `morfologia.py`: quel modulo impara desinenze dal corpus e non
+contiene nessun elenco di articoli o preposizioni.
+
+Quindi adesso la pagina non asserisce niente: **misura** quante di queste
+parole il glossario trova davvero e stampa il numero. Il 23,7% resta il
+conteggio dei **lemmi di contenuto**, e la pagina dice chiaramente che è
+quello che è. Escludere parole che non sono coperte fa salire la percentuale,
+e una percentuale che sale perché si nasconde una parte è una percentuale
+falsa — per quanto sia comoda da guardare.
 
 Uso:
     python3 copertura.py                 # il quadro
@@ -69,10 +81,11 @@ ITWAC = {
 # propri, sigle, parole di una volta. Non sono parole da cercare: sono rumore.
 SOGLIA_FREQUENZA = 2000
 
-# Le parole che il motore tratta come regole e non come voci. Non sono
-# mancanze, e contarle come tali direbbe che il glossario e' piu' vuoto di
-# quanto sia. Elenco dichiarato a mano: sono poche parole note, e un elenco
-# dichiarato si puo' discutere, cosa che non si puo' fare con una formula.
+# Le parole funzionali del metro. Non sono contate fra i lemmi di contenuto,
+# e **non perché il motore le sappia**: non le sa, e `analizza` lo misura
+# invece di asserirlo. Elenco dichiarato a mano: sono poche parole note, e un
+# elenco dichiarato si puo' discutere, cosa che non si puo' fare con una
+# formula.
 FUNZIONALI = {
     "il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "l",
     "a", "al", "alla", "ai", "agli", "alle", "da", "dal", "dalla", "dai",
@@ -155,7 +168,7 @@ def carica_metro() -> dict:
 
 
 def analizza(glossario: Glossario, metro: dict) -> dict:
-    coperte, mancanti, funzionali, scartate = [], [], 0, 0
+    coperte, mancanti, funzionali, scartate = [], [], [], 0
     visti = set()
     for categoria, coppie in metro.items():
         for lemma, numero in coppie:
@@ -163,7 +176,12 @@ def analizza(glossario: Glossario, metro: dict) -> dict:
                 scartate += 1
                 continue
             if lemma.lower() in FUNZIONALI:
-                funzionali += 1
+                # Si conta quante il glossario trova **davvero**, e non si
+                # presume che il motore le sappia: e' la differenza fra un
+                # metro che misura e una frase che promette.
+                if not any(v["lemma"] == lemma.lower() for v in funzionali):
+                    funzionali.append({"lemma": lemma, "frequenza": numero,
+                                       "trovata": bool(glossario.cerca_italiano(lemma))})
                 continue
             # Lo stesso lemma puo' comparire in piu' categorie: si conta una
             # volta sola, altrimenti il totale non e' un totale.
@@ -200,7 +218,9 @@ def main() -> int:
         print(json.dumps({
             "metro": "ItWaC lemmi (Baroni 2009), via franfranz, MIT",
             "soglia_frequenza": SOGLIA_FREQUENZA,
-            "funzionali_esclusi": esito["funzionali"],
+            "funzionali_esclusi": len(esito["funzionali"]),
+            "funzionali_non_trovate": [f["lemma"] for f in esito["funzionali"]
+                                       if not f["trovata"]],
             "non_parole_scartate": esito["scartate"],
             "coperte": n_coperte,
             "mancanti": n_mancanti,
@@ -213,8 +233,40 @@ def main() -> int:
           % (totale, SOGLIA_FREQUENZA))
     print("  sostantivi, aggettivi e verbi: i tre elenchi sono gia' lemmatizzati.")
     print()
-    print("funzionali esclusi     %6d   articoli, preposizioni, congiunzioni: il" % esito["funzionali"])
-    print("                              motore li tratta a parte")
+    non_trovate = [f["lemma"] for f in esito["funzionali"] if not f["trovata"]]
+    # Il metro contiene solo sostantivi, aggettivi e verbi: articoli,
+    # preposizioni e ausiliari non ci sono, quindi il numero qui sopra non li
+    # conta affatto. Per non lasciare che la loro assenza sembri una scelta,
+    # si misura su **tutto** l'elenco delle funzionali, non sul metro.
+    nel_glossario = sorted(w for w in FUNZIONALI if glossario.cerca_italiano(w))
+    print("funzionali nel metro   %6d   articoli, preposizioni, congiunzioni e"
+          % len(esito["funzionali"]))
+    print("                              ausiliari: non contate sopra perche'")
+    print("                              sono forme, non lemmi")
+    print("  di cui non trovate   %6d   il glossario non le ha e il motore le"
+          % len(non_trovate))
+    print("                              lascia come sono: sono un buco")
+    if non_trovate:
+        print("                              dichiarato, non una risolta")
+        print("                              %s" % ", ".join(sorted(non_trovate)))
+    print()
+    print("funzionali nell'elenco %6d   questo e' il conto vero: articoli,"
+          % len(FUNZIONALI))
+    print("                              preposizioni e ausiliari non sono nel")
+    print("                              metro, che contiene solo sostantivi,")
+    print("                              aggettivi e verbi")
+    print("  presenti nel glossario %5d   il resto passa invariato e va nei"
+          % len(nel_glossario))
+    mancanti_funzionali = sorted(w for w in FUNZIONALI if w not in nel_glossario)
+    # Il taglio e' dichiarato, come in tutto il resto di questo progetto: un
+    # elenco troncato che non dice di esserlo sembra un elenco completo.
+    quante = 24
+    mostrati = mancanti_funzionali[:quante]
+    print("                              buchi (%d): %s"
+          % (len(mancanti_funzionali), ", ".join(mostrati)))
+    if len(mancanti_funzionali) > quante:
+        print("                              … e altre %d, elenco completo sopra"
+              % (len(mancanti_funzionali) - quante))
     print("non-parole scartate    %6d   nomi propri, sigle, rumore" % esito["scartate"])
     print("coperte dal glossario  %6d   %.1f%%" % (n_coperte, percentuale))
     print("da cercare             %6d   %.1f%%" % (n_mancanti, 100.0 - percentuale))

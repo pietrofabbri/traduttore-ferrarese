@@ -111,7 +111,7 @@ def _api(parametri: dict) -> dict:
     """Una chiamata all'API. Se la fonte non risponde, si dice: non si finge."""
     url = API + "?" + urllib.parse.urlencode(parametri, encoding="utf-8")
     richiesta = urllib.request.Request(
-        url, headers={"User-Agent": "traduttore-ferrarese/0.14 (progetto didattico)"})
+        url, headers={"User-Agent": "traduttore-ferrarese/0.15 (progetto didattico)"})
     with urllib.request.urlopen(richiesta, timeout=45) as risposta:
         return json.loads(risposta.read().decode("utf-8"))
 

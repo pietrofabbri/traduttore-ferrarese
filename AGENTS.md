@@ -62,7 +62,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py           # 136 test
+python3 prove/test_traduttore.py           # 137 test
 python3 -m traduttore.cli verifica         # i controlli sui dati
 python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
 ```
@@ -203,6 +203,15 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
+6. **Quale fonte dichiara articoli, preposizioni e ausiliari.** Il glossario
+   non ne ha nessuno: fra 131 parole funzionali dell'elenco di `copertura.py`,
+   38 ci sono e 93 passano invariate, quindi una frase come «il cane e' a casa»
+   esce con due buchi. **Non si aggiungono a mano**: ogni voce ha bisogno di
+   una fonte, e nessuna delle fonti gia' aperte e' stata verificata come
+   contenitore di quelle forme. La prima da controllare e' il vocabolario di
+   Nannini 1805 (S005, `esaminata`, pubblico dominio): se li contiene si puo'
+   procedere, se non li contiene lo si dichiara e si smette di chiederlo.
+   Finche' nessuna fonte li dichiara, il buco si dichiara e non si colma.
 
 ## 7. Il rapporto con «I cinque duchi»
 

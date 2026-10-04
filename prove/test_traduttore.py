@@ -498,12 +498,23 @@ class TestConteggiDichiarati(unittest.TestCase):
         # peggiore che un registro possa essere.
         testo = open(os.path.join(RADICE, "REGISTRO.md"),
                      encoding="utf-8").read()
-        voce = testo.split("## 0.14")[1].split("## 0.13")[0]
+        # La voce **piu' recente**, non una versione scritta a mano: quando si
+        # apre una nuova versione il controllo deve passare a quella da solo,
+        # altrimenti il test che esiste per non lasciare andare i numeri
+        # diventa l'unico numero che va corretto a mano.
+        voci = re.findall(r"^## (\d+\.\d+) — .*$", testo, re.M)
+        self.assertTrue(voci, "il registro non ha nessuna voce")
+        # Non la prima che si trova: il registro mette in alto anche la 0.7 con
+        # una nota storica, quindi l'ordine del file non e' quello delle
+        # versioni. La piu' recente e' quella col numero maggiore.
+        ultima = max(voci, key=lambda v: tuple(int(x) for x in v.split(".")))
+        blocco = testo.split("## %s" % ultima, 1)[1].split("\n## ", 1)[0]
         dichiarato = re.search(r"\*\*Verifiche\.\*\* (\d+) test \(erano (\d+)\)",
-                               voce)
-        self.assertIsNotNone(dichiarato, "la voce 0.14 non dichiara i test")
+                               blocco)
+        self.assertIsNotNone(dichiarato,
+                             "la voce %s non dichiara i test" % ultima)
         self.assertEqual(int(dichiarato.group(1)), _quanti_test(),
-                         "la voce 0.14 dice %s test" % dichiarato.group(1))
+                         "la voce %s dice %s test" % (ultima, dichiarato.group(1)))
 
 class TestLetturaDelWikitext(unittest.TestCase):
     """Come il modulo `raccolta/moderni.py` legge una pagina.
@@ -1220,14 +1231,41 @@ class TestCopertura(unittest.TestCase):
             self.assertFalse(glossario.cerca_italiano(forma),
                              "%s e' una forma, non un lemma" % forma)
 
-    def test_una_parola_funzionale_non_e_una_lacuna(self):
-        # Contare `il`, `di`, `che` fra le mancanze direbbe che il glossario
-        # e' piu' vuoto di quanto sia: sono in `morfologia.py`.
+    def test_una_parola_funzionale_sta_nell_elenco_di_esclusi(self):
+        # Contare `il`, `di`, `che` fra i lemmi di contenuto non tornerebbe:
+        # sono forme, non lemmi. Questo resta vero e il test lo tiene.
         c = self._copertura()
         for funzionale in ("il", "di", "che", "per", "con", "sono", "gli"):
             if funzionale in c.FUNZIONALI:
                 continue
             self.fail("%s dovrebbe stare nell'elenco delle funzionali" % funzionale)
+
+    def test_le_funzionali_escluse_non_sono_un_buco_dichiarato_e_nascondono_niente(self):
+        # La versione precedente di questo test diceva, in un commento, che le
+        # funzionali «sono in morfologia.py» e che il motore le tratta a
+        # parte. Ho provato a verificarlo e **non e' vero**: `il`, `a`, `ho`,
+        # `non` passano invariati con confidenza 0, e in `morfologia.py` non c'e'
+        # nessun elenco di articoli o preposizioni. Escluderle dal conteggio
+        # senza dirlo faceva salire la copertura: il numero era comodo e falso.
+        #
+        # Ora il rapporto le misura. E se un giorno qualcuno le aggiunge al
+        # glossario, questo test fallisce e chiede di aggiornare la
+        # dichiarazione: e' il modo in cui questo progetto preferisce
+        # accorgersi delle cose, non accorgersene.
+        c = self._copertura()
+        glossario = Glossario.da_file(os.path.join(RADICE, "dati",
+                                                   "glossario.jsonl"))
+        for funzionale in ("il", "la", "a", "con", "di"):
+            self.assertFalse(glossario.cerca_italiano(funzionale),
+                             "%s ora c'e' nel glossario: aggiorna la "
+                             "dichiarazione sulle funzionali" % funzionale)
+        # La frase che mentiva non deve tornare, in nessuna forma.
+        testo = open(os.path.join(RADICE, "raccolta", "copertura.py"),
+                     encoding="utf-8").read()
+        for frase in ("motore li tratta a parte",
+                      "stanno in `morfologia.py` e nel glossario non ci"):
+            self.assertNotIn(frase, testo,
+                             "il rapporto non deve piu' dichiarare %r" % frase)
 
     def test_il_glossario_copre_almeno_un_quarto_dei_lemmi_frequenti(self):
         # Il numero che il progetto puo' dichiarare, con il metro giusto.

@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.14
+versione: 0.15
 data: 2026-10-03
 autore: progetto «I cinque duchi»
 ---
@@ -461,6 +461,19 @@ ferrarese. In breve:
   Non e' la grafia di oggi e non e' quella che si sente: le forme sono
   verificabili aprendo il libro alla pagina indicata, non ascoltando un
   parlante.
+- **Non ci sono articoli, preposizioni ne' ausiliari.** Su 131 parole
+  funzionali dell'elenco di `copertura.py`, 38 sono nel glossario e **93 passano
+  invariate**: `il`, `a`, `con`, `ho`, `non` non vengono tradotti e finiscono
+  nei buchi. Quindi «sono seduto sulla sedia» esce `son seduto Sslà Scaràna` e
+  «il cane e' a casa» esce con due buchi. Non si aggiungono a mano: ogni voce
+  ha bisogno di una fonte e nessuna fonte aperta le contiene. Il punto 6 di
+  `AGENTS.md` dice quale fonte controllare per prima.
+- **Non ci sono forme finite dei verbi.** Il glossario contiene lemmi, non
+  coniugazioni: `sedarsi` c'e', `seduto` no. Riconoscere un participio dalla
+  radice del verbo e' **morfologia**, non vocabolario, ed e' la strada giusta —
+  ma non ci sono esempi in `dati/regole.json` che la insegnino. Il buco e'
+  dichiarato e non aggirato: il motore lascia la parola come sta e registra
+  il buco, che e' il comportamento giusto per un vocabolario che non sa.
 - **Non si sa quali parole sono antiche.** La colonna «in italiano di oggi» dice
   che cosa *vuol dire* una parola, non che *quella parola non si usa piu'*:
   nessuna fonte aperta finora marchia l'obsoleto. Su 4063 voci si ha
@@ -471,7 +484,7 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 136 test
+python3 prove/test_traduttore.py     # 137 test
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
 

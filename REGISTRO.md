@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.14
+versione: 0.15
 data: 2026-10-04
 ---
 
@@ -85,6 +85,67 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.15 — 2026-10-04 · Il numero di copertura che si alzava perché qualcosa non era guardato
+
+**Perché.** Pietro ha provato a tradurre «sono seduto sulla sedia» e il
+risultato è stato `son seduto Sslà Scaràna`: quattro parole su cinque, e un
+buco. Il buco non era `seduto` — quello è un participio e il glossario contiene
+`sedare`, non le forme finite — ma **tutto il resto della frase**. Il glossario
+ha 11451 lati italiani distinti e fra questi non c'è nessun articolo, nessuna
+preposizione e quasi nessun ausiliare. Su 48 parole funzionali italiane
+frequenti, 11 ci sono.
+
+**Il difetto peggiore era nella misura, non nei dati.** `copertura.py`
+escludeva le parole funzionali dal conteggio e diceva, in due punti, che
+«sono in `morfologia.py` e il motore le tratta a parte». Sono due frasi false:
+in `morfologia.py` non c'è nessun elenco di articoli o preposizioni — quel
+modulo impara desinenze dal corpus — e il motore non le tratta: `il -> il` con
+confidenza 0, `ho -> ho` con confidenza 0. Escludere 14 parole non coperte
+faceva salire la percentuale, e una percentuale che sale perché si nasconde una
+parte è falsa per quanto sia comoda. Ora il rapporto **misura** quante
+funzionali il glossario trova, e stampa il numero: 131 nell'elenco, 38
+presenti, 93 che passano invariate e finiscono nei buchi. Il 23,7% resta
+quello che è — la copertura dei **lemmi di contenuto** — e la pagina lo dice.
+
+**Il participio, che è un altro problema.** `seduto`, `mangiato`, `andato`,
+`stato` non ci sono, e non possono arrivarci dal vocabolario: il Ferri è un
+elenco di lemmi. Riconoscere un participio dalla radice del verbo è morfologia,
+non vocabolario, e questa è la strada giusta — ma è una strada nuova, e su
+`dati/regole.json` non ci sono esempi che la insegnino.
+
+**Le due fonti indicate.** Il vocabolario di Bigoni (S006) **non si può
+usare**, e per due motivi indipendenti: il sito non dichiara diritti in
+nessuna delle due pagine (la licenza resta «da chiedere», quindi la fonte non
+può alimentare il glossario) e il vocabolario non è nelle pagine: `VocFeIt.html`
+e `VocItFe.html` contengono solo la descrizione dell'ortografia e una trentina
+di `<tr>` di consonanti e vocali, mentre l'elenco delle parole viene servito da
+`elencoParole.php` con una POST. Non è scaricabile, e non è comunque
+riutilizzabile senza il permesso.
+
+Quella seconda pagina invece è utile, e per un motivo diverso da quello che si
+cercava. «Il Ferrarese — note linguistiche» è **S015**, che il registro
+aveva già come `esaminata`, e dichiara regole che il sistema di lettura della
+grafia **non ha**: l'assenza di consonanti doppie, l'assenza di dittonghi
+nelle vocali accentuate, l'infinito della prima coniugazione in `-àr` e non in
+`-èr` (che è la ragione delle quattro righe che il controllo F14 non riesce a
+riconciliare con Biondelli), e una `l` di pronuncia fortemente velare. Sono
+regole che una fonte dichiara, che è esattamente la condizione che il progetto
+si dà prima di usare una regola, e nessuna delle quattro è nel sistema.
+Non sono state applicate: applicarle cambierebbe delle trascrizioni, e S015
+non ha licenza verificata. Sono segnalate, e sono il punto da cui cominciare
+quando la licenza si chiarisce.
+
+**Quello che non si e' fatto, e perche'.** Non si sono aggiunte parole
+funzionali al glossario: ogni voce ha bisogno di una fonte, e nessuna delle
+fonti aperte le contiene. Aggiungerle a mano sarebbe stato l'unico modo di
+far quadrare la frase, ed è esattamente il modo che questo progetto non prende.
+La domanda — quale fonte dichiara gli articoli e gli ausiliari del ferrarese —
+resta aperta ed è il punto 6 di `AGENTS.md`.
+
+**Verifiche.** 137 test (erano 136). `verifica`: 0 errori, 8 avvisi. Nessuna
+voce del glossario è cambiata: questa versione non tocca i dati, cambia quello
+che il progetto **dichiara** su di sé.
 
 ## 0.14 — 2026-10-04 · Le parole che non si usano più, spiegate dalla fonte che le spiega
 

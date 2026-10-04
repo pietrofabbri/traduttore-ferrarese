@@ -62,7 +62,7 @@ un dizionario che non esiste.
 ```bash
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
-python3 prove/test_traduttore.py           # 152 test
+python3 prove/test_traduttore.py           # 155 test
 python3 -m traduttore.cli verifica         # i controlli sui dati
 python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
 ```
@@ -74,6 +74,17 @@ python3 -m traduttore.cli impara     # rigenera dati/regole.json
 python3 -m traduttore.cli web        # rigenera web/index.html
 python3 -m traduttore.cli buchi      # i numeri di quello che manca
 ```
+
+E se hai toccato `dati/fonetica.jsonl`, anche i suoni generati, che sono un
+file generato come gli altri e va committato insieme al manifesto:
+
+```bash
+python3 raccolta/sintetizza.py       # rigenera web/sintesi/ e dati/sintesi.jsonl
+```
+
+Il comando esce con un codice diverso da zero e **non scrive niente** se
+`espeak-ng` non e' installato: un suono prodotto da un programma non
+dichiarato non sarebbe verificabile da nessuno.
 
 `buchi` non e' un controllo e non fallisce mai: conta quello che il progetto
 sa di non sapere e scrive **perche'** manca. Se hai aggiunto una riga che

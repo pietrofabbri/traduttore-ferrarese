@@ -46,6 +46,7 @@ e il progetto non puo' essere pubblicato con i dati rotti dentro.
 from __future__ import annotations
 
 import json
+import io
 import os
 import re
 import subprocess
@@ -471,6 +472,21 @@ class TestSignificatoModerno(unittest.TestCase):
         self.assertIn("moderno_buchi", modello)
 
 
+def _parole_a_numero(parola):
+    """Le cifre in italiano, che e' come le scrive un titolo.
+
+    Solo fino a dodici: la tabella delle cartelle non crescera' oltre, e un
+    elenco di numeri che non finisce e' un elenco che un giorno mente senza
+    che nessuno se ne accorga.
+    """
+    parole = {
+        "una": 1, "due": 2, "tre": 3, "quattro": 4, "cinque": 5, "sei": 6,
+        "sette": 7, "otto": 8, "nove": 9, "dieci": 10, "undici": 11,
+        "dodici": 12,
+    }
+    return parole.get(parola.strip().lower())
+
+
 class TestConteggiDichiarati(unittest.TestCase):
     """Il numero di test che i documenti dichiarano deve essere quello vero.
 
@@ -480,6 +496,78 @@ class TestConteggiDichiarati(unittest.TestCase):
     progetto non accetta numeri che mentono — vale per i buchi dichiarati, e
     vale anche per la propria dimensione.
     """
+    def test_le_traslitterazioni_dichiarate_in_RACCOLTA_sono_quelle_c_e_e(self):
+        # Difetto vero, di questa sessione: `RACCOLTA.md` dichiarava 30
+        # trascrizioni in due punti e il file ne aveva 28. Nessun test lo
+        # guardava, perche' il documento di raccolta non aveva nessuna
+        # guardia. Due numeri sbagliati in un documento che spiega come si
+        # raccoglie, il posto sbagliato per lasciare che invecchino da soli.
+        with open(os.path.join(RADICE, "RACCOLTA.md"), encoding="utf-8") as f:
+            testo = f.read()
+        veri = sum(1 for riga in io.open(
+            os.path.join(RADICE, "dati", "fonetica.jsonl"), encoding="utf-8")
+            if riga.strip() and not riga.lstrip().startswith("//"))
+        self.assertTrue(veri > 0, "il file delle trascrizioni e' vuoto")
+        trovati = re.findall(r"(\d+) righe", testo)
+        self.assertTrue(trovati, "RACCOLTA.md non dichiara quante righe ha")
+        for dichiarato in trovati:
+            self.assertEqual(int(dichiarato), veri,
+                             "RACCOLTA.md dice %s trascrizioni e sono %d"
+                             % (dichiarato, veri))
+
+    def test_il_titolo_delle_cartelle_e_il_numero_delle_righe(self):
+        # `RACCOLTA.md` si intitolava «Le sette cartelle» e la tabella ne
+        # elencava otto: il titolo era rimasto quello di quando la tabella
+        # aveva sette righe, e nessuno lo aveva piu' guardato perche' nessun
+        # numero lo confrontava con quello sotto. La tabella e' cresciuta con
+        # i proverbi, con le proposte e adesso con i suoni generati.
+        with open(os.path.join(RADICE, "RACCOLTA.md"), encoding="utf-8") as f:
+            righe = f.read().split("\n")
+        dentro = False
+        dichiarato = None
+        righe_tabella = 0
+        for riga in righe:
+            m = re.match(r"^## Le (.+) cartelle$", riga)
+            if m:
+                dentro = True
+                parole = m.group(1).split()
+                # Il numero e' in lettere, come lo scrive un documento in
+                # italiano: «Le sette cartelle». Quindi il test deve sapere
+                # leggerlo, e non pretendere che il titolo diventi una cifra.
+                dichiarato = _parole_a_numero(parole[0])
+                if dichiarato is None:
+                    self.fail("il titolo delle cartelle dice %r, che non e' "
+                              "un numero che questo test sa leggere"
+                              % parole[0])
+                continue
+            if dentro:
+                if riga.startswith("| `"):
+                    righe_tabella += 1
+                elif riga.startswith("E ci sono"):
+                    break
+        self.assertIsNotNone(dichiarato, "il titolo delle cartelle non c'e'")
+        self.assertEqual(dichiarato, righe_tabella,
+                         "il titolo dice %d cartelle e la tabella ne elenca %d"
+                         % (dichiarato, righe_tabella))
+
+    def test_RACCOLTA_dichiara_che_i_suoni_non_sono_persone(self):
+        # La sezione sulle trascrizioni spiega la pronuncia, e non poteva
+        # tacere dei suoni generati: sono la cosa che lo studente sente, e il
+        # numero di quelli che non suonano e' un buco dichiarato.
+        with open(os.path.join(RADICE, "RACCOLTA.md"), encoding="utf-8") as f:
+            testo = f.read()
+        # Gli spazi bianchi non contano: il testo va a capo dove gli piace e
+        # quello che si verifica e' la frase, non dove e' finita la riga.
+        piano = " ".join(testo.split())
+        self.assertIn("sintetizza.py", piano)
+        self.assertIn("web/sintesi/", piano)
+        self.assertIn("non entra mai in `audio/`", piano,
+                      "RACCOLTA.md deve dire che un suono generato non entra "
+                      "nella cartella delle persone vere")
+        self.assertIn("idempotente", piano,
+                      "RACCOLTA.md deve dire che rigenerare i suoni non cambia "
+                      "niente, altrimenti committarli sembra pericoloso")
+
 
     def test_il_numero_di_test_nei_documenti_e_quello_vero(self):
         veri = _quanti_test()

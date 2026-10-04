@@ -155,7 +155,7 @@ suono porta **la sua** trascrizione e, quando differisce, dice perché.
 restano `attendibilita: "I"` e `da_verificare: true`, e l'unica cosa che chiude
 la domanda è un parlante ferrarese che dica la parola.
 
-**Verifiche.** 152 test (erano 137). `verifica`: 0 errori, 8 avvisi, e i
+**Verifiche.** 155 test (erano 137). `verifica`: 0 errori, 8 avvisi, e i
 controlli Y1-Y4 non trovano niente sui dodici suoni. Equivalenza Python e
 JavaScript: 12 frasi, 0 divergenze. Il passo nuovo della CI confronta il
 manifesto con `web/sintesi/` nelle due direzioni ed e' stato provato nelle due
@@ -165,6 +165,32 @@ sense: con un file in piu' in `audio/` esce diversamente da zero.
 di riscrivere, così un file che non è più dichiarato non sopravvive. La CI
 confronta il manifesto con la cartella nelle due direzioni: una riga senza file
 e un file senza riga sono entrambi un errore.
+
+**Correzione dello stesso giorno, nei documenti che il pulsante non aveva
+toccato.** Cercando che cosa era rimasto indietro, sono tre fatti che nessun
+controllo guardava e che sono tutti della stessa specie: numeri e affermazioni
+che non corrispondevano a quello che c'era.
+
+1. `RACCOLTA.md` dichiarava **30** trascrizioni, in due punti, e
+   `dati/fonetica.jsonl` ne ha **28**. Il numero era già sbagliato prima di
+   questa versione; è stato trovato perché la sezione sulle trascrizioni è il
+   posto dove i suoni generati dovevano essere descritti, e guardandola è
+   venuto fuori che due passi prima c'era un altro numero fermo nel tempo.
+2. La stessa sezione si intitolava «**Le sette cartelle**» e la tabella ne
+   elencava **otto**: le righe erano cresciute — proverbi, proposte, e adesso
+   i suoni — e il titolo no. Nessun numero lo confrontava con quello sotto,
+   quindi nessuno se ne accorgeva.
+3. `sorgenti/traduttore/__init__.py` non esportava `Sintesi` e `Suono`, che
+   sono esportati come `Archivio` e `Brano`. Chi legge il pacchetto li cercava
+   con lo stesso nome e non li trovava.
+
+Tutti e tre hanno ora un test che li controlla, perché la lezione dei due
+giorni precedenti è che **un numero non sorvegliato invecchia** e che l'unica
+difesa è mettergli un test accanto, non trovarlo a mano.
+
+Nessun dato e nessuna pagina cambiano: `web/index.html` rigenerato è identico
+byte per byte, e questo è il controllo che dice che la correzione è stata solo
+nei documenti.
 
 ## 0.15 — 2026-10-04 · Il numero di copertura che si alzava perché qualcosa non era guardato
 

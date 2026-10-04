@@ -24,7 +24,7 @@ dell'Ottocento senza crediti. Entrambi sembrano un glossario e non lo sono.
 Un glossario senza fonte non e' un glossario e' un'opinione, e un'opinione
 in un gioco didattico diventa una nota che si legge come un fatto.
 
-## Le sette cartelle
+## Le nove cartelle
 
 | Cartella | Cosa contiene | Chi decide |
 |---|---|---|
@@ -34,6 +34,7 @@ in un gioco didattico diventa una nota che si legge come un fatto.
 | `dati/varieta.json` | **Le cinque varieta'** e i loro territori | chi tiene la fonte delle varieta' |
 | `dati/fonetica.jsonl` | **Le trascrizioni IPA**, con il sistema dichiarato | chi ha ascoltato la parola |
 | `dati/audio.jsonl` + `audio/` | **Le voci**, con consenso | la persona che ha parlato, o chi esercita la responsabilita' |
+| `dati/sintesi.jsonl` + `web/sintesi/` | **I suoni generati**, con la dichiarazione che non sono persone | chi lo ha generato con `raccolta/sintetizza.py` |
 | `dati/da_verificare/` | **Quello che non si puo' ancora pubblicare**, con le sue fonti | chi verifica la licenza della fonte |
 | `dati/proposte/` | **Le risposte del modello**, in attesa di revisione | chi verifica la parola in un vocabolario |
 
@@ -198,7 +199,7 @@ Mentre l'audio non si muove, **la pronuncia si puo' scrivere adesso**, e non
 serve nessun permesso: una trascrizione IPA non e' una registrazione, e' una
 lettura della grafia dichiarata.
 
-`dati/fonetica.jsonl` ha gia' 30 righe e le regole del sistema sono
+`dati/fonetica.jsonl` ha gia' 28 righe e le regole del sistema sono
 dichiarate nell'intestazione del file. Le tre cose da non fare:
 
 1. **non scrivere `attendibilita: "D"` senza aver ascoltato.** Il `D` vuol
@@ -211,7 +212,7 @@ dichiarate nell'intestazione del file. Le tre cose da non fare:
 3. **non mettere l'accento tonico se la fonte non lo marca.** `brisa` e
    `pan` non hanno accento in Wikipedia, e quindi la trascrizione non ce lo
    mette: dichiarare un accento che la fonte non dichiara e' l'errore piu'
-   economico da commettere in un file di 30 righe.
+   economico da commettere in un file di 28 righe.
 
 Quello che ci vuole davvero, e che e' la cosa piu' preziosa che si possa
 aggiungere a questo progetto nelle prossime settimane: **una mezz'ora con una
@@ -219,6 +220,24 @@ persona che parla ferrarese e un minuto di registrazione per voce**. Il primo
 passaggio e' scrivere `confermato da [nome], [paese], 2026` nel campo
 `fonte`, cambiare `I` in `D` e `da_verificare` in `false`. Il secondo e'
 il brano audio, che ha bisogno anche del consenso.
+
+**I suoni generati, che non sono la stessa cosa.** Una trascrizione si puo'
+leggere ma non ascoltare, e per un gioco di lingua questo e' un limite serio.
+Dal 2026-10-04 dodici parole suonano davvero: `raccolta/sintetizza.py`
+genera un `wav` per ogni trascrizione che le regole di lettura pronunciano
+**senza dubbi**, e scrive il manifesto `dati/sintesi.jsonl` insieme ai file.
+Le altre 16 non suonano, e il numero e' dichiarato come buco dalla pagina.
+
+```bash
+python3 raccolta/sintetizza.py --prova   # i numeri, senza scrivere
+python3 raccolta/sintetizza.py           # i wav e il manifesto
+```
+
+Il generatore e' **idempotente**: due giri di fila producono file identici
+byte per byte, quindi committare i `wav` non e' un rischio e il repository
+non mente sul proprio contenuto. E cosa **non** e': un suono generato non
+verifica la trascrizione, resta `attendibilita: "I"`, e non entra mai in
+`audio/`, che e' la cartella delle persone vere.
 
 **Il buco grande e dichiarato:** un corpus di parlato spontaneo ferrarese non
 esiste e non si scarica da nessuna parte (`dati/fonti.json`, S009). Non si

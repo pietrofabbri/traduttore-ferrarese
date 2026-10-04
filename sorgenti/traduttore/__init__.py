@@ -12,6 +12,10 @@ from .corpora import Corpus, Coppia, Proverbio
 from .varieta import Varieta, VARIETA
 from .fonetica import Fonetica, Trascrizione
 from .audio import Archivio, Brano
+# I suoni generati stanno in un pacchetto a parte perche' hanno regole
+# opposte a quelle dei brani: li' una riga senza consenso e' un errore
+# gravissimo, qui una riga senza dubbio dichiarato lo e' ugualmente.
+from .sintesi import Sintesi, Suono
 from .morfologia import impara, applica, Regola
 from .motore import Motore, Risposta
 from .modello import costruisci_modello
@@ -24,5 +28,9 @@ __all__ = [
     # La varieta' non e' un dettaglio del glossario: e' parte della risposta, e
     # quindi parte di quello che questo pacchetto espone.
     "Varieta", "VARIETA", "Fonetica", "Trascrizione",
-    "Archivio", "Brano", "proposte",
+    "Archivio", "Brano",
+    # I suoni generati sono esposti come quelli audio, perche' chi legge
+    # il pacchetto li cerca con lo stesso nome. Sono la stessa cosa in
+    # forma e non in significato, ed e' la distinzione che li tiene separati.
+    "Sintesi", "Suono", "proposte",
 ]

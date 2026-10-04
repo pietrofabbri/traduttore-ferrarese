@@ -1,5 +1,14 @@
 # `audio/` — i brani registrati
 
+> **Attenzione, ci sono due cartelle di suoni.** Questa è `audio/` e contiene
+> solo registrazioni di **persone vere**, con consenso. I suoni che ha prodotto
+> un programma stanno in `web/sintesi/` e hanno il loro manifesto in
+> `dati/sintesi.jsonl`: sono dodici parole suonate da `espeak-ng`, dichiarate
+> come tali in pagina. **Un file generato non va messo qui**, e non per un
+> divieto di burocrazia: i controlli contano i file che trovano in questa
+> cartella e li trattano come registrazioni di persone, quindi un suono di
+> macchina qui renderebbe falso un numero che il progetto mostra pubblicamente.
+
 Questa cartella è **vuota**, e lo è per una ragione precisa: nessuna
 registrazione di nessuna persona è ancora stata autorizzata per entrare nel
 progetto. Non è un posto dove mettere i file per poi dichiararli: è il posto

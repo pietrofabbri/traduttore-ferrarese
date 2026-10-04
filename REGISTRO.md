@@ -143,6 +143,33 @@ far quadrare la frase, ed è esattamente il modo che questo progetto non prende.
 La domanda — quale fonte dichiara gli articoli e gli ausiliari del ferrarese —
 resta aperta ed è il punto 6 di `AGENTS.md`.
 
+**Correzione dello stesso giorno, sulla stessa frase.** Cercando in tutto il
+repository le altre dichiarazioni che reggevano su quella frase, ne sono
+trovate altre due, entrambe in `raccolta/costruisci_meccanico.py`: il commento
+sopra l'elenco delle parole funzionali scartate, e la riga `# ausiliari e
+verbi che il motore tratta come regole` dentro l'elenco stesso. Il motivo per
+cui il generatore scarta gli articoli non e' che il motore li sappia — non li
+sa — ma una **scelta**, con due motivi buoni e un costo.
+
+Lo scarto è stato misurato per capire quanto costa: di 118 righe scartate, 98
+hanno il capoverso `Per`, che nel Ferri è il marchio del rinvio per traslazione
+e non la preposizione (sono sottentrate come «— Per dim - Laghetto», senza
+capoverso proprio: scartarle è giusto). Le altre 20 sono forme funzionali che
+**il Ferri dichiara** e che il progetto buttava via: `Sòra` (sopra, pag. 386),
+`Fora` (fuori, pag. 150), `Còl` (col e collo, pag. 92), `Fra` (frate e fra/tra,
+pag. 151), `Con` (pag. 94), `In` (pag. 187), `Tra` (pag. 439), `La` (pag. 213),
+`Se` (pag. 364), `Che` (pag. 87), `Un` (pag. 450).
+
+Quindi la domanda che avevo scritto al punto 6 di `AGENTS.md` — «quale fonte
+dichiara gli articoli?» — era sbagliata: la fonte c'è già, ed è la più forte
+del progetto. La domanda è di **policy**: si tiene la scelta e si vive con il
+buco, oppure si ammette un elenco separato di forme funzionali sapendo che il
+motore non le tratta. Finché la risposta non c'è, niente si aggiunge a mano.
+
+Una guardia tiene i tre file che ripetevano la frase, perché la frase era vera
+sulla carta e falsa nel codice, e un commento in un test viene letto come se
+fosse vero.
+
 **Verifiche.** 137 test (erano 136). `verifica`: 0 errori, 8 avvisi. Nessuna
 voce del glossario è cambiata: questa versione non tocca i dati, cambia quello
 che il progetto **dichiara** su di sé.

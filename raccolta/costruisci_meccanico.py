@@ -54,15 +54,39 @@ AUTORE = "Luigi Ferri"
 OPERA = "Vocabolario ferrarese-italiano"
 ANNO = 1889
 
-# Le parole funzionali non entrano, e il motivo non e' che «non servono».
+# Le parole funzionali non entrano, e il motivo **non** e' quello che era
+# scritto qui prima.
 #
-# Il motore gia' conosce gli articoli e le preposizioni: sono in
-# `morfologia.py`. Una voce di glossario per «la» non aggiunge niente e
-# fa due danni: la parola viene riscritta con la grafia della fonte («La»
-# maiuscola, e la frase che ne esce e' sbagliata), e il vocabolario si
-# riempie di voci che non distinguono le due lingue perche' sono la stessa
-# parola. Sono 12 righe perse contro 10401, ma una di quelle righe e' quella
-# che fa scrivere «La portàr» a chi chiede «la porta».
+# La versione precedente di questo commento attribuiva gli articoli e le
+# preposizioni a `morfologia.py`, e dava per scontato che il motore li sapesse.
+# L'ho verificato e **non e' vero**: in quel modulo non c'e' nessun elenco di
+# articoli o preposizioni — quello impara desinenze dal corpus — e il motore
+# non li traduce: `il -> il` con confidenza 0, `ho -> ho` con confidenza 0. Su
+# 131 parole funzionali dell'elenco di `copertura.py`, 38 sono nel glossario e
+# 93 passano invariate.
+#
+# Quindi lo scarto **non** e' una conseguenza di una capacita' che il motore ha:
+# e' una **scelta**, e va tenuta per quello che e'. La scelta ha due motivi
+# buoni, entrambi verificati: (1) una voce di glossario per «La» riscrive la
+# parola con la grafia della fonte, e «La» diventa «La» anche quando il
+# soggetto e' un nome proprio — e' il caso che fa scrivere «La portàr» a chi
+# chiede «la porta»; (2) il vocabolario si riempirebbe di voci che non
+# distinguono le due lingue perche' sono la stessa parola.
+#
+# Il costo della scelta e' **un buco**, ed e' il buco che rende inutilizzabile
+# una frase: di 118 righe scartate da questo filtro, 98 hanno il capoverso
+# `Per` — che nel Ferri e' il marchio del rinvio per traslazione, non la
+# preposizione, e infatti sono sottentrate come «— Per dim - Laghetto» senza
+# capoverso proprio: scartarle e' giusto — e le altre 20 sono forme
+# funzionali che il Ferri **dichiara** e che qui vengono buttate via:
+# `Sòra` (sopra, pag. 386), `Fora` (fuori, pag. 150), `Còl` (col e collo,
+# pag. 92), `Fra` (frate e fra/tra, pag. 151), `Con` (pag. 94), `In` (pag. 187),
+# `Tra` (pag. 439), `La` (pag. 213), `Se` (pag. 364), `Che` (pag. 87),
+# `Un` (pag. 450).
+#
+# Quel costo e' dichiarato in `README.md` e nel punto 6 di `AGENTS.md`, e
+# cambiare questa scelta e' una decisione di Pietro, non un refuso da correggere
+# qui. Se un giorno le si toglie, il filtro va con lei: sono la stessa cosa.
 FUNZIONALI = {
     # articoli
     "il", "lo", "la", "i", "gli", "le", "un", "una", "uno", "l", "lo'", "l'",
@@ -74,7 +98,10 @@ FUNZIONALI = {
     # congiunzioni e avverbi che il Ferri registra come voce
     "e", "ed", "o", "od", "ma", "che", "come", "se", "quando", "perche",
     "perché", "poi", "ancora", "anco", "inanca", "inante", "dopo", "sora",
-    # ausiliari e verbi che il motore tratta come regole, non come voci
+    # ausiliari. Nello stesso scarto, per lo stesso motivo: sono forme
+    # funzionali e il motore non le tratta. `essere` e `avere` non ci
+    # sono, e il glossario non li ha: e' un buco dichiarato, non una
+    # parola risolta altrove.
     "essere", "aesse", "aessar", "aera", "avei", "avere", "avar", "aveva",
     "star", "stare", "stava", "ghere", "jere",
 }

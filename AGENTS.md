@@ -203,15 +203,25 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
-6. **Quale fonte dichiara articoli, preposizioni e ausiliari.** Il glossario
-   non ne ha nessuno: fra 131 parole funzionali dell'elenco di `copertura.py`,
+6. **Le parole funzionali entrano nel glossario o no.** Il glossario non ne
+   ha quasi nessuna: fra 131 parole funzionali dell'elenco di `copertura.py`,
    38 ci sono e 93 passano invariate, quindi una frase come «il cane e' a casa»
-   esce con due buchi. **Non si aggiungono a mano**: ogni voce ha bisogno di
-   una fonte, e nessuna delle fonti gia' aperte e' stata verificata come
-   contenitore di quelle forme. La prima da controllare e' il vocabolario di
-   Nannini 1805 (S005, `esaminata`, pubblico dominio): se li contiene si puo'
-   procedere, se non li contiene lo si dichiara e si smette di chiederlo.
-   Finche' nessuna fonte li dichiara, il buco si dichiara e non si colma.
+   esce con due buchi. La domanda **non e'** «quale fonte le dichiara»: la
+   fonte c'e' gia' ed e' la piu' forte del progetto. Il Ferri 1889 dichiara
+   `Sòra` (sopra, pag. 386), `Fora` (fuori, pag. 150), `Còl` (col e collo,
+   pag. 92), `Fra` (frate e fra/tra, pag. 151), `Con` (pag. 94), `In` (pag. 187),
+   `Tra` (pag. 439), `La` (pag. 213), `Se` (pag. 364), `Che` (pag. 87) e `Un`
+   (pag. 450). Sono state **scartate di proposito** dal generatore meccanico, e
+   il motivo della scelta e' in `raccolta/costruisci_meccanico.py`: due motivi
+   buoni (una voce per «La» fa scrivere «La porta» anche quando il soggetto e'
+   un nome proprio, e le voci non distinguono le due lingue) e un costo
+   dichiarato (una frase intera non e' traducibile).
+   
+   La domanda aperta e' quindi di **policy**, non di fonte: si tiene la scelta
+   e si vive con il buco, oppure si ammette un elenco separato di forme
+   funzionali con la pagina, sapendo che il motore non le tratta e che il
+   gioco dovrebbe accettarle come riempimento. Finche' la risposta non c'e',
+   il buco resta dichiarato e non si aggiunge niente a mano.
 
 ## 7. Il rapporto con «I cinque duchi»
 

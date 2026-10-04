@@ -1259,13 +1259,28 @@ class TestCopertura(unittest.TestCase):
             self.assertFalse(glossario.cerca_italiano(funzionale),
                              "%s ora c'e' nel glossario: aggiorna la "
                              "dichiarazione sulle funzionali" % funzionale)
-        # La frase che mentiva non deve tornare, in nessuna forma.
-        testo = open(os.path.join(RADICE, "raccolta", "copertura.py"),
-                     encoding="utf-8").read()
-        for frase in ("motore li tratta a parte",
-                      "stanno in `morfologia.py` e nel glossario non ci"):
-            self.assertNotIn(frase, testo,
-                             "il rapporto non deve piu' dichiarare %r" % frase)
+        # La frase che mentiva non deve tornare, in nessuno dei tre file che
+        # la ripetevano: il rapporto di copertura, il generatore meccanico, e
+        # questo stesso file. Il terzo e' il piu' scomodo e anche il piu'
+        # utile: un commento in un test viene letto come se fosse vero.
+        for nome, frasi in (
+                ("copertura.py", ("motore li tratta a parte",
+                                  "stanno in `morfologia.py` e nel glossario non ci")),
+                ("costruisci_meccanico.py", ("sono in `morfologia.py`",
+                                              "motore gia' conosce gli articoli",
+                                              "motore tratta come regole"))):
+            testo = open(os.path.join(RADICE, "raccolta", nome),
+                         encoding="utf-8").read()
+            for frase in frasi:
+                self.assertNotIn(frase, testo,
+                                 "%s non deve piu' dichiarare %r" % (nome, frase))
+        # E lo scarto va dichiarato per quello che e': una scelta, non una
+        # capacita' che il motore ha e non usa.
+        generatore = open(os.path.join(RADICE, "raccolta",
+                                        "costruisci_meccanico.py"),
+                          encoding="utf-8").read()
+        self.assertIn("scelta", generatore,
+                      "lo scarto delle funzionali va dichiarato come scelta")
 
     def test_il_glossario_copre_almeno_un_quarto_dei_lemmi_frequenti(self):
         # Il numero che il progetto puo' dichiarare, con il metro giusto.

@@ -21,20 +21,20 @@ l'obbligo di dirlo.
 **Le fonti, in quest'ordine, e perche' in quest'ordine.**
 
 1. `dati/italiano.jsonl` — l'analisi dal corpus annotato italiano di Universal
-   Dependencies, che e' la fonte scelta perche' analizza parole **in frasi** e
-   non di parola isolata. **Non e' ancora stato raccolto**: da questa macchina
-   i file del treebank non si scaricano (GitHub e HuggingFace rispondono 404
-   sui percorsi dei dati), e un'analisi scritta di testa sarebbe inventata. Il
-   raccoglitore e' `raccolta/italiano.py`, dichiarato e pronto: quando la rete
-   lascia passare quei file, il file si genera e questo modulo lo legge senza
-   cambiare una riga.
+   Dependencies, scelto perche' annota parole **in frasi** e non di parola
+   isolata, e perche' nella release 2.16 il treebank italiano e' **ParlaMint**,
+   cioe' trascrizioni di parlato parlamentare: un italiano che qualcuno ha
+   **detto**, che e' la sola lingua che questo progetto considera. Sono **1072
+   analisi**, raccolte dalla release r2.16. Il raccoglitore e'
+   `raccolta/italiano.py`; i file del treebank non li scarica il progetto, li
+   scarica qualcuno e li dichiara.
 2. `campo` del glossario — la classificazione che ogni voce porta gia' con se',
    con la fonte della voce accanto. Copre 2946 voci su 17370: e' un terzo, e il
    terzo e' dichiarato, non aggregato con gli altri due terzi.
 3. `dati/verbi.jsonl` — il lemma di un verbo e' un infinito per definizione
    dichiarata, non per supposizione.
 
-**Il buco e' la parte importante di questo modulo.** 14424 voci su 17370 non
+**Il buco e' la parte importante di questo modulo.** 13022 voci su 17370 non
 hanno nessuna di queste tre fonti, e su quelle parole il progetto non sa che
 cosa siano. Il numero e' stampato e contato (`Italiano.copertura`), e il
 comando `italiano` lo mostra: un buco che non ha numero smette di essere un
@@ -200,12 +200,24 @@ class Italiano:
                     forma = d.get("forma", "")
                     if not forma:
                         continue
-                    classi = d.get("classi") or []
-                    presa = classi[0] if classi else {}
+                    # Le righe portano il **tag** universale della fonte, non
+                    # una classe di questo progetto: la traduzione e' la mappa
+                    # `MAPPA_UPOS`. Il difetto che questo leggeva male era
+                    # invisibile e perverso — chiedeva un campo che la fonte non
+                    # scrive, quindi **ogni** riga del corpus tornava `ignota`
+                    # e il progetto perdeva 1047 voci senza che nessun numero
+                    # dicesse che le stava perdendo.
+                    tag = ""
+                    conteggio = 0
+                    for classe in d.get("classi") or []:
+                        nome_tag = classe.get("tag") if isinstance(classe, dict) else classe
+                        if nome_tag and classe.get("conteggio", 0) >= conteggio:
+                            tag = nome_tag
+                            conteggio = classe.get("conteggio", 0)
                     raccolto[normalizza.chiave(forma)] = Analisi(
-                        forma, presa.get("classe", IGNOTA),
-                        presa.get("dettaglio", ""), d.get("fonte", ""),
-                        d.get("attendibilita", ""), "", classi)
+                        forma, MAPPA_UPOS.get(tag, IGNOTA), tag,
+                        d.get("fonte", ""), d.get("attendibilita", ""),
+                        "" if tag else "nessun tag nella riga", d.get("classi"))
         return cls(raccolto, glossario, verbi)
 
     # ------------------------------------------------------------- la domanda
@@ -219,22 +231,34 @@ class Italiano:
         if not k:
             return Analisi(parola, IGNOTA, "", "", "",
                            "una parola vuota non si analizza")
+        # **Una fonte che non sa rispondere non copre una che sa.** Il corpus
+        # annotato dichiara un tag per quasi ogni parola, ma il progetto sa
+        # usare solo una parte dei tag universali: `DET`, `NUM`, `PART` e
+        # `PUNCT` non hanno una classe di questo progetto. Se una riga di quelle
+        # vincesse sulle altre, una parola che il glossario dichiara come
+        # pronome diventerebbe `ignota` perche' il corpus l'ha annotata come
+        # articolo determinativo — che e' un'altra cosa, non una informazione
+        # migliore. Quindi una risposta non utilizzabile viene **saltata**, e
+        # l'ordine delle fonti resta quello dichiarato.
         for archivio, nome in ((self.da_corpus, "corpus annotato"),
                                (self.da_glossario, "glossario"),
                                (self.da_verbi, "verbi")):
-            if k in archivio:
-                risposta = archivio[k][0] if isinstance(archivio[k], list) else archivio[k]
-                trovate = archivio[k] if isinstance(archivio[k], list) else [risposta]
-                if len(trovate) > 1:
-                    risposta.alternative = [
-                        {"classe": a.classe, "fonte": a.fonte} for a in trovate
-                        if a is not risposta]
-                return risposta
+            if k not in archivio:
+                continue
+            risposta = archivio[k][0] if isinstance(archivio[k], list) else archivio[k]
+            if not risposta.nota and nome != "verbi":
+                continue
+            trovate = archivio[k] if isinstance(archivio[k], list) else [risposta]
+            if len(trovate) > 1:
+                risposta.alternative = [
+                    {"classe": a.classe, "fonte": a.fonte} for a in trovate
+                    if a is not risposta]
+            return risposta
         return Analisi(
             parola, IGNOTA, "", "", "",
             "nessuna delle tre fonti dichiara questa parola: il corpus "
-            "annotato non e' stato raccolto, il glossario non ha `campo` "
-            "per questa voce, e non e' il lemma di un verbo dichiarato")
+            "annotato non la contiene, il glossario non ha `campo` per questa "
+            "voce, e non e' il lemma di un verbo dichiarato")
 
     # ------------------------------------------------------------- il conto
     def copertura(self, glossario) -> dict:

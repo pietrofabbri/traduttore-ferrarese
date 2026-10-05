@@ -8,12 +8,20 @@ parola si deve sapere **che cos'e'**. Le due cose si incontrano qui, e quindi
 questo modulo chiede a una fonte che classifica l'italiano gia' scritto, senza
 chiedere a nessuno di classificare niente a memoria.
 
-**La fonte.** Il corpus annotato italiano di Universal Dependencies
-(`UniversalDependencies/Italian-UD`), nella versione che il file scaricato
-dichiara. E' scelto perche' annota parole **in frasi**: e' la domanda che si
-pone un traduttore, che non mette mai una parola isolata. Licenza CC BY-SA 4.0,
-dichiarata dalla fonte stessa e riportata in ogni riga, perche' una riga senza
-licenza non si puo' pubblicare.
+**La fonte.** Il corpus annotato italiano di Universal Dependencies, che nella
+release 2.16 e' **ParlaMint**: trascrizioni del dibattito parlamentare italiano,
+quindi **italiano parlato** e non scritto. E' scelto per due ragioni che si
+condividono: annota parole **in frasi**, che e' la domanda che si pone un
+traduttore, ed e' la lingua **detta**, che e' l'unica che questo progetto cerca
+di capire. Licenza CC BY-SA 4.0, dichiarata dalla fonte e riportata in ogni
+riga, perche' una riga senza licenza non si puo' pubblicare.
+
+**Dove si scarica, e come.** I treebank si scaricano da LINDAT/CLARIN
+(`lindat.mff.cuni.cz`, voce «Universal Dependencies 2.16», file
+`ud-treebanks-v2.16.tgz`, 625 MB per tutte le lingue): da GitHub e HuggingFace i
+percorsi dei dati rispondono 404. Il programma **non scarica**: legge un file
+gia' presente e lo dichiara, perche' una raccolta che scarica da sola finisce
+per scaricare da due fonti senza accorgersene.
 
 **Che cosa viene preso.** Solo due colonne del file: la forma della parola e la
 sua categoria universale (UPOS). Nient'altro: non la definizione, non la
@@ -34,16 +42,18 @@ che le contiene come prova, troncata e dichiarata.
   assente, e il progetto continua a dire `ignota`: e' la differenza fra un
   glossario che sa e uno che finge.
 
-**Lo stato di questa raccolta.** Da questa macchina i file del treebank **non
-si scaricano**: GitHub e HuggingFace rispondono 404 sui percorsi dei dati, e
-`dati/italiano.jsonl` quindi non esiste ancora. Il modulo e' dichiarato e
-pronto, e quando la rete lascia passare quei file il file si genera senza
-toccare n'altro: `raccolta/moderni.py` ha gia' fatto questo per Wiktionary.
+**Lo stato di questa raccolta.** I file sono stati scaricati da LINDAT e il
+file e' stato generato: **1072 analisi**, delle quali 1047 sono chiavi che il
+glossario usa davvero. Il filtro dichiarato — si tiene solo l'analisi delle
+parole che il glossario chiede — e' il motivo per cui il file e' piccolo: il
+treebank annota decine di migliaia di forme e qui ne arrivano 1072, perche' sono
+quelle che questo progetto usa.
 
 Uso:
 
-    python3 raccolta/italiano.py --file percorso/it-ud-train.conllu
-    python3 raccolta/italiano.py --file ... --versione r2.13
+    python3 raccolta/italiano.py --file percorso/it_parlamint-ud-train.conllu \
+                                         percorso/it_parlamint-ud-test.conllu \
+                                --versione r2.16
 """
 from __future__ import annotations
 
@@ -100,7 +110,7 @@ def parole_richieste() -> set:
     return richieste
 
 
-def leggi(percorso: str, richieste: set) -> dict:
+def leggi(percorsi, richieste: set) -> dict:
     """Raggruppa per forma le classi che il corpus annota.
 
     Tiene anche **una** frase per forma, la prima in cui compare, perche' una
@@ -110,35 +120,38 @@ def leggi(percorso: str, richieste: set) -> dict:
     """
     MAX_FRASE = 140
     raccolte = {}
-    frase = ""
-    numero = 0
-    with io.open(percorso, encoding="utf-8") as f:
-        for riga in f:
-            riga = riga.rstrip("\n")
-            if riga.startswith("# text = "):
-                frase = riga[len("# text = "):]
-                numero += 1
-                continue
-            if not riga or riga.startswith("#"):
-                continue
-            colonne = riga.split("\t")
-            if len(colonne) < 4:
-                continue
-            forma, tag = colonne[1], colonne[3]
-            if not PAROLA.match(forma):
-                continue
-            chiave = _chiave(forma)
-            if not serve_il_progetto(forma, richieste):
-                continue
-            voce = raccolte.setdefault(chiave, {"classi": collections.Counter(),
-                                                "frase": "", "frasi": numero})
-            voce["classi"][tag] += 1
-            if not voce["frase"] and frase:
-                voce["frase"] = frase[:MAX_FRASE]
+    for percorso in percorsi:
+        nome_file = os.path.basename(percorso)
+        frase = ""
+        numero = 0
+        with io.open(percorso, encoding="utf-8") as f:
+            for riga in f:
+                riga = riga.rstrip("\n")
+                if riga.startswith("# text = "):
+                    frase = riga[len("# text = "):]
+                    numero += 1
+                    continue
+                if not riga or riga.startswith("#"):
+                    continue
+                colonne = riga.split("\t")
+                if len(colonne) < 4:
+                    continue
+                forma, tag = colonne[1], colonne[3]
+                if not PAROLA.match(forma):
+                    continue
+                chiave = _chiave(forma)
+                if not serve_il_progetto(forma, richieste):
+                    continue
+                voce = raccolte.setdefault(
+                    chiave, {"classi": collections.Counter(), "frase": "",
+                             "frasi": numero, "file": nome_file})
+                voce["classi"][tag] += 1
+                if not voce["frase"] and frase:
+                    voce["frase"] = frase[:MAX_FRASE]
     return raccolte
 
 
-def scrivi(raccolte: dict, versione: str, nome_file: str) -> int:
+def scrivi(raccolte: dict, versione: str) -> int:
     if not raccolte:
         print("nessuna forma del glossario e' stata trovata nel corpus: "
               "non si scrive un file vuoto, perche' un file vuoto sembra "
@@ -156,7 +169,7 @@ def scrivi(raccolte: dict, versione: str, nome_file: str) -> int:
                 "frase_troncata": len(voce["frase"]) >= 140,
                 "fonte": ("Universal Dependencies, corpus annotato italiano, "
                           "release %s, file %s, frase %d"
-                          % (versione, nome_file, voce["frasi"])),
+                          % (versione, voce["file"], voce["frasi"])),
                 "licenza": LICENZA,
                 "attendibilita": ATTENDIBILITA,
             }, ensure_ascii=False) + "\n")
@@ -172,21 +185,23 @@ def scrivi(raccolte: dict, versione: str, nome_file: str) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--file", required=True,
-                    help="il file .conllu del corpus annotato, scaricato a mano")
+    ap.add_argument("--file", required=True, nargs="+",
+                    help="i file .conllu del corpus annotato, scaricati a mano")
     ap.add_argument("--versione", default="dichiarata-dal-file",
                     help="la release del treebank, che finisce in ogni riga")
     args = ap.parse_args()
-    if not os.path.exists(args.file):
-        print("non c'e' %s." % args.file)
+    mancanti = [p for p in args.file if not os.path.exists(p)]
+    if mancanti:
+        print("non c'e'%s." % (" " + ", ".join(mancanti)))
         print("Il treebank si scarica a mano e non e' una cosa che questo "
-              "programma faccia da solo: il progetto scarica solo da una fonte "
+              "programma faccia da solo: il progetto scarica da una fonte "
               "alla volta, e questa raccolta la dichiara.")
         return 1
     richieste = parole_richieste()
     print("parole italiane richieste dal glossario %d" % len(richieste))
+    print("file letti: %s" % ", ".join(os.path.basename(p) for p in args.file))
     raccolte = leggi(args.file, richieste)
-    return scrivi(raccolte, args.versione, os.path.basename(args.file))
+    return scrivi(raccolte, args.versione)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.31
+versione: 0.32
 data: 2026-10-05
 ---
 
@@ -85,6 +85,47 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.32 — 2026-10-05 · Il corpus annotato si è scaricato, e aveva un difetto peggiore
+
+**Il blocco che avevo dichiarato era solo il modo sbagliato di scaricare.** GitHub e
+HuggingFace rispondono 404 sui percorsi dei dati, e l'avevo scritto come se il
+treebank fosse irraggiungibile. Non lo è: i treebank si scaricano da
+**LINDAT/CLARIN**, e la voce «Universal Dependencies 2.16» contiene
+`ud-treebanks-v2.16.tgz`, 625 MB di tutte le lingue. Scaricato, ed estratti solo i
+file italiani. Che cosa sia, poi, è una scoperta che cambia la fonte per il meglio:
+nella release 2.16 il treebank italiano è **ParlaMint**, cioè **trascrizioni del
+dibattito parlamentario** — italiano *parlato*, non scritto, che è l'unica lingua
+che questo progetto considera.
+
+**Il difetto che il lettore aveva, e che nessun numero mostrava.** Le righe
+raccolte portano il **tag** universale della fonte (`VERB`, `NOUN`), non una classe
+di questo progetto; il lettore chiedeva un campo che la fonte non scriveva, quindi
+**ogni** riga tornava `ignota`. Il file c'era, F19 passava, `verifica` era verde, e
+il progetto perdeva 1047 voci senza che niente lo dicesse. Il sintomo è comparso
+quando ho guardato il numero: la copertura era **scesa** da 3494 a 3327 dopo aver
+aggiunto una fonte che doveva farla salire. Una fonte che peggiora il numero è la
+notizia più utile che ci fosse.
+
+**Il secondo difetto, trovato subito dopo.** Una risposta che il progetto non sa
+usare non deve coprire una che sa: il corpus annota `DET`, `NUM`, `PART`, che non
+hanno classe qui, e quelle righe avrebbero reso `ignota` parole che il glossario
+dichiara come pronomi. Ora una risposta non utilizzabile viene saltata e l'ordine
+delle fonti resta quello dichiarato.
+
+**Il risultato.** `dati/italiano.jsonl`: **1072 analisi**, 428 KB, ogni riga con
+fonte, frase che contiene la parola, licenza CC BY-SA 4.0. Copertura: **3494 →
+4348 voci classificate**, 13022 ancora ignote, e il numero resta stampato a ogni
+richiesta.
+
+Il prezzo di portare le classi nella pagina: `traduttore.html` passa da 2688 KB a
+**2847 KB**, e il tetto è 3 MB (3145728 byte). Il margine è adesso di 284 KB, e va
+detto: quando le classi raddoppiano, la pagina non ci entra, e il progetto dovrà
+allora mandare l'analisi alla pagina solo per le parole che servono alla frase
+invece che per tutte.
+
+**Verifiche.** 335 test (erano 335). F19 sulle 1072 righe: 0 errori. `verifica`: 0
+errori, 8 avvisi noti.
 
 ## 0.31 — 2026-10-05 · Anche la pagina smette di indovinare dalla parola
 

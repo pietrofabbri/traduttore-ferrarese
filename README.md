@@ -609,14 +609,15 @@ giudizio è documentato o interpretato. Le fonti sono tre, in quest'ordire:
 
 1. `dati/italiano.jsonl`, l'analisi dal corpus annotato italiano di Universal
    Dependencies — scelta perché annota parole **in frasi**, che è la domanda che
-   si pone un traduttore. **Non è ancora stato raccolto**: da questa macchina i
-   file del treebank non si scaricano, e un'analisi scritta a testa sarebbe
-   inventata. Il raccoglitore è `raccolta/italiano.py`, dichiarato e pronto;
+   si pone un traduttore, e perché nella release 2.16 il treebank italiano è
+   **ParlaMint**: parlato parlamentare, cioè la lingua **detta**. Sono **1072
+   analisi**, raccolte dalla release r2.16 scaricata da LINDAT; il raccoglitore è
+   `raccolta/italiano.py`, che non scarica e dichiara;
 2. il campo `campo` del glossario, che ogni voce porta con la sua fonte: 3494
    voci su 17370;
 3. il lemma di `dati/verbi.jsonl`, che è un infinito per dichiarazione.
 
-Le altre **13876 voci restano ignote**, e `ignota` è la risposta, non un
+Le altre **13022 voci restano ignote**, e `ignota` è la risposta, non un
 inciampo: il comando `italiano` stampa il conto ogni volta, perché un buco che
 non ha numero smette di essere un buco.
 

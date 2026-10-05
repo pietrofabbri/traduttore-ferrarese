@@ -119,8 +119,26 @@ le deve far rispettare: non parte con un file tracciato già modificato, e non
 parte se `git` non risponde — riscrive un file tracciato, e una guardia che quando
 non sa risponde «va tutto bene» non è una guardia.
 
-**Verifiche.** 315 test (erano 314): uno sulla variante dichiarata. Il banco:
-8 mutazioni, 8 prese. `ci_locale`: 17 passi, tutti con zero.
+**Il secondo difetto, della stessa specie, trovato mentre il primo si
+chiudeva.** Aggiungere il banco al workflow ha fatto guardare `prove/ci_locale.py`,
+che dice di eseguire in locale i passi del workflow. Il suo lettore riconosceva
+**solo** i blocchi `run: |`: i passi scritti su una riga sola — cioè «I test», il
+passo più importante — non giravano mai in locale, e il totale stampato era più
+basso della realtà senza che nessuno lo vedesse. Peggio: un blocco aperto negli
+ultimi byte di un file non veniva mai chiuso, perché la fine del file non è una
+riga che ne chiude un'altra, quindi anche l'ultimo passo di ogni workflow era perso.
+Due difetti, una causa sola — un controllo che dichiarava una copertura maggiore
+di quella che aveva — e il secondo era più anteno del primo di qualche mese.
+
+Ora un passo è un passo, qualunque sia la sua forma, e due test tengono il conto:
+confrontano i passi che il lettore trova con le righe `run:` del file. Il primo
+dei due è già ripagato: mentre si scriveva, ha preso il terzo difetto — il
+lettore vecchio, nell'istante in cui il test nuovo è entrato in funzione — e
+l'ultimo passo era proprio quello che mancava.
+
+**Verifiche.** 317 test (erano 314): uno sulla variante dichiarata, due sul
+lettore dei passi del workflow. Il banco: 8 mutazioni, 8 prese. `ci_locale`: 19
+passi, tutti con zero (erano 16, e tre di quelli non giravano).
 
 ## 0.28 — 2026-10-05 · I proverbi erano sulla pagina e non nel traduttore
 

@@ -5241,5 +5241,65 @@ class TestIlConfrontoFraLeCopieGuardaLaConfidenza(unittest.TestCase):
 _Proverbio = __import__("traduttore.corpora", fromlist=["Proverbio"]).Proverbio
 
 
+class TestIlWorkflowNonPerdePassi(unittest.TestCase):
+    """Il workflow e' il contratto, e `ci_locale` lo esegue in locale.
+
+    Il difetto vero, di questa voce: `prove/ci_locale.py` riconosceva solo i
+    blocchi `run: |` e saltava i passi scritti su una riga sola. Il passo «I
+    test» era uno di quelli, quindi **non girava mai in locale**, e il totale
+    stampato era piu' basso della realta'. Il file prometteva di eseguire i
+    passi del workflow: li eseguiva quasi tutti, e non lo dichiarava.
+
+    Il controllo qui sotto confronta i due numeri — i passi che il leggitore
+    trova e le righe `run:` che il file contiene — quindi un passo scritto in
+    una forma nuova non puo' sparire senza che qualcuno se ne accorga.
+    """
+
+    def _flussi(self):
+        cartella = os.path.join(RADICE, ".github", "workflows")
+        return [os.path.join(cartella, n)
+                for n in sorted(os.listdir(cartella))
+                if n.endswith(".yml")]
+
+    def _passi(self):
+        import importlib.util
+        specifica = importlib.util.spec_from_file_location(
+            "ci_locale", os.path.join(RADICE, "prove", "ci_locale.py"))
+        modulo = importlib.util.module_from_spec(specifica)
+        specifica.loader.exec_module(modulo)
+        return modulo
+
+    def test_nessun_passo_del_workflow_va_perduto(self):
+        modulo = self._passi()
+        for percorso in self._flussi():
+            testo = io.open(percorso, encoding="utf-8").read()
+            nome = os.path.basename(percorso)
+            dichiarati = [riga.strip() for riga in testo.split("\n")
+                          if riga.strip().startswith("run:")
+                          and not riga.strip().startswith("run: |")]
+            trovati = list(modulo.passi(testo))
+            self.assertEqual(
+                len(trovati), len(dichiarati) + testo.count("run: |"),
+                "%s: il file ha %d righe `run:` e il leggitore ne trova %d. "
+                "Un passo che nessuno esegue in locale e' un passo che puo' "
+                "rompersi senza che nessuno lo veda."
+                % (nome, len(dichiarati) + testo.count("run: |"),
+                   len(trovati)))
+
+    def test_il_passo_dei_test_e_uno_dei_passi(self):
+        # Il caso concreto del difetto, scritto per nome: se «I test» non e'
+        # fra i passi, il workflow ha i test ma la verifica locale no.
+        modulo = self._passi()
+        trovati = []
+        for percorso in self._flussi():
+            trovati += list(modulo.passi(io.open(percorso,
+                                                encoding="utf-8").read()))
+        for comando in ("prove/test_traduttore.py",
+                        "prove/controlla_mutazioni.py"):
+            self.assertTrue(
+                any(comando in c for c in trovati),
+                "%s non e' fra i passi che girano in locale" % comando)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

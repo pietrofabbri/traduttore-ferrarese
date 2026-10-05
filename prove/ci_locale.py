@@ -36,21 +36,39 @@ def pulisci_cache() -> int:
 
 
 def passi(testo: str):
-    """I blocchi `run:` del file, uno alla volta."""
-    dentro = False
-    blocco = []
-    for riga in testo.split("\n"):
-        if riga.strip() == "run: |":
-            dentro = True
+    """I comandi `run:` del file, uno alla volta.
+
+    **I due difetti che questo lettore aveva, e la loro natura.** Riconosceva
+    solo i blocchi `run: |` e ignorava i passi scritti su una riga sola come
+    `run: python3 prove/test_traduttore.py`: il passo piu' importante del
+    workflow non girava mai in locale. E un blocco aperto negli ultimi byte del
+    file non veniva mai chiuso, perche' la fine del file non e' una riga che ne
+    chiude un'altra. In entrambi i casi il conto stampato era semplicemente
+    sbagliato, e il file prometteva di eseguire «i passi del workflow, in
+    locale»: prometteva una copertura che non aveva. E' la stessa cosa che questo
+    repository vieta altrove — un controllo che dichiara piu' di quello che fa.
+
+    Percio' ora la forma del comando non conta: un passo e' un passo. E
+    `prove/test_traduttore.py` confronta i due numeri, i passi trovati e le
+    righe `run:` del file, cosi' un passo nuovo non puo' sparire in silenzio.
+    """
+    righe = testo.split("\n")
+    i = 0
+    while i < len(righe):
+        riga = righe[i].strip()
+        if riga == "run: |":
+            i += 1
             blocco = []
-            continue
-        if dentro:
-            if riga.startswith("          ") or not riga.strip():
-                blocco.append(riga[10:])
-                continue
-            dentro = False
+            while i < len(righe) and (not righe[i].strip()
+                                      or righe[i].startswith("          ")):
+                blocco.append(righe[i][10:])
+                i += 1
             if blocco:
                 yield "\n".join(blocco)
+            continue
+        if riga.startswith("run: "):
+            yield riga[len("run:"):].strip()
+        i += 1
 
 
 def main() -> int:

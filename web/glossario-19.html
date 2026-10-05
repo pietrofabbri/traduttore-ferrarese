@@ -341,9 +341,9 @@
   "conteggi": {
    "cittadino": {
     "glossario": 17370,
-    "coppie": 47,
+    "coppie": 48,
     "audio": 0,
-    "totale": 17417,
+    "totale": 17418,
     "stato": "base"
    },
    "centrale": {
@@ -381,7 +381,7 @@
   "voci": 24,
   "con_fonte": 17370,
   "da_verificare": 17139,
-  "coppie": 47,
+  "coppie": 48,
   "proverbi": 28,
   "regole": 0
  },
@@ -652,6 +652,21 @@
   "particelle": [
    "si"
   ],
+  "esaminate": [
+   "si",
+   "ci",
+   "vi",
+   "ne"
+  ],
+  "costruzioni": {
+   "si": "verbo pronominale"
+  },
+  "motivi": {
+   "si": "il glossario la porta attaccata a 109 verbi, in -rs o -rss: Acanirss (V0267), Acórzarss (V0272), Afazzars (V0322), saŋtàrs (V14857). Le voci sono in dati/pronominali.jsonl.",
+   "ci": "nessuna voce del glossario la porta attaccata a un verbo, e il glossario la conosce come parola: ghe (V0014). Dichiararla toglierebbe al motore una risposta vera per dargli un buco inventato.",
+   "vi": "nessuna voce del glossario la porta attaccata a un verbo, e nessuna voce del glossario la scrive come parola. Non si dichiara una regola che nessuna fonte sostiene: si dichiara il buco.",
+   "ne": "nessuna voce del glossario la porta attaccata a un verbo, e nessuna voce del glossario la scrive come parola. Non si dichiara una regola che nessuna fonte sostiene: si dichiara il buco."
+  },
   "verbi": 109,
   "esempi": [
    "Acanirss",
@@ -10623,12 +10638,12 @@ function tokenizza(t) {
     return { testo: token[i] + " " + token[i + 1], quante: 2 };
   }
 
-  // Il nome della costruzione lo decide **la particella che c'è**, non la
-  // pagina: `si` davanti a qualcosa dà un verbo pronominale, e per le altre
-  // particelle nessuna fonte del repository dice che costruzione sia.
-  // Dichiarare «verbo pronominale» per tutte sarebbe un'affermazione fatta al
-  // posto di chi legge.
-  var COSTRUZIONI = { "si": "verbo pronominale" };
+  // Il nome della costruzione arriva **dai dati**, non da una mappa scritta
+  // qui: `dati/tokeni.jsonl` dice che `si` induce un verbo pronominale perché
+  // il glossario la porta attaccata a 109 verbi, e dice anche perché le altre
+  // particelle non sono dichiarate. Una pagina che si scrive da sola le
+  // costruzioni continua a nominarle anche quando nessuna fonte le nomina più.
+  var COSTRUZIONI = IDX.pronominali.costruzioni || {};
 
   function bucoPronominale(testo) {
     var p = testo.split(" ")[0];

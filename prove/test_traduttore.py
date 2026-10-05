@@ -4689,5 +4689,262 @@ class TestLeDueCopieDiNormale(_ModelloInNode, unittest.TestCase):
                             "differenza fra l'affermazione e la particella")
 
 
+class TestIlLivelloDeiTokenEInUnFile(unittest.TestCase):
+    """Il codice non deve sapere niente della lingua: legge `dati/tokeni.jsonl`.
+
+    Il difetto che questi test prendono è una lista di particelle scritta in un
+    sorgente: è una regola che nessuno ha verificato, si allunga da sola, e
+    ogni elemento nuovo entra come se fosse stato documentato. Il file dati
+    porta la prova accanto — il numero di voci, la fonte, e **la ragione** per
+    cui ogni particella è dichiarata oppure no — e qui si controlla che il
+    codice lo legga davvero: cambiando il file, il comportamento cambia.
+    """
+
+    def setUp(self):
+        from traduttore import tokeni
+        self.sistema, self.righe = tokeni.leggi()
+
+    def _finto(self, sistema, righe):
+        import json
+        import tempfile
+        percorso = os.path.join(tempfile.mkdtemp(), "tokeni.jsonl")
+        with io.open(percorso, "w", encoding="utf-8") as f:
+            f.write("// SISTEMA %s\n" % json.dumps(sistema, ensure_ascii=False))
+            for riga in righe:
+                f.write(json.dumps(riga, ensure_ascii=False) + "\n")
+        return percorso
+
+    def test_il_file_dichiara_una_particella_e_una_sola(self):
+        from traduttore import tokeni
+        self.assertEqual(tokeni.dichiarate(), ("si",))
+        self.assertEqual(tokeni.esaminate(), ("si", "ci", "vi", "ne"))
+
+    def test_ogni_riga_dice_perche_e_una_particella_e_dichiarata_oppure_no(self):
+        # Una riga che non spiega niente chiede di fidarsi: è la riga che
+        # dichiara una regola e non dice da dove viene.
+        for riga in self.righe:
+            self.assertTrue((riga.get("motivo") or "").strip(),
+                            "%s non dice perché" % riga.get("token"))
+
+    def test_una_particella_dichiarata_dice_anche_la_fonte_e_la_costruzione(self):
+        for riga in self.righe:
+            if not riga.get("dichiarata"):
+                continue
+            for campo in ("ruolo", "costruzione", "fonte"):
+                self.assertTrue((riga.get(campo) or "").strip(),
+                                "%s è dichiarata ma `%s` è vuoto"
+                                % (riga.get("token"), campo))
+
+    def test_una_particella_non_dichiarata_non_ha_una_costruzione(self):
+        from traduttore import tokeni
+        self.assertEqual(tokeni.costruzione("ci"), "",
+                         "`ci` non è dichiarata: inventarle un nome sarebbe "
+                         "fare al posto di chi legge")
+        self.assertEqual(tokeni.costruzione("si"), "verbo pronominale")
+
+    def test_cambiare_il_file_cambia_il_comportamento_del_codice(self):
+        # La prova che il codice **legge** e non sa: se dichiaro `ci` in un file
+        # di prova, il modulo deve dichiararla. Se il codice avesse la lista
+        # scritta dentro, questo test passerebbe lo stesso e non prenderebbe
+        # niente.
+        from traduttore import tokeni
+        righe = [dict(r) for r in self.righe]
+        for riga in righe:
+            if riga["token"] == "ci":
+                riga["dichiarata"] = True
+                riga["ruolo"] = "particella pronominale"
+                riga["costruzione"] = "verbo pronominale"
+                riga["fonte"] = "una fonte di prova"
+        sistema = dict(self.sistema, particelle_dichiarate=["si", "ci"])
+        finto = self._finto(sistema, righe)
+        self.assertTrue(tokeni.dichiarata("ci", percorso=finto),
+                        "`ci` dichiarata in un file di prova non è dichiarata: "
+                        "il modulo non legge il file")
+        self.assertEqual(tokeni.costruzione("ci", percorso=finto),
+                         "verbo pronominale")
+
+    def test_il_codice_non_scrive_piu_una_lista_di_particelle(self):
+        # Un controllo sul sorgente, senza bisogno di eseguire niente: la lista
+        # delle particelle era scritta in due punti e li ho tolti entrambi, ma
+        # il modo piu' economico di renderla vera e' non lasciare che torni.
+        import re as _re
+        for nome in ("sorgenti/traduttore/pronominali.py",
+                     "sorgenti/traduttore/tokeni.py",
+                     "raccolta/da_pronominali.py"):
+            with io.open(os.path.join(RADICE, nome), encoding="utf-8") as f:
+                sorgente = f.read()
+            # I commenti si tolgono: spiegano il difetto e quindi contengono per
+            # forza la sequenza che il difetto è.
+            codice = _re.sub(r"#[^\n]*", "", sorgente)
+            codice = _re.sub(r"\"\"\".*?\"\"\"", "", codice, flags=_re.S)
+            for particella in ("si", "ci", "vi", "ne"):
+                self.assertIsNone(
+                    _re.search(r"""\(\s*["']%s["']\s*,""" % particella, codice),
+                    "%s ha ancora una lista di particelle scritta a mano: "
+                    "l'unico posto che le dichiara è dati/tokeni.jsonl"
+                    % nome)
+
+
+class TestIlControlloF18(unittest.TestCase):
+    """F18 pretende che una particella dichiarata abbia una prova, e la prova."""
+
+    def setUp(self):
+        from traduttore import pronominali
+        from traduttore import tokeni
+        self.sistema, self.righe = tokeni.leggi()
+        self.sistema_pronominali, self.voci = pronominali.leggi()
+
+    def _problemi(self, sistema=None, righe=None):
+        import json
+        import tempfile
+        from traduttore import verifica_dati
+        percorso = os.path.join(tempfile.mkdtemp(), "tokeni.jsonl")
+        with io.open(percorso, "w", encoding="utf-8") as f:
+            f.write("// SISTEMA %s\n" % json.dumps(sistema or self.sistema,
+                                                   ensure_ascii=False))
+            for riga in (righe if righe is not None else self.righe):
+                f.write(json.dumps(riga, ensure_ascii=False) + "\n")
+        return verifica_dati.controlla_tokeni(percorso=percorso)
+
+    def test_il_file_del_progetto_non_ha_problemi(self):
+        from traduttore import verifica_dati
+        errori = [p for p in verifica_dati.controlla_tokeni()
+                  if p.codice == "F18" and p.gravita == "errore"]
+        self.assertEqual(errori, [], "F18 segnala un errore: %s" % errori)
+
+    def test_una_particella_dichiarata_senza_voci_e_un_errore(self):
+        righe = [dict(r) for r in self.righe]
+        righe.append({"token": "ne", "dichiarata": True, "ruolo": "x",
+                      "costruzione": "y", "si_attacca_a": "verbo",
+                      "motivo": "perché no", "fonte": "S001"})
+        sistema = dict(self.sistema, esaminate=["si", "ci", "vi", "ne"],
+                       particelle_dichiarate=["si", "ne"])
+        messaggi = " ".join(p.messaggio for p in self._problemi(sistema, righe))
+        self.assertIn("regola senza prova", messaggi)
+
+    def test_una_particella_con_voci_e_non_dichiarata_e_un_errore(self):
+        # Il caso inverso, che è il più facile da non vedere: la prova c'è, e il
+        # codice non la guarda.
+        messaggi = " ".join(p.messaggio for p in self._problemi())
+        righe = [dict(r) for r in self.righe]
+        for riga in righe:
+            if riga["token"] == "si":
+                riga["dichiarata"] = False
+                riga["costruzione"] = ""
+        sistema = dict(self.sistema, particelle_dichiarate=[])
+        messaggi = " ".join(p.messaggio
+                            for p in self._problemi(sistema, righe))
+        self.assertIn("non la dichiara", messaggi)
+
+    def test_una_riga_senza_motivo_e_un_errore(self):
+        righe = [dict(r) for r in self.righe]
+        righe[0]["motivo"] = ""
+        messaggi = " ".join(p.messaggio for p in self._problemi(righe=righe))
+        self.assertIn("chiede di fidarsi", messaggi)
+
+    def test_una_riga_dichiarata_senza_fonte_e_un_errore(self):
+        righe = [dict(r) for r in self.righe]
+        righe[0]["fonte"] = ""
+        messaggi = " ".join(p.messaggio for p in self._problemi(righe=righe))
+        self.assertIn("non si puo' controllare", messaggi)
+
+    def test_una_particella_esaminata_senza_riga_e_un_errore(self):
+        sistema = dict(self.sistema, esaminate=["si", "ci", "vi", "ne", "me"])
+        messaggi = " ".join(p.messaggio for p in self._problemi(sistema))
+        self.assertIn("esaminata e non detta", messaggi)
+
+
+class TestLaFonteDelParlanteNativo(unittest.TestCase):
+    """Una frase che un parlante ha scritto è `D` e dice chi l'ha scritta.
+
+    Il difetto che questi test prendono è una fonte che non è una fonte: una
+    riga con l'aspetto di una voce, senza dire chi l'ha detta e senza dire il
+    livello di attendibilità. Il progetto accetta che una frase venga da una
+    persona; non accetta che la persona non si nomini.
+    """
+
+    def setUp(self):
+        from traduttore import corpora
+        from traduttore import verifica_dati
+        self.corpus = corpora.Corpus.da_file(
+            os.path.join(RADICE, "dati", "coppie.jsonl"))
+        self.fonti = verifica_dati.fonti_dichiarate()
+        self.mie = [c for c in self.corpus.coppie
+                    if "S022" in (c.fonte or "")]
+
+    def test_la_fonte_e_dichiarata(self):
+        self.assertTrue([f for f in self.fonti if f["id"] == "S022"],
+                        "S022 non è in dati/fonti.json: le frasi che le "
+                        "appartengono citano una fonte che non esiste")
+        fonte = [f for f in self.fonti if f["id"] == "S022"][0]
+        self.assertEqual(fonte["stato"], "acquisita")
+        self.assertEqual(fonte["tipo"],
+                         "dichiarazione orale di un parlante nativo")
+
+    def test_ce_e_una_frase_e_questa(self):
+        # Non e' un test che si basa su un numero: e' il numero che si basa su
+        # quello che la fonte dichiara. Se le frasi crescevano, il numero
+        # crescerebbe con loro e questo test direbbe ancora quale e' la prima.
+        self.assertEqual(len(self.mie), 1)
+        frase = self.mie[0]
+        self.assertEqual(chiave_di(frase.italiano), "leisisiede",
+                         "la chiave toglie anche gli spazi: e' la chiave, "
+                         "non il testo che la fonte scrive")
+        self.assertEqual(frase.ferrarese, "Li è l'as senta")
+
+    def test_ogni_frase_e_al_livello_d_e_dice_chi_l_ha_detta(self):
+        for frase in self.mie:
+            self.assertEqual(frase.attendibilita, "D",
+                             "%s non è al livello D" % frase.id)
+            self.assertTrue(frase.varieta, "%s non dice la varietà" % frase.id)
+            self.assertIn("parlante", (frase.nota or "").lower(),
+                          "%s non dice nella nota chi ha parlato" % frase.id)
+
+    def test_il_corpus_accetta_la_riga(self):
+        # La verifica generale deve passarci: se la riga fosse rotta, il
+        # controllo C7 o C6 la fermerebbe e il progetto non potrebbe usarla.
+        from traduttore import verifica_dati
+        problemi = [p for p in verifica_dati.controlla_corpora(self.corpus)
+                    if p.dove in {c.id for c in self.mie} and p.codice != "C4"]
+        self.assertEqual(problemi, [],
+                         "la frase del parlante non passa i controlli: %s"
+                         % problemi)
+
+    def test_il_controllo_del_parlante_e_contento(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "parlante", os.path.join(RADICE, "raccolta", "parlante.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        righe = modulo.coppie()
+        self.assertEqual(modulo.problemi(righe, modulo.fonti()), [],
+                         "raccolta/parlante.py trova difetti")
+
+    def test_il_controllo_catta_le_tre_cose_che_mancano(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "parlante", os.path.join(RADICE, "raccolta", "parlante.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        base = [dict(c.__dict__) for c in self.mie]
+        # Tre difetti, su tre copie diverse della stessa riga: sulla stessa
+        # riga il primo difetto coprirebbe gli altri due.
+        una = dict(base[0], attendibilita="I")
+        due = dict(base[0], varieta="")
+        tre = dict(base[0], nota="una frase")
+        messaggi = " ".join(
+            modulo.problemi([una], modulo.fonti())
+            + modulo.problemi([due], modulo.fonti())
+            + modulo.problemi([tre], modulo.fonti()))
+        self.assertIn("attendibilita", messaggi)
+        self.assertIn("variet", messaggi)
+        self.assertIn("chi", messaggi)
+
+
+def chiave_di(testo):
+    from traduttore.normalizza import chiave
+    return chiave(testo)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

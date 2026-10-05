@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.25
+versione: 0.26
 data: 2026-10-05
 ---
 
@@ -85,6 +85,66 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.26 — 2026-10-05 · Una voce di parlante entra nel progetto, e i token smettono di stare nel codice
+
+**Una frase che un parlante ha scritto, e cosa ci mette dietro.** Scrivendo
+«lei si siede» il motore rispondeva `si → oj`, perché `si` è una particella e i
+109 verbi pronominali del glossario sono **tutti infiniti** (`saŋtàrs`,
+`Acanirss`): non c'è nessuna terza persona da restituire. Un buco dichiarato è
+la risposta onesta, ma è anche una risposta che il progetto non deve dare se
+una persona ha la frase. Pietro Fabbri l'ha: **«Li è l'as senta»**.
+
+Ora è in `dati/coppie.jsonl` come **F0050**, e il motore la rende per intero
+dalla frase intera del corpus, con la sua fonte e confidenza 0,92. La particella
+`si` è attaccata al verbo (`s'as senta`), come il Ferri scrive l'infinito.
+
+**La fonte nuova, S022, e che cosa dice di sé.** È la prima volta che una voce
+**parlante** entra nel progetto. Dice il ferrarese di **Ferrara città**
+(`varieta: "cittadino"`, non un'assunzione: senza varietà una coppia non entra
+nel motore, controllo C7). Oggi contiene **una frase**, e la sua dichiarazione
+dice tre cose che il progetto non deve dimenticare: che non è un vocabolario né
+una grammatica, che **S009** («Corpus di parlato spontaneo ferrarese») resta
+`esclusa` e continua a dire la verità — quel corpus non esiste e va costruito
+registrando persone — e che il consenso è del responsabile del progetto, con il
+documento scritto fuori dal repository, come per il permesso di S015.
+
+`raccolta/parlante.py` non genera niente e apposta lo dice: qui la fonte **è**
+una persona che scrive una frase, e la frase **è già il dato**. Un generatore
+che la copiasse da un altro file aprirebbe una porta per cui la riga potrebbe
+cambiare senza che la dichiarazione restasse indietro. Il modulo legge e
+controlla tre cose che nessun controllo generale chiede: `attendibilita: "D"`,
+la varietà, e **chi** ha parlato.
+
+**I token non stanno più nel codice.** Le particelle erano in due liste scritte
+a mano — le candidate in `raccolta/da_pronominali.py`, il nome della costruzione
+in `pronominali.py` — e la pagina ne aveva una terza copia. Ora c'è
+`dati/tokeni.jsonl`: ogni particella porta il suo ruolo, a che cosa si attacca,
+**la fonte che la documenta** e **la ragione per cui è dichiarata oppure no**,
+compreso perché `ci` non lo è (`ghe` è una voce del glossario, V0014) e perché
+`vi` e `ne` non hanno nessuna voce che le porti attaccate a un verbo. Il codice
+non sa niente: legge. La pagina prende le costruzioni dagli stessi dati, quindi
+quando una particella smette di essere dichiarata la pagina smette di chiamarla
+«verbo pronominale» senza che nessuno tocchi il codice.
+
+Il controllo **F18** chiede la prova in entrambe le direzioni: una particella
+dichiarata senza voci è una regola senza prova, e **una particella con voci e
+non dichiarata** è un buco che il progetto si nasconde.
+
+**Un test che non gira su una macchina senza node.** «Il codice non scrive più
+una lista di particelle» è un controllo sul sorgente, e i commenti vengono
+togliati prima di guardare: spiegano il difetto e quindi contengono per forza
+la sequenza che il difetto è.
+
+**Verifiche.** 298 test (erano 280): dodici sui token e sul controllo F18, sei
+sulla fonte del parlante. `verifica`: 0 errori, 8 avvisi noti. Sul motore:
+`lei si siede` → `Li è l'as senta` (corpus, 0,92), `si siede` → buco dichiarato.
+
+**Il limite, dichiarato.** Nella direzione opposta la stessa frase torna male:
+`Li è l'as senta` → `Lì Trinca l'as senta`, perché il corpus somiglia parola per
+parola e non distingue `li` (lì) da `lei`, né l'innalzativo `è` dal tema `e`.
+È il difetto noto della ricerca per somiglianza e non è stato corretto qui: si
+chiama `stua_zione` e va corretto sul corpus, non nel motore.
 
 ## 0.25 — 2026-10-05 · La particella non è una parola, e il motore la trattava come una
 

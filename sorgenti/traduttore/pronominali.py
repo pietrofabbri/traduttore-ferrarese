@@ -31,17 +31,14 @@ import io
 import json
 import os
 
-from . import normalizza
+from . import normalizza, tokeni
 
-# Che costruzione induce la particella, quando lo sappiamo. La chiave è la
-# particella come sta scritta, e il valore è il nome che va detto a chi legge.
-# `si` induce un verbo pronominale: è la sola particella che il glossario
-# attesta attaccata a un verbo, e sono 109 voci su 109. Per le altre il
-# modulo **non dichiara niente**: la chiave non c'è, e il buco parla di «una
-# particella pronominale» senza scegliere una costruzione al posto di chi legge.
-COSTRUZIONI = {
-    "si": "verbo pronominale",
-}
+# Il nome della costruzione **non sta qui**: sta in `dati/tokeni.jsonl`, con la
+# fonte che lo documenta e con la ragione per cui ogni altra particella non ce
+# l'ha. Una lista di particelle scritta in un sorgente è una regola che nessuno
+# ha verificato: si allunga, e ogni elemento nuovo entra come se fosse stato
+# documentato. Qui il codice legge e non sa.
+COSTRUZIONI_INESISTENTE = "particella pronominale"
 
 RADICE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -82,8 +79,14 @@ def carica(percorso: str = PERCORSO) -> dict:
 
 
 def particelle(percorso: str = PERCORSO) -> tuple:
-    """Le particelle che il file dichiara — non una lista scritta qui."""
-    return tuple(carica(percorso)["sistema"].get("particelle") or ())
+    """Le particelle che il file dichiara — non una lista scritta qui.
+
+    Il file dei due sono diversi e non si confondono: `dati/tokeni.jsonl`
+    dichiara **che cosa è una particella** e perché, `dati/pronominali.jsonl`
+    porta **le voci che la portano attaccata a un verbo**. Qui si accettano le
+    due insieme, e si pretende che concordino: è il controllo **F18**.
+    """
+    return tokeni.dichiarate()
 
 
 def particella(parola: str, percorso: str = PERCORSO) -> bool:
@@ -143,13 +146,14 @@ def buco(testo: str, percorso: str = PERCORSO) -> dict:
                               "dichiara nulla: senza la riga SISTEMA non si sa "
                               "nemmeno quante particelle sono particelle")}
     particella_usata = testo.split(" ", 1)[0]
-    # Il nome della costruzione lo decide **la particella che c'è**, non il
-    # modulo: `si` davanti a qualcosa dà un verbo pronominale, `ci` e `ne`
-    # davanti a un verbo danno un pronome. Dichiararlo qui — «è un verbo
-    # pronominale» — sarebbe un'affermazione che nessuna fonte del repository
-    # fa, e che cambia da particella a particella.
-    costruzione = COSTRUZIONI.get(normalizza.normale(particella_usata),
-                                  "particella pronominale")
+    # Il nome della costruzione lo decide **il file dei token**, non il modulo:
+    # `si` induce un verbo pronominale perché il glossario la porta attaccata a
+    # 109 verbi, e `dati/tokeni.jsonl` lo dichiara per quello. Per una
+    # particella che nessuna fonte documenta il nome non c'è, e il buco parla
+    # di «una particella pronominale» senza scegliere una costruzione al posto
+    # di chi legge.
+    costruzione = (tokeni.costruzione(particella_usata)
+                   or COSTRUZIONI_INESISTENTE)
     return {
         "testo": testo,
         "origine": "nessuna",

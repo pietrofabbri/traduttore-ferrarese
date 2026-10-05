@@ -1,0 +1,35 @@
+// --- IL SISTEMA, dichiarato perché si possa controllarlo ------------------------
+//
+// **Che cosa è questo file.** I **token** dell'italiano che non sono parole: le
+// particelle che si attaccano al verbo. Ognuno porta il suo ruolo, a che cosa
+// si attacca, e **la ragione per cui è dichiarato oppure no**.
+//
+// **Perché esiste.** Perché il codice non debba sapere niente della lingua.
+// Finora la lista delle particelle era scritta in `raccolta/da_pronominali.py`
+// e il nome della costruzione in `sorgenti/traduttore/pronominali.py`: due
+// posti in cui una regola linguistica stava scritta a mano e senza motivo. Ora
+// il codice legge, e la ragione è qui.
+//
+// **Che cosa vuol dire «dichiarata».** Una particella è dichiarata quando
+// **il glossario la porta attaccata a un verbo**: è l'unica prova che il
+// progetto ha, e l'unica che accetta. Una particella che il glossario conosce
+// come parola — `ci` è `ghe`, V0014 — non si dichiara: dichiararla tolse al
+// motore una risposta vera per dargli un buco inventato.
+//
+// **Che cosa non è.** Non è una grammatica e non è un paradigma. Dice solo che
+// cosa è una particella e a che cosa si attacca, e **non** dice che cosa
+// segue: nessuna fonte del repository distingue un verbo da un nome, quindi il
+// buco dichiara anche questo.
+//
+// **Le forme.** Qui non ci sono coniugazioni: ci sono infiniti. Le terze
+// persone dei verbi pronominali non ci sono in nessuna fonte e non si
+// deducono.
+//
+// Particelle dichiarate: si.
+// Particelle esaminate e scartate: ci, vi, ne.
+// ---------------------------------------------------------------------------------
+// SISTEMA {"particelle_dichiarate": ["si"], "esaminate": ["si", "ci", "vi", "ne"], "file": "dati/tokeni.jsonl"}
+{"token": "si", "dichiarata": true, "ruolo": "particella pronominale", "costruzione": "verbo pronominale", "si_attacca_a": "verbo", "motivo": "il glossario la porta attaccata a 109 verbi, in -rs o -rss: Acanirss (V0267), Acórzarss (V0272), Afazzars (V0322), saŋtàrs (V14857). Le voci sono in dati/pronominali.jsonl.", "fonte": "S004, S006, S020"}
+{"token": "ci", "dichiarata": false, "ruolo": "", "costruzione": "", "si_attacca_a": "", "motivo": "nessuna voce del glossario la porta attaccata a un verbo, e il glossario la conosce come parola: ghe (V0014). Dichiararla toglierebbe al motore una risposta vera per dargli un buco inventato.", "fonte": ""}
+{"token": "vi", "dichiarata": false, "ruolo": "", "costruzione": "", "si_attacca_a": "", "motivo": "nessuna voce del glossario la porta attaccata a un verbo, e nessuna voce del glossario la scrive come parola. Non si dichiara una regola che nessuna fonte sostiene: si dichiara il buco.", "fonte": ""}
+{"token": "ne", "dichiarata": false, "ruolo": "", "costruzione": "", "si_attacca_a": "", "motivo": "nessuna voce del glossario la porta attaccata a un verbo, e nessuna voce del glossario la scrive come parola. Non si dichiara una regola che nessuna fonte sostiene: si dichiara il buco.", "fonte": ""}

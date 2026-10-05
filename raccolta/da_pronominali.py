@@ -43,19 +43,24 @@ sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 GLOSSARIO = os.path.join(RADICE, "dati", "glossario.jsonl")
 PRONOMINALI = os.path.join(RADICE, "dati", "pronominali.jsonl")
 
-# Le particelle dell'italiano che si esaminano. Sono **candidate**, non
-# dichiarazioni: una candidata diventa particella solo se il glossario le porta
-# attaccata a un verbo. La prima versione di questo file le dichiarava tutte e
-# quattro, e il risultato era una regola inventata: `ci` diventava una
-# particella e il motore smetteva di rispondere `ghe`, che è una voce vera del
-# glossario (V0014). Il progetto ha una regola su questo — meglio nessuna riga
-# che una riga falsa — e la si applica anche a se stessi.
-CANDIDATE = ("si", "ci", "vi", "ne")
+# Le particelle da esaminare **non sono scritte qui**: sono in
+# `dati/tokeni.jsonl`, che è l'unico posto dove si dichiara che cosa è una
+# particella e perché. La prima versione di questo file le aveva in una lista
+# scritta a mano, tutte e quattro, e il risultato era una regola inventata: `ci`
+# diventava una particella e il motore smetteva di rispondere `ghe`, che è una
+# voce vera del glossario (V0014). Il progetto ha una regola su questo — meglio
+# nessuna riga che una riga falsa — e la si applica anche a se stessi.
+from traduttore import tokeni  # noqa: E402  (il percorso è sistemato sopra)
+
+
+def candidate() -> tuple:
+    """Le particelle da esaminare, come le dichiara il file dei token."""
+    return tokeni.esaminate()
 
 
 def dichiarate(conto: dict) -> list:
     """Le candidate che il glossario attesta: nessuna, se non ce n'e' una."""
-    return [p for p in CANDIDATE if conto.get(p)]
+    return [p for p in candidate() if conto.get(p)]
 
 # Il clitico: la ferrarese scrive la `r` dell'infinito e poi la `s` della
 # particella, a volte raddoppiata. `Acanirss`, `Afazzars`, `saŋtàrs`.
@@ -130,7 +135,7 @@ def trova(righe: list) -> list:
         ferrarese = (riga.get("ferrarese") or "").strip()
         if " " in italiano or " " in ferrarese or not italiano or not ferrarese:
             continue
-        for particella in CANDIDATE:
+        for particella in candidate():
             if (italiano.endswith(particella) and len(italiano) > len(particella)
                     and CLITICO.search(ferrarese.lower())):
                 trovate.append((riga, particella))
@@ -180,9 +185,9 @@ def main() -> int:
     print("particelle dichiarate           %4d   %s"
           % (len(dichiarate(conto)), ", ".join(dichiarate(conto)) or "-"))
     print("candidate scartate              %4d   %s"
-          % (len([p for p in CANDIDATE if p not in conto]),
+          % (len([p for p in candidate() if p not in conto]),
              "; ".join("%s: nessuna voce la porta attaccata a un verbo" % p
-                       for p in CANDIDATE if p not in conto) or "-"))
+                       for p in candidate() if p not in conto) or "-"))
     print()
     print("Nessuna di queste forme e' coniugata: sono infiniti. Le terze "
           "persone non ci sono.")
@@ -195,17 +200,17 @@ def main() -> int:
     if not os.path.exists(PRONOMINALI):
         with io.open(PRONOMINALI, "w", encoding="utf-8", newline="\n") as f:
             f.write(TESTATA.format(
-                candidate=", ".join(CANDIDATE),
+                candidate=", ".join(candidate()),
                 particelle=", ".join(dichiarate(conto)) or "nessuna",
                 scartate=", ".join(
                     "%s (nessuna voce la porta attaccata a un verbo)" % p
-                    for p in CANDIDATE if not conto.get(p)) or "nessuna",
+                    for p in candidate() if not conto.get(p)) or "nessuna",
                 totale=len(trovate),
                 per_particella=", ".join("%s %d" % (p, n)
                                          for p, n in sorted(conto.items()))))
             f.write("// SISTEMA %s\n"
                     % json.dumps({"particelle": dichiarate(conto),
-                                  "candidate": list(CANDIDATE),
+                                  "candidate": list(candidate()),
                                   "verbi": len(trovate),
                                   "per_particella": dict(conto),
                                   "tempi": ["infinito"]},

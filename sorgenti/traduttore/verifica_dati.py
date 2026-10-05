@@ -683,6 +683,105 @@ def controlla_pronominali(voci_glossario=None, fonti=None, percorso: str = None)
     return problemi
 
 
+def controlla_tokeni(tokeni=None, pronominali=None, percorso: str = None) -> list:
+    """**F18**: una particella dichiarata ha una voce che la porti, e una voce.
+
+    Il difetto che questo controllo prende è una regola metà dichiarata e metà
+    no. `dati/tokeni.jsonl` dice che cosa è una particella e **perché** ognuna
+    è dichiarata oppure no; `dati/pronominali.jsonl` porta le voci che la
+    portano attaccata a un verbo. I due file devono concordare, e in due
+    sensi:
+
+    - **una particella dichiarata senza voci** è una regola senza prova: il
+      motore la userebbe per non tradurre una parola che il glossario
+      conosce;
+    - **una particella con voci e non dichiarata** è un buco che il progetto
+      si nasconde: la prova c'è, e il codice non la guarda.
+
+    E su ogni riga: una dichiarata dice **la fonte** che la documenta e **la
+    costruzione** che induce; una non dichiarata dice **perché** non la dice.
+    Una riga che non spiega niente è una riga che chiede di fidarsi.
+    """
+    from . import tokeni as modulo
+    from . import pronominali as pronominali_modulo
+    percorso = percorso or modulo.PERCORSO
+    sistema, righe = modulo.leggi(percorso)
+    if not sistema:
+        return [Problema(
+            "F18", percorso,
+            "manca la riga `// SISTEMA`: senza di essa il modulo non sa quali "
+            "particelle sono state esaminate, e non si puo' controllare che una "
+            "dichiari e l'altra no",
+            gravita="avviso")]
+
+    _, voci = pronominali_modulo.leggi(pronominali or pronominali_modulo.PERCORSO)
+    per_particella = {}
+    for voce in voci:
+        per_particella[voce.get("particella", "")] = per_particella.get(
+            voce.get("particella", ""), 0) + 1
+
+    esaminate = sistema.get("esaminate") or []
+    dichiarate = sistema.get("particelle_dichiarate") or []
+    problemi = []
+    if not esaminate:
+        problemi.append(Problema(
+            "F18", percorso,
+            "la riga SISTEMA non dichiara `esaminate`: un file che non dice "
+            "quali particelle ha guardato non puo' dire che una manca",
+            gravita="avviso"))
+    for token in dichiarate:
+        if token not in esaminate:
+            problemi.append(Problema(
+                "F18", percorso,
+                "la particella %r e' dichiarata ma non e' fra quelle esaminate "
+                "(%s): il file si contraddice" % (token, ", ".join(esaminate))))
+
+    per_token = {r.get("token", ""): r for r in righe}
+    for token in esaminate:
+        riga = per_token.get(token)
+        dove = token or "(senza nome)"
+        if riga is None:
+            problemi.append(Problema(
+                "F18", dove,
+                "la particella e' fra quelle esaminate ma non c'e' la riga che "
+                "la dichiara: esaminata e non detta e' un buco che il progetto "
+                "non vede"))
+            continue
+        dichiarata = bool(riga.get("dichiarata"))
+        if dichiarata != (token in dichiarate):
+            problemi.append(Problema(
+                "F18", dove,
+                "la riga dice dichiarata=%s e la testata dice %s: uno dei due "
+                "mente" % (dichiarata, "dichiarata" if token in dichiarate
+                           else "non dichiarata")))
+        numero = per_particella.get(token, 0)
+        if dichiarata and not numero:
+            problemi.append(Problema(
+                "F18", dove,
+                "la particella e' dichiarata ma nessuna voce del glossario la "
+                "porta attaccata a un verbo: e' una regola senza prova"))
+        elif numero and not dichiarata:
+            problemi.append(Problema(
+                "F18", dove,
+                "il glossario porta questa particella attaccata a %d verbi e la "
+                "riga non la dichiara: la prova c'e' e il codice non la guarda"
+                % numero))
+        if not (riga.get("motivo") or "").strip():
+            problemi.append(Problema(
+                "F18", dove,
+                "la riga non dice perche': una particella dichiarata senza "
+                "motivo e' una particola che chiede di fidarsi"))
+        if dichiarata:
+            for campo in ("ruolo", "costruzione", "fonte"):
+                if not (riga.get(campo) or "").strip():
+                    problemi.append(Problema(
+                        "F18", dove,
+                        "la particella e' dichiarata ma `%s` e' vuoto: senza la "
+                        "fonte che la documenta la dichiarazione non si puo' "
+                        "controllare" % campo))
+    return problemi
+
+
 def controlla_corpora(corpus) -> list:
     problemi = []
     visti = set()

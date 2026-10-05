@@ -398,6 +398,7 @@ def comando_verifica(args) -> int:
                     None, verifica_dati.fonti_dichiarate())
                 + verifica_dati.controlla_pronominali(
                     glossario, verifica_dati.fonti_dichiarate())
+                + verifica_dati.controlla_tokeni()
                 + controlla_archivo(archivio, AUDIO)
                 + controlla_sintesi(sintesi, WEB,
                                     forme_senza_dubbio=_senza_dubbio(fonetica))

@@ -367,21 +367,27 @@ def _verbi() -> dict:
 
 
 def _pronominali() -> dict:
-    """Le particelle e i verbi pronominali, per la pagina.
+    """Le particelle, le loro costruzioni e i verbi pronominali, per la pagina.
 
     Le **particelle** viaggiano come parole scritte, non come chiavi gia'
-    normalizzate: la pagina le confronta con la sua `chiave()`, che e' una copia
-    di quella di Python, e se qui si mandasse gia' la chiave le due copie
+    normalizzate: la pagina le confronta con il suo `normale()`, che e' una
+    copia di quella di Python, e se qui si mandasse gia' la chiave le due copie
     potrebbero normalizzare diversamente e il confronto fallirebbe in
     silenzio — che e' il modo peggiore in cui può fallire una pagina.
+
+    Le **costruzioni** vengono da `dati/tokeni.jsonl` e non da una mappa scritta
+    nella pagina: quando una particella smette di essere dichiarata, la pagina
+    smette di chiamarla «verbo pronominale» senza che nessuno tocchi il
+    codice. E' la differenza fra una pagina che resta vera e una che resta
+    vera per qualche mese.
     """
     from traduttore import pronominali as modulo
-    sistema, righe = modulo.leggi()
-    return {
-        "particelle": list(sistema.get("particelle") or []),
-        "verbi": len(righe),
-        "esempi": [r["ferrarese"] for r in righe[:3]],
-    }
+    from traduttore import tokeni
+    _, righe = modulo.leggi()
+    pagina = tokeni.per_la_pagina()
+    pagina.update({"verbi": len(righe),
+                   "esempi": [r["ferrarese"] for r in righe[:3]]})
+    return pagina
 
 
 def _sezioni(modello: str, tenute: tuple) -> str:

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import morfologia, normalizza, verbi
+from . import morfologia, normalizza, pronominali, verbi
 from .glossario import IT_FE
 
 # Le quattro origini, e la confidenza che portano con se'.
@@ -205,6 +205,21 @@ class Motore:
         contesto = self._contesto_modello(frase, direzione)
         i = 0
         while i < len(token):
+            # Prima di ogni accorpamento c'e' quello dei **verbi pronominali**,
+            # perche' e' l'unico accorpamento che il motore fa e che il
+            # glossario non contiene: «si» non e' una parola e quindi cercarla
+            # nel glossario dava `oj`, una risposta vera e sbagliata. La
+            # particella viene attaccata al verbo e l'unita' va a `risolvi()`
+            # come una sola cosa.
+            pronominale = (pronominali.unita(token, i)
+                           if direzione == IT_FE else None)
+            if pronominale is not None:
+                testo, quante = pronominale
+                esito = pronominali.buco(testo)
+                risultati.append((testo, esito["testo"], esito["origine"],
+                                  esito["confidenza"], esito["dettaglio"]))
+                i += quante
+                continue
             accorpata = self._accorpa(token, i, direzione)
             if accorpata is not None:
                 testo, quante = accorpata

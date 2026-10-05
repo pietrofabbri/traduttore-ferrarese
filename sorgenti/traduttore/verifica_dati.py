@@ -563,6 +563,126 @@ def controlla_verbi(verbi, fonti=None, percorso: str = None) -> list:
     return problemi
 
 
+def controlla_pronominali(voci_glossario=None, fonti=None, percorso: str = None) -> list:
+    """**F17**: le particelle dichiarate sono quelle che il glossario attesta.
+
+    Il difetto che questo controllo prende è di questa sessione, ed è la
+    regola del progetto applicata a se stessi: la prima versione dichiarava
+    `si`, `ci`, `vi` e `ne` come particelle pronominali, e il motore smetteva
+    di rispondere `ghe` a `ci` — che è una voce vera del glossario (V0014) —
+    per darle un buco inventato. `ci`, `vi` e `ne` non hanno **nessuna** voce
+    che le porti attaccata a un verbo: dichiararle era una regola inventata.
+
+    Tre cose si controllano, e sono tutte verificabili da una macchina:
+
+    - **ogni particella dichiarata ha almeno una riga**: una particella senza
+      voce è una regola senza prova;
+    - **ogni riga dice una particella dichiarata**: il file non si contraddice
+      fra la riga `SISTEMA` e le righe di dati;
+    - **ogni riga torna a una voce del glossario, e la fonte che scrive e'
+      quella stessa che la voce scrive**: senza `voce_id` non si puo' aprire
+      il libro e controllare la parola, e con una fonte diversa la riga
+      racconterebbe una provenienza che il libro non conferma.
+
+    **Un confronto che qui non si fa, e perche'.** La fonte non viene
+    confrontata con `dati/fonti.json`. Il glossario scrive la citazione
+    intera («Luigi Ferri, Vocabolario ferrarese-italiano, 1889, pag. 8») e
+    non l'id della fonte (`S002`), e il progetto non ha un modo dichiarato di
+    passare dall'una all'altro. Scrivere qui quella corrispondenza sarebbe
+    una regola nuova, e una regola nuova dentro un controllo e' un difetto
+    che aspetta solo la prossima fonte per farsi notare. La citazione che
+    la riga porta e' la stessa che porta la voce del glossario, quindi la
+    riga non puo' inventare una provenienza.
+    """
+    from . import pronominali as modulo
+    percorso = percorso or modulo.PERCORSO
+    sistema, righe = modulo.leggi(percorso)
+    if not sistema:
+        return [Problema(
+            "F17", percorso,
+            "manca la riga `// SISTEMA`: senza di essa il modulo non sa che "
+            "particelle sono particelle, e ogni accorpamento e' inventato",
+            gravita="avviso")]
+
+    dichiarate = sistema.get("particelle") or []
+    candidate = sistema.get("candidate") or []
+    per_particella = sistema.get("per_particella") or {}
+
+    problemi = []
+    for particella in dichiarate:
+        if not righe or not any(r.get("particella") == particella
+                                 for r in righe):
+            problemi.append(Problema(
+                "F17", percorso,
+                "la particella %r e' dichiarata ma nessuna voce del glossario la "
+                "porta attaccata a un verbo: e' una regola senza prova, e il "
+                "motore la userebbe per non tradurre una parola che il "
+                "glossario conosce" % particella))
+    if candidate and not set(dichiarate) <= set(candidate):
+        problemi.append(Problema(
+            "F17", percorso,
+            "le particelle dichiarate %s non sono tutte fra quelle esaminate %s: "
+            "il file si contraddice" % (", ".join(dichiarate), ", ".join(candidate))))
+    if not candidate and dichiarate:
+        problemi.append(Problema(
+            "F17", percorso,
+            "la riga SISTEMA dichiara %d particelle ma non dice quali sono state "
+            "esaminate: non si puo' controllare che una dichiarata ci sia e "
+            "l'altra no" % len(dichiarate),
+            gravita="avviso"))
+
+    voci = {v.id: v for v in (voci_glossario.voci
+                              if hasattr(voci_glossario, "voci")
+                              else (voci_glossario or []))}
+    for riga in righe:
+        dove = riga.get("id", "senza id")
+        particella = riga.get("particella", "")
+        if particella not in dichiarate:
+            problemi.append(Problema(
+                "F17", dove,
+                "la particella %r non e' fra quelle dichiarate (%s): una riga "
+                "che contraddice la testata e' una regola che il modulo non "
+                "usa" % (particella, ", ".join(dichiarate) or "nessuna")))
+        voce_id = riga.get("voce_id", "")
+        if not voce_id:
+            problemi.append(Problema(
+                "F17", dove,
+                "la riga non dice la voce del glossario che la scrive: senza "
+                "quella non si puo' aprire il libro e controllare la parola"))
+            continue
+        voce = voci.get(voce_id)
+        if not voce:
+            if voci:
+                problemi.append(Problema(
+                    "F17", dove,
+                    "la voce %s non e' nel glossario: il dato rimanda a un libro "
+                    "che non si puo' aprire" % voce_id))
+            continue
+        if voce.fonte != riga.get("fonte", ""):
+            problemi.append(Problema(
+                "F17", dove,
+                "la riga scrive la fonte %r e la voce %s del glossario scrive %r: "
+                "la riga racconta una provenienza che il libro non conferma"
+                % (riga.get("fonte", ""), voce_id, voce.fonte)))
+        # Il conto della testata e' un numero che si può controllare: se la
+        # testata dice 109 e le righe sono 108, uno dei due mente.
+    if righe and per_particella:
+        per_particella = {k: v for k, v in per_particella.items()}
+        vero = {}
+        for riga in righe:
+            vero[riga.get("particella", "")] = vero.get(
+                riga.get("particella", ""), 0) + 1
+        for particella, numero in sorted(vero.items()):
+            dichiarato = per_particella.get(particella)
+            if dichiarato is not None and dichiarato != numero:
+                problemi.append(Problema(
+                    "F17", percorso,
+                    "la testata dice %d verbi con la particella %r e le righe ne "
+                    "contano %d: uno dei due numeri e' sbagliato"
+                    % (dichiarato, particella, numero)))
+    return problemi
+
+
 def controlla_corpora(corpus) -> list:
     problemi = []
     visti = set()

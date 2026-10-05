@@ -668,6 +668,17 @@
    ]
   ]
  },
+ "pronominali": {
+  "particelle": [
+   "si"
+  ],
+  "verbi": 109,
+  "esempi": [
+   "Acanirss",
+   "Acórzarss",
+   "Aduntàrs"
+  ]
+ },
  "moderno_buchi": 13307,
  "moderno_con_sinonimi": 3235,
  "audio": [],
@@ -2468,6 +2479,20 @@
       .replace(RE_NON, "");
   }
 
+  // `normale()` e' l'altra meta' di `chiave()`: tiene l'accento e toglie solo
+  // la punteggiatura. Serve per una domanda che `chiave()` non puo' fare,
+  // cioe' «questa parola e' la particella?»: `chiave("sì")` e `chiave("si")`
+  // sono la stessa stringa, e se la particella dell'affermazione venisse
+  // trattata come particella di un verbo pronominale la pagina direbbe che
+  // «Sì va» non ha traduzione. E' la stessa copia di `normalizza.normale` in
+  // Python, e `TestLeDueCopieDellaNormalizzazione` confronta le due.
+  function normale(t) {
+    return String(t).toLowerCase().trim()
+      .replace(/gh'/g, "g").replace(/ch'/g, "c")
+      .replace(/[\u2018\u02bc\u00b4`]/g, "'")
+      .replace(/\s+/g, " ");
+  }
+
   function chiaviResi(testo, principale) {
     // Gli stessi pezzi di `Voce._chiavi_resi` in glossario.py. Le due copie
     // della logica devono dire la stessa cosa, ed e' quello che controlla
@@ -2514,6 +2539,24 @@
   // forma ferrarese. La chiave e' quella della pagina, calcolata qui e non
   // mandata da Python, perche' le due copie della normalizzazione non
   // possono divergere: se divergono la ricerca fallisce in silenzio.
+  // Le particelle pronominali: parole che **non** sono parole, e che quindi
+  // non vanno cercate nel glossario. Senza questo, «si» diventava «oj» — una
+  // voce vera del glossario e la risposta sbagliata, perche' in italiano la
+  // particella del verbo pronominale e quella dell'affermazione si scrivono
+  // uguale e in ferrarese sono due cose diverse.
+  //
+  // L'indice e' sulla forma **scritta** e non sulla chiave: la particella
+  // dell'affermazione si scrive `sì` e il glossario la conta come voce
+  // (V8171), quindi metterla nello stesso cassetto di `si` farebbe di «Sì va»
+  // un buco dichiarato. `chiave()` toglie l'accento, `normale()` no: qui la
+  // domanda e' proprio sull'accento.
+  IDX.particelle = {};
+  ((DATI.pronominali || {}).particelle || []).forEach(function (p) {
+    var k = normale(p);
+    if (k) IDX.particelle[k] = p;
+  });
+  IDX.pronominali = DATI.pronominali || { verbi: 0, esempi: [] };
+
   IDX.verbi = {};
   Object.keys((DATI.verbi || {}).per_italiano || {}).forEach(function (parola) {
     var k = chiave(parola);
@@ -2632,6 +2675,42 @@ function tokenizza(t) {
       else { unita.push(token[i]); i += 1; }
     }
     return unita;
+  }
+
+  // Il verbo pronominale e' un **accorpamento**, non una parola: «si» non si
+  // cerca nel glossario, si attacca al verbo che segue. Si prendono due token
+  // e non tre, perche' in italiano la particella si attacca al verbo e niente
+  // altro; e se la particella e' ultima non c'e' niente da attaccarle, quindi
+  // qui non si muove niente e la decisione la prende il glossario.
+  function unitaPronominale(token, i) {
+    if (i < 0 || i + 1 >= token.length) return null;
+    if (!IDX.particelle[normale(token[i])]) return null;
+    return { testo: token[i] + " " + token[i + 1], quante: 2 };
+  }
+
+  // Il nome della costruzione lo decide **la particella che c'è**, non la
+  // pagina: `si` davanti a qualcosa dà un verbo pronominale, e per le altre
+  // particelle nessuna fonte del repository dice che costruzione sia.
+  // Dichiarare «verbo pronominale» per tutte sarebbe un'affermazione fatta al
+  // posto di chi legge.
+  var COSTRUZIONI = { "si": "verbo pronominale" };
+
+  function bucoPronominale(testo) {
+    var p = testo.split(" ")[0];
+    var costruzione = COSTRUZIONI[normale(p)] || "particella pronominale";
+    var esempi = (IDX.pronominali.esempi || []).join(", ");
+    return {
+      testo: testo, origine: "nessuna", confidenza: 0,
+      dettaglio: costruzione + ": " + p +
+        " è una particella pronominale, non una parola, e in ferrarese si attacca al verbo" +
+        " (il glossario ha " + IDX.pronominali.verbi +
+        " verbi con la particella dentro la voce, per esempio " + esempi +
+        "). Il progetto non coniuga, quindi della forma coniugata non c'è niente:" +
+        " qui la particella non viene tradotta e «" +
+        testo.split(" ").slice(1).join(" ") +
+        "» resta com'è. E il progetto non distingue un verbo da un nome: che cosa" +
+        " segue la particella non lo sa, e non lo dichiara."
+    };
   }
 
   function risolvi(parola, verso, frase) {
@@ -2816,17 +2895,36 @@ function tokenizza(t) {
       return;
     }
 
-    var risultati = accorpaTutto(token, direzione).map(function (t) { return risolvi(t, direzione, testo); });
+    // Il ciclo risolve **unita'**, non parole, e porta con se' l'indice del
+    // token da cui ognuna comincia. Senza quell'indice l'accorpamento del
+    // verbo pronominale stamperebbe sotto ogni parola la risposta di quella
+    // che la segue: «si siede» diventerebbe due righe, e la prima con la
+    // risposta della seconda.
+    var risultati = [], indici = [], iToken = 0;
+    while (iToken < token.length) {
+      var pronominale = (direzione === "it-fe")
+        ? unitaPronominale(token, iToken) : null;
+      if (pronominale) {
+        indici.push(iToken);
+        risultati.push(bucoPronominale(pronominale.testo));
+        iToken += pronominale.quante;
+        continue;
+      }
+      indici.push(iToken);
+      risultati.push(risolvi(accorpaTutto(token.slice(iToken), direzione)[0],
+                              direzione, testo));
+      iToken += 1;
+    }
     var peso = 0, totale = 0, buchi = 0;
     risultati.forEach(function (r, i) {
-      var n = Math.max(1, chiave(token[i]).length);
+      var n = Math.max(1, chiave(r.testo).length);
       totale += r.confidenza * n; peso += n;
       if (r.origine === "nessuna") buchi++;
     });
     var confidenza = peso ? totale / peso : 0;
 
     var righe = risultati.map(function (r, i) {
-      return '<span class="originale">' + scappa(token[i]) + '</span> &rarr; ' +
+      return '<span class="originale">' + scappa(r.testo) + '</span> &rarr; ' +
         '<span class="parola ' + r.origine + '" title="' + scappa(ETICHETTE[r.origine] + ": " + r.dettaglio) + '">' +
         scappa(r.testo) + '</span>';
     });
@@ -2855,7 +2953,12 @@ function tokenizza(t) {
       // Il numero concorda con la parola che segue: «1 parole» e' la prima
       // cosa che si vede in un messaggio che vuol dire «guarda, questo e' un
       // dato e non un parolone».
-      var nonSa = quelleNonSa(risultati, token);
+      // I buchi si contano sulle **risposte**, non sui token: con
+      // l'accorpamento una risposta copre due parole e la parola sparisce,
+      // quindi un conto fatto sui token conterebbe cose che non ci sono.
+      var nonSa = risultati.map(function (r) {
+        return r.origine === "nessuna" ? r.testo : null;
+      }).filter(function (x) { return x; });
       avviso.innerHTML = '<div class="avviso"><strong>La traduzione ha dei buchi.</strong> ' +
         nonSa.length + (nonSa.length === 1 ? " parola non ha risposta: "
                                            : " parole non hanno risposta: ") +
@@ -3004,11 +3107,6 @@ function tokenizza(t) {
     if (!codice) return '<span class="varieta vuota">senza varieta\'</span>';
     var nome = (DATI.nomi_varieta && DATI.nomi_varieta[codice]) || codice;
     return '<span class="varieta" title="' + scappa(nome) + '">' + scappa(codice) + '</span>';
-  }
-
-  function quelleNonSa(risultati, token) {
-    return risultati.map(function (r, i) { return r.origine === "nessuna" ? token[i] : null; })
-      .filter(function (x) { return x; });
   }
 
   function scappa(t) {

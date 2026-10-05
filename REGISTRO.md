@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.24
+versione: 0.25
 data: 2026-10-05
 ---
 
@@ -85,6 +85,67 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.25 — 2026-10-05 · La particella non è una parola, e il motore la trattava come una
+
+**La risposta sbagliata, e perché è la peggiore.** Scrivendo «lei si siede» il
+motore rispondeva `lei`, poi `si → oj`, poi `siede` intatta. Il `oj` è la
+risposta peggiore delle tre, perché non è un buco: è una **parola vera del
+glossario** (V0026, dall'itinerario di Wikipedia) data nella traduzione di una
+particella pronominale. Il progetto ha la regola «meglio nessuna riga che una
+riga falsa», e il motore la stava violando senza accorgersene — non sapeva
+che `si` fosse una particella, quindi per lui era una parola come tutte le
+altre.
+
+**La prova non è una grammatica, è il glossario.** Il Ferri scrive i verbi
+pronominali con il clitico **dentro** la voce: `Accanirsi → Acanirss`,
+`Affacciarsi → Afazzars`, `sedersi → saŋtàrs` (V14857). Sono **109 voci**, tutte
+con `si`, tutte con la particella in `-rs` o `-rss`. Nessuna fonte dichiara una
+regola grammaticale su questo e non serve: il dato c'è, è numerabile e porta
+l'id della voce che lo scrive. È in `dati/pronominali.jsonl`, con la testata
+che dichiara il sistema.
+
+**Che cosa fa il motore adesso.** Riconosce la particella, **non la traduce** e
+la attacca al verbo che segue: «si siede» è un'accorpamento, non due parole. La
+risposta è un **buco dichiarato** che nomina la costruzione, i 109 verbi che il
+glossario contiene e il fatto che il progetto non coniuga — più la cosa che il
+modulo non sa, cioè che non distingue un verbo da un nome. Un buco che promette
+una forma e non la dà è peggio di un buco che non promette niente.
+
+**Un difetto mio, preso dal confronto con la pagina.** Il riconoscimento
+guardava la `chiave()`, che toglie gli accenti, quindi `chiave("sì")` e
+`chiave("si")` erano la stessa stringa: la particella dell'**affermazione**
+— che il glossario conta come voce separata, V8171 — sarebbe stata trattata
+come particella di un verbo pronominale, e «Sì va» sarebbe diventato un buco.
+Ora il confronto è sulla **forma scritta**, in Python (`normalizza.normale`) e
+nella pagina (un `normale()` nuovo, confrontato test per test con la copia
+Python). La pagina aveva anche la sua copia del ciclo di traduzione, che
+risolveva **parole** e avrebbe stampato sotto «si» la risposta di «siede».
+
+**Un secondo difetto mio, più grave: una regola inventata.** La prima versione
+dichiarava `si`, `ci`, `vi` e `ne` come particelle. Ma `ci`, `vi` e `ne` non
+hanno **nessuna** voce che le porti attaccata a un verbo, e `ci` è già una parola
+del glossario (`ghe`, V0014): dichiararle come particelle toglieva al motore
+una risposta vera per dargli un buco inventato. Ora il file dichiara solo le
+particelle **attestate**, e il generatore stampa ogni giro quante sono e quante
+candidate ha scartato e perché. Il controllo **F17** rifiuta un file che
+dichiara una particella senza una riga che la porti, e una riga che usi una
+particella non dichiarata.
+
+**Un confronto che F17 non fa, e perché.** La fonte non è confrontata con
+`dati/fonti.json`: il glossario scrive la citazione intera («Luigi Ferri,
+Vocabolario ferrarese-italiano, 1889, pag. 8») e non l'id della fonte (`S002`),
+e il progetto non ha un modo dichiarato di passare dall'una all'altro. Scrivere
+quella corrispondenza dentro un controllo sarebbe una regola nuova. F17
+confronta invece la fonte della riga con quella della voce che la riga indica:
+la riga non può raccontare una provenienza che il libro non conferma.
+
+**Verifiche.** 280 test (erano 257): dodici sulle particelle, sei sul controllo,
+quattro sulla pagina e sulle due copie. `verifica`: 0 errori, 8 avvisi noti.
+Nella pagina costruita: `si siede` torna come una sola unità con il buco
+dichiarato, `Sì va` cerca `sì` nel glossario, `ci vado` risponde `ghe vado`.
+Il glossario non è cambiato di una voce: qui non si raccolgono parole, si
+dichiara che la particella non è una parola.
 
 ## 0.24 — 2026-10-05 · S021 aperta davvero: il sito c'è, il lessico no
 

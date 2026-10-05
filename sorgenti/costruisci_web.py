@@ -323,6 +323,7 @@ def _dati_comuni(glossario, corpus, varieta, fonetica, archivio, sintesi,
         },
         "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
         "verbi": _verbi(),
+        "pronominali": _pronominali(),
         "moderno_buchi": sum(1 for v in glossario.voci if not v.moderno),
         "moderno_con_sinonimi": sum(1 for v in glossario.voci if v.sinonimi),
         "audio": [dict(b.come_dict(),
@@ -363,6 +364,24 @@ def _verbi() -> dict:
     return {"per_italiano": per_italiano, "forme": sa["forme"],
             "verbi": sa["verbi"],
             "vuoto": [list(v) for v in sa["vuoto"]]}
+
+
+def _pronominali() -> dict:
+    """Le particelle e i verbi pronominali, per la pagina.
+
+    Le **particelle** viaggiano come parole scritte, non come chiavi gia'
+    normalizzate: la pagina le confronta con la sua `chiave()`, che e' una copia
+    di quella di Python, e se qui si mandasse gia' la chiave le due copie
+    potrebbero normalizzare diversamente e il confronto fallirebbe in
+    silenzio — che e' il modo peggiore in cui può fallire una pagina.
+    """
+    from traduttore import pronominali as modulo
+    sistema, righe = modulo.leggi()
+    return {
+        "particelle": list(sistema.get("particelle") or []),
+        "verbi": len(righe),
+        "esempi": [r["ferrarese"] for r in righe[:3]],
+    }
 
 
 def _sezioni(modello: str, tenute: tuple) -> str:

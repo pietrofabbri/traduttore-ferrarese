@@ -4380,5 +4380,314 @@ class TestLeFontiVerificate(unittest.TestCase):
         self.assertIn("associazione", seguito)
 
 
+class TestLeParticelleNonSonoParole(unittest.TestCase):
+    """La particella `si` non si traduce: si attacca al verbo.
+
+    Il difetto che questi test prendono è la **risposta vera e sbagliata**.
+    Scrivendo «lei si siede» il motore rispondeva `si → oj`: `oj` è una voce
+    vera del glossario (V0026) e la risposta giusta per la particella
+    dell'affermazione, non per quella del verbo pronominale. Il progetto ha la
+    regola «meglio nessuna riga che una riga falsa», e un buco dichiarato
+    rispetta quella regola mentre `oj` no.
+
+    Qui si controlla anche la direzione opposta, che è quella che si rompe
+    facilmente: la particella dell'affermazione si scrive `sì` e il glossario la
+    conta come voce (V8171), quindi trattarla come particella pronominale
+    farebbe di «Sì va» un buco. `chiave()` toglie l'accento e leDue parole
+    diventerebbero la stessa; il confronto va fatto sulla forma scritta.
+    """
+
+    def setUp(self):
+        from traduttore import glossario as modulo
+        self.percorso = os.path.join(RADICE, "dati", "glossario.jsonl")
+        self.glossario = modulo.Glossario.da_file(self.percorso)
+        from traduttore.corpora import Corpus
+        from traduttore.motore import Motore
+        self.motore = Motore(self.glossario, Corpus([]))
+
+    def _risposte(self, frase):
+        risposta = self.motore.traduci(frase)
+        return [(t, trad, orig) for t, trad, orig, _, _ in risposta.per_corrispondenza]
+
+    def test_la_particella_davanti_al_verbo_e_un_buco_e_non_una_parola(self):
+        righe = self._risposte("si siede")
+        self.assertEqual(len(righe), 1,
+                         "«si siede» deve essere una sola unita': %r" % (righe,))
+        testo, tradotto, origine = righe[0]
+        self.assertEqual(testo, "si siede")
+        self.assertEqual(tradotto, "si siede",
+                         "la particella non viene tradotta e resta com'e'")
+        self.assertEqual(origine, "nessuna")
+
+    def test_la_particella_davanti_al_verbo_non_da_oj(self):
+        # Il difetto, per nome: nessuna risposta del motore a «si siede» puo'
+        # essere `oj`, perche' `oj` e' la risposta di un'altra particella.
+        for _, tradotto, _ in self._risposte("si siede"):
+            self.assertNotEqual(tradotto, "oj")
+
+    def test_il_buco_dice_che_cosa_e_e_quanti_verbi_ci_sono(self):
+        risposta = self.motore.traduci("si siede")
+        dettaglio = risposta.per_corrispondenza[0][4]
+        self.assertIn("verbo pronominale", dettaglio)
+        self.assertIn("particella", dettaglio)
+        from traduttore import pronominali
+        _, righe = pronominali.leggi()
+        self.assertIn(str(len(righe)), dettaglio,
+                      "il buco deve dire quanti verbi pronominali ci sono")
+        # E deve dire anche che cosa non sa: un buco che promette una forma e non
+        # la dà e' peggio di un buco che non promette niente.
+        self.assertIn("non distingue un verbo da un nome", dettaglio)
+
+    def test_la_particella_dell_affermazione_si_vede_da_sola(self):
+        # «si» da solo e' la particella dell'affermazione, e li' il glossario
+        # ha la risposta: accorparla col niente che segue non cambierebbe niente,
+        # ma la prova e' che l'accorpamento non mangia anche questo caso.
+        righe = self._risposte("si")
+        self.assertEqual(len(righe), 1)
+        self.assertEqual(righe[0][2], "glossario")
+
+    def test_la_particella_con_l_accento_non_e_la_particella_del_verbo(self):
+        # `chiave("sì") == chiave("si")`: se il confronto fosse fatto sulla
+        # chiave, «Sì va» accorperebbe e diventerebbe un buco dichiarato.
+        righe = self._risposte("Sì va")
+        self.assertEqual(len(righe), 2,
+                         "«Sì va» non e' un verbo pronominale: %r" % (righe,))
+        self.assertEqual(righe[0][2], "glossario",
+                         "«Sì» va cercato nel glossario come qualsiasi parola")
+
+    def test_una_candidata_non_attestata_non_e_dichiarata_particella(self):
+        # `ci` è una voce del glossario (V0014, `ghe`). Dichiararla particella
+        # le toglieva la risposta vera per darle un buco inventato.
+        righe = self._risposte("ci vado")
+        self.assertEqual(len(righe), 2,
+                         "«ci vado» non si accorpa: %r" % (righe,))
+        self.assertEqual(righe[0][1], "ghe")
+
+    def test_una_particella_ultima_non_si_accorpa(self):
+        from traduttore import pronominali
+        self.assertIsNone(pronominali.unita(["siede", "si"], 1),
+                          "una particella ultima non ha un verbo da attaccarle")
+
+    def test_il_file_dichiara_solo_le_particelle_che_una_voce_attesta(self):
+        from traduttore import pronominali
+        sistema, righe = pronominali.leggi()
+        per_particella = {}
+        for riga in righe:
+            per_particella[riga["particella"]] = per_particella.get(
+                riga["particella"], 0) + 1
+        for dichiarata in sistema["particelle"]:
+            self.assertIn(dichiarata, per_particella,
+                          "%r e' dichiarata ma nessuna voce la porta attaccata "
+                          "a un verbo: e' una regola senza prova" % dichiarata)
+        for candidata in sistema["candidate"]:
+            if candidata not in per_particella:
+                self.assertNotIn(candidata, sistema["particelle"],
+                                 "%r non e' attestata e non deve essere "
+                                 "dichiarata" % candidata)
+
+    def test_ogni_riga_torna_a_una_voce_del_glossario(self):
+        from traduttore import pronominali
+        _, righe = pronominali.leggi()
+        voci = {v.id: v for v in self.glossario.voci}
+        for riga in righe:
+            voce = voci.get(riga["voce_id"])
+            self.assertIsNotNone(voce, "la voce %s non c'e'" % riga["voce_id"])
+            self.assertEqual(riga["ferrarese"], voce.ferrarese)
+            self.assertEqual(riga["fonte"], voce.fonte,
+                             "%s racconta una fonte che la voce non conferma"
+                             % riga["id"])
+
+    def test_il_generatore_riscrive_lo_stesso_file(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "da_pronominali", os.path.join(RADICE, "raccolta",
+                                           "da_pronominali.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        righe = modulo.trova(modulo.voci())
+        self.assertEqual(len(righe), 109,
+                         "il glossario non porta il numero di voci attese: %d"
+                         % len(righe))
+
+
+class TestIlControlloF17(unittest.TestCase):
+    """F17 rifiuta una particella dichiarata senza una voce che la porti.
+
+    Il difetto che questo controllo prende è di questa sessione ed è la regola
+    del progetto applicata a se stessi: `ci`, `vi` e `ne` erano dichiarate come
+    particelle pronominali senza che nessuna voce le portasse attaccata a un
+    verbo. Dichiararle non era una semplificazione, era una regola inventata,
+    e costava al motore una risposta vera.
+    """
+
+    def setUp(self):
+        from traduttore import glossario as modulo
+        self.glossario = modulo.Glossario.da_file(
+            os.path.join(RADICE, "dati", "glossario.jsonl"))
+        from traduttore import pronominali
+        self.sistema, self.righe = pronominali.leggi()
+
+    def _scrivi(self, sistema, righe):
+        import json
+        import tempfile
+        cartella = tempfile.mkdtemp()
+        finto = os.path.join(cartella, "pronominali.jsonl")
+        with io.open(finto, "w", encoding="utf-8") as f:
+            f.write("// SISTEMA %s\n" % json.dumps(sistema, ensure_ascii=False))
+            for riga in righe:
+                f.write(json.dumps(riga, ensure_ascii=False) + "\n")
+        return finto
+
+    def _problemi(self, sistema=None, righe=None):
+        from traduttore import verifica_dati
+        return verifica_dati.controlla_pronominali(
+            self.glossario, verifica_dati.fonti_dichiarate(),
+            percorso=self._scrivi(sistema or self.sistema,
+                                  righe if righe is not None else self.righe))
+
+    def test_il_file_del_progetto_non_ha_problemi(self):
+        from traduttore import verifica_dati
+        problemi = verifica_dati.controlla_pronominali(
+            self.glossario, verifica_dati.fonti_dichiarate())
+        errori = [p for p in problemi if p.codice == "F17"
+                  and p.gravita == "errore"]
+        self.assertEqual(errori, [],
+                         "F17 segnala un errore sulle righe attestate: %s"
+                         % errori)
+
+    def test_una_particella_dichiarata_senza_voce_e_un_errore(self):
+        sistema = dict(self.sistema, particelle=["si", "vi"])
+        messaggi = " ".join(p.messaggio for p in self._problemi(sistema))
+        self.assertIn("'vi'", messaggi)
+        self.assertIn("regola senza prova", messaggi)
+
+    def test_una_riga_che_usa_una_particella_non_dichiarata_e_un_errore(self):
+        righe = [dict(self.righe[0], particella="vi")]
+        messaggi = " ".join(p.messaggio for p in self._problemi(righe=righe))
+        self.assertIn("non e' fra quelle dichiarate", messaggi)
+
+    def test_una_voce_che_non_esiste_e_un_errore(self):
+        righe = [dict(self.righe[0], voce_id="V999999")]
+        messaggi = " ".join(p.messaggio for p in self._problemi(righe=righe))
+        self.assertIn("V999999", messaggi)
+
+    def test_una_fonte_che_la_voce_non_conferma_e_un_errore(self):
+        righe = [dict(self.righe[0], fonte="una fonte inventata")]
+        messaggi = " ".join(p.messaggio for p in self._problemi(righe=righe))
+        self.assertIn("provenienza", messaggi)
+
+    def test_una_testata_che_non_conta_come_le_righe_e_un_errore(self):
+        sistema = dict(self.sistema, per_particella={"si": 3})
+        messaggi = " ".join(p.messaggio for p in self._problemi(sistema))
+        self.assertIn("uno dei due numeri", messaggi)
+
+    def test_un_file_senza_riga_sistema_si_dichiara_vuoto(self):
+        from traduttore import verifica_dati
+        import tempfile
+        finto = os.path.join(tempfile.mkdtemp(), "pronominali.jsonl")
+        with io.open(finto, "w", encoding="utf-8") as f:
+            f.write("// nessun sistema qui\n")
+        problemi = verifica_dati.controlla_pronominali(self.glossario, None,
+                                                      percorso=finto)
+        self.assertTrue(problemi, "un file senza SISTEMA non puo' passare")
+        self.assertIn("SISTEMA", problemi[0].messaggio)
+
+
+class TestLeParticelleNellaPagina(_ModelloInNode, unittest.TestCase):
+    """Le particelle anche nella pagina, non solo nel terminale.
+
+    Due copie del motore, due copie della normalizzazione: se la pagina indice
+    le particelle sulla chiave invece che sulla forma scritta, «Sì va» diventa
+    un buco per metà degli utenti. Qui si verifica sul codice che il browser
+    esegue.
+    """
+
+    def _dati(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "costruisci_web", os.path.join(RADICE, "sorgenti",
+                                           "costruisci_web.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return {"glossario": None, "pronominali": modulo._pronominali(),
+                "origine": {}}
+
+    def test_i_dati_arrivano_alla_pagina_costruita(self):
+        with io.open(os.path.join(RADICE, "web", "traduttore.html"),
+                     encoding="utf-8") as f:
+            pagina = f.read()
+        self.assertIn('"particelle"', pagina,
+                      "i dati delle particelle non sono nella pagina costruita")
+
+    def test_la_pagina_indizza_il_riscontro_sulla_forma_scritta(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        esito = self._valuta_js(
+            '[!!IDX.particelle["si"], !!IDX.particelle["sì"], '
+            'unitaPronominale(["siede","si"], 1), '
+            'unitaPronominale(["si","siede"], 0)]', dati=self._dati())
+        self.assertEqual(esito[0], True, "«si» deve essere una particella")
+        self.assertEqual(esito[1], False,
+                         "«sì» non e' la particella del verbo pronominale: "
+                         "l'indice e' sulla chiave e leDue parole si "
+                         "confondono")
+        # `null` e non `false`: la funzione restituisce `null` quando non
+        # accorpa, e un test che accettasse anche `false` passerebbe con una
+        # funzione che risponde sempre «no».
+        self.assertIsNone(esito[2], "una particella ultima non si accorpa")
+        self.assertIsNotNone(esito[3])
+
+    def test_la_pagina_dichiara_il_buco_col_suo_numero(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        esito = self._valuta_js(
+            'bucoPronominale("si siede")', dati=self._dati())
+        self.assertEqual(esito["origine"], "nessuna")
+        self.assertEqual(esito["testo"], "si siede")
+        self.assertIn("verbo pronominale", esito["dettaglio"])
+        from traduttore import pronominali
+        _, righe = pronominali.leggi()
+        self.assertIn(str(len(righe)), esito["dettaglio"])
+
+    def test_la_pagina_e_il_terminale_dicono_la_stessa_cosa(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        esito = self._valuta_js(
+            'bucoPronominale("si siede").dettaglio', dati=self._dati())
+        from traduttore import pronominali
+        mio = pronominali.buco("si siede")["dettaglio"]
+        self.assertEqual(mio, esito,
+                         "le due copie del buco divergono: senza il confronto "
+                         "una pagina e un terminale possono dire cose diverse")
+
+
+class TestLeDueCopieDiNormale(_ModelloInNode, unittest.TestCase):
+    """`normale()` esiste in Python e in JavaScript, e devono coincidere."""
+
+    def test_le_due_normalizzazioni_dicono_la_stessa_cosa(self):
+        node = self._js()
+        if not node:
+            self.skipTest("node non e' installato")
+        from traduttore.normalizza import normale
+        parole = ["Sì", "sì", "si", "l'è", "doman l'a", "gh'e", "Portàr",
+                  " a ŋ k ", "sEDE'"]
+        mine = [normale(p) for p in parole]
+        loro = self._valuta_js("parole.map(normale)", {"parole": parole})
+        for parola, mio, loro_ in zip(parole, mine, loro):
+            self.assertEqual(mio, loro_,
+                             "%r: Python fa %r, JavaScript fa %r"
+                             % (parola, mio, loro_))
+
+    def test_normale_tiene_l_accento_e_il_resto_della_parola(self):
+        from traduttore.normalizza import normale
+        self.assertEqual(normale("Sì"), "sì")
+        self.assertNotEqual(normale("sì"), normale("si"),
+                            "le due parole si distinguono: e' tutta qui la "
+                            "differenza fra l'affermazione e la particella")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

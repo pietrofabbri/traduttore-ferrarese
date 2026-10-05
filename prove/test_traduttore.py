@@ -4946,5 +4946,95 @@ def chiave_di(testo):
     return chiave(testo)
 
 
+class TestLaFonteCheScriveLeDueLingue(unittest.TestCase):
+    """I «Proverbi d'Autun»: la prima fonte bilingue del repository.
+
+    Il difetto che questi test prendono è l'attribuzione. Una fonte che scrive
+    entrambe le lingue è la cosa più preziosa che si possa trovare, e il modo
+    più economico di sputarci sopra è mettere `attendibilita: "D"` perché il
+    testo c'è: ma `D` significa che l'ha letto chi l'ha scritto. Qui l'ha
+    riscritto un anonimo su un blog, e nessuno in questo repository ha
+    confrontato la trascrizione con l'originale.
+    """
+
+    def setUp(self):
+        from traduttore import corpora
+        from traduttore import verifica_dati
+        self.fonti = {f["id"]: f for f in verifica_dati.fonti_dichiarate()}
+        # I proverbi stanno nel loro file: `Corpus.da_file` con una sola
+        # coppia non li carica, e un test che li cerca li troverebbe vuoti
+        # senza dire perche' — il difetto piu' silenzioso che ci sia.
+        self.corpus = corpora.Corpus.da_file(
+            os.path.join(RADICE, "dati", "coppie.jsonl"),
+            os.path.join(RADICE, "dati", "proverbi.jsonl"))
+        self.miei = [p for p in self.corpus.proverbi if "S023" in (p.fonte or "")]
+
+    def test_la_fonte_e_dichiarata_e_senza_licenza_verificata(self):
+        self.assertIn("S023", self.fonti, "S023 non è in dati/fonti.json")
+        fonte = self.fonti["S023"]
+        self.assertFalse(fonte["licenza_verificata"],
+                         "una trascrizione su blog non ha la licenza verificata: "
+                         "dirlo falso fa entrare dati che non possono entrare")
+        self.assertEqual(fonte["stato"], "esaminata")
+
+    def test_i_proverbi_ci_sono_e_sono_cinque(self):
+        self.assertEqual(len(self.miei), 5,
+                         "la pagina scrive cinque proverbi: %d" % len(self.miei))
+
+    def test_ognuno_e_una_trascrizione_e_non_una_documentazione(self):
+        for proverbio in self.miei:
+            self.assertEqual(proverbio.attendibilita, "I",
+                             "%s è la trascrizione di un anonimo, non "
+                             "l'originale" % proverbio.id)
+
+    def test_nessuno_si_dichiara_di_una_varieta_che_la_fonte_non_dice(self):
+        # Autun e' nella pianura ferrarese e il glossario chiama `cittadino`
+        # il ferrarese di Ferrara citta'. Mettere `cittadino` qui sarebbe una
+        # variante attribuita a un posto solo, e nessuna fonte lo dice.
+        for proverbio in self.miei:
+            grezzo = [r for r in self._grezzi()
+                      if r.get("id") == proverbio.id][0]
+            self.assertNotIn("varieta", grezzo,
+                             "%s mette una varietà che la fonte non dichiara"
+                             % proverbio.id)
+
+    def test_il_testo_della_pagina_e_da_qualche_parte(self):
+        # La dichiarazione punta a un grezzo gitignorato: va bene perche' si
+        # rilegge con un comando, ma il comando deve funzionare.
+        percorso = os.path.join(RADICE, "raccolta", "grezzi",
+                                "autun_proverbi.txt")
+        self.assertTrue(os.path.exists(percorso),
+                        "il grezzo dichiarato non c'e': la dichiarazione "
+                        "punta a un file che non esiste")
+        with io.open(percorso, encoding="utf-8") as f:
+            testo = f.read()
+        for proverbio in self.miei:
+            primo = proverbio.ferrarese.split(",")[0].split()[0]
+            self.assertIn(primo, testo,
+                          "%s non si trova nel testo dichiarato: la riga e' "
+                          "diversa dalla fonte" % proverbio.id)
+
+    def test_le_due_lingue_differiscono(self):
+        # Se le due colonne fossero uguali, la fonte non sarebbe bilingue e la
+        # sua dichiarazione mentirebbe.
+        from traduttore.normalizza import chiave
+        for proverbio in self.miei:
+            self.assertNotEqual(chiave(proverbio.italiano),
+                                chiave(proverbio.ferrarese),
+                                "%s ha la stessa forma nelle due lingue"
+                                % proverbio.id)
+
+    def _grezzi(self):
+        righe = []
+        with io.open(os.path.join(RADICE, "dati", "proverbi.jsonl"),
+                     encoding="utf-8") as f:
+            for riga in f:
+                riga = riga.strip()
+                if riga and not riga.startswith("//"):
+                    import json
+                    righe.append(json.loads(riga))
+        return righe
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

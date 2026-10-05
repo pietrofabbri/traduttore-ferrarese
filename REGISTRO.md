@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.26
+versione: 0.27
 data: 2026-10-05
 ---
 
@@ -85,6 +85,49 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.27 — 2026-10-05 · La prima fonte che scrive le due lingue
+
+**Che cosa si cercava.** Un testo con l'italiano e il ferrarese **affiancati**,
+riga per riga. È la cosa che il progetto non aveva mai avuto: ogni fonte porta
+una delle due facce — il Ferri il ferrarese, i dizionari moderni l'italiano — e
+le altre due le abbiamo ricostruite a mano, che è il lavoro più costoso e più
+inaffidabile di tutti. Con una fonte bilingue l'inferenza non serve: la
+traduzione c'è, scritta dalla fonte stessa.
+
+**Quello che è venuto fuori è la prima.** I **Proverbi d'Autun**, raccolta di
+proverbi ferraresi di tradizione manoscritta, in una trascrizione che mette
+ogni proverbio nelle due lingue con le note numerate. Cinque proverbi, da
+`SETEMBAR` a `NUVEMBAR`, entrati in `dati/proverbi.jsonl` come **P0029–P0033**.
+
+**Tre cose che la dichiarazione di S023 dice, e che il progetto deve sapere.**
+
+1. **La varietà non è dichiarata e le righe non la dichiarano.** Autun è nella
+   pianura ferrarese; il glossario chiama `cittadino` il ferrarese di Ferrara
+   città. Nessuna fonte del repository dice di che varietà sia la raccolta, e
+   scrivere `cittadino` perché è l'unica che conosciamo sarebbe una variante
+   attribuita a un posto solo. Un test lo impedisce.
+2. **`attendibilita: "I"`, non `D`.** `D` significa che l'ha letto chi l'ha
+   scritto: qui l'ha riscritto un anonimo su un blog, e nessuno in questo
+   repository ha confrontato la trascrizione con l'originale.
+3. **La licenza non è verificata** e la fonte resta `esaminata`: una pagina di
+   blog non dichiara nulla, quindi questi dati non generano voci e non entrano
+   nel glossario finché la licenza non si chiarisce.
+
+Il testo della pagina è in `raccolta/grezzi/autun_proverbi.txt`, gitignorato
+come tutti i grezzi: si rilegge con un comando, quindi la dichiarazione basta. Un
+test controlla che ogni riga si ritrovi **parola per parola** nel testo
+dichiarato — è il controllo che rende impossibile cambiare una riga senza che
+la fonte resti indietro.
+
+**Un difetto nei miei stessi test, preso mentre li scrivevo.** Cercavo i proverbi
+con `Corpus.da_file(coppie)` e non li trovavo: i proverbi stanno in un file
+loro, e il test li cercava nel posto sbagliato restituendo «zero» senza dire
+perché. Il caso peggiore di un test, perché sembra una misura. Ora il file dei
+proverbi è nel `setUp`, con il perché scritto accanto.
+
+**Verifiche.** 304 test (erano 298): sei sulla fonte bilingue. `verifica`: 0
+errori, 8 avvisi noti. I proverbi sono 33, cinque dei quali nuovi.
 
 ## 0.26 — 2026-10-05 · Una voce di parlante entra nel progetto, e i token smettono di stare nel codice
 

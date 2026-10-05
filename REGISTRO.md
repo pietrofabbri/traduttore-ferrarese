@@ -126,7 +126,17 @@ loro, e il test li cercava nel posto sbagliato restituendo «zero» senza dire
 perché. Il caso peggiore di un test, perché sembra una misura. Ora il file dei
 proverbi è nel `setUp`, con il perché scritto accanto.
 
-**Verifiche.** 304 test (erano 298): sei sulla fonte bilingue. `verifica`: 0
+**Un difetto che stavo per consegnare, e che il confronto con una copia
+fresca ha fatto vedere.** Il test che confronta ogni riga con il testo della
+pagina legge `raccolta/grezzi/autun_proverbi.txt`, e quel file è **gitignorato**
+come tutti i grezzi: in locale passava, su GitHub Actions sarebbe fallito,
+perché lì quel file non c'è. È il modo peggiore in cui un test possa mentire —
+verde dove si guarda, rosso dove conta. Ora il test **salta** e dice perché,
+e un altro controlla che il grezzo **continui a essere ignorato**: se un
+giorno smette, va tracciato e la dichiarazione di S023 cambia, e lo dice un
+controllo invece di una persona fra vent'anni.
+
+**Verifiche.** 305 test (erano 298): sette sulla fonte bilingue. `verifica`: 0
 errori, 8 avvisi noti. I proverbi sono 33, cinque dei quali nuovi.
 
 ## 0.26 — 2026-10-05 · Una voce di parlante entra nel progetto, e i token smettono di stare nel codice

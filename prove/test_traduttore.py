@@ -4998,14 +4998,40 @@ class TestLaFonteCheScriveLeDueLingue(unittest.TestCase):
                              "%s mette una varietà che la fonte non dichiara"
                              % proverbio.id)
 
+    GREZZO = os.path.join("raccolta", "grezzi", "autun_proverbi.txt")
+
+    def test_il_grezzo_dichiarato_continua_a_essere_ignorato(self):
+        # Difetto vero, di questa sessione: il test di sotto leggeva il grezzo e
+        # falliva **su una copia fresca**, perche' `raccolta/grezzi/` e'
+        # gitignorata e su GitHub Actions quel file non c'e'. In locale passava,
+        # in CI no: il peggior modo in cui un test possa mentire.
+        #
+        # Qui si controlla la cosa che rende il test precedente onesto: finche'
+        # il grezzo resta ignorato, quel test **salta** e lo dice. Se un giorno
+        # smettesse di esserlo, va tracciato e la dichiarazione di S023 cambia —
+        # ed e' questo test a farlo notare, non una persona fra vent'anni.
+        import subprocess
+        fatto = subprocess.run(["git", "check-ignore", "-q",
+                                os.path.join(RADICE, self.GREZZO)],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if fatto.returncode == 128:
+            self.skipTest("git non c'e' in questa macchina: non si puo' dire se "
+                          "il grezzo e' tracciato")
+        self.assertEqual(fatto.returncode, 0,
+                         "%s non e' piu' ignorato: se il grezzo e' tracciato "
+                         "va bene, ma allora la dichiarazione di S023 che dice "
+                         "che e' gitignorato mente" % self.GREZZO)
+
     def test_il_testo_della_pagina_e_da_qualche_parte(self):
-        # La dichiarazione punta a un grezzo gitignorato: va bene perche' si
-        # rilegge con un comando, ma il comando deve funzionare.
-        percorso = os.path.join(RADICE, "raccolta", "grezzi",
-                                "autun_proverbi.txt")
-        self.assertTrue(os.path.exists(percorso),
-                        "il grezzo dichiarato non c'e': la dichiarazione "
-                        "punta a un file che non esiste")
+        # Il grezzo si rilegge con un comando, quindi la dichiarazione basta e
+        # non serve tracciarlo: ma su una copia fresca **non c'e'**, e un test
+        # che pretende un file che il repository non contiene fallisce in CI e
+        # passa in locale. Percio' salta, e dice perche' salta.
+        percorso = os.path.join(RADICE, self.GREZZO)
+        if not os.path.exists(percorso):
+            self.skipTest("il grezzo dichiarato non e' in questa copia: e' "
+                          "gitignorato per dichiarazione, quindi il confronto "
+                          "riga per riga si fa dove il testo c'e'")
         with io.open(percorso, encoding="utf-8") as f:
             testo = f.read()
         for proverbio in self.miei:

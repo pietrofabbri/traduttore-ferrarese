@@ -63,11 +63,14 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 314 test
+python3 prove/test_traduttore.py           # 315 test
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
 python3 prove/scanner.py                   # caratteri sbagliati
 python3 -m traduttore.cli verifica         # i controlli sui dati
 python3 prove/controlla_equivalenza.py     # la pagina dice come il motore
+python3 prove/controlla_mutazioni.py       # i test prendono le
+                                           # decisioni rotte? quattro
+                                           # minuti e mezzo
 ```
 
 I tre devono uscire senza errori. Se hai toccato `dati/`, aggiungi anche:

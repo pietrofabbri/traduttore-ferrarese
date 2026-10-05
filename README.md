@@ -468,7 +468,13 @@ traduttore-ferrarese/
       cli.py           la riga di comando
     modello.html       il modello della pagina
     costruisci_web.py  la generazione della pagina
-  prove/               i test
+  prove/               i test e i controlli che li mettono alla prova:
+                         test_traduttore.py     i test
+                         controlla_equivalenza.py la pagina e il motore,
+                                               frase per frase
+                         controlla_mutazioni.py  le decisioni rotte di
+                                               proposito, e se un test
+                                               se ne accorge
   raccolta/            gli strumenti per passare da un libro a dei dati:
                          pdf_testo.py     l'estrattore di PDF senza librerie
                          estrai_ferri.py  stacca le voci dall'OCR di Ferri
@@ -588,13 +594,35 @@ ferrarese. In breve:
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 314 test
+python3 prove/test_traduttore.py     # 315 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario
 python3 raccolta/cerca_nelle_fonti.py  # le parole frequenti non coperte
 python3 -m traduttore.cli verifica   # i controlli sui dati
 ```
+
+
+**Un controllo che misura i controlli.** Un test può essere vero, passare, e non
+guardare niente. L'unico modo per accorgersene non è leggerlo: è romperlo apposta.
+`prove/controlla_mutazioni.py` prende `raccolta/da_modi.py` — il file che decide
+quali frasi della pagina entrano in `dati/coppie.jsonl` — e ne cambia una alla
+volta otto decisioni, rilanciando **tutta** la suite ogni volta. Se nessun test
+se ne accorge, il controllo esce con 1 e lo dice. Costa quattro minuti e mezzo
+(otto suite da 33 secondi, misurati), e per questo sta nel workflow e non fra i
+controlli veloci: un controllo che non gira è un controllo che invecchia in
+silenzio, e questo — di misurare gli altri — è il primo a invecchiare.
+
+Tre avvertenze, dichiarate perché sono limiti e non dettagli:
+
+- copre **un file solo**, quello che scrive: un suo difetto non si vede nei dati,
+  perché i dati sono già scritti bene, e si vedrebbe solo alla prossima esecuzione,
+  quando la riga sbagliata è già dentro `coppie.jsonl`;
+- se un pattern smette di agganciare il codice, il controllo **non passa in
+  silenzio**: esce con 1 e dice che il pattern va riagganciato;
+- non parte se un file tracciato è modificato e non committato, e non parte se
+  `git` non risponde: riscrive un file tracciato, e senza sapere com'è l'albero
+  quella è un'operazione a rischio.
 
 I controlli non correggono: segnalano. La correzione la fa una persona,
 perche' il glossario e' un fatto e i fatti non si correggono in automatico.

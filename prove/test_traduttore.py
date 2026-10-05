@@ -3958,6 +3958,33 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
             self.assertTrue(riga["italiano"].strip())
             self.assertTrue(riga["ferrarese"].strip())
 
+    def test_la_varieta_scritta_e_quella_dichiarata(self):
+        # Il difetto che questo test prende: il generatore potrebbe scrivere una
+        # varieta' qualsiasi — «centrale» invece di «cittadino» — e i dati
+        # sembrerebbero gli stessi, perche' ogni altro campo sarebbe giusto.
+        # Le righe precedenti verificano che la varieta' ci sia, non che sia
+        # quella: qui la si confronta con `dati/varieta.json`, che e' l'unico
+        # posto in cui il progetto dichiara a chi serve una voce ferrarese.
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "coppie.jsonl")
+            modulo, _ = self._scrive_in(percorso)
+            righe = self._righe(percorso)
+        self.assertTrue(righe, "il generatore non ha scritto niente")
+        with io.open(os.path.join(RADICE, "dati", "varieta.json"),
+                     encoding="utf-8") as f:
+            grezzo = json.load(f)
+        dichiarate = [a["varieta"] for a in grezzo["assegnazioni"]
+                      if a.get("fonte") == modulo.ID_FONTE]
+        self.assertEqual(len(dichiarate), 1,
+                         "%s deve avere una sola variante dichiarata"
+                         % modulo.ID_FONTE)
+        for riga in righe:
+            self.assertEqual(
+                riga["varieta"], dichiarate[0],
+                "%s e' scritta come %r e dichiarata come %r: una voce che "
+                "serva a chi non e' di Ferrara porta l'etichetta di chi ci e' "
+                "nato" % (riga["ferrarese"], riga["varieta"], dichiarate[0]))
+
     def test_una_spiegazione_mozzata_non_arriva_ma_un_intera_sì(self):
         # Le due righe che la regola troppo larga scartava per errore. Se la
         # regola torna a guardare la prima parola, questo test lo dice con i

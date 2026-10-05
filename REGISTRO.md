@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.28
+versione: 0.29
 data: 2026-10-05
 ---
 
@@ -85,6 +85,42 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.29 — 2026-10-05 · Un test può essere vero e non guardare niente
+
+**Il pendente che non era scritto da nessuna parte.** Nella cartella del progetto
+c'era uno script di mutazione mai committato: rompeva di proposito sei decisioni
+di `raccolta/da_modi.py` e rilanciava i test per vedere se qualcuno se ne accorgesse.
+Aveva fatto il suo lavoro — aveva trovato un buco — ma viveva fuori da ogni
+repository, in un file di nome `_muta7.py`, dove nessuno lo eseguiva e nessuno lo
+poteva ritrovare. È il genere di cosa che il progetto vieta e che si era già fatta
+altre volte: un controllo che vive fuori dal repository è un controllo che non
+esiste.
+
+**Il buco che aveva trovato, e il buco vero che c'era sotto.** La prima versione
+concludeva che due regole non fossero protette da nessun test. Non era vero: erano
+protette, da un'altra classe di test. Il difetto era nel banco, che girava una
+sola classe e misurava meno di quello che dichiarava — cioè produceva un difetto
+che sembrava un difetto del codice. Riscritto per girare **tutta** la suite, otto
+mutazioni su otto: **sette prese, una sopravvissuta**.
+
+La sopravvissuta è vera e riguarda `dati/varieta.json`. I test verificavano che
+la variante ci fosse (`assertTrue`), non che fosse **quella dichiarata**: il
+generatore avrebbe potuto scrivere «centrale» per tutte le righe di S019, cioè
+dichiarare ferrarese di città una voce che non è di città, e nessun test se ne
+sarebbe accorto. Ora il confronto è con la riga di `dati/varieta.json`, letta nel
+test: la variante non si deduce e non si indovina, si dichiara.
+
+**Perché sta nel workflow se costa quattro minuti e mezzo.** Otto suite complete
+da 33 secondi l'una, misurate. Il prezzo è giustificato dal fatto che questo è il
+controllo che invecchia per primo: se non gira, nessuno vede che ha smesso di
+guardare. Due avvertenze sono dentro il codice e non qui, perché è il codice che
+le deve far rispettare: non parte con un file tracciato già modificato, e non
+parte se `git` non risponde — riscrive un file tracciato, e una guardia che quando
+non sa risponde «va tutto bene» non è una guardia.
+
+**Verifiche.** 315 test (erano 314): uno sulla variante dichiarata. Il banco:
+8 mutazioni, 8 prese. `ci_locale`: 17 passi, tutti con zero.
 
 ## 0.28 — 2026-10-05 · I proverbi erano sulla pagina e non nel traduttore
 

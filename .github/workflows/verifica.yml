@@ -27,6 +27,23 @@ jobs:
       - name: I test
         run: python3 prove/test_traduttore.py
 
+      - name: Le mutazioni: i test le prendono tutte
+        # Un test puo' essere vero, passare, e non guardare niente. Questo passo
+        # rompe di proposito otto decisioni di `raccolta/da_modi.py`, una alla
+        # volta, e rilancia tutta la suite: se nessun test se ne accorge, il
+        # passo fallisce e dice quale decisione e' rimasta senza controllo.
+        #
+        # Costa quattro minuti e mezzo, ed e' il prezzo: la prima versione di
+        # questo controllo girava una sola classe di test e concludeva che due
+        # regole non fossero protette. Erano protette, da un'altra classe: era il
+        # controllo a essere parziale, e un controllo parziale produce un
+        # difetto che sembra un difetto del codice.
+        #
+        # Il passo non ha bisogno di `PYTHONPATH`: il controllo lo mette da
+        # parte quando lancia la suite, perche' il path che vale li' non
+        # sopravvive al passo che lo esporta.
+        run: python3 prove/controlla_mutazioni.py
+
       - name: I controlli sui dati
         # Escono diversamente da zero se c'e' un errore. E' voluto: il
         # workflow deve fallire quando i dati sono rotti, altrimenti e' un

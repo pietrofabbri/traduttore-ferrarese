@@ -211,14 +211,16 @@ def _coppie(corpus) -> list:
     nessuno se ne accorga.
     """
     return [{"id": c.id, "it": c.italiano, "fe": c.ferrarese, "tipo": c.tipo,
-             "varieta": c.varieta, "fonte": c.fonte, "nota": c.nota}
+             "varieta": c.varieta, "fonte": c.fonte, "nota": c.nota,
+             "attendibilita": c.attendibilita}
             for c in corpus.coppie]
 
 
 def _proverbi(corpus) -> list:
     return [{"id": p.id, "it": p.italiano, "fe": p.ferrarese,
              "letterario": p.letterario, "popolare": p.popolare,
-             "fonte": p.fonte, "significato": p.significato}
+             "fonte": p.fonte, "significato": p.significato,
+             "attendibilita": p.attendibilita}
             for p in corpus.proverbi]
 
 

@@ -94,6 +94,31 @@ class Proverbio:
     # caso normale, non l'eccezione.
     significato: str = ""
     attendibilita: str = "M"
+    # `ricorrenze` come nella coppia, e per la stessa ragione: `cerca()` ordina
+    # su questo campo e senza di esso un proverbio nell'indice farebbe
+    # fallire l'ordinamento con un `AttributeError`. Un proverbio non ha un
+    # conteggio di occorrenze in testi raccolti, quindi vale una volta sola.
+    ricorrenze: int = 1
+
+    def varieta_valida(self) -> bool:
+        return codice_valido(self.varieta) if hasattr(self, "varieta") else True
+
+    def valida(self) -> bool:
+        """Un proverbio entra nel motore con le stesse condizioni di una coppia.
+
+        Due lati e una fonte: senza fonte non entra, come per le coppie. E non
+        si aggiunge un'eccezione: la regola è una sola, e un proverbio che entra con
+        condizioni più larghe di una coppia sarebbe una scelta, non una
+        dichiarazione.
+        """
+        return bool(self.ferrarese.strip() and self.italiano.strip()
+                    and self.fonte.strip())
+
+    def chiave_ferrarese(self) -> str:
+        return normalizza.chiave(self.ferrarese)
+
+    def chiave_italiano(self) -> str:
+        return normalizza.chiave(self.italiano)
 
 
 class Corpus:
@@ -117,6 +142,25 @@ class Corpus:
         return cls(coppie, proverbi)
 
     def indizza(self) -> None:
+        """Le coppie e i proverbi, nelle due direzioni.
+
+        **I proverbi sono dentro anche loro, e fino a ieri non lo erano.** Il
+        progetto aveva 33 proverbi — 28 del Ferri e 5 dei «Proverbi d'Autun» —
+        e la ricerca per frase intera li ignorava: `indizza()` guardava solo
+        `self.coppie`. Non era una scelta, era un dimenticanza, e il costo è
+        che un proverbio è la frase più corta e più stabile di una lingua: se
+        qualcosa deve essere restituito per intero, è quello.
+
+        **Chi vince quando due righe hanno la stessa chiave.** Vince la coppia,
+        e la ragione è dichiarata: la coppia parallela è la prova diretta della
+        frase, il proverbio è un modo di dire che la contiene e che la fonte ha
+        isolato. Quindi si indicizza prima la coppia e il proverbio entra solo
+        dove la chiave è libera — `setdefault` in Python, `if (!lista[k])` nella
+        pagina, che è la stessa cosa scritta in due linguaggi.
+
+        Un proverbio senza fonte, o con un lato solo, non entra: la stessa
+        regola delle coppie, senza eccezioni.
+        """
         self._per_ferrarese = {}
         self._per_italiano = {}
         for coppia in self.coppie:
@@ -126,6 +170,15 @@ class Corpus:
             ):
                 if lato:
                     indice.setdefault(lato, []).append(coppia)
+        for proverbio in self.proverbi:
+            if not proverbio.valida():
+                continue
+            for lato, indice in (
+                (proverbio.chiave_ferrarese(), self._per_ferrarese),
+                (proverbio.chiave_italiano(), self._per_italiano),
+            ):
+                if lato:
+                    indice.setdefault(lato, []).append(proverbio)
 
     def __len__(self) -> int:
         return len(self.coppie)

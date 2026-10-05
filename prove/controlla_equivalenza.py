@@ -70,6 +70,17 @@ FRASI = [
     ("fe-it", "an ghè brisa pan"),
     ("fe-it", "gagà spudà"),
     ("fe-it", "nat e spudà"),
+    # I proverbi: sono nell'indice dal lavoro sui proverbi, e il ramo della
+    # frase intera ha una regola di confidenza che dipende dall'
+    # attendibilita' della riga. Senza queste due frasi il confronto passava
+    # senza mai guardare quel ramo, e la divergenza che c'era — la pagina
+    # dava `corpo_frase` sempre, il motore solo per le righe `D` — sarebbe
+    # tornata senza che nessuno se ne accorgesse.
+    ("it-fe", "Se nevica sulla foglia, d'inverno non se n'ha voglia."),
+    ("fe-it", "Se a neva in sla foia, d'inveran an s' na voia."),
+    # E la frase del parlante nativo, che è la riga `D` per eccellenza: senza
+    # di lei il confronto non guarderebbe la parte alta della scala.
+    ("it-fe", "lei si siede"),
 ]
 
 # Il codice che avvolge la pagina e' tutto quello che tocca il DOM: si
@@ -136,21 +147,30 @@ def apre_lo_script(script: str, dati: str) -> str:
 
 def risposta_js(script: str, dati: str, direzione: str, frase: str) -> dict:
     """Il risultato della pagina, riga per riga."""
+    # **Il ramo della frase intera passa da `risolvi`, non da `fraseGemella`.**
+    # Prima il confronto riscriveva il ramo a mano — `g.fe`, `g.it`,
+    # `origine: "corpo"` — quindi verificava una **ricostruzione** del codice
+    # della pagina e non il codice: la regola della confidenza stava proprio
+    # dentro quel ramo, e il confronto la saltava. E' la lezione che il progetto
+    # ha gia' scritta due volte, per la normalizzazione: «le due copie devono
+    # essere identiche» non basta, e qui si trattava di due copie *del confronto*.
     programma = apre_lo_script(script, dati) + """
-// La pagina ha un caso che il motore ha e che qui va riprodotto: se tutta la
-// frase e' gia' nel corpus, non la si smembra e si risponde con lei intera.
-var g = PAGINA.fraseGemella(%s, %s);
-if (g) {
-  console.log(JSON.stringify([{ testo: %s, tradotto: (%s === "it-fe") ? g.fe : g.it, origine: "corpo" }]));
+function tonda(x) { return Math.round(x * 100) / 100; }
+var g = PAGINA.risolvi(%s, %s, %s);
+if (g.origine === "corpo" && PAGINA.fraseGemella(%s, %s)) {
+  console.log(JSON.stringify([{ testo: %s, tradotto: g.testo,
+                                origine: g.origine,
+                                confidenza: tonda(g.confidenza) }]));
 } else {
   var fuori = PAGINA.accorpaTutto(PAGINA.tokenizza(%s), %s).map(function (t) {
     var r = PAGINA.risolvi(t, %s, %s);
-    return { testo: t, tradotto: r.testo, origine: r.origine };
+    return { testo: t, tradotto: r.testo, origine: r.origine,
+             confidenza: tonda(r.confidenza) };
   });
   console.log(JSON.stringify(fuori));
 }
 """ % (json.dumps(frase), json.dumps(direzione), json.dumps(frase),
-       json.dumps(direzione),
+       json.dumps(frase), json.dumps(direzione), json.dumps(frase),
        json.dumps(frase), json.dumps(direzione),
        json.dumps(direzione), json.dumps(frase))
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
@@ -167,8 +187,21 @@ if (g) {
 
 def risposta_python(motore: Motore, direzione: str, frase: str) -> list:
     risposta = motore.traduci(frase, direzione)
-    return [{"testo": t, "tradotto": tr, "origine": o}
-            for t, tr, o, _, _ in risposta.per_corrispondenza]
+    # **La confidenza entra nel confronto.** Prima non c'era, e il confronto
+    # passava verde anche quando le due copie davano numeri diversi sulla
+    # stessa riga: verificava *che cosa* dicevano, non *quanto* lo dicevano con
+    # sicurezza. Il difetto vero era nel ramo della frase intera — Python dava
+    # `corpo` a una riga non documentata e `corpo_frase` a una documentata, la
+    # pagina dava `corpo_frase` sempre — e nessuno dei due programmi si
+    # sbagliava su che cosa rispondessero.
+    #
+    # Si arrotonda a due cifre perche' Python e JavaScript arrotondano i
+    # decimali in modo diverso, e un confronto che fallisce sul quarto posto
+    # decimale costringerebbe a riformulare il dato invece di correggere il
+    # codice.
+    return [{"testo": t, "tradotto": tr, "origine": o,
+             "confidenza": round(c, 2)}
+            for t, tr, o, c, _ in risposta.per_corrispondenza]
 
 
 def main() -> int:

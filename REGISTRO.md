@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.27
+versione: 0.28
 data: 2026-10-05
 ---
 
@@ -85,6 +85,62 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.28 — 2026-10-05 · I proverbi erano sulla pagina e non nel traduttore
+
+**Il buco che avevo dichiarato in fondo al messaggio precedente.** Avevo
+scritto, giustamente: «i proverbi non arrivano al traduttore». Adesso è chiuso, e
+la causa era più semplice di quanto sembrasse: `Corpus.indizza()` guardava solo
+`self.coppie`. I **33 proverbi** del progetto — 28 del Ferri e 5 dei «Proverbi
+d'Autun» — erano indicizzati in nessun modo, quindi la ricerca per frase intera
+non li vedeva. Non era una scelta: era una dimenticanza, e il suo costo è che
+**la frase più stabile di una lingua era l'unica che il traduttore non sapeva
+restituire per intero**.
+
+Ora tornano interi nelle due direzioni:
+
+```
+Se nevica sulla foglia, d'inverno non se n'ha voglia.
+  → Se a neva in sla foia, d'inveran an s' na voia.      corpo, 0.80
+Se a neva in sla foia, d'inveran an s' na voia.
+  → Se nevica sulla foglia, d'inverno non se n'ha voglia.  corpo, 0.80
+```
+
+**Chi vince quando due righe hanno la stessa chiave.** Vince la coppia, e la
+ragione è dichiarata dentro il codice: la coppia parallela è la prova diretta
+della frase, il proverbio è un modo di dire che la fonte ha isolato. Quindi in
+Python si indicizza prima la coppia e il proverbio entra con `setdefault`, e
+nella pagina con `if (!lista[k])` — la stessa regola scritta in due linguaggi.
+Un proverbio senza fonte o con un lato solo non entra: la regola delle coppie,
+senza eccezioni.
+
+**Il difetto che è venuto fuori mentre lo facevo, e che era più grosso.** La
+regola della confidenza nel ramo della frase intera è questa: `corpo_frase` solo
+se la fonte c'è ed è dichiarata documentata. La **pagina non la aveva**: dava
+`corpo_frase` sempre. Quindi per ogni riga non documentata — cioè per quasi
+tutto — il terminale diceva 0,80 e la pagina 0,92, sulla stessa riga.
+
+**E il confronto fra le due copie non lo vedeva, per due motivi insieme.** Il
+confronto confrontava `testo`, `tradotto` e `origine`: **la confidenza non
+entrava**, quindi verificava *che cosa* dicevano e non *quanto* lo dicevano con
+sicurezza. E il ramo della frase intera era **riscritto a mano** dentro il
+conferimento: `g.fe`, `g.it`, `origine: "corpo"`, senza passare da
+`risolvi`. Era una ricostruzione del codice della pagina, non il codice. Sono
+due copie dello stesso difetto: **la lezione del progetto sulla normalizzazione,
+ripetuta sul confronto invece che sul confronto della normalizzazione**.
+
+Ora il confronto passa da `risolvi`, prende la confidenza dalle due parti, e le
+frasi confrontate sono 15: aggiunti i due proverbi in entrambe le direzioni e la
+frase del parlante nativo.
+
+**La prova che il confronto prende il difetto.** Ho rotto di proposito la
+regola nella pagina e rilanciato il confronto: **3 divergenze**, non una sola —
+i due proverbi e `pesce d'aprile`, una coppia del Ferri che era già affetta
+dallo stesso difetto. Il confronto passava verde prima su tutte e tre.
+
+**Verifiche.** 314 test (erano 305): nove sui proverbi e sul confronto. Il
+confronto fra le due copie: 15 frasi, 0 divergenze. `verifica`: 0 errori, 8
+avvisi noti.
 
 ## 0.27 — 2026-10-05 · La prima fonte che scrive le due lingue
 

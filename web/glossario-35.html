@@ -7743,12 +7743,27 @@
     if (k) IDX.verbi[k] = DATI.verbi.per_italiano[parola];
   });
 
-  // L'indice delle coppie per frase intera, nelle due direzioni.
+  // L'indice delle coppie **e dei proverbi** per frase intera, nelle due
+  // direzioni. I proverbi c'erano nei dati e non erano indicizzati: una
+  // dimenticanza, non una scelta, e il costo è che la frase più stabile di
+  // una lingua era l'unica che il traduttore non sapeva restituire per intero.
+  //
+  // **Chi vince quando due righe hanno la stessa chiave.** Vince la coppia,
+  // come in `corpora.py`: la coppia parallela è la prova diretta, il proverbio
+  // è un modo di dire isolato dalla fonte. Quindi i proverbi si mettono **dopo**
+  // e solo dove la chiave è libera — è la stessa regola di `setdefault` scritta
+  // in un altro linguaggio, e le due copie devono dire la stessa cosa.
   IDX.coppieIt = {}; IDX.coppieFe = {};
   (DATI.coppie || []).forEach(function (c) {
     var ki = chiave(c.it), kf = chiave(c.fe);
     if (ki) IDX.coppieIt[ki] = c;
     if (kf) IDX.coppieFe[kf] = c;
+  });
+  (DATI.proverbi || []).forEach(function (p) {
+    if (!(p.fonte || "").trim()) return;
+    var ki = chiave(p.it), kf = chiave(p.fe);
+    if (ki && !IDX.coppieIt[ki]) IDX.coppieIt[ki] = p;
+    if (kf && !IDX.coppieFe[kf]) IDX.coppieFe[kf] = p;
   });
 
   // Le trascrizioni IPA, per voce e per forma scritta. La stessa logica del
@@ -7897,10 +7912,17 @@ function tokenizza(t) {
     // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
     var gemella = fraseGemella(frase, verso);
     if (gemella) {
+      // La confidenza segue la **stessa regola di `motore.py`**: la frase
+      // intera vale `corpo_frase` solo se la fonte c'è ed è dichiarata
+      // documentata. Prima la pagina dava `corpo_frase` sempre, e con i proverbi
+      // in indice la divergenza diventava visibile: in Python 0.80, qui 0.92,
+      // sulla stessa riga. Due copie che dicono cose diverse è il difetto più
+      // insidioso che ci sia, perché nessun controllo di risposta le vede.
       var risultato = {
         testo: verso === "it-fe" ? gemella.fe : gemella.it,
         origine: "corpo",
-        confidenza: DATI.origine.corpo_frase,
+        confidenza: (gemella.fonte && gemella.attendibilita === "D")
+          ? DATI.origine.corpo_frase : DATI.origine.corpo,
         dettaglio: "frase intera dal corpus, " + gemella.id + ": " + (gemella.fonte || "senza fonte")
       };
       // La trascrizione della parola prodotta, cercata **sulla forma scritta**.

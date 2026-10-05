@@ -5062,5 +5062,157 @@ class TestLaFonteCheScriveLeDueLingue(unittest.TestCase):
         return righe
 
 
+class TestIProverbiArrivanoAlTraduttore(unittest.TestCase):
+    """Un proverbio è la frase più stabile di una lingua, e non la si cercava.
+
+    Il difetto che questi test prendono è una dimenticanza, non una scelta:
+    `Corpus.indizza()` guardava solo `self.coppie`, quindi i 33 proverbi del
+    progetto erano sulla pagina e non nella ricerca per frase intera. Il
+   Traduttore rispondeva parola per parola a un proverbio che aveva già la
+    risposta per intero scritta accanto.
+    """
+
+    def setUp(self):
+        from traduttore import corpora
+        from traduttore.glossario import Glossario
+        from traduttore.motore import Motore
+        self.corpus = corpora.Corpus.da_file(
+            os.path.join(RADICE, "dati", "coppie.jsonl"),
+            os.path.join(RADICE, "dati", "proverbi.jsonl"))
+        self.motore = Motore(
+            Glossario.da_file(os.path.join(RADICE, "dati", "glossario.jsonl")),
+            self.corpus)
+
+    def test_ogni_proverbio_valido_e_nell_indice(self):
+        validi = [p for p in self.corpus.proverbi if p.valida()]
+        self.assertEqual(len(validi), 33,
+                         "i proverbi validi sono %d: la fonte ne ha dichiarati "
+                         "meno, e i dati non tornano" % len(validi))
+        for proverbio in validi:
+            self.assertTrue(self.corpus._per_italiano.get(
+                proverbio.chiave_italiano()),
+                "%s non e' nell'indice italiano" % proverbio.id)
+
+    def test_un_proverbio_torna_intero_nelle_due_direzioni(self):
+        from traduttore.glossario import FE_IT, IT_FE
+        proverbio = [p for p in self.corpus.proverbi
+                     if p.id == "P0033"][0]
+        italiano = self.motore.traduci(proverbio.italiano, IT_FE)
+        self.assertEqual(italiano.testo, proverbio.ferrarese)
+        self.assertEqual(italiano.per_corrispondenza[0][2], "corpo")
+        ferrarese = self.motore.traduci(proverbio.ferrarese, FE_IT)
+        self.assertEqual(ferrarese.testo, proverbio.italiano)
+        self.assertEqual(ferrarese.per_corrispondenza[0][2], "corpo")
+
+    def test_un_proverbio_non_documentato_non_raggiunge_il_passo_pieno(self):
+        # La regola è quella di `motore.py`: `corpo_frase` solo se la fonte
+        # c'è ed è dichiarata documentata. I cinque proverbi di S023 sono
+        # `I` — la trascrizione di un anonimo — e devono valere `corpo`.
+        proverbio = [p for p in self.corpus.proverbi
+                     if p.id == "P0033"][0]
+        self.assertEqual(proverbio.attendibilita, "I")
+        risposta = self.motore.traduci(proverbio.italiano)
+        self.assertAlmostEqual(risposta.confidenza, 0.80,
+                               msg="un proverbio non documentato vale `corpo`, "
+                                   "non `corpo_frase`")
+
+    def test_un_proverbio_documentato_raggiunge_il_passo_pieno(self):
+        documentati = [p for p in self.corpus.proverbi
+                       if p.attendibilita == "D" and p.valida()]
+        self.assertTrue(documentati, "nessun proverbio documentato: il test "
+                                     "qui sotto non avrebbe niente su cui "
+                                     "lavorare")
+        risposta = self.motore.traduci(documentati[0].italiano)
+        self.assertAlmostEqual(risposta.confidenza, 0.92)
+
+    def test_un_proverbio_senza_fonte_non_entra(self):
+        from traduttore.corpora import Proverbio
+        corpus = __import__("traduttore.corpora", fromlist=["Corpus"]).Corpus(
+            [], [Proverbio(id="X1", italiano="senza fonte qui",
+                           ferrarese="sensa fonte chi", fonte="")])
+        self.assertIsNone(corpus.frase_gemella("senza fonte qui"),
+                          "un proverbio senza fonte entra nell'indice: la "
+                          "stessa regola delle coppie, senza eccezioni")
+
+    def test_una_coppia_vince_su_un_proverbio_con_la_stessa_chiave(self):
+        # La regola e' dichiarata: la coppia parallela e' la prova diretta,
+        # il proverbio e' un modo di dire isolato dalla fonte. Quindi si
+        # indicizza prima la coppia e il proverbio entra dove la chiave e'
+        # libera — e la pagina fa la stessa cosa in un altro linguaggio.
+        from traduttore.corpora import Coppia, Corpus
+        frase = "una frase sola"
+        corpus = Corpus(
+            [Coppia(id="C1", italiano=frase, ferrarese="dalla coppia",
+                    fonte="una fonte")],
+            [_Proverbio(id="P1", italiano=frase, ferrarese="dal proverbio",
+                        fonte="un'altra fonte")])
+        self.assertEqual(corpus.frase_gemella(frase).id, "C1")
+
+
+class TestIlConfrontoFraLeCopieGuardaLaConfidenza(unittest.TestCase):
+    """Il confronto verificava che cosa dicevano, non quanto lo dicevano bene.
+
+    Difetto vero, di questa sessione: `risposta_python` e `risposta_js`
+    restituivano solo testo, traduzione e origine. La regola della confidenza
+    nel ramo della frase intera stava proprio fuori dal confronto, e la pagina
+    dava `corpo_frase` a tutto mentre il motore distingueva: due copie che
+    dicevano la stessa risposta con due sicurezze diverse, e il controllo verde.
+    """
+
+    def test_il_confronto_confronta_anche_la_confidenza(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "controlla_equivalenza",
+            os.path.join(RADICE, "prove", "controlla_equivalenza.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        with io.open(modulo.__file__, encoding="utf-8") as f:
+            sorgente = f.read()
+        self.assertIn('"confidenza": round(c, 2)', sorgente,
+                      "il confronto non prende la confidenza del motore")
+        self.assertIn("tonda(g.confidenza)", sorgente,
+                      "il confronto non prende la confidenza della pagina")
+
+    def test_il_confronto_passa_dal_ramo_vero_della_pagina(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "controlla_equivalenza",
+            os.path.join(RADICE, "prove", "controlla_equivalenza.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        with io.open(modulo.__file__, encoding="utf-8") as f:
+            sorgente = f.read()
+        # `fraseGemella(...)` da solo, senza `risolvi`, significa che il
+        # confronto riscrive a mano il ramo della frase intera: verifica una
+        # ricostruzione del codice e non il codice.
+        corpo = sorgente.split("def risposta_js", 1)[1].split("def main(", 1)[0]
+        self.assertIn("PAGINA.risolvi(%s, %s, %s)", corpo,
+                      "il confronto non passa da `risolvi`: sta verificando una "
+                      "ricostruzione")
+        self.assertIn("origin: g.origine", corpo.replace("origine:", "origin:"),
+                      "il confronto del ramo intero non legge l'origine")
+
+    def test_le_frasi_del_confronto_comprendono_un_proverbio(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "controlla_equivalenza",
+            os.path.join(RADICE, "prove", "controlla_equivalenza.py"))
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        proverbi = [f for _, f in modulo.FRASI
+                    if any(p.italiano == f for p in
+                           __import__("traduttore.corpora", fromlist=["Corpus"])
+                           .Corpus.da_file(
+                               os.path.join(RADICE, "dati", "coppie.jsonl"),
+                               os.path.join(RADICE, "dati", "proverbi.jsonl")
+                           ).proverbi)]
+        self.assertTrue(proverbi,
+                        "nessuna frase del confronto e' un proverbio: il ramo "
+                        "che mi interessava non sarebbe guardato")
+
+
+_Proverbio = __import__("traduttore.corpora", fromlist=["Proverbio"]).Proverbio
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -38,6 +38,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from . import italiano as analisi_italiana
 from . import normalizza
 
 # Soglia di accordo minima per usare una regola.
@@ -70,6 +71,11 @@ class Regola:
     suffisso_italiano: str = ""
     suffisso_ferrarese: str = ""
     esempi: list = field(default_factory=list)
+    # La classe grammaticale per cui la regola e' stata imparata.
+    # Vuota significa **non classificata**, e in quel caso la regola
+    # non passa dal cancello: non si sa di che cosa sia, e il progetto
+    # non finge di saperlo.
+    classe: str = ""
 
     @property
     def accordo(self) -> float:
@@ -106,6 +112,7 @@ class Regola:
 
     def come_dict(self) -> dict:
         return {
+            "classe": self.classe,
             "prefisso": self.prefisso,
             "suffisso_italiano": self.suffisso_italiano,
             "suffisso_ferrarese": self.suffisso_ferrarese,
@@ -176,7 +183,7 @@ def _pezzi(italiano: str, ferrarese: str):
     return "", "", ""
 
 
-def impara(corpo, glossario=None) -> list:
+def impara(corpo, glossario=None, italiano=None) -> list:
     """Impariamo le regole da un corpus di coppie valide.
 
     `glossario` serve a una cosa sola: a capire quali coppie sono gia' nel
@@ -258,12 +265,39 @@ def impara(corpo, glossario=None) -> list:
         _verifica_accordo(regola)
         if regola.accordo < SOGLIA_ACCORDO:
             continue
+        regola.classe = _classe_di(esempi, italiano)
         regole.append(regola)
     # Dall'indicazione piu' specifica alla piu' generica: una regola con
     # prefisso e desinenza lunga batte una regola che aggancia solo l'ultima
     # lettera. E' lo stesso ordine con cui si applicano.
     regole.sort(key=lambda r: (-len(r.suffisso_italiano), -len(r.prefisso), -r.accordo))
     return regole
+
+
+def _classe_di(esempi: list, italiano) -> str:
+    """La classe grammaticale che gli esempi italiani dichiarano, insieme.
+
+    Si prende la classe piu' frequente fra gli esempi della regola, e solo se e'
+    una sola: se due esempi hanno due classi diverse la regola non e' di una
+    classe, e non la si dichiara di una classe a caso — resta non classificata
+    e il chiamante deve sapere che il progetto non lo sa.
+
+    Senza analizzatore la classe resta vuota e la regola non viene filtrata:
+    e' il comportamento di prima, dichiarato come scelta e non come silenzio.
+    """
+    if italiano is None:
+        return ""
+    conteggio = {}
+    for esempio in esempi:
+        risposta = italiano.analizza(esempio["italiano"])
+        if risposta.nota:
+            conteggio[risposta.classe] = conteggio.get(risposta.classe, 0) + 1
+    if not conteggio:
+        return ""
+    ordinate = sorted(conteggio.items(), key=lambda kv: (-kv[1], kv[0]))
+    if len(ordinate) > 1 and ordinate[0][1] == ordinate[1][1]:
+        return ""
+    return ordinate[0][0]
 
 
 def _verifica_accordo(regola: Regola) -> None:
@@ -279,17 +313,30 @@ def _verifica_accordo(regola: Regola) -> None:
         riga["attestato"] = prodotto == riga["ferrarese"]
 
 
-def applica(parola: str, regole: list, direzione: str = "it-fe") -> str:
+def applica(parola: str, regole: list, direzione: str = "it-fe",
+            italiano=None) -> str:
     """Applica la prima regola che produce una parola.
 
     Se nessuna regola produce niente si restituisce la parola di partenza, e
     il chiamante deve saperlo: e' il caso in cui il motore **non sa**.
+
+    `italiano` e' l'analizzatore grammaticale. Quando c'e', una regola
+    classificata vale solo per le parole della sua classe, e una parola di
+    classe ignota non viene riscritta da nessuna regola: il progetto non
+    indovina che cosa sia una parola per poterle toccare le desinenze. Passando
+    `None` si ottiene esattamente il comportamento di prima.
     """
     k = normalizza.chiave(parola)
     if not k:
         return parola
+    classe = ""
+    if italiano is not None:
+        classe = italiano.analizza(parola).classe
     if direzione == "it-fe":
         for regola in regole:
+            if classe and regola.classe and not \
+                    analisi_italiana.compatibile(classe, regola.classe):
+                continue
             if not regola.suffisso_italiano or not k.endswith(regola.suffisso_italiano):
                 continue
             if regola.prefisso and not k.startswith(regola.prefisso):
@@ -302,6 +349,9 @@ def applica(parola: str, regole: list, direzione: str = "it-fe") -> str:
                 return prodotto
         return parola
     for regola in regole:
+        if classe and regola.classe and not \
+                analisi_italiana.compatibile(classe, regola.classe):
+            continue
         if not regola.suffisso_ferrarese or not k.endswith(regola.suffisso_ferrarese):
             continue
         if regola.prefisso and not k.startswith(regola.prefisso):
@@ -315,14 +365,20 @@ def applica(parola: str, regole: list, direzione: str = "it-fe") -> str:
     return parola
 
 
-def spiega(parola: str, regole: list, direzione: str = "it-fe"):
+def spiega(parola: str, regole: list, direzione: str = "it-fe",
+           italiano=None):
     """Dice quale regola ha prodotto la parola, o `(None, None)` se nessuna."""
     for regola in regole:
         if direzione == "it-fe" and not regola.suffisso_italiano:
             continue
         if direzione != "it-fe" and not regola.suffisso_ferrarese:
             continue
-        prodotto = applica(parola, [regola], direzione)
+        if italiano is not None and regola.classe:
+            risposta = italiano.analizza(parola)
+            if not analisi_italiana.compatibile(risposta.classe,
+                                                regola.classe):
+                continue
+        prodotto = applica(parola, [regola], direzione, italiano)
         if prodotto != parola:
             return regola, prodotto
     return None, None

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import morfologia, normalizza, pronominali, verbi
+from . import italiano, morfologia, normalizza, pronominali, verbi
 from .glossario import IT_FE
 
 # Le quattro origini, e la confidenza che portano con se'.
@@ -131,10 +131,16 @@ class Motore:
     """Il traduttore. Non ha stato proprio: e' una funzione dei dati."""
 
     def __init__(self, glossario, corpus, regole=None, modello=None,
-                 soglia_rifiuto: float = SOGLIA_RIFIUTO):
+                 soglia_rifiuto: float = SOGLIA_RIFIUTO, italiano_analisi=None):
         self.glossario = glossario
         self.corpus = corpus
         self.regole = regole or []
+        # L'analizzatore grammaticale dell'italiano. Senza di lui il livello 3
+        # lavora come ha sempre lavorato, per desinenza; con lui una regola
+        # vale solo per la classe che dichiara. `None` non e' un difetto: e' il
+        # modo in cui il motore si costruisce quando non gli si e' passato
+        # l'analizzatore, e i test lo costruiscono cosi' apposta.
+        self.italiano = italiano_analisi
         # `modello` e' un oggetto con un metodo `traduci(richiesta)`. Se e'
         # None il livello 4 non esiste e il motore si ferma al terzo.
         self.modello = modello
@@ -291,7 +297,8 @@ class Motore:
             # la frase intera al posto della parola.
 
         # Livello 3: le regole morfologiche imparate.
-        regola, prodotto = morfologia.spiega(parola, self.regole, direzione)
+        regola, prodotto = morfologia.spiega(parola, self.regole, direzione,
+                                              self.italiano)
         if regola is not None:
             confidenza = ORIGINE["regola"] * regola.accordo
             dettaglio = "%s (%d esempi, accordo %0.2f)" % (

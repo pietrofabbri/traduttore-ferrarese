@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.29
+versione: 0.30
 data: 2026-10-05
 ---
 
@@ -85,6 +85,52 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.30 — 2026-10-05 · Prima di riscrivere una parola, sapere che cos'è
+
+**La domanda che mancava, e che è più antica delle coniugazioni.** Il motore ha
+sempre lavorato **sulla parola**: la regola imparata dal corpus dice «questa
+desinenza si scrive così» e vale per qualunque parola finisca in quella
+desinenza. Ma una desinenza non appartiene a una sola classe: `-are` chiude un
+infinito (`cantare`) e chiude un nome dall'azione (`il mangiare`). Applicare la
+regola alla parola giusta è un caso fortunato, non un ragionamento, e quando va
+sbagliato produce una parola che sembra giusta e non lo è. Il progetto vieta i
+controlli che indovinano, e qui stava indovinando dal primo livello in giù.
+
+**La risposta porta la fonte, o non è una risposta.** `sorgenti/traduttore/
+italiano.py` risponde alla domanda «che cos'è questa parola?» con tre cose che
+non si inventano: la classe, **la fonte** che lo dice, e se quel giudizio è
+documentato o interpretato. Tre fonti, in quest'ordine: l'analisi del corpus
+annotato italiano di Universal Dependencies, il `campo` che ogni voce del
+glossario porta con la sua fonte, e il lemma di `dati/verbi.jsonl`, che è un
+infinito per dichiarazione.
+
+**Il buco è dichiarato e contato, perché è la parte importante.** Il corpus
+annotato **non è stato raccolto**: da questa macchina i file del treebank non si
+scaricano (GitHub e HuggingFace rispondono 404 sui percorsi dei dati), e
+un'analisi grammaticale scritta di testa sarebbe un'inventazione con il timbro
+di una fonte. Quindi il raccoglitore `raccolta/italiano.py` c'è, dichiarato con
+la sua fonte e la sua licenza, ed è pronto; il file che produrrebbe non esiste
+ancora, e il progetto oggi classifica **3494 voci su 17370**. Le altre 13876
+restano `ignota`, e `italiano` stampa il conto ogni volta che si chiede.
+
+**Il rifiuto, che è la parte che costa.** Una regola imparata porta scritto per
+quale classe è stata imparata, e vale solo per le parole di quella classe — e
+**non per le parole ignote**: non si riscrive una parola che non si sa che cosa
+sia, per non dirle che cosa significa. Questo **perde delle risposte**, ed è una
+perdita dichiarata: chi preferisce il comportamento di prima passa
+`italiano=None` e ottiene esattamente le regole di prima. Il rifiuto per classe
+ignota è il punto in cui il progetto sceglie di non rispondere invece di
+rispondere a caso, ed è la stessa scelta che c'è in tutti gli altri livelli.
+
+**Il controllo F19** vieta le righe di analisi che non portano fonte, licenza e
+la frase in cui la parola compare: una classe senza contesto si può controllare
+solo guardandola, e una classe che si può controllare solo guardandola non è
+stata controllata da nessuno. Un file assente **non** è un errore — è l'unica
+raccolta del progetto per cui l'assenza è un fatto e non un difetto.
+
+**Verifiche.** 335 test (erano 317): undici sull'analisi e sul cancello, sette su
+F19. `verifica`: 0 errori, 8 avvisi noti.
 
 ## 0.29 — 2026-10-05 · Un test può essere vero e non guardare niente
 

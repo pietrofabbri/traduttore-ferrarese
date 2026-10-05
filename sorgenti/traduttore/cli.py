@@ -31,7 +31,7 @@ import os
 import subprocess
 import sys
 
-from . import morfologia, verifica_dati, verbi
+from . import italiano, morfologia, verifica_dati, verbi
 from . import voce as voce_modulo
 from .audio import Archivio, controlla_archivo
 from .sintesi import Sintesi, controlla_sintesi
@@ -84,7 +84,19 @@ def carica(modello_attivo: bool = False):
     corpus = Corpus.da_file(PERCORSI["coppie"], PERCORSI["proverbi"])
     regole = _carica_regole()
     modello = costruisci_modello() if modello_attivo else None
-    return Motore(glossario, corpus, regole, modello)
+    return Motore(glossario, corpus, regole, modello, italiano_analisi=_analisi())
+
+
+def _analisi():
+    """L'analizzatore grammaticale dell'italiano, con le sue tre fonti.
+
+    `Italiano` si costruisce sempre: quello che cambia e' quante fonti riesce a
+    mettere dentro. Se `dati/italiano.jsonl` non c'e' — cioe' se la raccolta dal
+    corpus annotato non e' ancora avvenuta — il modulo funziona con le altre due
+    e dice che quel file manca, e non finge di averlo letto.
+    """
+    return italiano.Italiano.da_file(glossario=Glossario.da_file(
+        PERCORSI["glossario"]), verbi=verbi.carica())
 
 
 def _carica_regole() -> list:
@@ -843,6 +855,55 @@ def comando_sintesi(args) -> int:
     return 0
 
 
+def comando_italiano(args) -> int:
+    """Che cos'e' una parola in italiano, e quanto di questo progetto lo sa.
+
+    Il comando esiste perche' la domanda «che cos'e' `cantare`?» sembra ovvia
+    e non lo e': nel motore la risposta cambia il comportamento, perche' una
+    regola di desinenza vale solo per la classe che dichiara. Senza questo
+    comando la risposta starebbe dentro il codice e nessuno la vedrebbe.
+
+    Con `--parola` fa la domanda singola e stampa anche **da dove** viene la
+    risposta, che e' la parte che rende la risposta verificabile. Senza,
+    stampa la copertura: quante voci il progetto sa classificare e quante no.
+    Il numero delle ignote e' il piu' importante dei due, perche' e' la misura
+    di quanto resta da raccogliere.
+    """
+    analisi = _analisi()
+    if args.parola:
+        risposta = analisi.analizza(args.parola)
+        print("%-14s %-10s %s" % (risposta.forma, risposta.classe,
+                                  risposta.dettaglio))
+        if risposta.nota:
+            print("fonte          %s" % risposta.fonte)
+            print("attendibilita  %s" % (risposta.attendibilita or "non dichiarata"))
+            for altra in risposta.alternative:
+                print("altra classe   %s (fonte: %s)"
+                      % (altra["classe"], altra["fonte"]))
+        else:
+            print("motivo         %s" % risposta.motivo)
+        return 0 if risposta.nota else 1
+
+    glossario = Glossario.da_file(PERCORSI["glossario"])
+    copertura = analisi.copertura(glossario)
+    print("voci del glossario            %d" % copertura["voci"])
+    print("di cui con una classe in italiano  %d" % copertura["classificate"])
+    print("di cui senza                  %d   questa e' la raccolta che manca"
+          % copertura["senza_classe"])
+    print()
+    for classe, quante in sorted(copertura["per_classe"].items(),
+                                 key=lambda kv: (-kv[1], kv[0])):
+        print("  %-14s %6d" % (classe, quante))
+    print()
+    if not os.path.exists(os.path.join(DATI, "italiano.jsonl")):
+        print("dati/italiano.jsonl non c'e': la raccolta dal corpus annotato "
+              "non e'")
+        print("ancora avvenuta. Il raccoglitore e' `raccolta/italiano.py`.")
+    if copertura["esempi_senza"]:
+        print("prime voci senza classe: %s" % ", ".join(copertura["esempi_senza"]))
+    return 0
+
+
 def comando_stato(args) -> int:
     motore = carica(modello_attivo=False)
     cosa = motore.cosa_sa()
@@ -922,6 +983,13 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p = sotto.add_parser("stato", help="che cosa sa il motore")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_stato)
+
+    p = sotto.add_parser(
+        "italiano",
+        help="che cos'e' una parola in italiano, e quante voci lo sappiamo")
+    p.add_argument("--parola",
+                   help="una parola, per chiedere la sua classe")
+    p.set_defaults(func=comando_italiano)
 
     p = sotto.add_parser("copertura",
                          help="quanto italiano copre il glossario, e che manca")

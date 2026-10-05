@@ -20,6 +20,7 @@ import json
 import os
 from dataclasses import dataclass
 
+from . import italiano
 from .corpora import TIPI
 from .fonetica import ipa_valida, leggi_sistema
 from .glossario import ATTENDIBILITA
@@ -779,6 +780,86 @@ def controlla_tokeni(tokeni=None, pronominali=None, percorso: str = None) -> lis
                         "la particella e' dichiarata ma `%s` e' vuoto: senza la "
                         "fonte che la documenta la dichiarazione non si puo' "
                         "controllare" % campo))
+    return problemi
+
+
+def controlla_analisi_italiano(percorso: str = None) -> list:
+    """**F19**: ogni analisi grammaticale porta la fonte, la licenza e la prova.
+
+    `dati/italiano.jsonl` raccoglie che cos'e' una parola italiana secondo il
+    corpus annotato. Quel file e' piu' pericoloso degli altri, perche' la classe
+    grammaticale sembra una cosa che si sa: e' difficile scrivere «questa parola
+    e' un verbo» guardando la parola, ed e' facile scriverglielo come se fosse
+    stato letto da una fonte. Questo controllo e' la linea che distingue le due
+    cose:
+
+    - una riga senza `fonte` e' un'analisi inventata, e non entra;
+    - una riga senza `licenza` non si puo' pubblicare, quindi non entra;
+    - una riga senza la frase che contiene la parola e' una classe senza
+      contesto, e una classe che si puo' controllare solo guardandola e' una
+      classe che nessuno ha controllato;
+    - una classe che il progetto non sa usare non viene convertita in un'altra:
+      resta `ignota`, che e' il posto giusto dove metterla.
+
+    **Il file puo' non esserci**, e questa e' l'unica raccolta del progetto per
+    cui l'assenza non e' un errore: la raccolta dal corpus annotato non e' ancora
+    avvenuta, quindi non c'e' niente dentro che sia stato scritto male. Il numero
+    delle voci che restano senza classe e' stampato dal comando `italiano`.
+    """
+    percorso = percorso or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "dati", "italiano.jsonl")
+    if not os.path.exists(percorso):
+        return []
+    problemi = []
+    conosciuti = set(italiano.MAPPA_UPOS)
+    viste = set()
+    with io.open(percorso, encoding="utf-8") as f:
+        for numero, riga in enumerate(f, 1):
+            riga = riga.strip()
+            if not riga or riga.startswith("//"):
+                continue
+            dove = "dati/italiano.jsonl:%d" % numero
+            try:
+                d = json.loads(riga)
+            except ValueError:
+                problemi.append(Problema(
+                    "F19", dove,
+                    "riga che non e' json: il raccoglitore la scrive e non la "
+                    "corregge"))
+                continue
+            forma = (d.get("forma") or "").strip()
+            if not forma:
+                problemi.append(Problema("F19", dove, "riga senza la forma"))
+            elif forma in viste:
+                problemi.append(Problema(
+                    "F19", dove,
+                    "forma %r gia' dichiarata: due righe per la stessa parola "
+                    "significano che una delle due e' inventata" % forma))
+            viste.add(forma)
+            if not (d.get("fonte") or "").strip():
+                problemi.append(Problema(
+                    "F19", dove,
+                    "analisi senza fonte: e' una supposizione, e questo progetto "
+                    "non la scrive a mano"))
+            if not (d.get("licenza") or "").strip():
+                problemi.append(Problema(
+                    "F19", dove,
+                    "riga senza licenza: non si pubblica quello che non si puo' "
+                    "dichiarare"))
+            if not (d.get("frase") or "").strip():
+                problemi.append(Problema(
+                    "F19", dove,
+                    "riga senza la frase che contiene la parola: una classe "
+                    "senza contesto non e' controllabile"))
+            for classe in d.get("classi") or []:
+                tag = classe.get("tag") if isinstance(classe, dict) else classe
+                if tag and tag not in conosciuti:
+                    problemi.append(Problema(
+                        "F19", dove,
+                        "tag %r non e' fra quelli che il progetto sa usare: "
+                        "resta ignota e non viene convertito in un altro" % tag,
+                        "avviso"))
     return problemi
 
 

@@ -461,6 +461,8 @@ traduttore-ferrarese/
       fonetica.py      le trascrizioni IPA e il controllo dei simboli
       audio.py         il manifesto dei brani e le tre condizioni di pubblicazione
       morfologia.py    l'apprendimento delle regole
+      italiano.py      che cos'e' una parola italiana, e da
+                       quale fonte lo dice
       motore.py        i quattro livelli, il buco, la confidenza
       modello.py       il livello IA, facoltativo
       proposte.py      la coda di revisione del livello IA
@@ -591,15 +593,54 @@ ferrarese. In breve:
   quanto e' antico il glossario: e' la misura di quanto ne sa la fonte che si
   e' aperta. Perci' la pagina lo dichiara e non lo nasconde.
 
+## Prima di riscrivere una parola, sapere che cos'e'
+
+Il livello 3 del motore è nato imparando regole dai dati, e una regola imparata
+dal corpus ha questa forma: «questa desinenza si scrive così». Il difetto è che
+una desinenza non appartiene a una sola classe. `-are` chiude un infinito
+(`cantare`) e chiude anche un nome dall'azione (`il mangiare`); applicare la
+regola alla parola giusta è un caso fortunato, non un ragionamento, e quando va
+sbagliato produce una parola che sembra giusta e non lo è.
+
+Quindi il motore ora chiede, **prima**, che cosa è la parola. Il modulo
+`italiano.py` risponde con tre cose che non si inventano: la classe (`nome`,
+`verbo`, `aggettivo`, `pronome`, …), **la fonte** che lo dice, e se quel
+giudizio è documentato o interpretato. Le fonti sono tre, in quest'ordire:
+
+1. `dati/italiano.jsonl`, l'analisi dal corpus annotato italiano di Universal
+   Dependencies — scelta perché annota parole **in frasi**, che è la domanda che
+   si pone un traduttore. **Non è ancora stato raccolto**: da questa macchina i
+   file del treebank non si scaricano, e un'analisi scritta a testa sarebbe
+   inventata. Il raccoglitore è `raccolta/italiano.py`, dichiarato e pronto;
+2. il campo `campo` del glossario, che ogni voce porta con la sua fonte: 3494
+   voci su 17370;
+3. il lemma di `dati/verbi.jsonl`, che è un infinito per dichiarazione.
+
+Le altre **13876 voci restano ignote**, e `ignota` è la risposta, non un
+inciampo: il comando `italiano` stampa il conto ogni volta, perché un buco che
+non ha numero smette di essere un buco.
+
+**Il rifiuto, che è la parte che costa.** Una regola imparata porta scritto per
+quale classe è stata imparata, e viene applicata solo alle parole di quella
+classe — **e non alle parole ignote**. Il progetto rinuncia a indovinare, e
+perde delle risposte: è una scelta dichiarata, non un incidente. Chi preferisce
+il comportamento di prima passa `italiano=None` e ottiene esattamente le regole
+di prima. Il numero di ciò che resta fuori è stampato, perché una risposta in
+meno che nessuno conta è una risposta che il progetto non sa di non dare.
+
+
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 317 test
+python3 prove/test_traduttore.py     # 335 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario
 python3 raccolta/cerca_nelle_fonti.py  # le parole frequenti non coperte
 python3 -m traduttore.cli verifica   # i controlli sui dati
+python3 -m traduttore.cli italiano   # che cos'e' una parola in
+                                      # italiano, e quante voci
+                                      # il progetto non lo sa
 ```
 
 

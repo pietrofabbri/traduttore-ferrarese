@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import json
 import io
+import shutil
 import hashlib
 import os
 import re
@@ -5299,6 +5300,267 @@ class TestIlWorkflowNonPerdePassi(unittest.TestCase):
             self.assertTrue(
                 any(comando in c for c in trovati),
                 "%s non e' fra i passi che girano in locale" % comando)
+
+
+class VoceFinta:
+    """Una voce con quattro campi, perche' l'analizzatore non guarda altro."""
+
+    def __init__(self, italiano, campo, fonte="fonte dichiarata",
+                 attendibilita="D", id_="V0001"):
+        self.id = id_
+        self.italiano = italiano
+        self.campo = campo
+        self.fonte = fonte
+        self.attendibilita = attendibilita
+
+
+class GlossarioFinto:
+    def __init__(self, voci):
+        self.voci = voci
+
+
+class TestLAnalisiPrimaDellaParola(unittest.TestCase):
+    """La domanda «che cos'e' `cantare`?» viene prima di riscrivere la parola.
+
+    Il difetto che questi test prendono e' il difetto di fondo del livello 3: una
+    regola imparata dal corpus dice «questa desinenza si scrive cosi'» e la
+    applica a **qualunque** parola finisca in quella desinenza. Ma `-are` non
+    appartiene a una sola classe, e applicare a caso produce una parola che
+    sembra giusta e non lo e'.
+
+    Qui si controllano le tre cose che devono essere vere:
+
+    - la risposta alla domanda porta **la fonte** accanto, e senza fonte non
+      e' una risposta ma una supposizione;
+    - una parola che nessuna fonte dichiara resta `ignota`, e `ignota` non e'
+      una classe che lascia passare niente;
+    - una regola classificata **non** si applica a una parola di un'altra
+      classe, e non si applica a una parola ignota. Il progetto rinuncia a
+      indovinare, e il numero di quelle rinunce e' un numero che si stampa.
+    """
+
+    def _analisi(self, voci=None):
+        from traduttore import italiano
+        glossario = GlossarioFinto(voci or [
+            VoceFinta("mangiare", "verbo"),
+            VoceFinta("casa", "sostantivo"),
+            VoceFinta("civile", "aggettivo"),
+            VoceFinta("lentamente", "avverbio"),
+        ])
+        return italiano.Italiano(analisi_file={}, glossario=glossario)
+
+    # --------------------------------------------------------- la domanda
+    def test_una_voce_dichiara_la_sua_classe_e_la_sua_fonte(self):
+        analisi = self._analisi()
+        risposta = analisi.analizza("mangiare")
+        self.assertEqual(risposta.classe, "verbo")
+        self.assertEqual(risposta.dettaglio, "infinito")
+        self.assertEqual(risposta.fonte, "fonte dichiarata")
+        self.assertEqual(risposta.attendibilita, "D")
+
+    def test_una_parola_che_nessuna_fonte_dichiara_resta_ignota(self):
+        analisi = self._analisi()
+        risposta = analisi.analizza("cantare")
+        self.assertEqual(risposta.classe, "ignota")
+        self.assertFalse(risposta.nota)
+        # Il motivo non e' decorativo: e' la frase che dice al chiamante
+        # **perche'** il progetto non sa.
+        self.assertIn("corpus annotato", risposta.motivo)
+        self.assertIn("glossario", risposta.motivo)
+
+    def test_una_parola_vuota_non_si_analizza_e_lo_dice(self):
+        risposta = self._analisi().analizza("   ")
+        self.assertEqual(risposta.classe, "ignota")
+        self.assertIn("vuota", risposta.motivo)
+
+    def test_il_campo_che_non_e_una_classe_non_crea_una_classe(self):
+        # «modo di dire» e «gioco» stanno in `campo` ma non sono categorie
+        # grammaticali: il progetto non sa che cosa siano e non deve fingere.
+        analisi = self._analisi([VoceFinta("levare di soppeso", "modo di dire")])
+        risposta = analisi.analizza("levare di soppeso")
+        self.assertEqual(risposta.classe, "ignota")
+
+    def test_il_campo_vuoto_non_viene_indovinato(self):
+        analisi = self._analisi([VoceFinta("magnar", "")])
+        self.assertEqual(analisi.analizza("magnar").classe, "ignota")
+
+    # --------------------------------------------------------- il conto
+    def test_la_copertura_conta_soprattutto_cio_che_non_sa(self):
+        analisi = self._analisi([
+            VoceFinta("mangiare", "verbo"),
+            VoceFinta("casa", "sostantivo"),
+            VoceFinta("magnar", ""),
+        ])
+        copertura = analisi.copertura(GlossarioFinto([
+            VoceFinta("mangiare", "verbo"),
+            VoceFinta("casa", "sostantivo"),
+            VoceFinta("magnar", ""),
+        ]))
+        self.assertEqual(copertura["voci"], 3)
+        self.assertEqual(copertura["classificate"], 2)
+        # Il numero che conta e' l'altro: e' la misura di quanto resta.
+        self.assertEqual(copertura["senza_classe"], 1)
+        self.assertEqual(copertura["per_classe"]["verbo"], 1)
+
+    # --------------------------------------------------------- il cancello
+    def _regola(self, classe):
+        from traduttore import morfologia
+        r = morfologia.Regola("", "are", "ar", [
+            {"coppia": "X0001", "italiano": "mangiare", "ferrarese": "mangar",
+             "prodotto": "mangar", "attestato": True},
+            {"coppia": "X0002", "italiano": "cantare", "ferrarese": "cantar",
+             "prodotto": "cantar", "attestato": True},
+        ])
+        r.classe = classe
+        return r
+
+    def test_la_regola_di_una_classe_non_tocca_una_parola_di_un_altra(self):
+        from traduttore import morfologia
+        analisi = self._analisi()
+        regola = self._regola("verbo")
+        # «casa» e' un nome e non finisce in `-are`, ma la prova vera e' che il
+        # cancello e' sul merito della classe e non sulla forma della parola:
+        # qui la parola da rifiutare finisce davvero in `-are`.
+        rifiutata = morfologia.applica("campanare", [regola], "it-fe", analisi)
+        self.assertEqual(rifiutata, "campanare",
+                         "una parola di classe ignota non viene riscritta")
+        # Il nucleo resta com'e': la regola tocca la desinenza, non la radice,
+        # e percio' il risultato e' `mangi` + `ar` e non `mangar`.
+        concessa = morfologia.applica("mangiare", [regola], "it-fe", analisi)
+        self.assertEqual(concessa, "mangiar")
+
+    def test_una_parola_di_classe_diversa_non_e_riscritta(self):
+        # Il caso che il cancello esiste per prendere: una parola che finisce
+        # come la regola dice, ma che non e' della classe della regola. Qui
+        # «campanare» e' un nome, e la regola e' imparata sui verbi: la parola
+        # resta com'e'. Senza il cancello diventerebbe «campanar», che e' un
+        # verbo: una parola che sembra giusta e non lo e'.
+        from traduttore import morfologia
+        analisi = self._analisi([
+            VoceFinta("mangiare", "verbo"),
+            VoceFinta("campanare", "sostantivo"),
+        ])
+        regola = self._regola("verbo")
+        regola.suffisso_ferrarese = "ar"
+        self.assertEqual(morfologia.applica("campanare", [regola], "it-fe", analisi),
+                         "campanare")
+        # E la stessa regola, applicata a un nome che il progetto **non**
+        # distingue da un nome, non viene ne' accettata ne' giustificata:
+        # l'unica risposta e' che il progetto non lo sa.
+        ignota = self._analisi([VoceFinta("mangiare", "verbo")])
+        self.assertEqual(morfologia.applica("campanare", [regola], "it-fe", ignota),
+                         "campanare")
+
+    def test_senza_analizzatore_la_regola_e_il_comportamento_di_prima(self):
+        # Il rifiuto per classe ignota **perde** delle risposte. Chi non vuole
+        # quella perdita passa l'analizzatore a None e ottiene esattamente la
+        # regola di prima: dichiarato, non silenzioso.
+        from traduttore import morfologia
+        regola = self._regola("verbo")
+        self.assertEqual(morfologia.applica("campanare", [regola], "it-fe"), "campanar")
+
+    def test_spiega_non_restituisce_una_regola_rifiutata(self):
+        from traduttore import morfologia
+        analisi = self._analisi()
+        # `spiega` non restituisce `(None, "campanare")`: quando nessuna regola
+        # produce niente restituisce `(None, None)`, e il chiamante deve sapere
+        # che nessuna regola ha prodotto niente. Restituire la parola di
+        # partenza sembrerebbe una traduzione riuscita.
+        regola, prodotto = morfologia.spiega("campanare", [self._regola("verbo")],
+                                             "it-fe", analisi)
+        self.assertIsNone(regola)
+        self.assertIsNone(prodotto)
+
+    def test_ignota_non_e_una_classe_compatibile(self):
+        from traduttore import italiano
+        self.assertFalse(italiano.compatibile("ignota", "verbo"))
+        self.assertFalse(italiano.compatibile("verbo", "ignota"))
+        self.assertTrue(italiano.compatibile("verbo", "verbo"))
+        self.assertFalse(italiano.compatibile("nominale", "verbo"))
+
+
+class TestIlControlloF19(unittest.TestCase):
+    """F19 prende l'analisi grammaticale che non porta la fonte.
+
+    Il difetto che questo controllo esiste per prendere e' il piu' invisibile
+    del progetto: la classe grammaticale sembra una cosa che si sa. E' difficile
+    scrivere «questa parola e' un verbo» guardando la parola, ed e' facile
+    scriverglielo come se fosse stato letto da una fonte — e siccome il file non
+    si vede mentre si scrive, l'analisi inventata resta indistinguibile da
+    quella raccolta.
+
+    I test qui sotto prendono le quattro righe che il raccoglitore non deve
+    poter scrivere: senza fonte, senza licenza, senza la frase che contiene la
+    parola, e con due righe per la stessa forma. E prendono anche il caso che
+    il controllo non deve segnalare come errore: un file che non esiste, perche'
+    una raccolta non avvenuta non e' una raccolta fatta male.
+    """
+
+    def _scrivi(self, righe):
+        import tempfile
+        cartella = tempfile.mkdtemp()
+        percorso = os.path.join(cartella, "italiano.jsonl")
+        with io.open(percorso, "w", encoding="utf-8", newline="\n") as f:
+            for riga in righe:
+                f.write(json.dumps(riga, ensure_ascii=False) + "\n")
+        self.addCleanup(shutil.rmtree, cartella, True)
+        return percorso
+
+    def _buona(self, **cambia):
+        riga = {"forma": "cantare", "classi": [{"tag": "VERB", "conteggio": 3}],
+                "frase": "Mi piace cantare qui", "fonte": "corpus annotato",
+                "licenza": "CC BY-SA 4.0", "attendibilita": "D"}
+        riga.update(cambia)
+        return riga
+
+    def test_una_riga_completa_non_e_un_problema(self):
+        from traduttore import verifica_dati
+        percorso = self._scrivi([self._buona()])
+        self.assertEqual(verifica_dati.controlla_analisi_italiano(percorso), [])
+
+    def test_una_riga_senza_fonte_e_un_errore(self):
+        from traduttore import verifica_dati
+        riga = self._buona()
+        del riga["fonte"]
+        problemi = verifica_dati.controlla_analisi_italiano(self._scrivi([riga]))
+        codici = [(p.codice, p.gravita) for p in problemi]
+        self.assertIn(("F19", "errore"), codici)
+
+    def test_una_riga_senza_licenza_e_un_errore(self):
+        from traduttore import verifica_dati
+        riga = self._buona()
+        del riga["licenza"]
+        problemi = verifica_dati.controlla_analisi_italiano(self._scrivi([riga]))
+        self.assertTrue(any(p.codice == "F19" for p in problemi))
+
+    def test_una_riga_senza_la_frase_e_un_errore(self):
+        from traduttore import verifica_dati
+        riga = self._buona()
+        riga["frase"] = ""
+        problemi = verifica_dati.controlla_analisi_italiano(self._scrivi([riga]))
+        self.assertTrue(any("frase" in p.messaggio for p in problemi))
+
+    def test_due_righe_per_la_stessa_forma_sono_un_errore(self):
+        from traduttore import verifica_dati
+        problemi = verifica_dati.controlla_analisi_italiano(
+            self._scrivi([self._buona(), self._buona()]))
+        self.assertTrue(any("gia' dichiarata" in p.messaggio for p in problemi))
+
+    def test_un_tag_che_il_progetto_non_sa_usare_e_un_avviso(self):
+        # Non un errore: il file e' lecito, e quello che non si sa diventa
+        # `ignota`. Ma il progetto deve saperlo, quindi resta nel registro.
+        from traduttore import verifica_dati
+        problemi = verifica_dati.controlla_analisi_italiano(self._scrivi(
+            [self._buona(classi=[{"tag": "X", "conteggio": 1}])]))
+        self.assertTrue(any(p.gravita == "avviso" for p in problemi))
+
+    def test_un_file_che_non_esiste_non_e_un_errore(self):
+        # La raccolta dal corpus annotato non e' ancora avvenuta: l'assenza e'
+        # un fatto dichiarato dal comando `italiano`, non una riga scritta male.
+        from traduttore import verifica_dati
+        self.assertEqual(
+            verifica_dati.controlla_analisi_italiano("/non/esiste/italiano.jsonl"),
+            [])
 
 
 if __name__ == "__main__":

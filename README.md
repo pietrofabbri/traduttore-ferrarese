@@ -640,10 +640,33 @@ di prima. Il numero di ciò che resta fuori è stampato, perché una risposta in
 meno che nessuno conta è una risposta che il progetto non sa di non dare.
 
 
+## Il paradigma, e la conversione che l'ha reso leggibile
+
+Il buco che il progetto dichiarava da più versioni — «nel repository non esiste una
+fonte che tabelli la coniugazione ferrarese» — **aveva una fonte**: la sezione 4 delle
+note linguistiche di Roberto Bigoni (S015), che dà presente, futuro, imperfetto,
+coniuntivo e condizionale dei verbi ausiliari, delle quattro coniugazioni e dei cinque
+irregolari più comuni, con il soggetto che è una proclitica e la negazione che è
+un'altra particella.
+
+Quel testo è scritto in un **alfabeto fonetico** — una lettera per ogni suono, con i
+segni che distinguono le vocali aperte dalle chiuse — e non nell'ortografia in cui il
+glossario scrive. La conversione è quindi **un dato dichiarato**,
+`dati/conversione_bigoni.json`: ogni segno, il suono che la fonte gli attribuisce, la
+lettera con cui qui si scrive, e il motivo. Due perdite sono dichiarate come perdite:
+la `š` e la `ž` sono sibilanti sonore che l'italiano non scrive, e le vocali atone
+aperte e chiuse (`ě`, `ê`, `ǒ`, `ô`) diventano accenti tonici, perché in italiano
+non c'è modo di scriverle. Ogni riga che ne soffre resta `attendibilita: "I"` e nomina
+la perdita.
+
+Cosa è entrato finora: il **presente indicativo** di `dar`, `far`, `dir`, `capir` e
+`vlér` — i cinque lemmi che il glossario attesta già. Il resto del paradigma è
+ dichiarato e non scritto, e `verbi.jsonl` lo dice nella sua intestazione.
+
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 335 test
+python3 prove/test_traduttore.py     # 337 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

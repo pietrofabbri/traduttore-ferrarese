@@ -5563,5 +5563,59 @@ class TestIlControlloF19(unittest.TestCase):
             [])
 
 
+class TestLaConversioneDichiaraSeStessa(unittest.TestCase):
+    """Ogni forma venuta da una trascrizione dichiara la conversione che ha subito.
+
+    Il rischio di questo file non e' scrivere male una forma: e' scriverla bene e
+    far dimenticare che e' stata riscritta. Una forma convertita e non dichiarata
+    semblia attestata quanto una forma letta dalla fonte, e il progetto non fa
+    questa differenza.
+
+    I due test prendono le due cose che devono essere vere: la tabella di
+    conversione esiste e copre i segni della fonte, e ogni riga che viene da
+    quella fonte nomina la tabella che l'ha trasformata.
+    """
+
+    def test_la_tabella_copre_i_segni_della_fonte(self):
+        import json
+        percorso = os.path.join(RADICE, "dati", "conversione_bigoni.json")
+        self.assertTrue(os.path.exists(percorso),
+                        "la tabella di conversione non c'e': le forme sono state "
+                        "convertite senza dichiarare come")
+        tabella = json.load(io.open(percorso, encoding="utf-8"))
+        segni = set()
+        for gruppo in ("consonanti", "vocali"):
+            for riga in tabella[gruppo]:
+                self.assertTrue(riga.get("suono"),
+                                "il segno %r non dice che suono e'" % riga["segno"])
+                segni.add(riga["segno"])
+        # I segni che la fonte usa nelle forme che sono entrate nel file. Se la
+        # fonte ne introduce uno nuovo, questo test lo dice invece di lasciare
+        # che la conversione salti quel segno in silenzio.
+        for segno in ("ɣ", "ŋ", "š", "ě", "é", "ò", "ó"):
+            self.assertIn(segno, segni,
+                          "il segno %r della fonte non e' nella tabella" % segno)
+
+    def test_ogni_forma_convertita_dichiara_la_conversione(self):
+        percorso = os.path.join(RADICE, "dati", "verbi.jsonl")
+        righe = []
+        with io.open(percorso, encoding="utf-8") as f:
+            for riga in f:
+                if riga.startswith("//") or not riga.strip():
+                    continue
+                righe.append(json.loads(riga))
+        convertite = [r for r in righe
+                     if "conversione_bigoni.json" in (r.get("nota") or "")]
+        self.assertTrue(convertite,
+                        "nessuna forma dichiara la conversione: le righe di S015 "
+                        "sono state scritte senza dire da quale scrittura")
+        for riga in convertite:
+            self.assertEqual(riga["attendibilita"], "I",
+                             "una forma convertita non puo' stare come "
+                             "documentata: %s" % riga["id"])
+            self.assertEqual(riga["fonte"], "S015")
+            self.assertIn("Trascrizione della fonte", riga["nota"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

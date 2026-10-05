@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.32
+versione: 0.33
 data: 2026-10-05
 ---
 
@@ -85,6 +85,41 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.33 — 2026-10-05 · Il paradigma c'era, era scritto in un altro alfabeto
+
+**Il buco che avevo dichiarato era una fonte non aperta.** Da più versioni il file dei
+verbi diceva: «Non c'è il paradigma. Nel repository non esiste una fonte che tabelli la
+coniugazione ferrarese». La fonte c'è: è la sezione 4 delle note linguistiche di
+Roberto Bigoni (S015), che tabella presente, futuro, imperfetto, congiuntivo e
+condizionale degli ausiliari, delle quattro coniugazioni e di cinque irregolari, e
+spiega anche le due cose che rendevano il motore confuso — il soggetto è una proclitica
+(`at va a ka` = vai a casa, `lu al va a ka` = lui va a casa) e la negazione è `aŋ`,
+rafforzata da `brìša`.
+
+**L'ostacolo vero non era la fonte, era l'alfabeto.** Bigoni scrive con una lettera per
+ogni suono: `ŋ`, `ɣ`, `š`, `ž`, `ʎ`, e vocali con l'apertura e l'accento segnati. Il
+glossario scrive come scriviamo noi. Convertire di nascosto avrebbe prodotto forme che
+sembrano parole ferraresi e non lo sono, che è peggio di non avere niente. Quindi la
+conversione è **un dato**: `dati/conversione_bigoni.json`, dodici consonanti e otto
+vocali, ognuna con il suono che la fonte le attribuisce, la lettera di questo progetto
+e il motivo della scelta.
+
+**Le due perdite sono dichiarate come perdite.** La `š` e la `ž` sono sibilanti sonore:
+l'italiano non ha la lettera, quindi diventano `s` e `z`. E `ě`, `ê`, `ǒ`, `ô`
+distinguono la vocale atona aperta da quella chiusa — la differenza che c'è fra
+*prestissimo* e *venoso* — mentre l'italiano non ha lettere per dirla, quindi diventano
+accenti tonici. In una lingua in cui l'accento tonico conta, perdere questa cosa non è
+una sciatteria: ogni riga che ne soffre resta `attendibilita: "I"` e nomina la perdita.
+
+**Che cosa è entrato, e che cosa no.** Il presente indicativo di `dar`, `far`, `dir`,
+`capir` e `vlér`: trenta forme, tutte con lemma che il glossario attesta già, quindi il
+controllo F16 le accetta. Gli altri tempi — futuro, imperfetto, congiuntivo, condizionale,
+gerundio, participio — sono **dichiarati e non scritti**, e l'intestazione del file lo
+dice: il buco non è più senza mappa, è una mappa con le prime caselle.
+
+**Verifiche.** 337 test (erano 335): due sulla dichiarazione della conversione.
+`verifica`: 0 errori, 8 avvisi noti.
 
 ## 0.32 — 2026-10-05 · Il corpus annotato si è scaricato, e aveva un difetto peggiore
 

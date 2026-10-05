@@ -1,0 +1,33 @@
+{
+  "_nota": "La conversione dalla trascrizione fonetica di S015 all'ortografia di questo progetto, dichiarata riga per riga. **Perche' questo file esiste:** S015 (le note linguistiche di Roberto Bigoni) scrive il ferrarese con un alfabeto fonetico suo, una lettera per ogni suono, con i segni diacritici che distinguono le vocali aperte da quelle chiuse e toniche da atone. Questo progetto scrive come scriviamo noi, e le due cose non sono la stessa lingua di scrittura. Convertire senza dichiarare produrrebbe forme che sembrano parole ferraresi e non lo sono: peggio di non avere niente. **Come sono scelte le lettere:** ogni riga porta il suono che Bigoni dichiara nella sua tabella, la lettera con cui questo progetto lo scrive, e il motivo. Il motivo non e' una giustificazione: e' la dichiarazione di una perdita, quando c'e'.",
+  "fonte": "S015",
+  "consonanti": [
+    {"segno": "k", "suono": "c gutturale, come in cosa", "lettera": "c", "motivo": "l'italiano scrive la c così"},
+    {"segno": "c", "suono": "c affricata, come in c'è", "lettera": "c", "motivo": "l'italiano scrive la c così anche davanti a e'"},
+    {"segno": "ɣ", "suono": "g gutturale, come in gatto", "lettera": "g", "motivo": "l'italiano scrive la g così"},
+    {"segno": "g", "suono": "g affricata, come in gelo", "lettera": "g", "motivo": "l'italiano scrive la g così"},
+    {"segno": "j", "suono": "i semiconsonantico, come in iosa", "lettera": "j", "motivo": "il progetto scrive la j anche davanti alla vocale, che è il modo italiano"},
+    {"segno": "ʎ", "suono": "laterale palatale, come in paglia", "lettera": "gli", "motivo": "l'italiano non ha la lettera semivocale palatale e scrive gli"},
+    {"segno": "ŋ", "suono": "n leggermente nasale, come in anche", "lettera": "n", "motivo": "l'italiano scrive la n così; il nasalismo è nella pronuncia, non nella lettera"},
+    {"segno": "ñ", "suono": "n palatale nasale, come in campagna", "lettera": "gn", "motivo": "l'italiano scrive gn"},
+    {"segno": "s", "suono": "s sorda, come in santo", "lettera": "s", "motivo": "identica"},
+    {"segno": "š", "suono": "s sonora, come in rosa", "lettera": "s", "perdita": "l'italiano non ha una lettera sola per la s sonora: qui diventa s, e la riga che la contiene è dichiarata come interpretazione"},
+    {"segno": "z", "suono": "z sorda, come in azione", "lettera": "z", "motivo": "identica"},
+    {"segno": "ž", "suono": "z sonora, come in zero", "lettera": "z", "perdita": "come per la s sonora: l'italiano non ha la lettera, e la riga è dichiarata come interpretazione"}
+  ],
+  "vocali": [
+    {"segno": "è", "suono": "e tonica grave, come in presto", "lettera": "è", "motivo": "identica"},
+    {"segno": "é", "suono": "e tonica acuta, come in vena", "lettera": "é", "motivo": "identica"},
+    {"segno": "ě", "suono": "e atona aperta, come in prestissimo", "lettera": "è", "perdita": "l'italiano non distingue la e aperta dalla chiusa: questa diventa la e con accento, e la riga è dichiarata come interpretazione"},
+    {"segno": "ê", "suono": "e atona chiusa, come in venoso", "lettera": "é", "perdita": "come sopra: la riga è dichiarata come interpretazione"},
+    {"segno": "ò", "suono": "o tonica grave, come in porta", "lettera": "ò", "motivo": "identica"},
+    {"segno": "ó", "suono": "o tonica acuta, come in dove", "lettera": "ó", "motivo": "identica"},
+    {"segno": "ǒ", "suono": "o atona aperta, come in portare", "lettera": "ò", "perdita": "come sopra: la riga è dichiarata come interpretazione"},
+    {"segno": "ô", "suono": "o atona chiusa, come in dovunque", "lettera": "ó", "perdita": "come sopra: la riga è dichiarata come interpretazione"}
+  ],
+  "esempi": [
+    {"grandeoni": "pjóv", "progetto": "pióv", "nota": "è la forma già presente in dati/verbi.jsonl: la conversione è la stessa di quelle righe"},
+    {"grandeoni": "aŋ ɣ'è paŋ", "progetto": "an gh'e pang", "nota": "la negazione aŋ diventa an e il suono ɣ diventa gh'e, che è come il progetto scrive quella enclitica"}
+  ],
+  "che_cosa_non_e_stato_convertito": "Le forme che contengono una vocale atona aperta o chiusa perdono la differenza che la fonte faceva. Il progetto non inventa un accento che la fonte non aveva e non butta via la forma: la scrive come la può scrivere e **lo dichiara**, con `attendibilita: \"I\"` e la perdita nominata nella nota della riga."
+}

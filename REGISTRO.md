@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.30
+versione: 0.31
 data: 2026-10-05
 ---
 
@@ -85,6 +85,37 @@ Python/JavaScript: 12 frasi, 0 divergenze. Sul campione di 26 traduzioni,
 copertura e non hanno rotto quello che gia' funzionava. La pagina e' passata
 da 230 KB a 4,2 MB: e' il prezzo di 10000 voci, e la nota delle voci meccaniche
 e' stata accorciata perche' da sola valeva 1,4 MB ripetuti.
+
+## 0.31 — 2026-10-05 · Anche la pagina smette di indovinare dalla parola
+
+**Il buco che la voce precedente aveva dichiarato.** «Limite dichiarato: la copia
+del motore dentro la pagina non ha il cancello. Oggi non può divergere — le regole
+imparate sono zero — ed è il primo passo dopo questo.» È il primo passo dopo
+quello, quindi.
+
+**Che cosa è cambiato.** La pagina riceve le classi grammaticali nel suo blocco
+dati (`analisi`: 2831 voci e 261 fonti distinte, con l'indice della fonte accanto
+alla classe, perché una classe senza fonte non è una classe) e `perRegola` ha lo
+stesso cancello di `morfologia.applica`: una regola imparata per i verbi non si
+applica a un nome che per caso finisce come lei, e non si applica a una parola di
+cui la pagina non sa che cosa sia. La pagina è passata da 2584 KB a 2688 KB, e il
+tetto di 3 MB è un tetto, non un desiderio.
+
+**Il confronto, che è la parte vera.** Confrontare due copie del motore **senza**
+un caso in cui possano divergere non è un controllo: è una verifica che passa
+perché il caso non esiste. E il caso non esiste, perché le regole imparate sono
+zero. Quindi il confronto passa alle due copie **regole dichiarate** — tre, con la
+classe che portano — e chiede, su quattro parole e in entrambe le direzioni, se
+applicano e se rifiutano le stesse: **8 confronti, 0 divergenze**.
+
+**La prova che il confronto prende il difetto.** Ho rimosso di proposito la riga
+del cancello dalla pagina e ho rilanciato: **1 divergenza** su `cane`, e il
+confronto è uscito con codice **1**, quindi il workflow fallisce. Ripristinato:
+0 divergenze, codice 0. Il confronto non è un controllo che passa per costruzione,
+è un controllo che si può spezzare.
+
+**Verifiche.** 335 test (erano 335): nessuno nuovo, perché qui la verifica è il
+confronto fra le due copie e non un test. `verifica`: 0 errori, 8 avvisi noti.
 
 ## 0.30 — 2026-10-05 · Prima di riscrivere una parola, sapere che cos'è
 

@@ -54,7 +54,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from traduttore import morfologia  # noqa: E402
+from traduttore import italiano as analisi_italiana, morfologia  # noqa: E402
+from traduttore import verbi as verbi_modulo  # noqa: E402
 from traduttore.audio import Archivio  # noqa: E402
 from traduttore.sintesi import Sintesi  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
@@ -225,11 +226,48 @@ def _proverbi(corpus) -> list:
 
 
 def _regole(regole) -> list:
+    # `classe` viene dalla pagina insieme alla regola: la copia JavaScript
+    # applica una regola solo alle parole della classe per cui e' stata
+    # imparata, e per farlo deve poterla leggere. Una regola senza classe
+    # arriva come stringa vuota, e li' la pagina non filtra — che e' il
+    # comportamento dichiarato di `italiano=None`.
     return [{"etichetta": r.etichetta(), "accordo": round(r.accordo, 3),
              "supporto": r.supporto, "prefisso": r.prefisso,
              "suffisso_italiano": r.suffisso_italiano,
-             "suffisso_ferrarese": r.suffisso_ferrarese}
+             "suffisso_ferrarese": r.suffisso_ferrarese,
+             "classe": r.classe}
             for r in regole]
+
+
+def _analisi(italiano) -> dict:
+    """Le classi grammaticali che il progetto sa, con la fonte accanto.
+
+    Solo le parole che **hanno** una classe: la pagina non ha bisogno di sapere
+    quali sono ignote, e scriverlo costerebbe piu' di quanto serve. Il numero
+    delle ignote e' dichiarato dai comandi `italiano` e `stato`, non dalla pagina.
+
+    La forma e' `{chiave: [classe, indice_fonte]}` con le fonti in un dizionario
+    separato: ripetere la fonte per ogni parola costerebbe qualche-centinaia di
+    kilobyte per dire sempre la stessa identica frase.
+    """
+    classi, fonti = {}, {}
+    if italiano is None:
+        return {"classi": classi, "fonti": fonti}
+    for chiave in sorted(set(italiano.da_corpus) | set(italiano.da_glossario)
+                         | set(italiano.da_verbi)):
+        archivio = (italiano.da_corpus.get(chiave)
+                    or italiano.da_glossario.get(chiave)
+                    or italiano.da_verbi.get(chiave))
+        risposta = archivio[0] if isinstance(archivio, list) else archivio
+        if not risposta.nota:
+            continue
+        fonte = risposta.fonte or ""
+        indice = fonti.get(fonte)
+        if indice is None:
+            indice = str(len(fonti))
+            fonti[fonte] = indice
+        classi[chiave] = [risposta.classe, indice]
+    return {"classi": classi, "fonti": fonti}
 
 
 def _serie(voci, campi: tuple) -> dict:
@@ -566,6 +604,9 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
         modello = f.read()
 
     regole_grammaticali = carica_regole_grammaticali(radice)
+    analizzatore = analisi_italiana.Italiano.da_file(
+        glossario=glossario,
+        verbi=verbi_modulo.carica(os.path.join(radice, "dati", "verbi.jsonl")))
     comuni = _dati_comuni(glossario, corpus, varieta, fonetica, archivio,
                           sintesi, web_dir, copiati, radice)
     comuni["conteggi"]["regole"] = len(regole)
@@ -598,6 +639,10 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
             dati["coppie"] = _coppie(corpus)
             dati["proverbi"] = _proverbi(corpus)
             dati["regole"] = _regole(regole)
+            # Le classi grammaticali, perche' la pagina applichi le regole
+            # con lo stesso cancello del motore. Vanno su questa pagina e
+            # non su tutte: le altre non applicano regole.
+            dati["analisi"] = _analisi(analizzatore)
             # Le trascrizioni IPA sono 11 KB e servono anche qui: senza, la
             # risposta dice «come suona: nessuna parola di questa frase ha
             # ancora una trascrizione» anche quando la frase contiene

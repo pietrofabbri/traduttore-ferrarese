@@ -51,6 +51,7 @@ sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 from traduttore.cli import PERCORSI  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
+from traduttore import italiano as analisi_italiana, morfologia, verbi
 from traduttore.motore import Motore  # noqa: E402
 from traduttore.varieta import Varieta  # noqa: E402
 
@@ -103,6 +104,29 @@ var window = { addEventListener: function () {} };
 """
 
 
+# Le regole che il confronto passa alle due copie. Non sono le regole del
+# progetto: `dati/regole.json` e' vuoto, e un confronto che usa solo quello non
+# controllerebbe niente del cancello, perche' il cancello agisce sulle regole e
+# non ce ne sono. Sono regole dichiarate qui, con la classe che porta, e servono
+# a una cosa sola: dire se le due copie applicano e rifiutano le stesse regole
+# sugli stessi confronti.
+REGOLE_DICHIARATE = [
+    {"prefisso": "", "suffisso_italiano": "are", "suffisso_ferrarese": "ar",
+     "classe": "verbo", "etichetta": "are > ar", "accordo": 1.0, "supporto": 4},
+    {"prefisso": "", "suffisso_italiano": "e", "suffisso_ferrarese": "i",
+     "classe": "nominale", "etichetta": "e > i", "accordo": 1.0, "supporto": 4},
+    {"prefisso": "", "suffisso_italiano": "are", "suffisso_ferrarese": "ar",
+     "classe": "", "etichetta": "are > ar, senza classe", "accordo": 1.0,
+     "supporto": 4},
+]
+
+# Tre parole per ogni rifiuto possibile: una della classe della regola, una di
+# una classe dichiarata diversa che **finisce come** la regola, e una che nessuna
+# fonte dichiara. Il caso che conta e' il secondo: `campanare` finisce in `-are`
+# come `mangiare`, e senza il cancello diventerebbe un verbo.
+PAROLE = ["mangiare", "campanare", "cane", "cercare"]
+
+
 def estrae_script(pagina: str) -> str:
     blocchi = re.findall(r"<script>(.*?)</script>", pagina, re.S)
     if not blocchi:
@@ -139,7 +163,8 @@ def apre_lo_script(script: str, dati: str) -> str:
                          "il confronto va aggiornato insieme alla pagina")
     porta = """
   return { accorpa: accorpa, accorpaTutto: accorpaTutto, tokenizza: tokenizza,
-           risolvi: risolvi, chiave: chiave, fraseGemella: fraseGemella };
+           risolvi: risolvi, chiave: chiave, fraseGemella: fraseGemella,
+           perRegola: perRegola, classeDi: classeDi };
 """
     return (INCOLLANCI % json.dumps(dati)) + "\n" + (
         "var PAGINA = (function () {" + dentro + porta + "})();")
@@ -204,6 +229,73 @@ def risposta_python(motore: Motore, direzione: str, frase: str) -> list:
             for t, tr, o, c, _ in risposta.per_corrispondenza]
 
 
+def regola_js(script: str, dati: str, parola: str, direzione: str) -> dict:
+    """Che cosa fa la pagina di questa parola quando applica una regola.
+
+    Le regole sono quelle dichiarate in questo file, non quelle del progetto: il
+    confronto del cancello deve funzionare anche quando `dati/regole.json` e'
+    vuoto, altrimenti confronterebbe due copie che non applicano niente e
+    chiamerebbe quello un controllo.
+    """
+    dentro = json.loads(dati)
+    dentro["regole"] = REGOLE_DICHIARATE
+    programma = apre_lo_script(script, json.dumps(dentro, ensure_ascii=False)) + """
+var r = PAGINA.perRegola(%s, %s);
+console.log(JSON.stringify({ classe: PAGINA.classeDi(%s), testo: r ? r.testo : null }));
+""" % (json.dumps(parola), json.dumps(direzione), json.dumps(parola))
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False,
+                                     encoding="utf-8") as f:
+        f.write(programma)
+        percorso = f.name
+    try:
+        esito = subprocess.run(["node", percorso], capture_output=True, text=True,
+                               timeout=60)
+    finally:
+        os.unlink(percorso)
+    if esito.returncode != 0:
+        raise SystemExit("node ha fallito su %r: %s"
+                         % (parola, esito.stderr.strip()[:400]))
+    return json.loads(esito.stdout.strip().splitlines()[-1])
+
+
+def regola_python(parola: str, direzione: str, analizzatore) -> dict:
+    regole = []
+    for riga in REGOLE_DICHIARATE:
+        regola = morfologia.Regola(riga["prefisso"], riga["suffisso_italiano"],
+                                   riga["suffisso_ferrarese"],
+                                   riga["supporto"] * [{}])
+        regola.classe = riga["classe"]
+        regole.append(regola)
+    analisi = analizzatore.analizza(parola)
+    testo = morfologia.applica(parola, regole, direzione, analizzatore)
+    return {"classe": analisi.classe if analisi.nota else "",
+            "testo": None if testo == parola else testo}
+
+
+def confronto_cancello(script: str, dati: str, analizzatore) -> int:
+    """Le due copie applicano e rifiutano le stesse regole, parola per parola.
+
+    Il difetto che questo confronto prende e' l'asimmetria fra le due copie: il
+    motore in Python filtra le regole per classe, la pagina no. Le due rispondevano
+    uguale solo perche' non c'e' nessuna regola da applicare — cioe' perche' il
+    caso non esisteva, non perche' fosse giusto.
+    """
+    problemi = 0
+    confronti = 0
+    for direzione in ("it-fe", "fe-it"):
+        for parola in PAROLE:
+            confronti += 1
+            atteso = regola_python(parola, direzione, analizzatore)
+            trovato = regola_js(script, dati, parola, direzione)
+            if atteso != trovato:
+                problemi += 1
+                print("DIVERGENZA DEL CANCELLO su %r (%s)" % (parola, direzione))
+                print("  python: %s" % json.dumps(atteso, ensure_ascii=False))
+                print("  pagina: %s" % json.dumps(trovato, ensure_ascii=False))
+    print("%d confronti del cancello, %d divergenze" % (confronti, problemi))
+    return problemi
+
+
 def main() -> int:
     if not shutil.which("node"):
         print("node non e' installato: il confronto delle due copie e' saltato.")
@@ -253,6 +345,10 @@ def main() -> int:
             print("  pagina: %s" % json.dumps(trovato, ensure_ascii=False))
 
     print("%d frasi confrontate, %d divergenze" % (len(FRASI), problemi))
+    problemi += confronto_cancello(
+        script, dati,
+        analisi_italiana.Italiano.da_file(glossario=glossario,
+                                          verbi=verbi.carica()))
     return 1 if problemi else 0
 
 

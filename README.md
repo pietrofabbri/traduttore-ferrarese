@@ -620,6 +620,16 @@ Le altre **13876 voci restano ignote**, e `ignota` è la risposta, non un
 inciampo: il comando `italiano` stampa il conto ogni volta, perché un buco che
 non ha numero smette di essere un buco.
 
+Anche la **pagina** ha il cancello. Il motore esiste due volte — in Python e
+in JavaScript dentro la pagina — e finora la seconda copia riscriveva le parole
+per desinenza senza sapere che cosa fossero: due copie che rispondono uguale solo
+perché il caso non esiste non sono due copie concordi, sono due copie non provate.
+La pagina riceve le classi nel suo blocco dati (`analisi`, 2831 voci con la fonte
+accanto), e il confronto fra le due copie **ora controlla anche questo**: passa
+alle due regole dichiarate e domanda, parola per parola, se applicano e se
+rifiutano le stesse. Rotta la regola in una delle due copie, il confronto dà una
+divergenza e il confronto esce con codice 1.
+
 **Il rifiuto, che è la parte che costa.** Una regola imparata porta scritto per
 quale classe è stata imparata, e viene applicata solo alle parole di quella
 classe — **e non alle parole ignote**. Il progetto rinuncia a indovinare, e

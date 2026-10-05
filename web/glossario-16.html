@@ -9918,14 +9918,40 @@ function tokenizza(t) {
       .match(/[\p{L}\p{N}]+(?:'[\p{L}\p{N}]+)*/gu) || [];
   }
 
+  // Che cos'e' questa parola in italiano, secondo la fonte che lo dichiara.
+  // `DATI.analisi` porta la classe **e l'indice della fonte**: la pagina che
+  // applica una regola mostra da dove viene il giudizio che gliel'ha fatta
+  // applicare, e una classe senza fonte non e' una classe, e' una supposizione.
+  // Una parola che non c'e' nel blocco dati restituisce "" — ignota — e una
+  // regola classificata non viene applicata a una parola ignota. E' la stessa
+  // regola di `morfologia.applica`, scritta nella pagina.
+  function classeDi(parola) {
+    var a = DATI.analisi;
+    if (!a) return "";
+    var riga = a.classi[chiave(parola)];
+    return riga ? riga[0] : "";
+  }
+
+  function fonteDiClasse(parola) {
+    var a = DATI.analisi;
+    if (!a) return "";
+    var riga = a.classi[chiave(parola)];
+    return riga ? (a.fonti[riga[1]] || "") : "";
+  }
+
   // Una regola morfologica applicata dal basso: si prova dalla piu' lunga.
   // Le regole arrivano gia' ordinate dalla piu' specifica alla piu' generica,
   // quindi la prima che produce una parola e' quella giusta.
   function perRegola(parola, verso) {
     var k = chiave(parola);
     var regole = DATI.regole || [];
+    var classe = classeDi(parola);
     for (var i = 0; i < regole.length; i++) {
       var r = regole[i];
+      // Il cancello: una regola imparata per i verbi non si applica a un nome
+      // che per caso finisce come lei, e non si applica a una parola di cui la
+      // pagina non sa che cosa sia.
+      if (r.classe && r.classe !== classe) continue;
       var sI = r.suffisso_italiano, sF = r.suffisso_ferrarese;
       var entro = verso === "it-fe" ? sI : sF;
       var fuori = verso === "it-fe" ? sF : sI;

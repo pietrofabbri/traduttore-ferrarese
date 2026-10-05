@@ -156,7 +156,7 @@ jobs:
           ATTESI = {
               "index.html": {"conteggi", "buchi", "fette"},
               "traduttore.html": {"glossario", "coppie", "proverbi", "regole",
-                                  "fonetica"},
+                                  "fonetica", "analisi"},
               "glossario.html": {"fette"},
               "frasi.html": {"coppie", "proverbi"},
               "suoni.html": {"glossario", "fonetica", "sintesi", "varieta"},

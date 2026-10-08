@@ -1,7 +1,7 @@
 ---
 titolo: Istruzioni per chi lavora al progetto
-versione: 0.10
-data: 2026-10-03
+versione: 0.11
+data: 2026-10-08
 autore: progetto «I cinque duchi»
 ---
 
@@ -63,7 +63,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 337 test
+python3 prove/test_traduttore.py           # 339 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -75,7 +75,7 @@ python3 prove/controlla_mutazioni.py       # i test prendono le
                                            # minuti e mezzo
 ```
 
-I tre devono uscire senza errori. Se hai toccato `dati/`, aggiungi anche:
+Devono uscire tutti senza errori. Se hai toccato `dati/`, aggiungi anche:
 
 ```bash
 python3 -m traduttore.cli impara     # rigenera dati/regole.json
@@ -83,8 +83,8 @@ python3 -m traduttore.cli web        # rigenera TUTTE le pagine in web/
 python3 -m traduttore.cli buchi      # i numeri di quello che manca
 ```
 
-`web` non genera una pagina ma **ventisei**: la home, il traduttore, l'indice
-del glossario, ventuno fette, le frasi e i suoni. Il comando stampa il peso di
+`web` non genera una pagina ma **quarantuno**: la home, il traduttore, l'indice
+del glossario, trentacinque fette, le frasi, i suoni e le regole. Il comando stampa il peso di
 ognuna, e quel peso e' un numero che va guardato: una pagina che torna a
 diversi megabyte e' la divisione annullata da qualche parte. Le pagine si
 aggiungono in `PAGINE` dentro `sorgenti/costruisci_web.py`, mai a mano.
@@ -113,7 +113,7 @@ dichiarato non sarebbe verificabile da nessuno.
 
 `buchi` non e' un controllo e non fallisce mai: conta quello che il progetto
 sa di non sapere e scrive **perche'** manca. Se hai aggiunto una riga che
-chiude un buco, il numero deve scese: se non scende, o il numero e' sbagliato o
+chiude un buco, il numero deve scendere: se non scende, o il numero e' sbagliato o
 la riga non chiude il buco che dice di chiudere.
 
 E committa anche i due file generati. Un repository in cui il file delle
@@ -171,7 +171,7 @@ I codici da conoscere:
   conosce, la voce non entra. Punto.
 - **Non si tira fuori niente da `dati/da_verificare/` per usarlo.** Quel
   materiale e' nostro e non pubblicabile finche' la licenza della sua fonte
-  non e' verificata. Il posto giusto di una voce con licazi non verificata e'
+  non e' verificata. Il posto giusto di una voce con licenza non verificata e'
   quella fila, non il glossario: «lo metto su e poi se ne parla» e' il modo in
   cui una fonte non verificata finisce pubblicata.
 - **Non si tira a indovinare.** Se una parola non si trova, il motore restituisce
@@ -227,7 +227,7 @@ lavorare:
    conservatrice possibile — una proposta resta `da rivedere` e nessuno la
    tocca.
 4. **Chi verifica le trascrizioni IPA e con quale criterio di pagamento.** Le
-   30 righe di `dati/fonetica.jsonl` sono tutte `I` e `da_verificare`: sono
+   28 righe di `dati/fonetica.jsonl` sono tutte `I` e `da_verificare`: sono
    una lettura della grafia, non un ascolto. Passarle a `D` richiede un
    parlante, e il progetto non ha ancora deciso chi sia e come si faccia a
    registrare il fatto.
@@ -239,7 +239,7 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
-6. **Le ventisei pagine sono giuste?** Il sito e' stato diviso perche' la
+6. **Le quarantuno pagine sono giuste?** Il sito e' stato diviso perche' la
    pagina unica pesava 6,2 megabyte, e la divisione ha funzionato. Restano
    pero' due scelte che sono di Pietro e non dello script: `VOCI_PER_FETTA` in
    `costruisci_web.py` e' 500 e da li' dipende quanto pesa una pagina, e la
@@ -280,6 +280,53 @@ lavorare:
    funzionali con la pagina, sapendo che il motore non le tratta e che il
    gioco dovrebbe accettarle come riempimento. Finche' la risposta non c'e',
    il buco resta dichiarato e non si aggiunge niente a mano.
+
+9. **Il glossario e' scritto in tre grafie, e nessuna e' dichiarata quella di
+   riferimento.** (Aperta il 2026-10-06.) Il campo `ferrarese` contiene la
+   forma come la scrive la fonte: la grafia del Ferri 1889 (S004, 10387 voci),
+   l'alfabeto fonetico di Bigoni (S006, 6352 voci, di cui 3400 con segni come
+   `ŋ`, `ɣ`, `š`) e la grafia di Musacchi (S020, 631 voci). Il risultato e'
+   che **1631 lemmi italiani** hanno forme diverse secondo la fonte
+   (*mangiare* → `magnàr` e `mañàr`, *ragione* → `rasón` e `rašóŋ`), e chi usa
+   il traduttore non sa quale delle due sia «la» parola. Tenere la forma della
+   fonte e' giusto: e' il fatto. La domanda e' se aggiungere un campo
+   **derivato**, generato da `dati/conversione_bigoni.json` e mai scritto a
+   mano, con una grafia comune per la pagina e per il gioco, e quale grafia
+   debba essere (oggi la conversione porta verso quella del glossario, cioe'
+   verso il Ferri). Lo stesso problema morde `ascolto-ferrarese`: il vincolo di
+   lessico non puo' scegliere fra due scritture dello stesso suono.
+
+10. **I permessi delle fonti sono dichiarati, non documentati.** (Aperta il
+    2026-10-06.) S006, S015, S020 e S022 sono `licenza_verificata: true`
+    perche' il titolare del progetto dichiara di avere il permesso; nel
+    repository non c'e' il documento, e da quei permessi dipendono circa
+    settemila voci. Non e' un errore, ed e' scritto in ogni nota; ma fra vent'anni
+    chi legge deve poter risalire alla prova. Serve, fuori dal repository, la
+    copia del messaggio con data e canale, e nel campo `nota` della fonte una
+    riga che dica dove e' conservata. Per S020 c'e' un dubbio in piu': il file
+    viene da un sito di download, e la frase dell'autore autorizza ad
+    «aggiungere, correggere», non esplicitamente a ripubblicare.
+
+11. **L'obiettivo, e quanta verifica umana costa.** (Dichiarato dal titolare
+    il 2026-10-08.) Il progetto deve diventare **il punto di accesso a tutta
+    la conoscenza disponibile sulla lingua ferrarese**, e la verifica umana
+    deve essere **a campione e la minima possibile**. Le due cose insieme
+    hanno una conseguenza che va scritta: le voci resteranno quasi tutte `I`,
+    e il numero che dice quanto ci si puo' fidare di una fonte non puo'
+    venire dal verificare ogni voce. Deve venire da un **campione**: per ogni
+    fonte, un certo numero di voci estratte a caso con un seme dichiarato,
+    controllate da una persona, e l'esito scritto in un file con chi, quando e
+    su quale libro. Da li' si ricava un tasso di errore per fonte con il suo
+    intervallo, e quel tasso va in pagina accanto alla fonte. Il protocollo non
+    esiste ancora: e' il prossimo pezzo da costruire, e finche' non c'e' nessuna
+    fonte si dichiara «verificata a campione».
+
+12. **Il patto con `ascolto-ferrarese`.** Il fratello legge `dati/` di questo
+    repository e ne fissa il numero di righe. Fino al 2026-10-08 lo leggeva
+    dall'ultima versione di `main`, quindi ogni modifica ai dati qui rompeva la
+    CI di la' senza che questo repository lo sapesse. Ora il fratello dichiara
+    il commit che legge (vedi il suo README): cambiare i dati qui non rompe
+    niente di la', e aggiornare il patto e' una scelta esplicita.
 
 ## 7. Il rapporto con «I cinque duchi»
 

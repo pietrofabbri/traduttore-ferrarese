@@ -24,10 +24,24 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Il grezzo dei modi di dire (S019)
+        # `raccolta/grezzi/` non e' tracciato (vedi `.gitignore`), ma i test di
+        # `raccolta/da_modi.py` e il controllo delle mutazioni hanno bisogno della
+        # pagina di Wikiquote (CC BY-SA 4.0). Si scarica qui con lo stesso comando
+        # che lo script stampa. Se la fonte cambia, i test che contano le voci
+        # falliscono: e' la notizia giusta, non un difetto da silenziare.
+        # In locale, se il grezzo c'e' gia', non si riscarica.
+        run: |
+          mkdir -p raccolta/grezzi/wikt
+          test -s raccolta/grezzi/wikt/modi_di_dire_ferraresi.html || \
+          curl -sSfL --retry 3 -A 'traduttore-ferrarese-ci (https://github.com/pietrofabbri/traduttore-ferrarese)' \
+            -o raccolta/grezzi/wikt/modi_di_dire_ferraresi.html \
+            'https://it.wikiquote.org/wiki/Modi_di_dire_ferraresi'
+
       - name: I test
         run: python3 prove/test_traduttore.py
 
-      - name: Le mutazioni: i test le prendono tutte
+      - name: 'Le mutazioni: i test le prendono tutte'
         # Un test puo' essere vero, passare, e non guardare niente. Questo passo
         # rompe di proposito otto decisioni di `raccolta/da_modi.py`, una alla
         # volta, e rilancia tutta la suite: se nessun test se ne accorge, il

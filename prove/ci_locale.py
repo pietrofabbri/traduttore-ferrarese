@@ -71,7 +71,41 @@ def passi(testo: str):
         i += 1
 
 
+def valida_yaml() -> int:
+    """Ogni workflow deve essere YAML valido, prima ancora di eseguirne i passi.
+
+    Difetto vero, del 2026-10-05: il nome di un passo di `verifica.yml`
+    conteneva «: », e GitHub scartava il file in zero secondi senza eseguire
+    niente. Questo script lo passava, perche' `passi()` legge le righe `run:`
+    con un lettore suo e non chiede mai se il file sia YAML. Tre giorni di CI
+    rossa, e il sito fermo a una versione vecchia, per due apici mancanti.
+
+    PyYAML non e' una dipendenza del progetto, quindi se manca il controllo lo
+    dice e non finge di averlo fatto. Ritorna il numero di file non validi.
+    """
+    try:
+        import yaml
+    except ImportError:
+        print("PyYAML non c'e': la sintassi dei workflow NON e' controllata "
+              "(pip install pyyaml)")
+        return 0
+    rotti = 0
+    for nome in sorted(os.listdir(FLUSSI)):
+        if not nome.endswith(".yml"):
+            continue
+        try:
+            with io.open(os.path.join(FLUSSI, nome), encoding="utf-8") as f:
+                yaml.safe_load(f)
+        except yaml.YAMLError as errore:
+            rotti += 1
+            print("FALLITO %s non e' YAML valido: GitHub lo scarterebbe "
+                  "senza eseguirlo\n%s" % (nome, errore))
+    return rotti
+
+
 def main() -> int:
+    if valida_yaml():
+        return 1
     cache = pulisci_cache()
     if cache:
         print("cache dei bytecode buttate: %d cartelle" % cache)

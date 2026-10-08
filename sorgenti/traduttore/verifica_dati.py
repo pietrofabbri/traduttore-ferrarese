@@ -958,9 +958,14 @@ def controlla_tenuta(glossario, corpus, in_attesa_glossario=None,
     problemi = []
     attese_glossario = {v.id: v for v in (in_attesa_glossario.voci
                                           if in_attesa_glossario else [])}
-    attese_corpus = {c.id: c for c in (in_attesa_corpus.coppie
-                                      if in_attesa_corpus else [])}
-    attive = {v.id for v in glossario.voci} | {c.id for c in corpus.coppie}
+    # I proverbi in attesa contano come le coppie: dal 2026-10-07 la fila
+    # d'attesa ha anche `proverbi.jsonl` (S023), e un proverbio che aspetta la
+    # licenza e intanto sta nei dati attivi e' lo stesso errore di una voce.
+    attese_corpus = {c.id: c for c in (
+        (in_attesa_corpus.coppie + in_attesa_corpus.proverbi)
+        if in_attesa_corpus else [])}
+    attive = ({v.id for v in glossario.voci} | {c.id for c in corpus.coppie}
+              | {p.id for p in corpus.proverbi})
     for identificatore in sorted(set(attese_glossario) | set(attese_corpus)):
         if identificatore not in attive:
             continue

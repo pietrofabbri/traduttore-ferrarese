@@ -145,7 +145,8 @@ class Corpus:
         """Le coppie e i proverbi, nelle due direzioni.
 
         **I proverbi sono dentro anche loro, e fino a ieri non lo erano.** Il
-        progetto aveva 33 proverbi — 28 del Ferri e 5 dei «Proverbi d'Autun» —
+        progetto aveva 33 proverbi — 28 del Ferri e 5 dei «Proverbi d'Autun», che dal
+        2026-10-07 sono in `dati/da_verificare/` —
         e la ricerca per frase intera li ignorava: `indizza()` guardava solo
         `self.coppie`. Non era una scelta, era un dimenticanza, e il costo è
         che un proverbio è la frase più corta e più stabile di una lingua: se

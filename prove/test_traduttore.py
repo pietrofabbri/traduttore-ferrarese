@@ -826,6 +826,36 @@ class TestConteggiDichiarati(unittest.TestCase):
                       "niente, altrimenti committarli sembra pericoloso")
 
 
+    def test_la_versione_e_la_stessa_nei_tre_posti_e_nel_registro(self):
+        # Difetto vero, trovato il 2026-10-06: `pyproject.toml`, `__init__.py`
+        # e la frontmatter del README dicevano 0.20 mentre il registro era
+        # arrivato a 0.33. La regola 2 di `REGISTRO.md` lo vietava per
+        # iscritto, e nessun test la guardava: una regola senza controllo e'
+        # un desiderio. Il numero di riferimento e' la voce piu' recente del
+        # registro, non una costante scritta qui.
+        registro = open(os.path.join(RADICE, "REGISTRO.md"),
+                        encoding="utf-8").read()
+        voci = re.findall(r"^## (\d+\.\d+) — ", registro, re.M)
+        ultima = max(voci, key=lambda v: tuple(int(x) for x in v.split(".")))
+        pyproject = open(os.path.join(RADICE, "pyproject.toml"),
+                         encoding="utf-8").read()
+        pacchetto = open(os.path.join(RADICE, "sorgenti", "traduttore",
+                                      "__init__.py"), encoding="utf-8").read()
+        readme = open(os.path.join(RADICE, "README.md"),
+                      encoding="utf-8").read()
+        trovate = {
+            "pyproject.toml": re.search(r'^version = "(\d+\.\d+)(?:\.\d+)?"',
+                                        pyproject, re.M),
+            "__init__.py": re.search(r'__version__ = "(\d+\.\d+)(?:\.\d+)?"',
+                                     pacchetto),
+            "README.md": re.search(r"^versione: (\d+\.\d+)", readme, re.M),
+        }
+        for dove, trovata in trovate.items():
+            self.assertIsNotNone(trovata, "%s non dichiara la versione" % dove)
+            self.assertEqual(trovata.group(1), ultima,
+                             "%s dice %s e il registro e' alla %s"
+                             % (dove, trovata.group(1), ultima))
+
     def test_il_numero_di_test_nei_documenti_e_quello_vero(self):
         veri = _quanti_test()
         # Il pattern dei documenti e' `# <numero> test` in coda a un comando.
@@ -3795,6 +3825,18 @@ class TestIModiDiDire(unittest.TestCase):
     creda sulla parola.
     """
 
+    def setUp(self):
+        # Il grezzo e' gitignorato per dichiarazione (vedi `.gitignore`): in CI
+        # lo scarica il workflow prima dei test, in locale si ricrea con il
+        # comando che `raccolta/da_modi.py` stampa. Senza il grezzo questi test
+        # non hanno niente da guardare: si saltano dicendolo, invece di andare
+        # in errore e far fallire la suite per un file che non e' un difetto.
+        grezzo = os.path.join(RADICE, "raccolta", "grezzi", "wikt",
+                              "modi_di_dire_ferraresi.html")
+        if not os.path.exists(grezzo):
+            self.skipTest("il grezzo di S019 non e' in raccolta/grezzi/wikt/: "
+                          "si scarica con il comando di raccolta/da_modi.py")
+
     def _modulo(self):
         import importlib.util
         percorso = os.path.join(RADICE, "raccolta", "da_modi.py")
@@ -3914,6 +3956,18 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
     prendere un difetto che sta nel decidere — tenere una spiegazione mozzata,
     scrivere una riga senza nota — invece che nel leggere.
     """
+
+    def setUp(self):
+        # Il grezzo e' gitignorato per dichiarazione (vedi `.gitignore`): in CI
+        # lo scarica il workflow prima dei test, in locale si ricrea con il
+        # comando che `raccolta/da_modi.py` stampa. Senza il grezzo questi test
+        # non hanno niente da guardare: si saltano dicendolo, invece di andare
+        # in errore e far fallire la suite per un file che non e' un difetto.
+        grezzo = os.path.join(RADICE, "raccolta", "grezzi", "wikt",
+                              "modi_di_dire_ferraresi.html")
+        if not os.path.exists(grezzo):
+            self.skipTest("il grezzo di S019 non e' in raccolta/grezzi/wikt/: "
+                          "si scarica con il comando di raccolta/da_modi.py")
 
     def _scrive_in(self, percorso):
         """Esegue il generatore con `dati/coppie.jsonl` spostato altrove."""
@@ -4995,7 +5049,20 @@ class TestLaFonteCheScriveLeDueLingue(unittest.TestCase):
         self.corpus = corpora.Corpus.da_file(
             os.path.join(RADICE, "dati", "coppie.jsonl"),
             os.path.join(RADICE, "dati", "proverbi.jsonl"))
-        self.miei = [p for p in self.corpus.proverbi if "S023" in (p.fonte or "")]
+        # Dal 2026-10-07 i proverbi di S023 sono nella fila d'attesa: la
+        # licenza non e' verificata, e la regola non ha eccezioni.
+        self.in_attesa = corpora.Corpus.da_file(
+            os.path.join(RADICE, "dati", "da_verificare", "coppie.jsonl"),
+            os.path.join(RADICE, "dati", "da_verificare", "proverbi.jsonl"))
+        self.miei = [p for p in self.in_attesa.proverbi
+                     if "S023" in (p.fonte or "")]
+
+    def test_nessuno_e_nei_dati_attivi(self):
+        attivi = [p.id for p in self.corpus.proverbi
+                  if "S023" in (p.fonte or "")]
+        self.assertEqual(attivi, [],
+                         "S023 ha la licenza da verificare: i suoi proverbi "
+                         "stanno in dati/da_verificare/, non nei dati attivi")
 
     def test_la_fonte_e_dichiarata_e_senza_licenza_verificata(self):
         self.assertIn("S023", self.fonti, "S023 non è in dati/fonti.json")
@@ -5080,7 +5147,8 @@ class TestLaFonteCheScriveLeDueLingue(unittest.TestCase):
 
     def _grezzi(self):
         righe = []
-        with io.open(os.path.join(RADICE, "dati", "proverbi.jsonl"),
+        with io.open(os.path.join(RADICE, "dati", "da_verificare",
+                                  "proverbi.jsonl"),
                      encoding="utf-8") as f:
             for riga in f:
                 riga = riga.strip()
@@ -5113,7 +5181,8 @@ class TestIProverbiArrivanoAlTraduttore(unittest.TestCase):
 
     def test_ogni_proverbio_valido_e_nell_indice(self):
         validi = [p for p in self.corpus.proverbi if p.valida()]
-        self.assertEqual(len(validi), 33,
+        # 33 fino al 2026-10-07: i 5 di S023 sono passati in attesa.
+        self.assertEqual(len(validi), 28,
                          "i proverbi validi sono %d: la fonte ne ha dichiarati "
                          "meno, e i dati non tornano" % len(validi))
         for proverbio in validi:
@@ -5121,10 +5190,28 @@ class TestIProverbiArrivanoAlTraduttore(unittest.TestCase):
                 proverbio.chiave_italiano()),
                 "%s non e' nell'indice italiano" % proverbio.id)
 
+    def _con_un_proverbio_non_documentato(self):
+        """Un motore con un proverbio `I`, per provare il meccanismo.
+
+        Dal 2026-10-07 i dati attivi non hanno proverbi `I`: gli unici erano i
+        cinque di S023, che sono in attesa di licenza. Il meccanismo pero' va
+        provato lo stesso, quindi il test carica **solo in memoria** P0033
+        dalla fila d'attesa: la riga non torna nei dati attivi.
+        """
+        from traduttore import corpora
+        from traduttore.motore import Motore
+        attesa = corpora.Corpus.da_file(
+            os.path.join(RADICE, "dati", "da_verificare", "coppie.jsonl"),
+            os.path.join(RADICE, "dati", "da_verificare", "proverbi.jsonl"))
+        proverbio = [p for p in attesa.proverbi if p.id == "P0033"][0]
+        corpus = corpora.Corpus(list(self.corpus.coppie),
+                                list(self.corpus.proverbi) + [proverbio])
+        return proverbio, Motore(self.motore.glossario, corpus)
+
     def test_un_proverbio_torna_intero_nelle_due_direzioni(self):
         from traduttore.glossario import FE_IT, IT_FE
-        proverbio = [p for p in self.corpus.proverbi
-                     if p.id == "P0033"][0]
+        proverbio, motore = self._con_un_proverbio_non_documentato()
+        self.motore = motore
         italiano = self.motore.traduci(proverbio.italiano, IT_FE)
         self.assertEqual(italiano.testo, proverbio.ferrarese)
         self.assertEqual(italiano.per_corrispondenza[0][2], "corpo")
@@ -5136,10 +5223,9 @@ class TestIProverbiArrivanoAlTraduttore(unittest.TestCase):
         # La regola è quella di `motore.py`: `corpo_frase` solo se la fonte
         # c'è ed è dichiarata documentata. I cinque proverbi di S023 sono
         # `I` — la trascrizione di un anonimo — e devono valere `corpo`.
-        proverbio = [p for p in self.corpus.proverbi
-                     if p.id == "P0033"][0]
+        proverbio, motore = self._con_un_proverbio_non_documentato()
         self.assertEqual(proverbio.attendibilita, "I")
-        risposta = self.motore.traduci(proverbio.italiano)
+        risposta = motore.traduci(proverbio.italiano)
         self.assertAlmostEqual(risposta.confidenza, 0.80,
                                msg="un proverbio non documentato vale `corpo`, "
                                    "non `corpo_frase`")

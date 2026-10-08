@@ -77,8 +77,12 @@ FRASI = [
     # senza mai guardare quel ramo, e la divergenza che c'era — la pagina
     # dava `corpo_frase` sempre, il motore solo per le righe `D` — sarebbe
     # tornata senza che nessuno se ne accorgesse.
-    ("it-fe", "Se nevica sulla foglia, d'inverno non se n'ha voglia."),
-    ("fe-it", "Se a neva in sla foia, d'inveran an s' na voia."),
+    # Fino al 2026-10-07 qui c'era P0033 (S023, `I`), passato in
+    # `dati/da_verificare/` perche' la licenza manca. Il ramo resta guardato in
+    # tutte e due le altezze: un proverbio `D` del Ferri e una coppia `I`
+    # (F0021, S019) che vale `corpo` e non `corpo_frase`.
+    ("it-fe", "Cavarsi la sete col prosciutto."),
+    ("fe-it", 'Andare in oca'),
     # E la frase del parlante nativo, che è la riga `D` per eccellenza: senza
     # di lei il confronto non guarderebbe la parte alta della scala.
     ("it-fe", "lei si siede"),

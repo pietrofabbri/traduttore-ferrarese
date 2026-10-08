@@ -1,7 +1,7 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.20
-data: 2026-10-03
+versione: 0.34
+data: 2026-10-08
 autore: progetto «I cinque duchi»
 ---
 
@@ -12,9 +12,9 @@ Un traduttore fra l'italiano e il **ferrarese**, costruito per il gioco
 
 La caratteristica di questo progetto non e' che traduce bene. E' che **quando
 non sa, dice che non sa**, e dice anche *perche'* non lo sa e *che cosa
-servirebbe* per saperlo. Con diecimilatrecentoottantasette voci in un glossario,
-tutte di una sola varieta' e tutte da tre fonti, questa e' la proprieta' piu'
-importante che ha.
+servirebbe* per saperlo. Con 17370 voci in un glossario, tutte di una sola
+varieta' e quasi tutte da tre vocabolari (Ferri 1889, Bigoni, Musacchi), questa
+e' la proprieta' piu' importante che ha.
 
 ## Come si usa
 
@@ -80,7 +80,7 @@ python3 -m traduttore.cli cerca "lupo non mangia di lupo"
 python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
 ```
 
-## Il sito: sei pagine invece di una da sei megabyte
+## Il sito: quarantuno pagine invece di una da sei megabyte
 
 La pagina era **una sola** e pesava **6,2 megabyte**. Di quelli, il 99,2% era il
 blocco dei dati e l'87,5% era il glossario: la pagina che serve solo a leggere
@@ -90,13 +90,16 @@ Ora il sito è ramificato, e ogni pagina porta dentro quello che le serve:
 
 | pagina | cosa c'è | peso |
 |---|---|---|
-| `index.html` | i numeri, i buchi dichiarati, la strada per le altre pagine | **82 KB** |
-| `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa | 2,3 MB |
-| `glossario.html` | l'indice delle fette | 70 KB |
-| `glossario-01.html` … `-21.html` | una fetta di 500 voci, con ricerca dentro | ~250 KB |
-| `frasi.html` | coppie parallele e proverbi | 111 KB |
-| `suoni.html` | le cinque varietà e i suoni | 101 KB |
-| `regole.html` | le regole del ferrarese, con la fonte su ognuna | 87 KB |
+| `index.html` | i numeri, i buchi dichiarati, la strada per le altre pagine | **123 KB** |
+| `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa | 2,7 MB (tetto: 3 MB) |
+| `glossario.html` | l'indice delle fette | 111 KB |
+| `glossario-01.html` … `-35.html` | una fetta di 500 voci, con ricerca dentro | ~280 KB |
+| `frasi.html` | coppie parallele e proverbi | 146 KB |
+| `suoni.html` | le cinque varietà e i suoni | 143 KB |
+| `regole.html` | le regole del ferrarese, con la fonte su ognuna | 130 KB |
+
+In tutto 41 pagine e 13,7 MB; `python3 -m traduttore.cli web` stampa i pesi
+veri ogni volta, e quelli valgono piu' di questa tabella.
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
 dice che i dati sono distribuiti e nessun campo, da solo, toglie il peso
@@ -316,8 +319,9 @@ La distinzione che regge tutto è fra due cartelle che non si toccano mai:
 | com'è dichiarato | `consenso`, `licenza`, `pubblicabile` | `sintetica: true` e la dichiarazione in pagina |
 | quante adesso | **0** | **12** |
 
-**Perché dodici e non tutte.** Suonare tutte le 10401 parole del glossario
-costerebbe circa **493 megabyte**, che non è una pagina. Quindi il suono esiste
+**Perché dodici e non tutte.** Suonare tutte le 17370 voci del glossario
+costerebbe oltre **800 megabyte** (la stima di 493 MB era stata fatta su 10401
+voci), che non è una pagina. Quindi il suono esiste
 solo dove il progetto ha già scritto *come* la parola si pronuncia: le 28
 trascrizioni dichiarate. E anche lì non tutte: delle 28, **16 non suonano**,
 perché hanno un dubbio che le regole di lettura segnalano. Una parola con un
@@ -404,7 +408,7 @@ persona che ha aperto il vocabolario. Il protocollo e' in
 ## Quanto costa l'audio
 
 La domanda che il progetto si porta da più tempo — «quante ore di registrazione
-servono?» — ha una risposta con l'aritmetica in [STIMA-AUDIO.md](traduttore-ferrarese/STIMA-AUDIO.md).
+servono?» — ha una risposta con l'aritmetica in [STIMA-AUDIO.md](STIMA-AUDIO.md).
 In breve: il gioco ha **150 livelli di ferrarese** (i 900 sono le sei lingue),
 ciascuno con un testo autentico che per il ferrarese è «una trascrizione di un
 parlante».
@@ -551,12 +555,12 @@ ferrarese. In breve:
   fonte non e' verificata. Non le usa nessuno, non sono nella pagina e il
   controllo **D1** fallisce se finiscono nei file attivi. Il glossario ha
   quindi **17370 voci**, **tutte di una sola varieta'**, il cittadino, e
-  **16508 non verificate da un informatore** (`attendibilita I`,
+  **17139 non verificate da un informatore** (`attendibilita I`,
   `da_verificare`): sono la trascrizione meccanica del vocabolario, non una
   voce controllata. Quattro varieta' su cinque sono vuote dichiarate. Non e'
   un dizionario e non si presenta come tale.
 - **Le locuzioni si cercano solo dalla parte che le contiene.** Duemila
-  trentaquattro delle 17370 voci hanno piu' di una parola **dal lato
+  cinquecentosessantadue delle 17370 voci hanno piu' di una parola **dal lato
   ferrarese**, e il motore
   le accorpa prima di tradurre parola per parola: «a braccia aperte» diventa
   `a brazz avèrti` e non tre buchi. Ma l'accorpamento guarda il lato da cui
@@ -578,7 +582,7 @@ ferrarese. In breve:
   invariate**: `il`, `a`, `con`, `ho`, `non` non vengono tradotti e finiscono
   nei buchi. Quindi «sono seduto sulla sedia» esce `son seduto Sslà Scaràna` e
   «il cane e' a casa» esce con due buchi. Non si aggiungono a mano: ogni voce
-  ha bisogno di una fonte e nessuna fonte aperta le contiene. Il punto 6 di
+  ha bisogno di una fonte e nessuna fonte aperta le contiene. Il punto 8 di
   `AGENTS.md` dice quale fonte controllare per prima.
 - **Non ci sono forme finite dei verbi.** Il glossario contiene lemmi, non
   coniugazioni: `sedarsi` c'e', `seduto` no. Riconoscere un participio dalla
@@ -589,7 +593,7 @@ ferrarese. In breve:
 - **Non si sa quali parole sono antiche.** La colonna «in italiano di oggi» dice
   che cosa *vuol dire* una parola, non che *quella parola non si usa piu'*:
   nessuna fonte aperta finora marchia l'obsoleto. Su 4063 voci si ha
-  il significato moderno e su 12676 no, e quel numero non e' la misura di
+  il significato moderno e su 13307 no, e quel numero non e' la misura di
   quanto e' antico il glossario: e' la misura di quanto ne sa la fonte che si
   e' aperta. Perci' la pagina lo dichiara e non lo nasconde.
 
@@ -605,7 +609,7 @@ sbagliato produce una parola che sembra giusta e non lo è.
 Quindi il motore ora chiede, **prima**, che cosa è la parola. Il modulo
 `italiano.py` risponde con tre cose che non si inventano: la classe (`nome`,
 `verbo`, `aggettivo`, `pronome`, …), **la fonte** che lo dice, e se quel
-giudizio è documentato o interpretato. Le fonti sono tre, in quest'ordire:
+giudizio è documentato o interpretato. Le fonti sono tre, in quest'ordine:
 
 1. `dati/italiano.jsonl`, l'analisi dal corpus annotato italiano di Universal
    Dependencies — scelta perché annota parole **in frasi**, che è la domanda che
@@ -666,7 +670,7 @@ Cosa è entrato finora: il **presente indicativo** di `dar`, `far`, `dir`, `capi
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 337 test
+python3 prove/test_traduttore.py     # 339 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

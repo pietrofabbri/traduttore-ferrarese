@@ -71,6 +71,7 @@ IN_ATTESA = {
     "glossario": os.path.join(DATI, "da_verificare", "glossario.jsonl"),
     "coppie": os.path.join(DATI, "da_verificare", "coppie.jsonl"),
     "fonetica": os.path.join(DATI, "da_verificare", "fonetica.jsonl"),
+    "proverbi": os.path.join(DATI, "da_verificare", "proverbi.jsonl"),
 }
 
 # La coda di revisione del livello IA. Non e' un glossario e non e' un corpus:
@@ -401,7 +402,7 @@ def comando_verifica(args) -> int:
     archivio = Archivio.da_file(PERCORSI["audio"])
     sintesi = Sintesi.da_file(PERCORSI["sintesi"])
     in_attesa_glossario = Glossario.da_file(IN_ATTESA["glossario"])
-    in_attesa_corpus = Corpus.da_file(IN_ATTESA["coppie"])
+    in_attesa_corpus = Corpus.da_file(IN_ATTESA["coppie"], IN_ATTESA["proverbi"])
     problemi = (verifica_dati.controlla_varieta(varieta)
                 + verifica_dati.controlla_glossario(glossario)
                 + verifica_dati.controlla_corpora(corpus)

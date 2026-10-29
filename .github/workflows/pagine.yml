@@ -67,6 +67,7 @@ jobs:
           export PYTHONPATH=sorgenti
           python3 -m traduttore.cli varieta
           python3 -m traduttore.cli audio
+          python3 -m traduttore.cli campione
 
       - uses: actions/configure-pages@v5
 

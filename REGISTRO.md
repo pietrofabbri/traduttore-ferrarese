@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.34
-data: 2026-10-08
+versione: 0.35
+data: 2026-10-29
 ---
 
 # Registro delle modifiche
@@ -23,6 +23,47 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.35 — 2026-10-29 · Quanto sbaglia una fonte si misura su venti voci, non su diecimila
+
+**Perché.** Il titolare ha chiesto due cose che vanno tenute insieme: il progetto
+deve raccogliere tutto quello che si sa sul ferrarese, e la verifica umana deve
+essere a campione e la minima possibile (`AGENTS.md` §6 punto 11). Con 17139 voci
+`I`, «verificarle» non succederà mai; quello che si può sapere con poco lavoro è
+**quante ne sbaglia ciascuna fonte**, e per quello basta un campione estratto a
+caso.
+
+- **`dati/campioni/`**: `estrazioni.json` (le voci estratte, con il seme e la
+  dimensione della fonte) e `giudizi.jsonl` (chi ha detto che cosa, e quando). Il
+  protocollo è in `dati/campioni/README.md`.
+- **Il comando `campione`**: `estrai` estrae N voci di una fonte con un seme
+  scritto, `importa` legge le righe prodotte dalla pagina, e senza argomenti
+  stampa il tasso di errore per fonte con l'intervallo di Wilson al 95%.
+- **La pagina `verifica.html`**: si apre dal telefono e senza rete, chiede per
+  ogni voce «si dice / non si dice / non la conosco», tiene i progressi nel
+  browser e produce le righe da consegnare. Non scrive niente da nessuna parte.
+- **I controlli K1–K9**. Il più importante è **K5**: un giudizio su una voce che
+  l'estrazione non contiene è un errore. Un campione scelto a mano non è un
+  campione.
+- **Tre estrazioni** da 20 voci: Ferri (S004), Bigoni (S006), Musacchi (S020).
+
+**Che cosa ha trovato, costruendolo.** Dodici voci del glossario non si potevano
+attribuire a nessuna fonte con un codice: undici citano Wikipedia per indirizzo e
+una il Nannini per nome. Ora l'attribuzione le riconosce (S002, S005), e un test
+controlla che nessuna voce resti fuori: una voce che non appartiene a nessuna
+fonte non verrebbe mai estratta, e il campione direbbe di coprire tutto il
+glossario senza farlo.
+
+**Scelte dichiarate.** Il giudizio è da parlante e non da filologo: misura se la
+voce è ferrarese, non se è trascritta fedelmente dal libro. «Non la conosco» non
+entra nel tasso di errore, ma si conta: è il primo dato su quali parole non si
+usano più. E il glossario non cambia: una voce giudicata `si_dice` resta `I`, e se
+debba essere promossa è una domanda aperta.
+
+**Verifiche.** 348 test (erano 339): nove sulla verifica a campione. `verifica`: 0
+errori, 8 avvisi noti. La pagina è stata provata in Chromium a 390 px di larghezza:
+nessun errore, nessuno scorrimento laterale, i progressi sopravvivono alla
+ricarica.
 
 ## 0.34 — 2026-10-08 · La CI era rossa da tre giorni e nessuno lo vedeva
 

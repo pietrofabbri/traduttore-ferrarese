@@ -1,7 +1,7 @@
 ---
 titolo: Istruzioni per chi lavora al progetto
-versione: 0.11
-data: 2026-10-08
+versione: 0.12
+data: 2026-10-29
 autore: progetto «I cinque duchi»
 ---
 
@@ -63,7 +63,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 339 test
+python3 prove/test_traduttore.py           # 348 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -83,8 +83,9 @@ python3 -m traduttore.cli web        # rigenera TUTTE le pagine in web/
 python3 -m traduttore.cli buchi      # i numeri di quello che manca
 ```
 
-`web` non genera una pagina ma **quarantuno**: la home, il traduttore, l'indice
-del glossario, trentacinque fette, le frasi, i suoni e le regole. Il comando stampa il peso di
+`web` non genera una pagina ma **quarantadue**: la home, il traduttore, l'indice
+del glossario, trentacinque fette, le frasi, i suoni, le regole e la verifica
+a campione. Il comando stampa il peso di
 ognuna, e quel peso e' un numero che va guardato: una pagina che torna a
 diversi megabyte e' la divisione annullata da qualche parte. Le pagine si
 aggiungono in `PAGINE` dentro `sorgenti/costruisci_web.py`, mai a mano.
@@ -160,6 +161,7 @@ I codici da conoscere:
 | A1&ndash;A10 | audio: id, file, `pubblicabile` senza consenso o senza licenza, varieta', contesto, livello CEFR, consenso senza voce dichiarata, file che non c'e' |
 | **D1** | **id in `dati/da_verificare/` che compare anche nei dati attivi** |
 | D2 | voce in attesa che si dichiara documentata (avviso) |
+| K1&ndash;K9 | verifica a campione: estrazioni senza seme o con voci di un'altra fonte, **giudizio su una voce non estratta (K5)**, esito fuori dai tre, giudizio senza chi o data; vedi `dati/campioni/README.md` |
 | M1&ndash;M4 | proposte IA: stato fuori dall'insieme, **campo `fonte` o `attendibilita D` su una proposta**, id citato inesistente, promozione che non esiste |
 
 ## 5. Le cose che non si fanno
@@ -239,7 +241,7 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
-6. **Le quarantuno pagine sono giuste?** Il sito e' stato diviso perche' la
+6. **Le quarantadue pagine sono giuste?** Il sito e' stato diviso perche' la
    pagina unica pesava 6,2 megabyte, e la divisione ha funzionato. Restano
    pero' due scelte che sono di Pietro e non dello script: `VOCI_PER_FETTA` in
    `costruisci_web.py` e' 500 e da li' dipende quanto pesa una pagina, e la
@@ -317,9 +319,16 @@ lavorare:
     fonte, un certo numero di voci estratte a caso con un seme dichiarato,
     controllate da una persona, e l'esito scritto in un file con chi, quando e
     su quale libro. Da li' si ricava un tasso di errore per fonte con il suo
-    intervallo, e quel tasso va in pagina accanto alla fonte. Il protocollo non
-    esiste ancora: e' il prossimo pezzo da costruire, e finche' non c'e' nessuna
-    fonte si dichiara «verificata a campione».
+    intervallo, e quel tasso va in pagina accanto alla fonte.
+
+    **Costruito il 2026-10-29** (versione 0.35): `dati/campioni/`, il comando
+    `campione`, la pagina `web/verifica.html` e i controlli K1–K9; il protocollo
+    e' in `dati/campioni/README.md`. Le prime tre estrazioni sono di 20 voci
+    ciascuna per S004, S006 e S020. **Resta aperto**: (a) se un giudizio
+    `si_dice` debba promuovere la voce, e a che cosa — oggi non la tocca; (b)
+    quanto grande deve essere il campione perche' il tasso di una fonte sia
+    «abbastanza» stretto per pubblicarlo accanto alla fonte; (c) chi giudica le
+    varieta' che il titolare non parla.
 
 12. **Il patto con `ascolto-ferrarese`.** Il fratello legge `dati/` di questo
     repository e ne fissa il numero di righe. Fino al 2026-10-08 lo leggeva

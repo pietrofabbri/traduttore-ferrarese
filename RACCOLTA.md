@@ -24,7 +24,7 @@ dell'Ottocento senza crediti. Entrambi sembrano un glossario e non lo sono.
 Un glossario senza fonte non e' un glossario e' un'opinione, e un'opinione
 in un gioco didattico diventa una nota che si legge come un fatto.
 
-## Le nove cartelle
+## Le dieci cartelle
 
 | Cartella | Cosa contiene | Chi decide |
 |---|---|---|
@@ -37,6 +37,7 @@ in un gioco didattico diventa una nota che si legge come un fatto.
 | `dati/sintesi.jsonl` + `web/sintesi/` | **I suoni generati**, con la dichiarazione che non sono persone | chi lo ha generato con `raccolta/sintetizza.py` |
 | `dati/da_verificare/` | **Quello che non si puo' ancora pubblicare**, con le sue fonti | chi verifica la licenza della fonte |
 | `dati/proposte/` | **Le risposte del modello**, in attesa di revisione | chi verifica la parola in un vocabolario |
+| `dati/campioni/` | **La verifica a campione**: le voci estratte a caso e i giudizi di un parlante | chi giudica, sulle voci che il seme ha estratto e su nessun'altra |
 
 E ci sono due registri che non sono contenuti ma che li tengono in ordine:
 

@@ -1105,3 +1105,91 @@ def buchi_dichiarati(glossario, corpus, fonetica=None) -> list:
                  "lo stesso", totale=len(fonetica.trascrizioni))
 
     return buchi
+
+
+def controlla_campioni(campioni, glossario, fonti=None) -> list:
+    """La verifica a campione: le estrazioni sono dichiarate e i giudizi onesti.
+
+    Il pericolo di un campione non e' il campione piccolo, che si dichiara con
+    l'intervallo. E' il campione **scelto**: giudicare le voci che si sa gia'
+    essere giuste e chiamarlo «a campione». Per questo K5 e' un errore e non un
+    avviso: un giudizio su una voce che l'estrazione non contiene non entra.
+
+    - K1 estrazione senza id, o id ripetuto;
+    - K2 estrazione con fonte non dichiarata in `fonti.json`, seme vuoto, o `n`
+      diverso dal numero di voci elencate;
+    - K3 voce estratta che non esiste nel glossario;
+    - K4 voce estratta che non appartiene alla fonte dell'estrazione;
+    - K5 giudizio su un'estrazione che non esiste, o su una voce che non e'
+      nell'estrazione;
+    - K6 esito fuori dall'insieme;
+    - K7 giudizio senza chi o senza data;
+    - K8 due giudizi sulla stessa voce della stessa estrazione (avviso: vale
+      l'ultimo, ma la storia deve vedersi);
+    - K9 l'estrazione, ripetuta con il suo seme, non da' le stesse voci (avviso,
+      e solo se la fonte ha ancora lo stesso numero di voci: se il glossario e'
+      cresciuto, l'estrazione non e' ripetibile e lo si sa gia').
+    """
+    from traduttore import campioni as modulo
+    problemi = []
+    fonti_note = {f.get("id") for f in (fonti if fonti is not None
+                                         else fonti_dichiarate())}
+    voci = {v.id: v for v in glossario.voci}
+    viste = set()
+    for e in campioni.estrazioni:
+        dove = e.id or "(estrazione senza id)"
+        if not e.id or e.id in viste:
+            problemi.append(Problema("K1", dove, "estrazione senza id o con id "
+                                     "ripetuto"))
+        viste.add(e.id)
+        if e.fonte not in fonti_note:
+            problemi.append(Problema("K2", dove, "fonte %r non dichiarata in "
+                                     "dati/fonti.json" % e.fonte))
+        if not e.seme:
+            problemi.append(Problema("K2", dove, "estrazione senza seme: non e' "
+                                     "ripetibile, quindi non e' un campione"))
+        if e.n != len(e.voci):
+            problemi.append(Problema("K2", dove, "dichiara n=%d e elenca %d voci"
+                                     % (e.n, len(e.voci))))
+        for vid in e.voci:
+            if vid not in voci:
+                problemi.append(Problema("K3", dove, "la voce %s non e' nel "
+                                         "glossario" % vid))
+            elif modulo.fonte_della_voce(voci[vid]) != e.fonte:
+                problemi.append(Problema("K4", dove, "la voce %s e' di %s, non "
+                                         "di %s" % (vid, modulo.fonte_della_voce(
+                                             voci[vid]), e.fonte)))
+        if e.seme and e.fonte in fonti_note:
+            attuale = modulo.popolazione(glossario, e.fonte)
+            if len(attuale) == e.popolazione and e.n <= len(attuale):
+                if modulo.estrai(glossario, e.fonte, e.n, e.seme) != list(e.voci):
+                    problemi.append(Problema(
+                        "K9", dove, "ripetuta con il suo seme, l'estrazione da' "
+                        "altre voci: o l'elenco e' stato toccato a mano, o "
+                        "l'ordine della popolazione e' cambiato", "avviso"))
+    gia = {}
+    for g in campioni.giudizi:
+        dove = g.id or "(giudizio senza id)"
+        e = campioni.estrazione(g.estrazione)
+        if e is None:
+            problemi.append(Problema("K5", dove, "estrazione %r inesistente"
+                                     % g.estrazione))
+        elif g.voce not in e.voci:
+            problemi.append(Problema("K5", dove, "la voce %s non e' fra quelle "
+                                     "estratte in %s: un giudizio fuori dal "
+                                     "campione non e' un campione"
+                                     % (g.voce, g.estrazione)))
+        if g.esito not in modulo.ESITI:
+            problemi.append(Problema("K6", dove, "esito %r fuori da %s"
+                                     % (g.esito, ", ".join(modulo.ESITI))))
+        if not g.chi.strip() or not g.data.strip():
+            problemi.append(Problema("K7", dove, "giudizio senza chi o senza "
+                                     "data: non si sa a chi chiedere conferma"))
+        chiave = (g.estrazione, g.voce)
+        if chiave in gia:
+            problemi.append(Problema("K8", dove, "la voce %s di %s era gia' "
+                                     "giudicata in %s: vale l'ultimo giudizio"
+                                     % (g.voce, g.estrazione, gia[chiave]),
+                                     "avviso"))
+        gia[chiave] = g.id
+    return problemi

@@ -5703,5 +5703,128 @@ class TestLaConversioneDichiaraSeStessa(unittest.TestCase):
             self.assertIn("Trascrizione della fonte", riga["nota"])
 
 
+
+class TestVerificaACampione(unittest.TestCase):
+    """La verifica a campione: estrazioni ripetibili, giudizi che non si scelgono.
+
+    Il titolare ha chiesto una verifica umana minima e a campione (AGENTS.md §6
+    punto 11). Un campione vale solo se nessuno sceglie che cosa ci finisce:
+    questi test controllano che l'estrazione sia ripetibile, che un giudizio
+    fuori dall'estrazione non entri, e che l'intervallo non prometta piu' di
+    quello che venti voci possono dire.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.glossario import Glossario
+        from traduttore import campioni
+        cls.modulo = campioni
+        cls.glossario = Glossario.da_file(
+            os.path.join(RADICE, "dati", "glossario.jsonl"))
+        cls.cartella = os.path.join(RADICE, "dati", "campioni")
+        cls.campioni = campioni.Campioni.da_file(cls.cartella)
+
+    def _controlla(self, campioni):
+        from traduttore import verifica_dati
+        return verifica_dati.controlla_campioni(campioni, self.glossario)
+
+    def test_ogni_voce_ha_una_fonte(self):
+        # Una voce in `altro` non viene mai estratta: se ce ne fossero, la
+        # verifica a campione direbbe di coprire il glossario e ne lascerebbe
+        # fuori un pezzo senza dirlo.
+        altre = [v.id for v in self.glossario.voci
+                 if self.modulo.fonte_della_voce(v) == self.modulo.ALTRO]
+        self.assertEqual(altre, [], "voci senza fonte attribuibile: %s"
+                         % ", ".join(altre[:10]))
+
+    def test_lo_stesso_seme_da_le_stesse_voci(self):
+        a = self.modulo.estrai(self.glossario, "S020", 10, "seme di prova")
+        b = self.modulo.estrai(self.glossario, "S020", 10, "seme di prova")
+        c = self.modulo.estrai(self.glossario, "S020", 10, "un altro seme")
+        self.assertEqual(a, b)
+        self.assertNotEqual(a, c)
+        self.assertEqual(len(set(a)), 10)
+        for vid in a:
+            voce = [v for v in self.glossario.voci if v.id == vid][0]
+            self.assertEqual(self.modulo.fonte_della_voce(voce), "S020")
+
+    def test_l_intervallo_non_promette_quello_che_venti_voci_non_dicono(self):
+        stima, minimo, massimo = self.modulo.wilson(0, 20)
+        self.assertEqual(stima, 0.0)
+        self.assertEqual(minimo, 0.0)
+        # Zero errori su venti non vuol dire «la fonte non sbaglia»: vuol dire
+        # che puo' sbagliare fino a circa il 16%.
+        self.assertAlmostEqual(massimo, 0.161, places=3)
+        self.assertEqual(self.modulo.wilson(0, 0), (None, None, None))
+        stima, minimo, massimo = self.modulo.wilson(5, 20)
+        self.assertTrue(minimo < 0.25 < massimo)
+
+    def test_i_dati_dichiarati_passano_i_controlli(self):
+        errori = [p.riga() for p in self._controlla(self.campioni)
+                  if p.gravita == "errore"]
+        self.assertEqual(errori, [])
+        self.assertTrue(self.campioni.estrazioni,
+                        "nessuna estrazione dichiarata in dati/campioni/")
+
+    def test_un_giudizio_fuori_dal_campione_non_entra(self):
+        import copy
+        finto = copy.deepcopy(self.campioni)
+        e = finto.estrazioni[0]
+        fuori = [vid for vid in self.modulo.popolazione(self.glossario, e.fonte)
+                 if vid not in e.voci][0]
+        finto.giudizi.append(self.modulo.Giudizio(
+            id="K9999", estrazione=e.id, voce=fuori, esito="si_dice",
+            chi="prova", data="2026-10-29"))
+        codici = [p.codice for p in self._controlla(finto)
+                  if p.gravita == "errore"]
+        self.assertIn("K5", codici)
+
+    def test_un_esito_inventato_e_un_giudizio_senza_nome_si_vedono(self):
+        import copy
+        finto = copy.deepcopy(self.campioni)
+        e = finto.estrazioni[0]
+        finto.giudizi.append(self.modulo.Giudizio(
+            id="K9998", estrazione=e.id, voce=e.voci[0], esito="forse",
+            chi="", data="2026-10-29"))
+        codici = {p.codice for p in self._controlla(finto)}
+        self.assertTrue({"K6", "K7"} <= codici, codici)
+
+    def test_una_voce_di_un_altra_fonte_e_un_elenco_toccato_a_mano(self):
+        import copy
+        finto = copy.deepcopy(self.campioni)
+        e = [x for x in finto.estrazioni if x.fonte == "S004"][0]
+        intrusa = self.modulo.popolazione(self.glossario, "S006")[0]
+        e.voci[0] = intrusa
+        codici = {p.codice for p in self._controlla(finto)}
+        self.assertIn("K4", codici)
+        self.assertIn("K9", codici)
+
+    def test_le_righe_incollate_si_leggono_anche_con_il_testo_intorno(self):
+        testo = ('ecco i giudizi:\n'
+                 '{"estrazione": "E0001", "voce": "V1", "esito": "si_dice"}\n'
+                 '\n  grazie\n')
+        righe = self.modulo.leggi_giudizi_incollati(testo)
+        self.assertEqual(len(righe), 1)
+        self.assertEqual(righe[0]["voce"], "V1")
+
+    def test_la_pagina_offre_ogni_voce_estratta_e_non_ancora_giudicata(self):
+        percorso = os.path.join(RADICE, "web", "verifica.html")
+        if not os.path.exists(percorso):
+            self.skipTest("il sito non e' stato generato")
+        pagina = open(percorso, encoding="utf-8").read()
+        gia = self.campioni.giudicate()
+        for e in self.campioni.estrazioni:
+            for vid in e.voci:
+                attesa = 'data-estrazione="%s" data-voce="%s"' % (e.id, vid)
+                if (e.id, vid) in gia:
+                    self.assertNotIn(attesa, pagina)
+                else:
+                    self.assertIn(attesa, pagina,
+                                  "%s di %s non e' in verifica.html" % (vid, e.id))
+        self.assertNotIn("<!--VERIFICA-->", pagina)
+        self.assertIsNone(re.search(
+            r"\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(", pagina))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

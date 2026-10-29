@@ -61,6 +61,7 @@ from traduttore.sintesi import Sintesi  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
 from traduttore.fonetica import Fonetica  # noqa: E402
 from traduttore import verifica_dati  # noqa: E402
+from traduttore import campioni as campioni_modulo  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
 from traduttore.motore import ORIGINE  # noqa: E402
 from traduttore.normalizza import chiave  # noqa: E402
@@ -146,6 +147,14 @@ PAGINE = (
      "titolo": "Le regole",
      "occhiello": "Che cosa succede a una parola quando la si pluralizza o la si coniuga.",
      "sezioni": ("regole",)},
+    # La verifica a campione: la pagina in cui un parlante giudica le voci
+    # estratte a caso e copia le righe del risultato. Non ha motore e non ha
+    # glossario nel blocco dati: le voci da giudicare sono scritte nel corpo,
+    # come le regole, quindi la pagina pesa poco e si apre dal telefono.
+    {"file": "verifica.html", "chiave": "verifica",
+     "titolo": "Verifica a campione",
+     "occhiello": "Poche voci estratte a caso: dire se si dicono basta a stimare quanto sbaglia una fonte.",
+     "sezioni": ("verifica",)},
 )
 
 # La barra di navigazione: l'ordine in cui le pagine si presentano, e la
@@ -157,6 +166,7 @@ NAVIGAZIONE = (
     ("frasi.html", "Coppie e proverbi"),
     ("suoni.html", "Varieta' e suoni"),
     ("regole.html", "Le regole"),
+    ("verifica.html", "Verifica"),
 )
 
 
@@ -468,6 +478,13 @@ REGOLE_TITOLI = {
 }
 
 
+def _leggi_json(percorso: str) -> dict:
+    if not os.path.exists(percorso):
+        return {}
+    with open(percorso, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def _fuga(testo: str) -> str:
     """Il testo va nella pagina: `&`, `<` e `>` vanno scappati."""
     return (testo.replace("&", "&amp;").replace("<", "&lt;")
@@ -550,6 +567,134 @@ def _pagina_regole(dati: dict) -> str:
                 % (_fuga(v["carattere"]), _fuga(v["suono"])) for v in elenco)
             parti.append('<h4>%s</h4><table class="alfabeto">%s</table>'
                          % (titolo, righe))
+    return "\n".join(parti)
+
+
+ESITI_ETICHETTE = (
+    ("si_dice", "si dice"),
+    ("non_si_dice", "non si dice"),
+    ("non_la_conosco", "non la conosco"),
+)
+
+
+def _legenda_bigoni(conversione: dict) -> str:
+    """I segni dell'alfabeto di Bigoni che chi legge non riconosce.
+
+    Le voci di S006 sono scritte come le scrive la fonte, con `ŋ`, `ɣ`, `š`:
+    chiedere a un parlante se una parola «si dice» senza dirgli come leggerla
+    e' chiedergli di indovinare la grafia, non di giudicare la parola.
+    """
+    righe = []
+    for gruppo in ("consonanti", "vocali"):
+        for r in conversione.get(gruppo, []):
+            segno = r.get("segno", "")
+            if not segno or segno.isascii() and segno in "abcdefghilmnoprstuvz":
+                continue
+            if segno == r.get("lettera"):
+                continue
+            righe.append("<li><b>%s</b> &mdash; %s</li>"
+                         % (_fuga(segno), _fuga(r.get("suono", ""))))
+    if not righe:
+        return ""
+    return ('<details class="legenda-bigoni"><summary>Come si leggono i segni '
+            'di Bigoni</summary><ul>%s</ul></details>' % "".join(righe))
+
+
+def _pagina_verifica(campioni, glossario, fonti: list, conversione: dict) -> str:
+    """Le voci estratte, una scheda ciascuna, con i tre esiti da scegliere.
+
+    La pagina non scrive niente da nessuna parte: costruisce le righe del
+    risultato in un riquadro da copiare (o da scaricare come file), e quelle
+    righe entrano nel repository con `campione importa`. Una pagina che
+    funziona da `file://` e senza rete non ha un altro modo di consegnare.
+    """
+    from traduttore import campioni as modulo
+    titoli = {f.get("id"): f for f in fonti}
+    voci = {v.id: v for v in glossario.voci}
+    giudicate = campioni.giudicate()
+    parti = []
+
+    righe = campioni.riepilogo()
+    if righe:
+        parti.append('<h2>Quanto sbaglia ogni fonte, finora</h2>'
+                     '<table class="esempi stima"><thead><tr><th>fonte</th>'
+                     '<th>giudicate</th><th>non si dice</th>'
+                     '<th>non la conosco</th><th>errore stimato</th>'
+                     '</tr></thead><tbody>')
+        for r in righe:
+            f = titoli.get(r["fonte"], {})
+            if r["stima"] is None:
+                stima = '<span class="vuoto">ancora nessun giudizio</span>'
+            else:
+                stima = ("%s <span class=\"vuoto\">(fra %s e %s)</span>"
+                         % (modulo.percento(r["stima"]),
+                            modulo.percento(r["minimo"]),
+                            modulo.percento(r["massimo"])))
+            parti.append('<tr><td>%s <span class="vuoto">%s</span></td>'
+                         '<td>%d di %d</td><td>%d</td><td>%d</td><td>%s</td></tr>'
+                         % (_fuga(f.get("autore", r["fonte"])), r["fonte"],
+                            r["giudicate"], r["estratte"], r["non_si_dice"],
+                            r["non_la_conosco"], stima))
+        parti.append('</tbody></table>'
+                     '<p class="vuoto">L\'errore conta solo «si dice» e «non si '
+                     'dice». L\'intervallo e\' quello di Wilson al 95%: con '
+                     'poche voci e\' largo, e va letto cosi\'.</p>')
+
+    da_fare = 0
+    for e in campioni.estrazioni:
+        f = titoli.get(e.fonte, {})
+        parti.append('<h2>%s &middot; %s <span class="vuoto">(%s, %d voci su %d)'
+                     '</span></h2>'
+                     % (_fuga(e.id), _fuga(f.get("autore", e.fonte)),
+                        _fuga(e.fonte), e.n, e.popolazione))
+        if e.fonte == "S006":
+            parti.append(_legenda_bigoni(conversione))
+        for vid in e.voci:
+            v = voci.get(vid)
+            if v is None:
+                continue
+            g = giudicate.get((e.id, vid))
+            significato = ""
+            if v.moderno:
+                # Il significato e' quello della parola **italiana**, preso da
+                # Wiktionary (S017): aiuta quando l'italiano e' antico, e va
+                # detto che cosa e', perche' la prima definizione non e'
+                # sempre il senso giusto.
+                significato = ('<p class="vuoto">l\'italiano «%s» oggi vuol '
+                               'dire (Wiktionary): %s</p>'
+                               % (_fuga(v.italiano.split(",")[0].strip()),
+                                  _fuga(v.moderno.split(";")[0])))
+            if g:
+                fatto = dict(ESITI_ETICHETTE).get(g.esito, g.esito)
+                parti.append(
+                    '<div class="scheda giudicata"><h3>%s <span class="it">'
+                    '&rarr; %s</span></h3><p class="vuoto">gia\' giudicata: '
+                    '<b>%s</b>%s (%s, %s)</p></div>'
+                    % (_fuga(v.ferrarese), _fuga(v.italiano), _fuga(fatto),
+                       (" &mdash; si dice «%s»" % _fuga(g.come_si_dice))
+                       if g.come_si_dice else "", _fuga(g.chi), _fuga(g.data)))
+                continue
+            da_fare += 1
+            nome = "esito-%s-%s" % (e.id, vid)
+            scelte = "".join(
+                '<label class="esito"><input type="radio" name="%s" value="%s">'
+                '<span>%s</span></label>' % (nome, valore, etichetta)
+                for valore, etichetta in ESITI_ETICHETTE)
+            parti.append(
+                '<div class="scheda da-giudicare" data-estrazione="%s" '
+                'data-voce="%s"><h3>%s <span class="it">&rarr; %s</span></h3>'
+                '%s<div class="esiti">%s</div>'
+                '<input type="text" class="come" placeholder="se la dici '
+                'diversamente, scrivila qui (facoltativo)">'
+                '<p class="fonte">%s &middot; %s</p></div>'
+                % (_fuga(e.id), _fuga(vid), _fuga(v.ferrarese),
+                   _fuga(v.italiano), significato, scelte, _fuga(vid),
+                   _fuga((v.fonte or "")[:140])))
+    if not campioni.estrazioni:
+        parti.append('<p class="vuoto">Non c\'e\' ancora nessuna estrazione: '
+                     'si crea con <code>python3 -m traduttore.cli campione '
+                     'estrai --fonte S004 --n 20</code>.</p>')
+    parti.insert(0, '<p id="contoVerifica" data-totale="%d"></p>' % da_fare)
     return "\n".join(parti)
 
 
@@ -677,6 +822,14 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
         marcatori = None
         if chiave_p == "regole":
             marcatori = {"<!--REGOLE-->": _pagina_regole(regole_grammaticali)}
+        elif chiave_p == "verifica":
+            marcatori = {"<!--VERIFICA-->": _pagina_verifica(
+                campioni_modulo.Campioni.da_file(
+                    os.path.join(radice, "dati", "campioni")),
+                glossario, verifica_dati.fonti_dichiarate(
+                    os.path.join(radice, "dati", "fonti.json")),
+                _leggi_json(os.path.join(radice, "dati",
+                                         "conversione_bigoni.json")))}
         scrivi(pagina["file"], pagina["sezioni"], dati,
                pagina["titolo"], pagina["occhiello"], marcatori)
 

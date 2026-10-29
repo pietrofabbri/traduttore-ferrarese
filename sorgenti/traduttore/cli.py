@@ -31,6 +31,7 @@ import os
 import subprocess
 import sys
 
+from . import campioni as campioni_modulo
 from . import italiano, morfologia, verifica_dati, verbi
 from . import voce as voce_modulo
 from .audio import Archivio, controlla_archivo
@@ -62,6 +63,8 @@ PERCORSI = {
     # propria: nessuno dei due e` un brano di una persona, e mescolarli
     # renderebbe falso il conto che il progetto fa pubblicamente.
     "sintesi": os.path.join(DATI, "sintesi.jsonl"),
+    # La verifica a campione: le estrazioni e i giudizi di chi ha controllato.
+    "campioni": os.path.join(DATI, "campioni"),
 }
 
 # La fila d'attesa: materiale raccolto ma non ancora pubblicabile. Non entra
@@ -377,6 +380,100 @@ def _stampa_proverbio(proverbio, direzione, punteggio=None, pezzo=None) -> None:
         print("         significato: %s" % proverbio.significato)
 
 
+def comando_campione(args) -> int:
+    """La verifica a campione: lo stato, una nuova estrazione, i giudizi.
+
+    Senza sottocomando stampa, per ogni fonte, quante voci sono state estratte
+    e giudicate e il tasso di errore con il suo intervallo. E' il numero che
+    risponde a «quanto mi posso fidare di questa fonte?» senza che nessuno
+    abbia controllato ogni voce. Il protocollo e' in `dati/campioni/README.md`.
+    """
+    import datetime
+    cartella = PERCORSI["campioni"]
+    os.makedirs(cartella, exist_ok=True)
+    campioni = campioni_modulo.Campioni.da_file(cartella)
+    glossario = Glossario.da_file(PERCORSI["glossario"])
+    azione = getattr(args, "azione", None)
+
+    if azione == "estrai":
+        oggi = datetime.date.today().isoformat()
+        seme = args.seme or "%s-%s-%d" % (oggi, args.fonte, len(campioni.estrazioni) + 1)
+        voci = campioni_modulo.estrai(glossario, args.fonte, args.n, seme)
+        nuova = campioni_modulo.Estrazione(
+            id=campioni.prossimo_id("E", [e.id for e in campioni.estrazioni]),
+            fonte=args.fonte, n=args.n, seme=seme, data=oggi,
+            popolazione=len(campioni_modulo.popolazione(glossario, args.fonte)),
+            voci=voci, motivo=args.motivo or "")
+        campioni.estrazioni.append(nuova)
+        campioni.scrivi_estrazioni(cartella)
+        print("%s: %d voci di %s su %d, seme %r"
+              % (nuova.id, nuova.n, nuova.fonte, nuova.popolazione, seme))
+        print("rigenera le pagine (`web`) perche' compaiano in verifica.html")
+        return 0
+
+    if azione == "importa":
+        testo = (sys.stdin.read() if args.file == "-"
+                 else open(args.file, encoding="utf-8").read())
+        righe = campioni_modulo.leggi_giudizi_incollati(testo)
+        gia = campioni.giudicate()
+        nuovi, scartati = [], []
+        for r in righe:
+            e = campioni.estrazione(r.get("estrazione", ""))
+            motivo = None
+            if e is None or r.get("voce") not in e.voci:
+                motivo = "voce non estratta"
+            elif r.get("esito") not in campioni_modulo.ESITI:
+                motivo = "esito %r" % r.get("esito")
+            elif not (r.get("chi") or args.chi):
+                motivo = "manca chi ha giudicato"
+            elif (r["estrazione"], r["voce"]) in gia and \
+                    gia[(r["estrazione"], r["voce"])].esito == r["esito"] and \
+                    gia[(r["estrazione"], r["voce"])].come_si_dice == r.get("come_si_dice", ""):
+                motivo = "gia' importato"
+            if motivo:
+                scartati.append((r.get("voce", "?"), motivo))
+                continue
+            esistenti = [g.id for g in campioni.giudizi] + [g.id for g in nuovi]
+            nuovi.append(campioni_modulo.Giudizio(
+                id=campioni.prossimo_id("K", esistenti),
+                estrazione=r["estrazione"], voce=r["voce"], esito=r["esito"],
+                chi=r.get("chi") or args.chi,
+                data=r.get("data") or datetime.date.today().isoformat(),
+                come_si_dice=(r.get("come_si_dice") or "").strip(),
+                nota=(r.get("nota") or "").strip()))
+        if nuovi:
+            campioni.aggiungi_giudizi(cartella, nuovi)
+        print("%d giudizi importati, %d scartati" % (len(nuovi), len(scartati)))
+        for voce, motivo in scartati:
+            print("  scartato %s: %s" % (voce, motivo))
+        if not nuovi and not scartati:
+            print("nessuna riga che cominci con { nel testo dato")
+        return 0 if not scartati or nuovi else 1
+
+    righe = campioni.riepilogo()
+    if args.json:
+        print(json.dumps(righe, ensure_ascii=False, indent=2))
+        return 0
+    if not righe:
+        print("nessuna estrazione: `campione estrai --fonte S004 --n 20`")
+        return 0
+    print("%-6s %8s %10s %8s %10s %12s  %s"
+          % ("fonte", "voci", "giudicate", "errate", "non note",
+             "errore", "intervallo al 95%"))
+    for r in righe:
+        intervallo = ("da %s a %s" % (campioni_modulo.percento(r["minimo"]),
+                                     campioni_modulo.percento(r["massimo"]))
+                      if r["stima"] is not None else "nessun giudizio utile")
+        print("%-6s %8d %6d/%-3d %8d %10d %12s  %s"
+              % (r["fonte"], r["popolazione"], r["giudicate"], r["estratte"],
+                 r["non_si_dice"], r["non_la_conosco"],
+                 campioni_modulo.percento(r["stima"]), intervallo))
+    print()
+    print("Il tasso conta solo «si dice» e «non si dice»: «non la conosco» non "
+          "e' un giudizio sulla voce. Le voci restano `I` nel glossario.")
+    return 0
+
+
 def comando_impara(args) -> int:
     glossario = Glossario.da_file(PERCORSI["glossario"])
     corpus = Corpus.da_file(PERCORSI["coppie"], PERCORSI["proverbi"])
@@ -420,7 +517,10 @@ def comando_verifica(args) -> int:
                 + controlla_proposte(
                     leggi(PERCORSO_PROPOSTE),
                     {v.id for v in glossario.voci} | {c.id for c in corpus.coppie})
-                + verifica_dati.controlla_regole(regole))
+                + verifica_dati.controlla_regole(regole)
+                + verifica_dati.controlla_campioni(
+                    campioni_modulo.Campioni.da_file(PERCORSI["campioni"]),
+                    glossario))
     if args.json:
         print(json.dumps({
             "problemi": [p.__dict__ for p in problemi],
@@ -1059,6 +1159,22 @@ def costruisci_parser() -> argparse.ArgumentParser:
     p = sotto.add_parser("proposte", help="la coda di revisione del livello IA")
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=comando_proposte)
+
+    p = sotto.add_parser(
+        "campione", help="la verifica a campione: stato, estrazioni, giudizi")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(func=comando_campione)
+    azioni = p.add_subparsers(dest="azione")
+    a = azioni.add_parser("estrai", help="estrae a caso N voci di una fonte")
+    a.add_argument("--fonte", required=True, help="es. S004, S006, S020")
+    a.add_argument("--n", type=int, default=20)
+    a.add_argument("--seme", help="di default: data, fonte e numero d'ordine")
+    a.add_argument("--motivo", help="perche' questa estrazione")
+    a.set_defaults(func=comando_campione)
+    a = azioni.add_parser("importa", help="importa i giudizi della pagina")
+    a.add_argument("file", help="file con le righe copiate dalla pagina, o -")
+    a.add_argument("--chi", help="chi ha giudicato, se le righe non lo dicono")
+    a.set_defaults(func=comando_campione)
 
     p = sotto.add_parser("web", help="genera il sito statico")
     p.set_defaults(func=comando_web)

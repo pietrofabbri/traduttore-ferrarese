@@ -1,0 +1,4 @@
+// I giudizi della verifica a campione, uno per riga. Non si scrivono a mano:
+// arrivano dalla pagina web/verifica.html e si importano con
+// `python3 -m traduttore.cli campione importa FILE`. Il file cresce in coda e
+// non si riscrive: un giudizio cambiato e' un giudizio nuovo (avviso K8).

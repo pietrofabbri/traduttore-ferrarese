@@ -276,6 +276,143 @@
   </div>
   <!-- /pagina:regole -->
 
+  <!-- pagina:verifica -->
+  <style>
+    .verifica-intro { background:#f3efe4; border:1px solid var(--bordo); padding:.8rem 1rem; border-radius:6px; }
+    .verifica-intro ol { margin:.3rem 0 .3rem 1.2rem; padding:0; }
+    .scheda.da-giudicare h3 .it, .scheda.giudicata h3 .it { font-weight:normal; color:var(--tacchino); }
+    .scheda.giudicata { opacity:.65; }
+    .scheda.fatta { border-left:3px solid var(--glossario); }
+    .esiti { display:flex; flex-wrap:wrap; gap:.4rem; margin:.4rem 0; }
+    .esito { display:inline-flex; }
+    .esito input { position:absolute; opacity:0; width:1px; height:1px; }
+    .esito span { border:1px solid var(--bordo); border-radius:999px; padding:.45rem .9rem; cursor:pointer; background:#fff; min-height:2.4rem; display:inline-flex; align-items:center; }
+    .esito input:checked + span { background:var(--inchiostro); color:#fff; border-color:var(--inchiostro); }
+    .esito input:focus-visible + span { outline:2px solid var(--regola); outline-offset:2px; }
+    .scheda input.come { width:100%; padding:.4rem; border:1px solid var(--bordo); border-radius:4px; font:inherit; }
+    .scheda .fonte { font-size:.8rem; color:var(--tacchino); margin:.3rem 0 0; overflow-wrap:anywhere; }
+    #risultatoVerifica { width:100%; min-height:8rem; font-family:monospace; font-size:.8rem; }
+    .legenda-bigoni { margin:.3rem 0 .8rem; font-size:.9rem; }
+    table.stima { width:100%; border-collapse:collapse; font-size:.9rem; }
+    table.stima td, table.stima th { border-bottom:1px solid var(--bordo); padding:.3rem .4rem; text-align:left; }
+    #barraVerifica { position:sticky; bottom:0; background:var(--fondo); border-top:1px solid var(--bordo); padding:.4rem 0; margin-top:1.5rem; }
+    #barraVerifica .riga { margin:0; align-items:center; }
+    #statoVerifica { flex:1 1 10rem; font-size:.9rem; }
+    #righeVerifica { margin-top:1rem; }
+  </style>
+  <div class="verifica-intro">
+    <p><b>Che cosa si chiede.</b> Per ogni voce, da parlante: <em>si dice cos&igrave;, con questo significato?</em> Non serve aprire nessun libro.</p>
+    <ol>
+      <li><b>si dice</b> &mdash; &egrave; ferrarese e vuol dire quello che c'&egrave; scritto. Se la scriveresti diversamente, scrivila nel campo sotto: non &egrave; un errore.</li>
+      <li><b>non si dice</b> &mdash; la parola o il significato sono sbagliati.</li>
+      <li><b>non la conosco</b> &mdash; non entra nel conto degli errori, ma dice quali parole non si usano pi&ugrave;.</li>
+    </ol>
+    <p>Le voci sono estratte a caso, con un seme dichiarato: non si sceglie quali giudicare. Si pu&ograve; fare un pezzo alla volta: i progressi restano in questo browser.</p>
+    <p><label>Chi giudica: <input type="text" id="chiVerifica" placeholder="nome, e da dove viene il tuo ferrarese" size="40"></label></p>
+  </div>
+  <div id="verifica">
+  <!--VERIFICA-->
+  </div>
+  <div id="barraVerifica">
+    <div class="riga">
+      <span id="statoVerifica" class="vuoto">Nessuna voce giudicata.</span>
+      <button type="button" id="copiaVerifica">Copia le righe</button>
+      <button type="button" id="scaricaVerifica">Scarica</button>
+    </div>
+  </div>
+  <details id="righeVerifica">
+    <summary>Le righe da consegnare, e come</summary>
+    <textarea id="risultatoVerifica" readonly placeholder="Qui compaiono le righe, una per voce giudicata."></textarea>
+    <p class="vuoto">Si consegnano a chi tiene il repository, anche incollate in un messaggio, e si importano con <code>python3 -m traduttore.cli campione importa FILE</code>. Una voce gia' importata non si importa due volte.</p>
+    <button type="button" id="azzeraVerifica">Ricomincia da capo</button>
+  </details>
+  <script data-pagina="verifica">
+  (function () {
+    "use strict";
+    // Questo blocco vive solo nella pagina della verifica; se gira altrove
+    // (o nei test, che eseguono gli script del modello con un `document`
+    // finto) esce senza toccare niente.
+    if (typeof document.querySelectorAll !== "function" ||
+        !document.getElementById("barraVerifica")) { return; }
+    var schede = document.querySelectorAll(".scheda.da-giudicare");
+    var risultato = document.getElementById("risultatoVerifica");
+    var stato = document.getElementById("statoVerifica");
+    var chi = document.getElementById("chiVerifica");
+    var CHIAVE = "verifica-campione";
+    // I progressi restano nel browser di chi giudica, e solo li': se il
+    // browser non lo permette (finestra privata, file://), la pagina funziona
+    // lo stesso e si perde solo la memoria fra una visita e l'altra.
+    function leggiMemoria() {
+      try { return JSON.parse(window.localStorage.getItem(CHIAVE) || "{}"); }
+      catch (e) { return {}; }
+    }
+    function scriviMemoria(m) {
+      try { window.localStorage.setItem(CHIAVE, JSON.stringify(m)); } catch (e) { /* niente */ }
+    }
+    function oggi() {
+      var d = new Date();
+      function due(n) { return (n < 10 ? "0" : "") + n; }
+      return d.getFullYear() + "-" + due(d.getMonth() + 1) + "-" + due(d.getDate());
+    }
+    function aggiorna() {
+      var memoria = { chi: chi.value, giudizi: {} };
+      var righe = [];
+      Array.prototype.forEach.call(schede, function (s) {
+        var scelto = s.querySelector("input[type=radio]:checked");
+        var come = s.querySelector("input.come").value.trim();
+        var chiave = s.dataset.estrazione + "/" + s.dataset.voce;
+        s.classList.toggle("fatta", !!scelto);
+        if (!scelto) { return; }
+        memoria.giudizi[chiave] = { esito: scelto.value, come: come };
+        var riga = { estrazione: s.dataset.estrazione, voce: s.dataset.voce,
+                     esito: scelto.value, chi: chi.value.trim(), data: oggi() };
+        if (come) { riga.come_si_dice = come; }
+        righe.push(JSON.stringify(riga));
+      });
+      scriviMemoria(memoria);
+      risultato.value = righe.join("\n");
+      stato.textContent = righe.length
+        ? righe.length + " di " + schede.length + " voci giudicate" +
+          (chi.value.trim() ? "." : ": manca il nome di chi giudica (in alto).")
+        : "Nessuna voce giudicata.";
+    }
+    var memoria = leggiMemoria();
+    if (memoria.chi) { chi.value = memoria.chi; }
+    Array.prototype.forEach.call(schede, function (s) {
+      var salvato = (memoria.giudizi || {})[s.dataset.estrazione + "/" + s.dataset.voce];
+      if (salvato) {
+        var r = s.querySelector("input[value=" + salvato.esito + "]");
+        if (r) { r.checked = true; }
+        s.querySelector("input.come").value = salvato.come || "";
+      }
+      s.addEventListener("change", aggiorna);
+      s.querySelector("input.come").addEventListener("input", aggiorna);
+    });
+    chi.addEventListener("input", aggiorna);
+    document.getElementById("copiaVerifica").addEventListener("click", function () {
+      risultato.select();
+      if (navigator.clipboard) { navigator.clipboard.writeText(risultato.value).catch(function () {}); }
+      else { try { document.execCommand("copy"); } catch (e) { /* niente */ } }
+    });
+    document.getElementById("scaricaVerifica").addEventListener("click", function () {
+      var file = new Blob([risultato.value + "\n"], { type: "application/x-ndjson" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(file);
+      a.download = "giudizi-" + oggi() + ".jsonl";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+    document.getElementById("azzeraVerifica").addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".scheda.da-giudicare input[type=radio]"),
+        function (r) { r.checked = false; });
+      Array.prototype.forEach.call(document.querySelectorAll(".scheda.da-giudicare input.come"),
+        function (i) { i.value = ""; });
+      aggiorna();
+    });
+    aggiorna();
+  })();
+  </script>
+  <!-- /pagina:verifica -->
+
   <!-- pagina:fette -->
   <!-- DIFETTO CORRETTO, e il commento resta perche' la forma e' facilissima da
      rifare: questo blocco era dentro quello `index`, quindi spariva da tutte

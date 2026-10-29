@@ -1,7 +1,7 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.34
-data: 2026-10-08
+versione: 0.35
+data: 2026-10-29
 autore: progetto «I cinque duchi»
 ---
 
@@ -31,6 +31,7 @@ python3 -m traduttore.cli voci
 python3 -m traduttore.cli audio
 python3 -m traduttore.cli proposte
 python3 -m traduttore.cli stato
+python3 -m traduttore.cli campione
 python3 -m traduttore.cli buchi
 python3 -m traduttore.cli copertura
 python3 -m traduttore.cli verifica
@@ -80,7 +81,7 @@ python3 -m traduttore.cli cerca "lupo non mangia di lupo"
 python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
 ```
 
-## Il sito: quarantuno pagine invece di una da sei megabyte
+## Il sito: quarantadue pagine invece di una da sei megabyte
 
 La pagina era **una sola** e pesava **6,2 megabyte**. Di quelli, il 99,2% era il
 blocco dei dati e l'87,5% era il glossario: la pagina che serve solo a leggere
@@ -97,8 +98,9 @@ Ora il sito è ramificato, e ogni pagina porta dentro quello che le serve:
 | `frasi.html` | coppie parallele e proverbi | 146 KB |
 | `suoni.html` | le cinque varietà e i suoni | 143 KB |
 | `regole.html` | le regole del ferrarese, con la fonte su ognuna | 130 KB |
+| `verifica.html` | la verifica a campione: le voci estratte da giudicare | 166 KB |
 
-In tutto 41 pagine e 13,7 MB; `python3 -m traduttore.cli web` stampa i pesi
+In tutto 42 pagine e 13,9 MB; `python3 -m traduttore.cli web` stampa i pesi
 veri ogni volta, e quelli valgono piu' di questa tabella.
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
@@ -122,6 +124,30 @@ parte che non si può ripetere, quindi c'è sempre.
 ```bash
 python3 -m traduttore.cli web     # genera tutte le pagine e stampa i pesi
 ```
+
+## La verifica a campione: quanto sbaglia ogni fonte
+
+Il glossario ha 17370 voci e quasi tutte sono `attendibilita: I`: trascritte da
+una fonte, mai controllate da un parlante. Il progetto vuole raccogliere tutto
+quello che si sa sul ferrarese con il minimo di verifica umana, e le due cose
+insieme si tengono solo cosi': invece di controllare ogni voce, si **misura**
+quanto sbaglia ogni fonte su poche voci **estratte a caso**.
+
+```bash
+python3 -m traduttore.cli campione estrai --fonte S004 --n 20   # estrae, con un seme scritto
+python3 -m traduttore.cli campione importa giudizi.jsonl        # i giudizi dalla pagina
+python3 -m traduttore.cli campione                              # il tasso per fonte
+```
+
+Il parlante apre `web/verifica.html`, anche dal telefono, e per ogni voce dice
+**si dice**, **non si dice** o **non la conosco**; la pagina produce le righe
+da consegnare. Il risultato e' un tasso di errore per fonte con l'intervallo di
+Wilson al 95%, che con venti voci e' largo e lo dice. Il terzo esito non conta
+come errore, ma e' il primo dato del progetto su quali parole non si usano
+piu'. Un giudizio su una voce che l'estrazione non contiene viene rifiutato
+(controllo **K5**): un campione scelto a mano non e' un campione. Il glossario
+non cambia, e le voci giudicate restano `I`. Il protocollo intero e' in
+[dati/campioni/README.md](dati/campioni/README.md).
 
 ## I quattro livelli, e il quinto
 
@@ -670,7 +696,7 @@ Cosa è entrato finora: il **presente indicativo** di `dar`, `far`, `dir`, `capi
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 339 test
+python3 prove/test_traduttore.py     # 348 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

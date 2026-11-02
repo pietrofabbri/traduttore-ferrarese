@@ -109,7 +109,7 @@ def _carica_regole() -> list:
         return []
     with open(percorso, "r", encoding="utf-8") as f:
         grezzo = json.load(f)
-    return [morfologia.Regola(**r) for r in grezzo.get("regole", [])]
+    return [morfologia.Regola.da_dict(r) for r in grezzo.get("regole", [])]
 
 
 def _salva_regole(regole: list, percorso: str = None) -> None:

@@ -331,7 +331,10 @@ def main() -> int:
     regole = []
     if os.path.exists(PERCORSI["regole"]):
         grezzo = json.load(open(PERCORSI["regole"], encoding="utf-8"))
-        regole = grezzo.get("regole", [])
+        # Come la riga di comando: `Regola.da_dict`, e non il dizionario
+        # grezzo. Il file era vuoto fino alla 0.36 e il difetto non si vedeva.
+        regole = [morfologia.Regola.da_dict(r)
+                  for r in grezzo.get("regole", [])]
     varieta = Varieta.da_file(PERCORSI["varieta"])
     motore = Motore(glossario, corpus, regole)
 

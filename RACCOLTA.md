@@ -509,31 +509,37 @@ una pool e non distingue niente.
 **Perche' una fonte a se'.** S019 e' la prima fonte che entra tutta in
 `dati/coppie.jsonl` e non nel glossario, e quindi ha un generatore proprio. Il
 suo lettore e' diverso da tutti gli altri perche' la pagina e' **strutturata**,
-non continua: ogni voce e' un `<dd>` e la spiegazione italiana sta in un `<dl>`
-annidato dentro. Contare i `<dd>` conta anche le spiegazioni.
+non continua: ogni modo di dire sta su tre righe — il **ferrarese** in grassetto in
+un elenco, la **traduzione letterale** in corsivo in un `<dd>` subito sotto, e il
+**significato** in un `<dl>` annidato dentro quel `<dd>`.
 
-Le quattro regole di chiama, in una riga ciascuna:
+Le regole del lettore, in una riga ciascuna:
 
-1. la voce e' il `<dd>` **esterno**, cioe' quello che non e' dentro un altro
-   `<dd>`; si conta la profondita', non i tag;
-2. la spiegazione che comincia con un **segno** e' la coda di una frase e non
-   entra; se comincia con una lettera entra, perche' «Come viene viene, alla
-   grossa» e' una frase intera anche se comincia con una congiunzione;
-3. tutto esce `attendibilita: "I"` e `tipo: "narrativa"`, che e' il tipo dei
+1. il ferrarese e' il **grassetto** dell'elenco che sta **subito** prima della
+   definizione, non il corsivo: fino alla 0.35 il lettore prendeva il corsivo, e
+   tutte le coppie avevano l'italiano sui due lati (`REGISTRO.md`, 0.36);
+2. la definizione e' il `<dd>` **esterno**; si conta la profondita', non i tag;
+3. `italiano` e' la traduzione letterale, e il significato va nel campo
+   `significato`; una voce senza traduzione letterale non entra, perche' un
+   significato non e' una traduzione;
+4. due modi di dire e due traduzioni nella stessa definizione danno due coppie,
+   nell'ordine della pagina;
+5. tutto esce `attendibilita: "I"` e `tipo: "narrativa"`, che e' il tipo dei
    proverbi sciolti;
-4. la varieta' viene da `dati/varieta.json`, che deve avere la riga di S019: se
+6. la varieta' viene da `dati/varieta.json`, che deve avere la riga di S019: se
    non ce l'ha, il generatore **si ferma e lo dice**, invece di indovinare.
 
 Uso:
 
 ```
-python3 raccolta/da_modi.py --prova    # mostra i quattro mucchi, non scrive
+python3 raccolta/da_modi.py --prova    # mostra i mucchi, non scrive
 python3 raccolta/da_modi.py            # scrive in dati/coppie.jsonl
 ```
 
 Il generatore non riscrive quello che ha gia' scritto e non crasha se il file
-non esiste. Il numero degli scarti viene stampato ogni volta: **2** senza
-spiegazione, **2** mozzate, **31** scritti.
+non esiste. I numeri vengono stampati ogni volta: **38** modi di dire nella
+pagina, **2** senza traduzione letterale, **36** con la traduzione, di cui **35**
+scritti da S019 e uno («Nat e spudà») gia' nel corpus da Wikipedia (F0012).
 
 ## Le forme verbali: `raccolta/da_verbi.py`
 

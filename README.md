@@ -1,7 +1,7 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.35
-data: 2026-10-29
+versione: 0.36
+data: 2026-11-02
 autore: progetto «I cinque duchi»
 ---
 
@@ -696,7 +696,7 @@ Cosa è entrato finora: il **presente indicativo** di `dar`, `far`, `dir`, `capi
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 348 test
+python3 prove/test_traduttore.py     # 352 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

@@ -5,7 +5,7 @@
 Un test puo' essere vero, passare, e non guardare niente. Il modo per accorgersene
 non e' leggerlo, e' rompere il codice apposta e vedere se qualcuno se ne accorge:
 qui si prende `raccolta/da_modi.py`, che decide quali frasi della pagina
-entrano in `dati/coppie.jsonl`, e si cambiano una alla volta sei decisioni. Ogni
+entrano in `dati/coppie.jsonl`, e si cambiano una alla volta otto decisioni. Ogni
 mutazione deve far fallire almeno un test.
 
 **Perche' un solo file, e non tutto il codice.** Il file scelto e' quello che
@@ -45,35 +45,36 @@ SORGENTE = os.path.join(RADICE, "raccolta", "da_modi.py")
 SUITE = "prove.test_traduttore"
 COPIA = SORGENTE + ".prima_delle_mutazioni"
 
-# Le sei mutazioni: ogni nome dice che decisione e' stata rotta, non che
+# Le otto mutazioni: ogni nome dice che decisione e' stata rotta, non che
 # riga e' stata toccata. Una decisione senza nome e' un commento.
 MUTAZIONI = [
-    ("la regola che scarta le spiegazioni mozzate torna a guardare la parola",
-     'r"|^(?:o|e|a|ed|ma|pero\')\\s+[A-ZÀ-Ü][a-zà-ÿ]+,"',
-     'r"^[\\s,;:.\\-–—]*(?:o|e|a|ed|in|con|per|ma|che|come|dove)\\b"'),
+    ("il corsivo torna a essere preso per il ferrarese",
+     '            trovate.append({"ferrarese": ferrarese, "letterale": letterale,',
+     '            trovate.append({"ferrarese": letterale or ferrarese, '
+     '"letterale": letterale,'),
     ("il lettore conta tutti i <dd>, annidati compresi",
      "    esterni, profondita, inizio = [], 0, None",
      '    esterni = re.findall(r"<dd\\b[^>]*>", segmento)\n'
      "    return esterni\n"
      "    esterni, profondita, inizio = [], 0, None"),
+    ("un elenco lontano viene preso per il modo di dire",
+     '    if chiusura < 0 or prima[chiusura + len("</ul>"):].strip():',
+     '    if chiusura < 0:'),
     ("il tipo torna ad essere quello di prima",
      'TIPO = "narrativa"',
      'TIPO = "attestato"'),
-    ("le spiegazioni mozzate non vengono piu' scartate",
-     "        if _mozzata(spiegazione):",
+    ("una voce senza traduzione letterale entra fra le nuove",
+     '        if not voce["letterale"]:',
      "        if False:"),
-    ("una voce senza spiegazione entra fra le nuove",
-     "        if not spiegazione:",
-     "        if False:"),
-    ("la nota che dichiara da dove viene la spiegazione sparisce",
-     '            "nota": "La spiegazione e\' della pagina',
-     '            "nota": "" if True else "La spiegazione e\' della pagina'),
+    ("la nota che dichiara da dove viene la traduzione sparisce",
+     "    nota = NOTA\n",
+     '    nota = ""\n'),
     ("le righe della pagina si dichiarano verificate da un parlante",
-     '            "attendibilita": "I",',
-     '            "attendibilita": "D",'),
+     '        "attendibilita": "I",',
+     '        "attendibilita": "D",'),
     ("la varieta' e' indovinata invece che dichiarata",
-     '            "varieta": varieta,',
-     '            "varieta": "centrale",'),
+     '        "varieta": varieta,',
+     '        "varieta": "centrale",'),
 ]
 
 

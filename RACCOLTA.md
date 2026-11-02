@@ -541,10 +541,42 @@ non esiste. I numeri vengono stampati ogni volta: **38** modi di dire nella
 pagina, **2** senza traduzione letterale, **36** con la traduzione, di cui **35**
 scritti da S019 e uno («Nat e spudà») gia' nel corpus da Wikipedia (F0012).
 
-## Le forme verbali: `raccolta/da_verbi.py`
+## I paradigmi verbali: `raccolta/da_paradigmi.py`
 
-**Il buco e la sua dichiarazione.** Nel repository non c'è una fonte che tabelli
-la coniugazione ferrarese. Quello che c'è sono poche forme vere, in due fonti:
+**Dalla 0.37 la coniugazione c'e'.** S015 (Bigoni, «Il Ferrarese», §4 «Verbi»)
+tabella dodici paradigmi: gli ausiliari, i verbi modello delle quattro coniugazioni e
+cinque irregolari, in sei tempi piu' gerundio e participio. Il generatore li porta in
+`dati/verbi.jsonl` con queste regole:
+
+1. ogni casella e' una **citazione**, scritta nel generatore come la fonte la scrive
+   («mi a kaŋt», «ke ti at ɣ [av]ési», «ti at dìši / di»), e la riga la conserva in
+   `scritto_dalla_fonte`; la trascrizione e' stata confrontata casella per casella
+   con la pagina (432 caselle e 11 coppie gerundio/participio, 0 differenze);
+2. la casella si **scompone** in pronome, proclitica, rafforzativo `ɣ` e verbo; le
+   varianti separate da «/» diventano righe con `variante_di`, e le parti fra
+   parentesi quadre restano e si dichiarano;
+3. la forma passa nella grafia del progetto con `dati/conversione_bigoni.json`, e
+   ogni perdita e' nominata nella nota;
+4. una casella che la fonte scrive con la forma di un altro verbo (il futuro di
+   `tašér` alla seconda plurale) **non entra**, e la riga di sistema la elenca in
+   `fuori`;
+5. le forme italiane che sono anche parole funzionali («dai», «sia») portano
+   `omografo` e il motore non le cerca;
+6. le righe che erano state scritte a mano per il presente di cinque verbi sono
+   sostituite dalle righe dei paradigmi **tenendo il loro id**.
+
+Se il testo della fonte e' in `raccolta/grezzi/bigoni_ilferrarese.txt`, il
+generatore rifa' il confronto e non scrive se una casella non si trova.
+
+```
+python3 raccolta/da_paradigmi.py --prova    # i numeri, non scrive
+python3 raccolta/da_paradigmi.py            # scrive in dati/verbi.jsonl
+```
+
+## Le forme verbali sparse: `raccolta/da_verbi.py`
+
+**Le forme fuori dalle tabelle.** Oltre ai paradigmi (sezione sopra), ci sono
+poche forme vere citate altrove, in due fonti:
 
 - **S015**, Bigoni, note linguistiche, sezione 4 — le frasi sono già in
   `dati/regole_grammaticali.json`, quindi sono una seconda copia della fonte

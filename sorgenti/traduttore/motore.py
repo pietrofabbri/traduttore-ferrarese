@@ -235,8 +235,12 @@ class Motore:
                 i += quante
                 continue
             parola = token[i]
+            # Il pronome soggetto che precede dice la persona del verbo:
+            # «loro sono» e' la terza plurale, non la prima singolare.
+            persona = (verbi.persona_del_soggetto(token[i - 1])
+                       if i > 0 and direzione == IT_FE else "")
             tradotto, origine, confidenza, dettaglio = self._risolvi_una(
-                parola, frase, direzione, contesto)
+                parola, frase, direzione, contesto, persona)
             risultati.append((parola, tradotto, origine, confidenza, dettaglio))
             i += 1
         return risultati
@@ -254,10 +258,19 @@ class Motore:
                 return testo, quante
         return None
 
-    def _risolvi_una(self, parola: str, frase: str, direzione: str, contesto) -> tuple:
+    def _risolvi_una(self, parola: str, frase: str, direzione: str, contesto,
+                     persona: str = "") -> tuple:
         """Risolve un token e restituisce (tradotto, origine, confidenza, dettaglio)."""
 
-        # Livello 1: il glossario. Vince sempre.
+        # Le forme verbali si cercano una volta sola: servono qui, nei due casi
+        # in cui una casella di una tabella di coniugazione vince sul glossario
+        # (`verbi.prima_del_glossario`), e al livello 2 bis.
+        attestata = (verbi.dall_italiano(parola, persona=persona)
+                     if direzione == IT_FE else {"forma": ""})
+        if verbi.prima_del_glossario(attestata, parola, persona):
+            return self._forma_verbale(attestata)
+
+        # Livello 1: il glossario. Vince sempre, tranne nei due casi sopra.
         voci = self.glossario.cerca(parola, direzione)
         if voci:
             voce = voci[0]
@@ -280,6 +293,20 @@ class Motore:
             confidenza = ORIGINE["corpo_frase"] if (
                 gemella.fonte and gemella.attendibilita == "D") else ORIGINE["corpo"]
             return tradotto, "corpo", confidenza, dettaglio
+
+        # Livello 2 bis: le forme verbali attestate. Stanno **dopo** la frase
+        # gemella e **prima** del frammento: una casella di una tabella di
+        # coniugazione e' una fonte che scrive esattamente quella parola, mentre
+        # il frammento e' una somiglianza fra stringhe dentro un'altra frase.
+        # Fino alla 0.36 stavano dopo le regole, e «sono» usciva `son` da un
+        # frammento di Wikipedia invece che `a són` dalla tabella di S015.
+        #
+        # Il verso e' uno solo: si cerca dall'italiano al ferrarese. Dall'altra
+        # parte la domanda sarebbe «quale forma ferrarese e' questa?», e per
+        # rispondere servirebbe riconoscere la forma, che e' esattamente cio'
+        # che le fonti non documentano.
+        if attestata["forma"]:
+            return self._forma_verbale(attestata)
 
         cercate = self.corpus.corrispondenze(parola, direzione, soglia=0.62)
         if cercate:
@@ -306,22 +333,6 @@ class Motore:
             if confidenza >= self.soglia_rifiuto:
                 return prodotto, "regola", confidenza, dettaglio
 
-        # Livello 3 bis: le forme verbali attestate. Sta **prima** del modello
-        # perche' e' una fonte e il modello e' un calcolo, e **dopo** le regole
-        # imparate perche' una regola che ha visto venti esempi non vale meno di
-        # una forma che qualcuno ha scritto una volta sola.
-        #
-        # Il verso e' uno solo: si cerca dall'italiano al ferrarese. Dall'altra
-        # parte la domanda sarebbe «quale forma ferrarese e' questa?», e per
-        # rispondere servirebbe riconoscere la forma, che e' esattamente cio'
-        # che le fonti non documentano.
-        if direzione == IT_FE:
-            attestata = verbi.dall_italiano(parola)
-            if attestata["forma"]:
-                dettaglio = "forma attestata da %s: %s" % (
-                    attestata["fonte"], attestata["nota"] or "senza nota")
-                return (attestata["forma"], "verbo", ORIGINE["verbo"], dettaglio)
-
         # Livello 4: il modello, solo se c'e' e solo se non ha gia' risposto
         # nessuno dei precedenti.
         if self.modello is not None:
@@ -338,6 +349,12 @@ class Motore:
 
         # Livello 5: non so.
         return parola, "nessuna", 0.0, "nessuna fonte nel glossario, nel corpus o fra le regole"
+
+    @staticmethod
+    def _forma_verbale(attestata: dict) -> tuple:
+        dettaglio = "forma attestata da %s: %s" % (
+            attestata["fonte"], attestata["nota"] or "senza nota")
+        return (attestata["testo"], "verbo", ORIGINE["verbo"], dettaglio)
 
     def _contesto_modello(self, frase: str, direzione: str) -> dict:
         """Costruisce il contesto che si da' al modello: glossario vicino,

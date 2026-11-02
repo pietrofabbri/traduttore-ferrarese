@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.36
+versione: 0.37
 data: 2026-11-02
 autore: progetto «I cinque duchi»
 ---
@@ -513,6 +513,7 @@ traduttore-ferrarese/
                          filtra_candidati.py  tiene solo quello che si legge
                          lettura_ferri.py la lista scelta a mano, voce per voce
                          costruisci_da_ferri.py  la porta dentro `dati/`
+                         da_paradigmi.py  i dodici paradigmi verbali di S015
                          moderni.py         il significato moderno da
                                            Wiktionary: l'unico punto di questo
                                            progetto che usa la rete, e la usa
@@ -610,12 +611,14 @@ ferrarese. In breve:
   «il cane e' a casa» esce con due buchi. Non si aggiungono a mano: ogni voce
   ha bisogno di una fonte e nessuna fonte aperta le contiene. Il punto 8 di
   `AGENTS.md` dice quale fonte controllare per prima.
-- **Non ci sono forme finite dei verbi.** Il glossario contiene lemmi, non
-  coniugazioni: `sedarsi` c'e', `seduto` no. Riconoscere un participio dalla
-  radice del verbo e' **morfologia**, non vocabolario, ed e' la strada giusta —
-  ma non ci sono esempi in `dati/regole.json` che la insegnino. Il buco e'
-  dichiarato e non aggirato: il motore lascia la parola come sta e registra
-  il buco, che e' il comportamento giusto per un vocabolario che non sa.
+- **I verbi coniugati sono solo quelli dei dodici paradigmi di S015.** Il
+  glossario contiene lemmi, non coniugazioni: `sedarsi` c'e', `seduto` no. Dalla
+  0.37 il motore coniuga gli ausiliari, i quattro verbi modello e cinque
+  irregolari, in tutti i tempi che la fonte tabella; gli altri verbi restano un
+  buco dichiarato («mangiamo» passa invariato). Riconoscere una forma dalla
+  radice di un verbo che non e' un modello e' **morfologia**, non vocabolario: e'
+  la strada giusta, ma e' una regola e non una fonte, e il progetto non l'ha
+  ancora decisa.
 - **Non si sa quali parole sono antiche.** La colonna «in italiano di oggi» dice
   che cosa *vuol dire* una parola, non che *quella parola non si usa piu'*:
   nessuna fonte aperta finora marchia l'obsoleto. Su 4063 voci si ha
@@ -689,14 +692,47 @@ aperte e chiuse (`ě`, `ê`, `ǒ`, `ô`) diventano accenti tonici, perché in it
 non c'è modo di scriverle. Ogni riga che ne soffre resta `attendibilita: "I"` e nomina
 la perdita.
 
-Cosa è entrato finora: il **presente indicativo** di `dar`, `far`, `dir`, `capir` e
-`vlér` — i cinque lemmi che il glossario attesta già. Il resto del paradigma è
- dichiarato e non scritto, e `verbi.jsonl` lo dice nella sua intestazione.
+Cosa è entrato: **dalla 0.37, tutti i dodici paradigmi** che S015 tabella — gli
+ausiliari `èsar` e `avér` (anche rafforzato con `ɣ`), i verbi modello delle quattro
+coniugazioni (`kaŋtàr`, `tašér`, `lèžar`, `kapìr`) e cinque irregolari (`dar`, `far`,
+`dir`, `putér`, `vlér`) — in indicativo presente, futuro e imperfetto, congiuntivo
+presente e imperfetto, condizionale, gerundio e participio. Li scrive
+`raccolta/da_paradigmi.py`, che cita ogni casella come la fonte la scrive («mi a
+kaŋt») e la scompone in pronome, **proclitica** e verbo; la trascrizione è stata
+confrontata casella per casella con la pagina della fonte.
+
+```bash
+python3 -m traduttore.cli traduci "io canto"            # Mi a cant
+python3 -m traduttore.cli traduci "loro sono"           # ... i jè
+python3 -m traduttore.cli traduci "vorrei che tu facessi"
+python3 raccolta/da_paradigmi.py --prova                # i numeri, non scrive
+```
+
+Quattro regole che il motore segue, e che valgono uguali nella pagina:
+
+- **la proclitica va davanti al verbo**: S015 dice che il verbo finito vuole il
+  soggetto con la proclitica, tranne all'imperativo, quindi «canto» esce `a cant` e
+  «canta» `al cànta`;
+- **il pronome che precede sceglie la persona**: «sono» da solo è la prima singolare
+  (`a són`), «loro sono» è la terza plurale (`i jè`);
+- **l'accento conta**: le parole italiane coniugate si confrontano con l'accento,
+  quindi «è» e «e'» sono `l'è` e la congiunzione «e» non diventa un verbo; e «dai» e
+  «sia», che sono anche parole funzionali, non si cercano;
+- **la tabella vince sul glossario solo in due casi**: con un pronome soggetto della
+  stessa persona davanti («io canto» è il verbo, «canto» da solo resta il nome
+  `Cantòn` del glossario) e con una parola accentata che il glossario trova solo
+  togliendo l'accento.
+
+**Che cosa resta fuori.** Gli altri verbi: *mangiare*, *parlare* e tutti quelli che
+non sono i dodici modelli restano un buco, perché coniugarli sul modello della loro
+coniugazione sarebbe una regola e non una fonte. E il futuro di `tašér` alla seconda
+plurale, dove la fonte scrive la forma di `kaŋtàr`: quasi certamente un refuso, ma
+correggerlo sarebbe scrivere una forma che la fonte non scrive.
 
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 352 test
+python3 prove/test_traduttore.py     # 360 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

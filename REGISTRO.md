@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.36
+versione: 0.37
 data: 2026-11-02
 ---
 
@@ -23,6 +23,61 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.37 — 2026-11-02 · La coniugazione c'era, in dodici tabelle, e ne avevamo preso il presente di cinque verbi
+
+**Perché.** Il traduttore sbagliava sui verbi: «io faccio» usciva `Mi fag`, «mangiavo» e
+«canterò» passavano in italiano, e «sono» veniva da un frammento di Wikipedia. Il
+progetto dichiarava che «non coniuga», ma la fonte c'era già: S015 (Bigoni, §4 «Verbi»)
+tabella per intero dodici paradigmi, e ne erano entrate trenta forme, scritte a mano e
+senza la proclitica che la stessa fonte dice obbligatoria.
+
+- **`raccolta/da_paradigmi.py`** porta in `dati/verbi.jsonl` i dodici paradigmi: gli
+  ausiliari `èsar` e `avér` (anche con `ɣ`), i verbi modello `kaŋtàr`, `tašér`, `lèžar`,
+  `kapìr` e gli irregolari `dar`, `far`, `dir`, `putér`, `vlér`; indicativo presente,
+  futuro e imperfetto, congiuntivo presente e imperfetto, condizionale, gerundio e
+  participio. Ogni casella è una citazione (`scritto_dalla_fonte`), confrontata con la
+  pagina il 2026-11-02: 432 caselle e 11 coppie gerundio/participio, 0 differenze.
+  Le forme sono 495 (erano 48); le 30 righe scritte a mano sono sostituite tenendo il
+  loro id.
+- **La proclitica.** Ogni forma finita porta `proclitica` e il motore la scrive davanti
+  al verbo: «canto» → `a cant`, «canta» → `al cànta`, «è» → `l'è`.
+- **Il pronome sceglie la persona.** «sono» da solo è `a són`; «loro sono» è `i jè`.
+- **L'accento conta.** Le parole italiane coniugate si cercano con l'accento
+  (`verbi.chiave_italiano`): con la chiave del glossario «è» era «e» e «dà» era «da».
+  «dai» e «sia» sono anche parole funzionali e portano `omografo`: il motore non le
+  cerca.
+- **Dove sta il livello dei verbi.** Prima del frammento del corpus e non dopo le
+  regole: una casella di una tabella di coniugazione vale più di una somiglianza fra
+  stringhe. E vince sul glossario solo in due casi dichiarati
+  (`verbi.prima_del_glossario`): un pronome soggetto della stessa persona davanti
+  («io canto» → `Mi a cant`, mentre «canto» da solo resta `Cantòn`) e una parola
+  accentata che il glossario trova solo togliendo l'accento.
+- **Un refuso della fonte resta un buco.** Il futuro di `tašér` alla seconda plurale è
+  scritto «vu a kaŋtarì», la forma di `kaŋtàr`. Non entra, e la riga di sistema lo
+  elenca in `fuori`.
+- **La pagina.** Le stesse regole in `modello.html`. Il ciclo che risolve le parole è
+  ora una funzione (`risolviUnita`) che il confronto con Python chiama davvero: prima
+  il confronto ne rifaceva una copia, e non vedeva un difetto che c'era già — dopo una
+  locuzione il ciclo avanzava di una parola sola e ripeteva la locuzione spezzata.
+  Corretto anche il frammento del corpus, che nella pagina non toglieva l'accento dalla
+  parola ferrarese. Le forme verbali vanno solo nella pagina del traduttore, con la
+  casella citata e non la nota intera: la pagina pesa 2917 KB (tetto 3 MB), il sito
+  13,4 MB (era 13,9: prima i dati dei verbi stavano in tutte le pagine).
+- **Un difetto trovato nei test.** I test della pagina passavano il programma a
+  `node -e`, e un argomento della riga di comando ha un tetto di 128 KB: con i
+  paradigmi i dati lo superano. Ora il programma passa da standard input.
+
+**Che cosa resta aperto.** Gli altri verbi: *mangiare* e *parlare* non sono modelli, e
+coniugarli sul modello della loro coniugazione sarebbe una regola, non una fonte. È una
+decisione del titolare. Restano fuori anche la negazione (`aŋ`, di cui la fonte dà solo
+la prima persona) e il passato prossimo composto (ausiliare + participio).
+
+**Verifiche.** 360 test (erano 352): otto sui paradigmi (le caselle difficili, il
+refuso, la citazione di ogni riga, il generatore che si rilancia senza doppioni,
+l'accento, gli omografi, il pronome, il verbo contro il nome del glossario). Il
+confronto fra Python e la pagina ha sette frasi nuove sui verbi: 22 frasi, 0
+divergenze. `verifica`: 0 errori.
 
 ## 0.36 — 2026-11-02 · I modi di dire di Wikiquote avevano l'italiano su tutti e due i lati
 

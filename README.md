@@ -466,6 +466,7 @@ traduttore-ferrarese/
   REGISTRO.md          che cosa e' cambiato, e perche'
   STIMA-AUDIO.md       quante ore di registrazione servono, con l'aritmetica
   AGENTS.md            istruzioni per chi ci lavora, persone e IA
+  CONTRIBUTING.md      come si collabora: rami, pull request, chi approva
   dati/
     glossario.jsonl    le parole, con la fonte, la varieta' e il
                        significato moderno (con la sua fonte)

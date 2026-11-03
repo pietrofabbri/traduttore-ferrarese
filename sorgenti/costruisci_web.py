@@ -894,7 +894,7 @@ def carica_tutto(radice: str):
     regole = []
     if os.path.exists(percorso_regole):
         with open(percorso_regole, "r", encoding="utf-8") as f:
-            regole = [morfologia.Regola(**r) for r in json.load(f).get("regole", [])]
+            regole = [morfologia.Regola.da_dict(r) for r in json.load(f).get("regole", [])]
     return glossario, corpus, regole, varieta, fonetica, archivio, sintesi
 
 

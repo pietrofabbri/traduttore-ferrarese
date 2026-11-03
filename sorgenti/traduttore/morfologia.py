@@ -121,6 +121,22 @@ class Regola:
             "esempi": self.esempi[:6],
         }
 
+    @classmethod
+    def da_dict(cls, grezzo: dict) -> "Regola":
+        """La regola come la scrive `come_dict`, riletta.
+
+        `accordo` e `supporto` stanno nel file perche' chi lo legge li veda, ma
+        non sono campi: si ricalcolano dagli esempi. Fino alla 0.35 il file
+        delle regole era sempre vuoto e nessuno se n'era accorto, ma la riga di
+        comando e la pagina rileggevano con `Regola(**r)`, e alla prima regola
+        salvata si sarebbero fermate tutte e due.
+        """
+        return cls(prefisso=grezzo.get("prefisso", ""),
+                   suffisso_italiano=grezzo.get("suffisso_italiano", ""),
+                   suffisso_ferrarese=grezzo.get("suffisso_ferrarese", ""),
+                   esempi=list(grezzo.get("esempi", [])),
+                   classe=grezzo.get("classe", ""))
+
 
 def allinea(coppia_italiano: list, coppia_ferrarese: list) -> list:
     """Allinea due frasi per posizione, restituendo le coppie di parole.

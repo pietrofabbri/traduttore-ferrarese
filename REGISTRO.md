@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.35
-data: 2026-10-29
+versione: 0.36
+data: 2026-11-02
 ---
 
 # Registro delle modifiche
@@ -23,6 +23,47 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.36 — 2026-11-02 · I modi di dire di Wikiquote avevano l'italiano su tutti e due i lati
+
+**Perché.** Le 31 coppie di S019 (F0019–F0049) avevano nel campo `ferrarese` la
+**traduzione letterale italiana** e nel campo `italiano` il significato: `Ha le
+gambe a coppietta` / `Ha le gambe a x`. Il traduttore ne ricavava frammenti come
+`ha → ha`, cioè una parola italiana presentata come ferrarese, con una fonte
+accanto. Il lettore di `raccolta/da_modi.py` prendeva il **corsivo** della pagina
+come se fosse il ferrarese; il ferrarese è il **grassetto** dell'elenco che sta
+subito prima. Nessun controllo se ne accorgeva, perché i controlli guardavano che i
+campi ci fossero, non che il ferrarese fosse ferrarese.
+
+- **Il lettore** legge le tre righe della pagina: ferrarese (grassetto), traduzione
+  letterale (corsivo) e significato (il `<dl>` annidato). `italiano` è ora la
+  traduzione letterale, e il significato va nel campo nuovo `significato`, che il
+  motore ignora e la pagina può mostrare.
+- **Le 30 coppie sono riallineate tenendo il loro id.** F0037 («Nat e spudà») è
+  **tolta**: con il ferrarese giusto è un doppione di F0012, che viene da Wikipedia.
+- **Cinque coppie nuove**, F0051–F0055: «Al mastièr d'al Michilàzz», «Andar a vaiun»,
+  «Majall!» e le due forme di «Picia e dài». Prima erano scartate come «senza
+  spiegazione» o «spiegazione mozzata», ma erano lo stesso errore visto da un'altra
+  parte: le «spiegazioni mozzate» erano la seconda traduzione letterale. Restano fuori
+  «Gnêc gnêc» e «Ziràr la martufàia», per cui la pagina dà il significato e non la
+  traduzione.
+- **Le regole morfologiche non erano mai state rilette.** Con le coppie giuste,
+  `impara` salva per la prima volta due regole (`are → ar` da andare/cantare, e
+  `picchia → picia`), e la riga di comando e la pagina si fermavano subito:
+  `Regola(**r)` non accetta `accordo` e `supporto`, che `come_dict` scrive ma che
+  sono calcolati. Il file era sempre stato vuoto, quindi il difetto non si era mai
+  visto. Ora si rilegge con `Regola.da_dict`.
+- **Un limite che resta, dichiarato.** La regola `are → ar` non ha classe
+  grammaticale (le analisi italiane non coprono *andare* e *cantare*), quindi si
+  applica a ogni parola in `-are` che il glossario non ha, e non toglie le doppie:
+  *rilassare* esce `rilassar`, mentre S015 (R001) dice che il ferrarese non ha
+  consonanti doppie. Esce con confidenza 0,55 e `da rivedere`, come ogni regola.
+
+**Verifiche.** 352 test (erano 348): cinque sul lettore nuovo (il grassetto, l'elenco
+lontano, due modi di dire in una definizione, il conto della pagina, nessuna coppia con
+l'italiano sui due lati) e due sulle regole rilette, meno i tre sulle spiegazioni
+mozzate, che non esistono più. Le otto mutazioni di `controlla_mutazioni.py` sono
+riagganciate alle decisioni del lettore nuovo. `verifica`: 0 errori.
 
 ## 0.35 — 2026-10-29 · Quanto sbaglia una fonte si misura su venti voci, non su diecimila
 

@@ -3798,6 +3798,35 @@ class TestLaVoceDichiarata(unittest.TestCase):
 
 
 
+class TestLeRegoleSalvateSiRileggono(unittest.TestCase):
+    """Il file delle regole si rilegge con quello che il programma ci scrive.
+
+    Difetto vero, trovato il 2026-11-02: `come_dict` scrive anche `accordo` e
+    `supporto`, che sono calcolati, e chi rileggeva con `Regola(**r)` si fermava
+    alla prima regola. Il file era sempre stato vuoto, quindi nessuno lo vedeva.
+    """
+
+    def test_una_regola_scritta_si_rilegge_uguale(self):
+        regola = morfologia.Regola(
+            prefisso="", suffisso_italiano="are", suffisso_ferrarese="ar",
+            esempi=[{"coppia": "F1", "italiano": "cantare",
+                     "ferrarese": "cantar", "prodotto": "cantar",
+                     "attestato": True}])
+        riletta = morfologia.Regola.da_dict(
+            json.loads(json.dumps(regola.come_dict())))
+        self.assertEqual(riletta.etichetta(), regola.etichetta())
+        self.assertEqual(riletta.accordo, regola.accordo)
+        self.assertEqual(riletta.supporto, regola.supporto)
+
+    def test_il_file_del_repository_si_rilegge(self):
+        with io.open(os.path.join(RADICE, "dati", "regole.json"),
+                     encoding="utf-8") as f:
+            grezzo = json.load(f)
+        for r in grezzo.get("regole", []):
+            regola = morfologia.Regola.da_dict(r)
+            self.assertAlmostEqual(regola.accordo, r["accordo"], places=3)
+
+
 class TestIModiDiDire(unittest.TestCase):
     """S019: le frasi di Wikiquote lette dalla pagina, e non dalla regex.
 
@@ -3867,47 +3896,59 @@ class TestIModiDiDire(unittest.TestCase):
         self.assertIn("prima spiegazione", modulo._esterni(segmento)[0],
                       "la spiegazione annidata resta dentro la sua voce")
 
-    def test_una_spiegazione_intera_non_viene_scartata(self):
+    def test_il_ferrarese_e_il_grassetto_e_non_il_corsivo(self):
         modulo = self._modulo()
-        # Il difetto: la regola guardava la prima parola e scartava le frasi
-        # che cominciano con «come», che è una congiunzione d'inizio frase.
-        intere = ["Come viene viene, alla grossa, a occhio e croce",
-                  "Furbo come l'oca di Fergnani che era il più furbo di tutti",
-                  "Su per giù, all'incirca, pressappoco",
-                  "Essere baciati dalla fortuna",
-                  "Andare a pampògne"]
-        for spiegazione in intere:
-            self.assertFalse(modulo._mozzata(spiegazione),
-                             "scartata una spiegazione intera: %r" % spiegazione)
+        # Il difetto vero, trovato il 2026-11-02: il lettore prendeva il
+        # corsivo, che e' la traduzione letterale, come se fosse il ferrarese, e
+        # tutte le 31 coppie di S019 avevano l'italiano su tutti e due i lati.
+        segmento = ('<ul><li><b>La gh\'à ill gàmb a ciupéta.</b>'
+                    '<sup><a href="#n">[13]</a></sup></li></ul>'
+                    '<dl><dd><i>Ha le gambe a coppietta.</i>'
+                    '<dl><dd>Ha le gambe a x.</dd></dl></dd></dl>')
+        voci = modulo.voci_da(segmento)
+        self.assertEqual(len(voci), 1)
+        self.assertEqual(voci[0]["ferrarese"], "La gh'à ill gàmb a ciupéta")
+        self.assertEqual(voci[0]["letterale"], "Ha le gambe a coppietta")
+        self.assertEqual(voci[0]["significato"], "Ha le gambe a x")
 
-    def test_una_spiegazione_mozzata_viene_scartata(self):
+    def test_un_elenco_lontano_non_e_il_modo_di_dire(self):
         modulo = self._modulo()
-        mozzate = [", andare a zonzo",
-                   "o Dai, picchia e martella. Dopo tanto penare",
-                   "- cioè, senza fretta"]
-        for spiegazione in mozzate:
-            self.assertTrue(modulo._mozzata(spiegazione),
-                            "tenuta una coda di frase: %r" % spiegazione)
+        # Un elenco che non sta subito prima della definizione (l'indice, un
+        # paragrafo in mezzo) non e' il suo modo di dire: prenderlo darebbe a
+        # una traduzione il ferrarese di un'altra.
+        segmento = ('<ul><li><b>Altro</b></li></ul><p>un paragrafo</p>'
+                    '<dl><dd><i>Una traduzione.</i></dd></dl>')
+        self.assertEqual(modulo.voci_da(segmento), [])
 
-    def test_il_grezzo_dichiara_i_35_e_i_due_scarti(self):
+    def test_due_modi_di_dire_danno_due_coppie_nell_ordine(self):
         modulo = self._modulo()
-        # Il conto e' dichiarato nel file e nel docstring: se la pagina cambia,
-        # il numero esce diverso e questo test lo dice invece di lasciare che
-        # i dati cambino in silenzio.
+        segmento = ('<ul><li><b>Picia e dài.</b> o <b>Dài, picia e martèla.</b>'
+                    '</li></ul><dl><dd><i>Picchia e dai.</i> o '
+                    '<i>Dai, picchia e martella.</i><dl><dd>Dopo tanto penare.'
+                    '</dd></dl></dd></dl>')
+        voci = modulo.voci_da(segmento)
+        self.assertEqual([(v["ferrarese"], v["letterale"]) for v in voci],
+                         [("Picia e dài", "Picchia e dai"),
+                          ("Dài, picia e martèla", "Dai, picchia e martella")])
+
+    def test_il_grezzo_dichiara_i_38_e_i_due_senza_traduzione(self):
+        modulo = self._modulo()
+        # Il conto e' dichiarato nel docstring: se la pagina cambia, il numero
+        # esce diverso e questo test lo dice invece di lasciare che i dati
+        # cambino in silenzio.
         voci = modulo.voci()
-        mozzate = [v for v in voci if modulo._mozzata(v[1])]
-        senza = [v for v in voci if not v[1]]
-        nuove = [v for v in voci if v[1] and not modulo._mozzata(v[1])]
-        self.assertEqual(len(voci), 35)
-        self.assertEqual(len(senza), 2)
-        self.assertEqual(len(mozzate), 2)
-        self.assertEqual(len(nuove), 31)
+        senza = [v for v in voci if not v["letterale"]]
+        self.assertEqual(len(voci), 38)
+        self.assertEqual(sorted(v["ferrarese"] for v in senza),
+                         ["Gnêc gnêc", "Ziràr la martufàia"])
 
     def test_ogni_modo_di_dire_che_entra_e_nella_pagina(self):
         modulo = self._modulo()
-        # Ogni riga scritta deve trovarsi in `dati/coppie.jsonl`, e viceversa:
-        # una riga copiata a mano fuori dal lettore non si riconosce.
-        scritte = []
+        # Ogni riga di S019 deve essere un modo di dire della pagina con la sua
+        # traduzione, e ogni modo di dire tradotto della pagina deve essere nel
+        # corpus — scritto da S019 o gia' presente da un'altra fonte (F0012 ha
+        # «nat e spudà» da Wikipedia, e il generatore non lo riscrive).
+        scritte, tutte = [], set()
         with io.open(os.path.join(RADICE, "dati", "coppie.jsonl"),
                      encoding="utf-8") as f:
             for riga in f:
@@ -3915,21 +3956,45 @@ class TestIModiDiDire(unittest.TestCase):
                 if not riga or riga.lstrip().startswith("//"):
                     continue
                 coppia = json.loads(riga)
+                tutte.add(normalizza.chiave(coppia["ferrarese"]))
                 if modulo.ID_FONTE in coppia.get("fonte", ""):
                     scritte.append(coppia)
-        voci = modulo.voci()
-        attese = [v for v in voci
-                  if v[1] and not modulo._mozzata(v[1])]
-        self.assertEqual(len(scritte), len(attese))
-        chiavi = set(coppia["ferrarese"] for coppia in scritte)
-        for ferrarese, _ in attese:
-            self.assertIn(ferrarese, chiavi,
-                          "%s e' nella pagina ma non nelle coppie" % ferrarese)
+        attese = {normalizza.chiave(v["ferrarese"]): v for v in modulo.voci()
+                  if v["letterale"]}
         for coppia in scritte:
+            voce = attese.get(normalizza.chiave(coppia["ferrarese"]))
+            self.assertIsNotNone(voce, "%s non e' un modo di dire della "
+                                 "pagina" % coppia["ferrarese"])
+            self.assertEqual(coppia["italiano"], voce["letterale"])
             self.assertEqual(coppia["tipo"], modulo.TIPO)
             self.assertEqual(coppia["attendibilita"], "I")
             self.assertTrue(coppia["varieta"], "una coppia senza varieta'")
             self.assertTrue(coppia["nota"], "una coppia senza nota")
+        for k, voce in attese.items():
+            self.assertIn(k, tutte, "%s e' nella pagina ma non nelle coppie"
+                          % voce["ferrarese"])
+
+    def test_nessuna_coppia_ha_l_italiano_dai_due_lati(self):
+        # Il controllo che mancava: i campi c'erano tutti, ed erano tutti e due
+        # in italiano. Una coppia il cui lato ferrarese e' uguale alla
+        # traduzione, o e' una parola della traduzione, non insegna niente.
+        with io.open(os.path.join(RADICE, "dati", "coppie.jsonl"),
+                     encoding="utf-8") as f:
+            for riga in f:
+                riga = riga.strip()
+                if not riga or riga.lstrip().startswith("//"):
+                    continue
+                coppia = json.loads(riga)
+                if "S019" not in coppia.get("fonte", ""):
+                    continue
+                self.assertNotEqual(normalizza.chiave(coppia["ferrarese"]),
+                                    normalizza.chiave(coppia["italiano"]),
+                                    "%s: l'italiano e' su tutti e due i lati"
+                                    % coppia["id"])
+                self.assertNotEqual(normalizza.chiave(coppia["ferrarese"]),
+                                    normalizza.chiave(coppia.get("significato", "")),
+                                    "%s: il ferrarese e' il significato"
+                                    % coppia["id"])
 
     def test_la_varieta_di_s019_e_dichiarata_in_un_file(self):
         modulo = self._modulo()
@@ -4000,8 +4065,8 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
             modulo, codice = self._scrive_in(percorso)
             self.assertEqual(codice, 0)
             righe = self._righe(percorso)
-        self.assertEqual(len(righe), 31, "la pagina ha 35 modi di dire, meno "
-                                        "due senza spiegazione e due mozzati")
+        self.assertEqual(len(righe), 36, "la pagina ha 38 modi di dire, meno "
+                                        "i due senza traduzione letterale")
         for riga in righe:
             self.assertTrue(riga["nota"],
                             "una riga senza nota non dice da dove viene: %r"
@@ -4012,6 +4077,10 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
             self.assertTrue(riga["varieta"])
             self.assertTrue(riga["italiano"].strip())
             self.assertTrue(riga["ferrarese"].strip())
+            self.assertNotEqual(normalizza.chiave(riga["ferrarese"]),
+                                normalizza.chiave(riga["italiano"]),
+                                "l'italiano su tutti e due i lati: %r"
+                                % riga["ferrarese"])
 
     def test_la_varieta_scritta_e_quella_dichiarata(self):
         # Il difetto che questo test prende: il generatore potrebbe scrivere una
@@ -4040,20 +4109,22 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
                 "serva a chi non e' di Ferrara porta l'etichetta di chi ci e' "
                 "nato" % (riga["ferrarese"], riga["varieta"], dichiarate[0]))
 
-    def test_una_spiegazione_mozzata_non_arriva_ma_un_intera_sì(self):
-        # Le due righe che la regola troppo larga scartava per errore. Se la
-        # regola torna a guardare la prima parola, questo test lo dice con i
-        # nomi delle voci che perdevamo, non con un numero.
+    def test_le_frasi_lunghe_e_le_esclamazioni_arrivano(self):
+        # Tre voci di forma diversa — una frase lunga, una breve e
+        # un'esclamazione — devono arrivare con il loro ferrarese, e
+        # dichiarato dal grassetto della pagina, non dalla traduzione.
         with tempfile.TemporaryDirectory() as cartella:
             percorso = os.path.join(cartella, "coppie.jsonl")
             self._scrive_in(percorso)
-            scritte = [r["ferrarese"] for r in self._righe(percorso)]
-        for tenuta in ("Un tanto al braccio",
-                       "Furbo come l'oca di Fergnani che era i 'cani'",
-                       "Andare in oca"):
-            self.assertTrue(
-                any(t.startswith(tenuta[:20]) for t in scritte),
-                "%s e' una spiegazione intera e non deve perdersi" % tenuta)
+            scritte = {r["ferrarese"]: r for r in self._righe(percorso)}
+        for ferrarese, italiano in (
+                ("Fùrab cmè l'òch ad Fargnàn ch'l'éra in Po e l'è andà a cà "
+                 "a bévar", "Furbo come l'oca di Fergnani che era in Po ed è "
+                 "andò a casa a bere"),
+                ("Un tant al brazz", "Un tanto al braccio"),
+                ("Majall!", "Caspita!")):
+            self.assertIn(ferrarese, scritte)
+            self.assertEqual(scritte[ferrarese]["italiano"], italiano)
 
     def test_riscrivere_non_duplica(self):
         # Due giri sullo stesso file: il secondo non aggiunge niente. Il
@@ -4085,7 +4156,7 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
                     ensure_ascii=False) + "\n")
             self._scrive_in(percorso)
             righe = self._righe(percorso)
-        self.assertEqual(len(righe), 32)
+        self.assertEqual(len(righe), 37)
         self.assertEqual(righe[0]["id"], "F0100", "la riga di prova e' stata "
                                                  "mossa")
         self.assertEqual(righe[1]["id"], "F0101",
@@ -4116,9 +4187,9 @@ class TestLaScritturaDeiModiDiDire(unittest.TestCase):
             _, codice = self._scrive_in(percorso)
             righe = self._righe(percorso)
         self.assertEqual(codice, 0)
-        # 31 della prima scrittura piu' la riga aggiunta a mano: se il
-        # generatore riscrivesse la voce, il file ne avrebbe 33.
-        self.assertEqual(len(righe), 32,
+        # 36 della prima scrittura piu' la riga aggiunta a mano: se il
+        # generatore riscrivesse la voce, il file ne avrebbe 38.
+        self.assertEqual(len(righe), 37,
                          "una voce gia' nel file non deve essere riscritta")
         # La voce e' nel file due volte per costruzione — la riga aggiunta a
         # mano e quella del generatore — quindi qui si conta un'altra cosa: che

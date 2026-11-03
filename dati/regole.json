@@ -1,4 +1,67 @@
 {
   "_nota": "File generato da `python3 -m traduttore.cli impara`. Non si modifica a mano: si rigenera e si legge.",
-  "regole": []
+  "regole": [
+    {
+      "classe": "",
+      "prefisso": "pic",
+      "suffisso_italiano": "chia",
+      "suffisso_ferrarese": "ia",
+      "accordo": 1.0,
+      "supporto": 2,
+      "esempi": [
+        {
+          "coppia": "F0054",
+          "italiano": "picchia",
+          "ferrarese": "picia",
+          "prodotto": "picia",
+          "attestato": true
+        },
+        {
+          "coppia": "F0055",
+          "italiano": "picchia",
+          "ferrarese": "picia",
+          "prodotto": "picia",
+          "attestato": true
+        }
+      ]
+    },
+    {
+      "classe": "",
+      "prefisso": "",
+      "suffisso_italiano": "are",
+      "suffisso_ferrarese": "ar",
+      "accordo": 1.0,
+      "supporto": 4,
+      "esempi": [
+        {
+          "coppia": "F0020",
+          "italiano": "andare",
+          "ferrarese": "andar",
+          "prodotto": "andar",
+          "attestato": true
+        },
+        {
+          "coppia": "F0021",
+          "italiano": "andare",
+          "ferrarese": "andar",
+          "prodotto": "andar",
+          "attestato": true
+        },
+        {
+          "coppia": "F0051",
+          "italiano": "andare",
+          "ferrarese": "andar",
+          "prodotto": "andar",
+          "attestato": true
+        },
+        {
+          "coppia": "F0025",
+          "italiano": "cantare",
+          "ferrarese": "cantar",
+          "prodotto": "cantar",
+          "attestato": true
+        }
+      ]
+    }
+  ]
 }

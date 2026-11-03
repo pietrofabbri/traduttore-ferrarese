@@ -35,7 +35,7 @@
       "stato": "acquisita",
       "licenza": "CC BY-SA 4.0",
       "licenza_verificata": true,
-      "uso": "37 modi di dire, entrati in dati/coppie.jsonl come coppie con `attendibilita: I`.",
+      "uso": "38 modi di dire nella pagina: 35 entrati in dati/coppie.jsonl come coppie con `attendibilita: I` (il ferrarese con la sua traduzione letterale, e il significato nel campo `significato`), uno gia' nel corpus da un'altra fonte (F0012) e due senza traduzione letterale. Fino alla 0.35 le coppie avevano l'italiano su tutti e due i lati: vedi REGISTRO.md.",
       "nota": "La licenza e' quella dichiarata dalla pagina stessa (Wikiquote e' CC BY-SA 4.0), quindi non e' una licenza dedotta. Non sono parole singole: sono frasi, e vanno nel corpus delle coppie e non nel glossario, perche' il gioco fa ripetere parole e una frase intera non e' una parola. Ogni riga porta l'indirizzo della pagina e la lettera sotto cui il modo di dire e' raccolto."
     },
     {

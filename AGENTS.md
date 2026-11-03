@@ -10,6 +10,10 @@ autore: progetto «I cinque duchi»
 Leggi questo prima di modificare qualsiasi cosa. Vale per i due progetti:
 «I cinque duchi» e il traduttore.
 
+**Come** una modifica arriva su `main` (rami, pull request, chi approva, i
+conflitti sui file generati) è in `CONTRIBUTING.md`. In breve: su `main` non si
+scrive direttamente.
+
 ## 1. La regola che governa tutto
 
 **Nessuna risposta senza fonte. Nessun vuoto riempito a caso.**

@@ -3019,6 +3019,19 @@ class TestResiMultipli(unittest.TestCase):
                 cercato = pezzo.strip()
                 if not cercato:
                     continue
+                if len(normalizza.chiave(cercato)) <= 1:
+                    # Un pezzo di una lettera sola non e' un resi (0.38): e'
+                    # la desinenza del Ferri o sporcizia dell'OCR, e non deve
+                    # portare alla voce — a meno che la voce non lo dichiari
+                    # nel suo `principale_italiano`, che e' un dato e non un
+                    # pezzo ricavato (V1077, «t»: segnalato in REGISTRO.md).
+                    if normalizza.chiave(voce.principale_italiano or "") == \
+                            normalizza.chiave(cercato):
+                        continue
+                    self.assertNotIn(voce, glossario.cerca_italiano(cercato),
+                                     "%s si trova ancora cercando %r"
+                                     % (voce.id, cercato))
+                    continue
                 self.assertTrue(glossario.cerca_italiano(cercato),
                                 "%s non si trova cercando %r" % (voce.id, cercato))
 
@@ -4367,6 +4380,31 @@ class TestLeFormeVerbali(unittest.TestCase):
         self.assertIn("dove** la fonte", messaggi)
         self.assertIn("terza", messaggi)
         self.assertIn("casella inventata", messaggi)
+
+
+class TestIPezziDiUnaLettera(unittest.TestCase):
+    """Un pezzo di una lettera sola, dopo una virgola, non e' una traduzione.
+
+    Difetto vero, trovato il 2026-11-02: la voce V9566 del Ferri, «Trincato, e»,
+    dava la chiave «e», e ogni congiunzione «e» si traduceva `Trinca`.
+    """
+
+    def test_la_desinenza_del_ferri_non_e_una_chiave(self):
+        voce = Voce(id="X1", italiano="Trincato, e", ferrarese="Trinca",
+                    fonte="prova", attendibilita="I", varieta="cittadino")
+        chiavi = voce.chiavi_italiano()
+        self.assertIn("trincato", chiavi)
+        self.assertNotIn("e", chiavi)
+
+    def test_una_voce_di_una_lettera_si_trova_lo_stesso(self):
+        voce = Voce(id="X2", italiano="e", ferrarese="e",
+                    fonte="prova", attendibilita="I", varieta="cittadino")
+        self.assertIn("e", voce.chiavi_italiano())
+
+    def test_nel_glossario_vero_la_e_non_e_trinca(self):
+        from traduttore.cli import carica
+        risposta = carica().traduci("il cane e il gatto", IT_FE)
+        self.assertNotIn("Trinca", risposta.testo)
 
 
 class TestIParadigmiDiS015(unittest.TestCase):

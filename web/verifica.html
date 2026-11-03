@@ -1225,9 +1225,11 @@
       var ki = chiave(intero);
       if (ki) chiavi.push(ki);
     }
+    // Un pezzo di una lettera sola non e' un resi: e' la desinenza del Ferri
+    // («Trincato, e») o sporcizia dell'OCR. Copia di `Voce._chiavi_resi`.
     (testo || "").split(/[,;]/).forEach(function (pezzo) {
       var k = chiave(pezzo);
-      if (k && chiavi.indexOf(k) === -1) chiavi.push(k);
+      if (k.length > 1 && chiavi.indexOf(k) === -1) chiavi.push(k);
     });
     var kp = chiave(principale || "");
     if (kp && chiavi.indexOf(kp) === -1) chiavi.push(kp);

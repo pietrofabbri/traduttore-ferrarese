@@ -98,6 +98,8 @@ FRASI = [
     ("it-fe", "dai il pane"),
     ("it-fe", "tu sei bravo e noi capiamo"),
     ("it-fe", "vorrei che tu facessi"),
+    # Un pezzo di una lettera sola non e' un resi (0.38): «e» non e' «Trinca».
+    ("it-fe", "il cane e il gatto"),
 ]
 
 # Il codice che avvolge la pagina e' tutto quello che tocca il DOM: si

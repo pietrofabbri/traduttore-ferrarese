@@ -118,11 +118,20 @@ class Voce:
 
         I pezzi vuoti si scartano e i duplicati si eliminano: la stessa voce
         non deve occupare due volte lo stesso slot dell'indice.
+
+        **Un pezzo di una lettera sola non e' un resi** (0.38). Nel Ferri la
+        virgola separa anche la desinenza: «Trincato, e» vuol dire «trincato,
+        trincate», e la «e» diventava una chiave, cosi' ogni congiunzione «e»
+        si traduceva `Trinca`. Le altre nove voci con un pezzo di una lettera
+        sono sporcizia dell'OCR («Inaugurare, I», «Bastòn: t, di
+        calligrafia»). Il campo intero resta una chiave, quindi una voce il cui
+        italiano e' davvero una lettera sola si trova lo stesso.
         """
         pezzi = []
         if (testo or "").strip():
             pezzi.append(testo.strip())
-        pezzi += [p.strip() for p in re.split(r"[,;]", testo or "") if p.strip()]
+        pezzi += [p.strip() for p in re.split(r"[,;]", testo or "")
+                  if len(normalizza.chiave(p)) > 1]
         if (principale or "").strip():
             pezzi.append(principale.strip())
         chiavi = []

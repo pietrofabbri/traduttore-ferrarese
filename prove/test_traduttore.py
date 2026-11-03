@@ -227,15 +227,15 @@ class TestMotore(unittest.TestCase):
         # lunga e torna indietro finche' non trova. «a braccia» da sola non e'
         # nel glossario e non deve diventare una risposta.
         #
-        # La parola di guardia e' «vorrei» e non «voglio» perche' «voglio» e'
-        # una delle forme verbali che le fonti attestano: il motore la
-        # traduce, e questo test che parla solo di accorpamento fallirebbe per
-        # una cosa che non sta provando. Il livello delle forme attestate ha il
-        # suo test in `TestLeFormeVerbali`.
-        risposta = self.motore.traduci("vorrei a braccia aperte", IT_FE)
+        # La parola di guardia e' «dormimmo», che nessuna fonte coniuga: fino
+        # alla 0.36 era «vorrei», ma con i paradigmi di S015 «vorrei» e' una
+        # forma attestata (`a vré`), e questo test che parla solo di
+        # accorpamento fallirebbe per una cosa che non sta provando. Il livello
+        # delle forme attestate ha il suo test in `TestLeFormeVerbali`.
+        risposta = self.motore.traduci("dormimmo a braccia aperte", IT_FE)
         testi = [c[0] for c in risposta.per_corrispondenza]
-        self.assertEqual(testi, ["vorrei", "a braccia aperte"])
-        self.assertEqual(risposta.testo, "vorrei a brazz avèrti")
+        self.assertEqual(testi, ["dormimmo", "a braccia aperte"])
+        self.assertEqual(risposta.testo, "dormimmo a brazz avèrti")
 
     def test_una_parola_sola_non_e_mai_un_accorpamento(self):
         # «mangiare» e' una voce da sola: l'accorpamento comincia da due
@@ -1146,7 +1146,11 @@ class _ModelloInNode(object):
         # `node -e` di default legge l'input come TypeScript su queste versioni,
         # e il `<` di un confronto diventa un errore di sintassi. Il flag lo
         # dice: e' JavaScript, che e' quello che il browser esegue.
-        fatto = subprocess.run([self._js(), "--input-type=commonjs", "-e", programma],
+        # Il programma passa da standard input e non da `-e`: un argomento della
+        # riga di comando ha un tetto (128 KB su Linux), e con i paradigmi di
+        # S015 i dati dei verbi lo superano. Da standard input non c'e' tetto.
+        fatto = subprocess.run([self._js(), "--input-type=commonjs", "-"],
+                               input=programma.encode("utf-8"),
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if fatto.returncode != 0:
             self.fail("node ha fallito: %s"
@@ -4274,7 +4278,9 @@ class TestLeFormeVerbali(unittest.TestCase):
         esito = self.verbi.coniuga("aŋdàr", "terza", "presente")
         self.assertEqual(esito["forma"], "")
         self.assertIn("non è fra le persone", esito["problema"])
-        esito = self.verbi.coniuga("aŋdàr", "1sing", "futuro")
+        # Il futuro e' un tempo dichiarato dalla 0.37 (i paradigmi di S015):
+        # il tempo inventato qui e' uno che nessuna fonte del progetto nomina.
+        esito = self.verbi.coniuga("aŋdàr", "1sing", "trapassato")
         self.assertEqual(esito["forma"], "")
         self.assertIn("non è fra i tempi", esito["problema"])
 
@@ -4299,7 +4305,8 @@ class TestLeFormeVerbali(unittest.TestCase):
         risposta = motore.traduci("voglio")
         coppie = dict((originale, (tradotto, origine)) for originale, tradotto,
                       origine, _, _ in risposta.per_corrispondenza)
-        self.assertEqual(coppie["voglio"][0], "vój")
+        # Con la proclitica davanti, come S015 dice che si parla: «mi a vój».
+        self.assertEqual(coppie["voglio"][0], "a vój")
         self.assertEqual(coppie["voglio"][1], "verbo")
 
     def test_il_buco_del_motore_dice_quanti_verbi_e_quali_caselle_mancano(self):
@@ -4307,16 +4314,18 @@ class TestLeFormeVerbali(unittest.TestCase):
         motore = Motore(glossario_di_prova(), corpus_di_prova())
         risposta = motore.traduci("dormimmo")
         buchi = " ".join(risposta.buchi)
-        self.assertIn("non coniuga", buchi)
+        self.assertIn("coniuga solo quello che le fonti scrivono", buchi)
         self.assertIn(str(len(self.righe)), buchi)
-        self.assertIn("2sing", buchi)
+        for verbo in ("kaŋtàr", "tašér", "lèžar", "kapìr"):
+            self.assertIn(verbo, buchi, "il buco non nomina i verbi modello")
 
     def test_il_buco_non_accusa_una_parola_che_non_e_un_verbo(self):
         # I buchi di una traduzione sono anche «il» e «di». Una frase che
         # dicesse «questa parola non è una forma attestata» sarebbe falsa per
         # meta' dei buchi, quindi la frase parla del progetto e non della parola.
         frase = self.verbi.spiega_buco("il")
-        self.assertIn("il progetto non coniuga", frase)
+        self.assertIn("il progetto coniuga solo quello che le fonti scrivono",
+                      frase)
         self.assertNotIn("questa parola", frase)
 
     def test_il_controllo_F16_e_contento(self):
@@ -4358,6 +4367,108 @@ class TestLeFormeVerbali(unittest.TestCase):
         self.assertIn("dove** la fonte", messaggi)
         self.assertIn("terza", messaggi)
         self.assertIn("casella inventata", messaggi)
+
+
+class TestIParadigmiDiS015(unittest.TestCase):
+    """I dodici paradigmi di S015 (0.37), dal generatore al motore.
+
+    Fino alla 0.36 il progetto aveva il presente di cinque verbi, scritto a mano,
+    e senza la proclitica che la fonte dice obbligatoria: «io faccio» usciva
+    `Mi fag` dove la fonte scrive «mi a faɣ». Questi test guardano le decisioni
+    che, se tornassero indietro, non si vedrebbero leggendo i dati.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import importlib.util
+        specifica = importlib.util.spec_from_file_location(
+            "da_paradigmi", os.path.join(RADICE, "raccolta", "da_paradigmi.py"))
+        cls.gen = importlib.util.module_from_spec(specifica)
+        specifica.loader.exec_module(cls.gen)
+        from traduttore import verbi
+        cls.verbi = verbi
+        cls.righe = verbi.carica()["righe"]
+
+    def test_le_caselle_difficili_si_scompongono_come_le_scrive_la_fonte(self):
+        scomponi = self.gen.scomponi
+        e = scomponi("lu l'è")
+        self.assertEqual((e["persona"], e["proclitica"], e["forme"]),
+                         ("3sing", "l'", ["è"]))
+        e = scomponi("mi [aj] avré")
+        self.assertEqual((e["proclitica"], e["proclitica_facoltativa"]),
+                         ("aj", True))
+        e = scomponi("ke nu a ɣ [av]ésaŋ")
+        self.assertEqual((e["persona"], e["clitico"], e["forme"],
+                          e["congiuntivo"]),
+                         ("1plur", "ɣ", ["[av]ésaŋ"], True))
+        e = scomponi("ti at dìši / di")
+        self.assertEqual(e["forme"], ["dìši", "di"])
+        e = scomponi("ke mi a dšés /gés")
+        self.assertEqual(e["forme"], ["dšés", "gés"])
+
+    def test_il_refuso_della_fonte_resta_un_buco(self):
+        # «vu a kaŋtarì» nel futuro di tašér e' la forma di kaŋtàr. Nessuna riga
+        # la scrive come futuro di tašér, e la riga di sistema lo dichiara.
+        sbagliate = [r for r in self.righe if r.get("lemma_fonte") == "tašér"
+                     and r["tempo"] == "futuro" and r["persona"] == "2plur"]
+        self.assertEqual(sbagliate, [])
+        self.assertIn(["tašér", "futuro", "2plur"],
+                      self.verbi.carica()["sistema"].get("fuori", []))
+
+    def test_ogni_riga_dei_paradigmi_cita_la_sua_casella(self):
+        paradigmi = [r for r in self.righe if r.get("forma_fonte")]
+        self.assertGreater(len(paradigmi), 400)
+        for riga in paradigmi:
+            self.assertIn(riga["forma_fonte"].replace("[", "").replace("]", ""),
+                          riga["scritto_dalla_fonte"].replace("[", "")
+                          .replace("]", ""), riga["id"])
+            self.assertEqual(riga["attendibilita"], "I", riga["id"])
+            if riga["persona"]:
+                self.assertTrue(riga["proclitica"],
+                                "%s: forma finita senza proclitica" % riga["id"])
+
+    def test_il_generatore_si_rilancia_senza_doppioni(self):
+        tabella = self.gen._tabella()
+        nuove, _ = self.gen.righe_prodotte(tabella, self.gen._glossario())
+        _, esistenti = self.gen.leggi_file()
+        risultato, aggiunte = self.gen.unisci(esistenti, nuove)
+        self.assertEqual(aggiunte, 0, "il generatore aggiungerebbe righe gia' "
+                                      "scritte")
+        self.assertEqual([r["id"] for r in risultato],
+                         [r["id"] for r in esistenti])
+
+    def test_l_accento_distingue_il_verbo_dalla_congiunzione(self):
+        self.assertEqual(self.verbi.dall_italiano("è")["testo"], "l'è")
+        self.assertEqual(self.verbi.dall_italiano("e'")["testo"], "l'è")
+        self.assertEqual(self.verbi.dall_italiano("e")["testo"], "")
+        self.assertEqual(self.verbi.dall_italiano("dà")["testo"], "al da")
+        self.assertEqual(self.verbi.dall_italiano("da")["testo"], "")
+
+    def test_gli_omografi_non_si_cercano(self):
+        for parola in self.gen.OMOGRAFI:
+            self.assertEqual(self.verbi.dall_italiano(parola)["testo"], "",
+                             "«%s» e' una parola funzionale e non deve "
+                             "diventare un verbo" % parola)
+            self.assertTrue([r for r in self.righe if r.get("omografo")
+                             and r["italiano"] == parola],
+                            "la riga di «%s» deve restare nel file" % parola)
+
+    def test_il_pronome_sceglie_la_persona(self):
+        self.assertEqual(self.verbi.dall_italiano("sono")["testo"], "a són")
+        self.assertEqual(
+            self.verbi.dall_italiano("sono", persona="3plur")["testo"], "i jè")
+        from traduttore.cli import carica
+        motore = carica()
+        self.assertEqual(motore.traduci("loro sono", IT_FE).testo.split()[-2:],
+                         ["i", "jè"])
+
+    def test_col_pronome_il_verbo_vince_sul_nome_del_glossario(self):
+        # «canto» e' anche un nome nel glossario (V1567 «Cantòn», angolo):
+        # da solo resta il nome, con «io» davanti e' il verbo.
+        from traduttore.cli import carica
+        motore = carica()
+        self.assertEqual(motore.traduci("canto", IT_FE).testo, "Cantòn")
+        self.assertEqual(motore.traduci("io canto", IT_FE).testo, "Mi a cant")
 
 
 class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):
@@ -4402,7 +4513,7 @@ class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):
             self.skipTest("node non e' installato")
         esito = self._valuta_js(
             'risolvi("voglio", "it-fe", "voglio")', dati=self._dati())
-        self.assertEqual(esito["testo"], "vój")
+        self.assertEqual(esito["testo"], "a vój")
         self.assertEqual(esito["origine"], "verbo")
         self.assertAlmostEqual(esito["confidenza"], 0.75)
         self.assertIn("S015", esito["dettaglio"])

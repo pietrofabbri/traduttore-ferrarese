@@ -86,6 +86,18 @@ FRASI = [
     # E la frase del parlante nativo, che è la riga `D` per eccellenza: senza
     # di lei il confronto non guarderebbe la parte alta della scala.
     ("it-fe", "lei si siede"),
+    # I verbi dei paradigmi di S015 (0.37): la proclitica davanti al verbo, il
+    # pronome che sceglie la persona («loro sono»), l'accento che vince sul
+    # glossario («è», «e'») e la congiunzione che non diventa un verbo («e»),
+    # l'omografo che non si cerca («dai»), e il pronome che fa vincere il verbo
+    # sul nome del glossario («io canto»).
+    ("it-fe", "io canto"),
+    ("it-fe", "loro sono stanchi"),
+    ("it-fe", "è vero e giusto"),
+    ("it-fe", "e' vero"),
+    ("it-fe", "dai il pane"),
+    ("it-fe", "tu sei bravo e noi capiamo"),
+    ("it-fe", "vorrei che tu facessi"),
 ]
 
 # Il codice che avvolge la pagina e' tutto quello che tocca il DOM: si
@@ -168,7 +180,8 @@ def apre_lo_script(script: str, dati: str) -> str:
     porta = """
   return { accorpa: accorpa, accorpaTutto: accorpaTutto, tokenizza: tokenizza,
            risolvi: risolvi, chiave: chiave, fraseGemella: fraseGemella,
-           perRegola: perRegola, classeDi: classeDi };
+           perRegola: perRegola, classeDi: classeDi,
+           risolviUnita: risolviUnita };
 """
     return (INCOLLANCI % json.dumps(dati)) + "\n" + (
         "var PAGINA = (function () {" + dentro + porta + "})();")
@@ -191,17 +204,20 @@ if (g.origine === "corpo" && PAGINA.fraseGemella(%s, %s)) {
                                 origine: g.origine,
                                 confidenza: tonda(g.confidenza) }]));
 } else {
-  var fuori = PAGINA.accorpaTutto(PAGINA.tokenizza(%s), %s).map(function (t) {
-    var r = PAGINA.risolvi(t, %s, %s);
-    return { testo: t, tradotto: r.testo, origine: r.origine,
+  // Il ciclo vero della pagina, non una sua ricostruzione: fino alla 0.36
+  // il confronto rifaceva il ciclo con `accorpaTutto` e non vedeva ne' il
+  // pronome che sceglie la persona del verbo ne' l'avanzamento sbagliato
+  // dopo una locuzione.
+  var fuori = PAGINA.risolviUnita(PAGINA.tokenizza(%s), %s, %s).map(function (u) {
+    var r = u.risposta;
+    return { testo: u.testo, tradotto: r.testo, origine: r.origine,
              confidenza: tonda(r.confidenza) };
   });
   console.log(JSON.stringify(fuori));
 }
 """ % (json.dumps(frase), json.dumps(direzione), json.dumps(frase),
        json.dumps(frase), json.dumps(direzione), json.dumps(frase),
-       json.dumps(frase), json.dumps(direzione),
-       json.dumps(direzione), json.dumps(frase))
+       json.dumps(frase), json.dumps(direzione), json.dumps(frase))
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as f:
         f.write(programma)
         percorso = f.name

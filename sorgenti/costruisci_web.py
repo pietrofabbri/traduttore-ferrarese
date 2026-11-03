@@ -372,7 +372,9 @@ def _dati_comuni(glossario, corpus, varieta, fonetica, archivio, sintesi,
             "regole": 0,
         },
         "buchi": verifica_dati.buchi_dichiarati(glossario, corpus, fonetica),
-        "verbi": _verbi(),
+        # Le altre pagine hanno solo i numeri dei verbi; le forme vanno nella
+        # pagina del traduttore, che e' l'unica che le usa (vedi sotto).
+        "verbi": _verbi(solo_numeri=True),
         "pronominali": _pronominali(),
         "moderno_buchi": sum(1 for v in glossario.voci if not v.moderno),
         "moderno_con_sinonimi": sum(1 for v in glossario.voci if v.sinonimi),
@@ -387,7 +389,7 @@ def _dati_comuni(glossario, corpus, varieta, fonetica, archivio, sintesi,
     }
 
 
-def _verbi() -> dict:
+def _verbi(solo_numeri: bool = False) -> dict:
     """Le forme verbali attestate, per la pagina.
 
     La chiave che arriva e' la parola **italiana come sta scritta**, non la sua
@@ -399,21 +401,39 @@ def _verbi() -> dict:
     """
     from traduttore import verbi as verbi_modulo
     sa = verbi_modulo.cosa_sa()
+    numeri = {"forme": sa["forme"], "verbi": sa["verbi"],
+              "paradigmi": sa["paradigmi"],
+              "vuoto": [list(v) for v in sa["vuoto"]]}
+    if solo_numeri:
+        return numeri
+    dati = verbi_modulo.carica()
+    # L'ordine e' quello di `verbi.ordina`, calcolato qui una volta sola e
+    # mandato come `rango`: la pagina non ricalcola le preferenze, le legge.
+    # Gli omografi («dai», «sia») non vanno, come non vanno nell'indice di
+    # Python.
+    ordinate = verbi_modulo.ordina(
+        [r for r in dati["righe"] if not r.get("omografo")
+         and (r.get("italiano") or "").strip()], dati["sistema"])
     per_italiano = {}
-    for riga in verbi_modulo.carica()["righe"]:
-        if not (riga.get("italiano") or "").strip():
-            continue
+    for rango, riga in enumerate(ordinate):
         per_italiano.setdefault(riga["italiano"], []).append({
             "forma": riga["forma"],
+            "testo": verbi_modulo.con_soggetto(riga),
             "persona": riga.get("persona", ""),
             "tempo": riga["tempo"],
             "fonte": riga["fonte"],
             "dove": riga["dove"],
-            "nota": riga.get("nota", ""),
+            # La casella come la fonte la scrive, e non la nota intera: 495
+            # note pesavano piu' di 200 KB e la pagina ha un tetto. Le righe
+            # sparse, che non hanno la casella, portano la nota.
+            "scritto": riga.get("scritto_dalla_fonte", ""),
+            "nota": "" if riga.get("scritto_dalla_fonte") else
+                    riga.get("nota", ""),
+            "rango": rango,
         })
-    return {"per_italiano": per_italiano, "forme": sa["forme"],
-            "verbi": sa["verbi"],
-            "vuoto": [list(v) for v in sa["vuoto"]]}
+    numeri.update({"per_italiano": per_italiano,
+                   "pronomi": verbi_modulo.PRONOMI_SOGGETTO})
+    return numeri
 
 
 def _pronominali() -> dict:
@@ -784,6 +804,7 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
             dati["coppie"] = _coppie(corpus)
             dati["proverbi"] = _proverbi(corpus)
             dati["regole"] = _regole(regole)
+            dati["verbi"] = _verbi()
             # Le classi grammaticali, perche' la pagina applichi le regole
             # con lo stesso cancello del motore. Vanno su questa pagina e
             # non su tutte: le altre non applicano regole.

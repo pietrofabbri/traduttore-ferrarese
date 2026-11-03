@@ -35,6 +35,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import unicodedata
 
 from . import normalizza
 
@@ -91,13 +92,121 @@ def carica(percorso: str = PERCORSO) -> dict:
         chiave = chiave_forma(riga["lemma"], riga["persona"], riga["tempo"],
                               riga.get("clitico", ""))
         per_forma.setdefault(chiave, []).append(riga)
-        per_italiano.setdefault(normalizza.chiave(riga.get("italiano") or ""),
-                                []).append(riga)
+        # Un omografo di una parola funzionale («dai», «sia») non si cerca:
+        # il motore traduce parola per parola, e ogni «dai» diventerebbe un
+        # verbo. La riga resta nel file, con il campo che lo dice.
+        if riga.get("omografo"):
+            continue
+        k = chiave_italiano(riga.get("italiano") or "")
+        if k:
+            per_italiano.setdefault(k, []).append(riga)
+    for k in per_italiano:
+        per_italiano[k] = ordina(per_italiano[k], sistema)
     risultato = {"sistema": sistema, "righe": righe, "per_forma": per_forma,
                  "per_italiano": per_italiano}
     if percorso == PERCORSO:
         _cache = risultato
     return risultato
+
+
+_ACCENTI_APOSTROFO = {"a": "à", "e": "è", "i": "ì", "o": "ò", "u": "ù"}
+
+
+def chiave_italiano(parola: str) -> str:
+    """La chiave di una parola italiana coniugata: **con** l'accento.
+
+    `normalizza.chiave()` toglie gli accenti, e per i verbi e' sbagliato: «è» e
+    «e», «dà» e «da» diventerebbero la stessa parola, e ogni congiunzione «e»
+    si tradurrebbe `l'è`. Qui l'accento resta, e l'accento scritto con
+    l'apostrofo («e'», «puo'», come lo scrive chi non ha la tastiera italiana)
+    diventa l'accento grave. Una parola senza accento non trova la forma
+    accentata, ed e' voluto: «da» non e' «dà».
+    """
+    testo = unicodedata.normalize("NFC", normalizza.normale(parola or ""))
+    testo = testo.strip(" .,;:!?«»\"")
+    if len(testo) > 1 and testo.endswith("'") and \
+            testo[-2] in _ACCENTI_APOSTROFO:
+        testo = testo[:-2] + _ACCENTI_APOSTROFO[testo[-2]]
+    return testo
+
+
+def ordina(righe: list, sistema: dict) -> list:
+    """Le righe di una stessa parola italiana, dalla piu' probabile.
+
+    Una parola italiana puo' essere piu' caselle: «canti» e' il presente e il
+    congiuntivo, «sono» e' la prima singolare e la terza plurale. L'ordine e'
+    dichiarato e non e' un'opinione sulla frase: il tempo nell'ordine della riga
+    di sistema (l'indicativo presente per primo), poi la persona nello stesso
+    modo, poi le righe con la proclitica (quelle dei paradigmi) prima delle
+    forme sparse, poi la forma principale prima delle varianti.
+    """
+    tempi = list(sistema.get("tempi") or [])
+    persone = list(sistema.get("persone") or [])
+
+    def posto(valore, elenco):
+        return elenco.index(valore) if valore in elenco else len(elenco)
+
+    return sorted(righe, key=lambda r: (
+        posto(r.get("tempo"), tempi), posto(r.get("persona"), persone),
+        0 if r.get("proclitica") else 1, 1 if r.get("variante_di") else 0,
+        r.get("id", "")))
+
+
+# Il pronome soggetto italiano dice la persona del verbo che lo segue. Non e'
+# un dato del ferrarese: e' la grammatica italiana, e serve solo a scegliere
+# fra due caselle che la stessa parola italiana occupa («loro sono»).
+PRONOMI_SOGGETTO = {
+    "io": "1sing", "tu": "2sing", "lui": "3sing", "lei": "3sing",
+    "egli": "3sing", "ella": "3sing", "esso": "3sing", "essa": "3sing",
+    "noi": "1plur", "voi": "2plur", "loro": "3plur", "essi": "3plur",
+    "esse": "3plur",
+}
+
+
+def accentata(parola: str) -> bool:
+    """True se la parola italiana porta un accento (anche scritto con «'»)."""
+    return any(unicodedata.combining(c) for c in
+               unicodedata.normalize("NFD", chiave_italiano(parola)))
+
+
+def prima_del_glossario(attestata: dict, parola: str, persona: str) -> bool:
+    """La forma della tabella vince sul glossario? Solo in due casi dichiarati.
+
+    Il glossario resta il primo livello, e una parola come «canto» o «sei» e'
+    davvero anche un nome («cantòn», «sié»). Ma due indizi dicono che la parola
+    e' il verbo:
+
+    - un **pronome soggetto** della stessa persona subito prima («io canto»,
+      «tu sei»): il pronome non sta davanti a un nome;
+    - l'**accento**: il glossario si cerca senza accenti, quindi «è» vi trova le
+      voci di «e»; la tabella di coniugazione scrive «è» esattamente cosi'.
+    """
+    if not attestata.get("forma"):
+        return False
+    if persona and attestata["riga"].get("persona") == persona:
+        return True
+    return accentata(parola)
+
+
+def persona_del_soggetto(parola: str) -> str:
+    """La persona che un pronome soggetto italiano annuncia, o ''."""
+    return PRONOMI_SOGGETTO.get(normalizza.chiave(parola or ""), "")
+
+
+def con_soggetto(riga: dict) -> str:
+    """La forma come si dice in una frase: con la proclitica davanti.
+
+    «a cant», «at cànti», «al cànta», e «l'è» senza spazio, perche' la fonte
+    scrive attaccata la proclitica elisa. Una riga senza proclitica (le forme
+    sparse, l'imperativo) esce com'e'.
+    """
+    forma = riga.get("forma", "")
+    proclitica = riga.get("proclitica") or ""
+    if not proclitica:
+        return forma
+    if proclitica.endswith("'"):
+        return proclitica + forma
+    return proclitica + " " + forma
 
 
 def chiave_forma(lemma: str, persona: str, tempo: str, clitico: str = "") -> str:
@@ -162,7 +271,8 @@ def coniuga(lemma: str, persona: str, tempo: str,
                      % (persona or "la forma senza persona", tempo, lemma))
 
 
-def dall_italiano(parola: str, percorso: str = PERCORSO) -> dict:
+def dall_italiano(parola: str, percorso: str = PERCORSO,
+                  persona: str = "") -> dict:
     """Dalla parola **italiana** coniugata alla forma ferrarese attestata.
 
     Non e' il inverso di `coniuga()` e non pretende di esserlo: qui la parola
@@ -170,19 +280,27 @@ def dall_italiano(parola: str, percorso: str = PERCORSO) -> dict:
     ferrarese, quindi la risposta esiste per definizione. Se non c'e', la risposta
     e' il buco — e il buco non dice «non so tradurre» ma «questa forma non è
     fra quelle documentate», che è una cosa che si può correggere.
+
+    `persona` e' quella che annuncia il pronome che precede («loro sono»): se
+    una delle caselle della parola e' di quella persona, vince quella. `testo` e'
+    la forma con la proclitica davanti, come si dice in una frase.
     """
     dati = carica(percorso)
-    righe = dati["per_italiano"].get(normalizza.chiave(parola))
+    righe = dati["per_italiano"].get(chiave_italiano(parola))
     if not righe:
         quante = len(dati["per_italiano"])
-        esempi = ", ".join(sorted({r["italiano"] for r in dati["righe"]})[:8])
-        return {"forma": "", "problema": "nessuna fonte coniuga «%s»: le "
-                       "forme italiane documentate sono %d (%s)"
-                       % (parola, quante, esempi), "fonte": "", "nota": ""}
-    righe = sorted(righe, key=lambda r: (r["tempo"], r["persona"]))
-    return {"forma": righe[0]["forma"], "problema": "",
-            "fonte": "%s, %s" % (righe[0]["fonte"], righe[0]["dove"]),
-            "nota": righe[0].get("nota", ""), "riga": righe[0]}
+        return {"forma": "", "testo": "", "problema": "nessuna fonte coniuga "
+                "«%s»: le forme italiane documentate sono %d"
+                % (parola, quante), "fonte": "", "nota": ""}
+    scelta = righe[0]
+    if persona:
+        della_persona = [r for r in righe if r.get("persona") == persona]
+        if della_persona:
+            scelta = della_persona[0]
+    return {"forma": scelta["forma"], "testo": con_soggetto(scelta),
+            "problema": "",
+            "fonte": "%s, %s" % (scelta["fonte"], scelta["dove"]),
+            "nota": scelta.get("nota", ""), "riga": scelta}
 
 
 def cosa_sa(percorso: str = PERCORSO) -> dict:
@@ -203,6 +321,7 @@ def cosa_sa(percorso: str = PERCORSO) -> dict:
         "tempi": sistema.get("tempi", []),
         "vuoto": [tuple(v) for v in sistema.get("vuoto", [])],
         "citato_da": sistema.get("citato_da", []),
+        "paradigmi": sistema.get("paradigmi", []),
     }
 
 
@@ -219,9 +338,9 @@ def spiega_buco(parola: str = "", percorso: str = PERCORSO) -> str:
     sa = cosa_sa(percorso)
     if not sa["forme"]:
         return ""
-    vuoto = ", ".join("%s %s" % (p, t) for p, t in sa["vuoto"])
-    return ("il progetto non coniuga: le fonti del repository attestano %d "
-            "forme verbali su %d verbi, e le caselle che nessuna fonte scrive "
-            "sono %s. Una parola coniugata che non è fra quelle resta un buco "
-            "dichiarato, non una forma indovinata."
-            % (sa["forme"], sa["verbi"], vuoto))
+    return ("il progetto coniuga solo quello che le fonti scrivono: %d forme "
+            "verbali di %d verbi, e per intero i %d verbi modello di S015 (%s). "
+            "Una forma di un altro verbo resta un buco dichiarato, non una "
+            "forma indovinata."
+            % (sa["forme"], sa["verbi"], len(sa["paradigmi"]),
+               ", ".join(sa["paradigmi"])))

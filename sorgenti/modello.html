@@ -647,10 +647,18 @@
   });
   IDX.pronominali = DATI.pronominali || { verbi: 0, esempi: [] };
 
+  // L'indice dei verbi e' sulla parola italiana **con l'accento**
+  // (`chiaveItaliano`, copia di `verbi.chiave_italiano`): con `chiave()` «è»
+  // e «e» sarebbero la stessa parola. Le righe arrivano con il loro `rango`,
+  // l'ordine calcolato da `verbi.ordina`, e qui si rimettono in quell'ordine.
   IDX.verbi = {};
   Object.keys((DATI.verbi || {}).per_italiano || {}).forEach(function (parola) {
-    var k = chiave(parola);
-    if (k) IDX.verbi[k] = DATI.verbi.per_italiano[parola];
+    var k = chiaveItaliano(parola);
+    if (!k) return;
+    IDX.verbi[k] = (IDX.verbi[k] || []).concat(DATI.verbi.per_italiano[parola]);
+  });
+  Object.keys(IDX.verbi).forEach(function (k) {
+    IDX.verbi[k].sort(function (a, b) { return a.rango - b.rango; });
   });
 
   // L'indice delle coppie **e dei proverbi** per frase intera, nelle due
@@ -771,6 +779,55 @@ function tokenizza(t) {
     return null;
   }
 
+  // Le parole italiane coniugate si confrontano **con l'accento**: e' la copia
+  // di `verbi.chiave_italiano`. L'accento scritto con l'apostrofo («e'»,
+  // «puo'») diventa l'accento grave.
+  var ACCENTI_APOSTROFO = { a: "\u00e0", e: "\u00e8", i: "\u00ec", o: "\u00f2", u: "\u00f9" };
+  function chiaveItaliano(t) {
+    var testo = normale(t || "").normalize("NFC").replace(/^[\s.,;:!?\u00ab\u00bb"]+|[\s.,;:!?\u00ab\u00bb"]+$/g, "");
+    if (testo.length > 1 && testo.charAt(testo.length - 1) === "'" &&
+        ACCENTI_APOSTROFO[testo.charAt(testo.length - 2)]) {
+      testo = testo.slice(0, -2) + ACCENTI_APOSTROFO[testo.charAt(testo.length - 2)];
+    }
+    return testo;
+  }
+  function accentata(t) {
+    return /[\u0300-\u036f]/.test(chiaveItaliano(t).normalize("NFD"));
+  }
+  // La persona che il pronome soggetto italiano annuncia: la tabella viene da
+  // `verbi.PRONOMI_SOGGETTO`, nei dati, e non e' scritta una seconda volta qui.
+  function personaDelSoggetto(t) {
+    return ((DATI.verbi || {}).pronomi || {})[chiave(t || "")] || "";
+  }
+  // Copia di `verbi.dall_italiano`: la prima riga nell'ordine dichiarato, o
+  // la prima della persona annunciata dal pronome.
+  function formaVerbale(parola, persona) {
+    var righe = IDX.verbi[chiaveItaliano(parola)] || [];
+    if (!righe.length) return null;
+    var scelta = righe[0];
+    if (persona) {
+      for (var i = 0; i < righe.length; i++) {
+        if (righe[i].persona === persona) { scelta = righe[i]; break; }
+      }
+    }
+    return scelta;
+  }
+  // Copia di `verbi.prima_del_glossario`: i due casi in cui la casella di una
+  // tabella di coniugazione vince sul glossario.
+  function primaDelGlossario(riga, parola, persona) {
+    if (!riga) return false;
+    if (persona && riga.persona === persona) return true;
+    return accentata(parola);
+  }
+  function rispostaVerbo(riga) {
+    return {
+      testo: riga.testo, origine: "verbo", confidenza: DATI.origine.verbo,
+      dettaglio: "forma attestata da " + riga.fonte + ", " + riga.dove +
+        ": " + (riga.scritto ? "la fonte scrive \u00ab" + riga.scritto + "\u00bb"
+                             : (riga.nota || "senza nota"))
+    };
+  }
+
   // La stessa catena del motore, in quest'ordine: frase gemella, glossario,
   // frammento del corpus, regola, buco. Ogni riga corrisponde a una riga di
   // `motore.py`, e se le due copie divergono la pagina mente.
@@ -844,7 +901,7 @@ function tokenizza(t) {
     };
   }
 
-  function risolvi(parola, verso, frase) {
+  function risolvi(parola, verso, frase, persona) {
     // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
     var gemella = fraseGemella(frase, verso);
     if (gemella) {
@@ -883,6 +940,12 @@ function tokenizza(t) {
       return risultato;
     }
 
+    // Le forme verbali si cercano una volta sola, come in `motore.py`: vincono
+    // sul glossario solo nei due casi di `primaDelGlossario`, e altrimenti
+    // vengono dopo il glossario e prima del frammento.
+    var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
+    if (primaDelGlossario(verbale, parola, persona)) return rispostaVerbo(verbale);
+
     // Livello 1: il glossario.
     var voci = (verso === "it-fe" ? IDX.perIt : IDX.perFe)[chiave(parola)] || [];
     if (voci.length) {
@@ -911,7 +974,12 @@ function tokenizza(t) {
         risultato.ipa = ipaDi(v.id, parola);
       }
       return risultato;
-    }// Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
+    }
+    // Livello 2 bis: le forme verbali attestate, prima del frammento. Una
+    // casella di una tabella di coniugazione scrive esattamente quella parola;
+    // il frammento e' una somiglianza fra stringhe dentro un'altra frase.
+    if (verbale) return rispostaVerbo(verbale);
+// Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
 // se il frammento non combacia, la coppia resta un esempio e non una
 // traduzione.
 //
@@ -941,7 +1009,10 @@ function tokenizza(t) {
     if (migliore) {
       var pezzo = null, punteggioPezzo = 0;
       tokenizza(migliore.c[latoRisposto]).forEach(function (t) {
-        var s = somiglianza(kCercato, t);
+        // `chiave(t)`, come `normalizza.somiglianza` che riduce a chiave tutte
+        // e due le parole: senza, un frammento accentato («dài») non combaciava
+        // mai nella pagina e combaciava in Python.
+        var s = somiglianza(kCercato, chiave(t));
         if (s > punteggioPezzo) { punteggioPezzo = s; pezzo = t; }
       });
       if (pezzo && punteggioPezzo >= 0.75) {
@@ -965,27 +1036,46 @@ function tokenizza(t) {
       }
     }
 
-    // Livello 3 bis: le forme verbali attestate. Sta **prima** del ripiego e
-    // non dopo il modello perche' e' una fonte. Il verso e' uno solo:
-    // dall'altra parte la domanda sarebbe «quale forma ferrarese e' questa?»,
-    // e rispondere significa riconoscere la forma, che e' esattamente cio'
-    // che le fonti non documentano.
-    if (verso === "it-fe") {
-      var attestate = IDX.verbi[chiave(parola)] || [];
-      if (attestate.length) {
-        var a = attestate[0];
-        return {
-          testo: a.forma, origine: "verbo", confidenza: DATI.origine.verbo,
-          dettaglio: "forma attestata da " + a.fonte + ", " + a.dove +
-            ": " + (a.nota || "senza nota")
-        };
-      }
-    }
-
     return {
       testo: parola, origine: "nessuna", confidenza: 0,
       dettaglio: "nessuna fonte nel glossario, nel corpus o fra le regole"
     };
+  }
+
+  // Il ciclo risolve **unita'**, non parole, e porta con se' l'indice del
+  // token da cui ognuna comincia. Senza quell'indice l'accorpamento del verbo
+  // pronominale stamperebbe sotto ogni parola la risposta di quella che la
+  // segue: «si siede» diventerebbe due righe, e la prima con la risposta della
+  // seconda. E' la copia di `Motore._risolvi_token`, e il confronto con Python
+  // chiama **questa** funzione, non una sua ricostruzione.
+  //
+  // Fino alla 0.36 il ciclo accorpava la locuzione e poi avanzava di una parola
+  // sola, quindi «a braccia aperte» usciva come la locuzione seguita da
+  // «braccia aperte» e da «aperte»; il confronto non lo vedeva perche'
+  // rifaceva il ciclo per conto suo. Ora avanza di quante parole ha accorpato,
+  // come `motore.py`.
+  function risolviUnita(token, direzione, testo) {
+    var unita = [], iToken = 0;
+    while (iToken < token.length) {
+      var pronominale = (direzione === "it-fe")
+        ? unitaPronominale(token, iToken) : null;
+      if (pronominale) {
+        unita.push({ testo: pronominale.testo, indice: iToken,
+                     risposta: bucoPronominale(pronominale.testo) });
+        iToken += pronominale.quante;
+        continue;
+      }
+      var a = accorpa(token, iToken, direzione);
+      var pezzo = a ? a.testo : token[iToken];
+      // Il pronome soggetto che precede dice la persona del verbo, come in
+      // `motore.py`: «loro sono» e' la terza plurale.
+      var persona = (direzione === "it-fe" && iToken > 0)
+        ? personaDelSoggetto(token[iToken - 1]) : "";
+      unita.push({ testo: pezzo, indice: iToken,
+                   risposta: risolvi(pezzo, direzione, testo, persona) });
+      iToken += a ? a.quante : 1;
+    }
+    return unita;
   }
 
   function traduci() {
@@ -1033,26 +1123,9 @@ function tokenizza(t) {
       return;
     }
 
-    // Il ciclo risolve **unita'**, non parole, e porta con se' l'indice del
-    // token da cui ognuna comincia. Senza quell'indice l'accorpamento del
-    // verbo pronominale stamperebbe sotto ogni parola la risposta di quella
-    // che la segue: «si siede» diventerebbe due righe, e la prima con la
-    // risposta della seconda.
-    var risultati = [], indici = [], iToken = 0;
-    while (iToken < token.length) {
-      var pronominale = (direzione === "it-fe")
-        ? unitaPronominale(token, iToken) : null;
-      if (pronominale) {
-        indici.push(iToken);
-        risultati.push(bucoPronominale(pronominale.testo));
-        iToken += pronominale.quante;
-        continue;
-      }
-      indici.push(iToken);
-      risultati.push(risolvi(accorpaTutto(token.slice(iToken), direzione)[0],
-                              direzione, testo));
-      iToken += 1;
-    }
+    var unita = risolviUnita(token, direzione, testo);
+    var risultati = unita.map(function (u) { return u.risposta; });
+    var indici = unita.map(function (u) { return u.indice; });
     var peso = 0, totale = 0, buchi = 0;
     risultati.forEach(function (r, i) {
       var n = Math.max(1, chiave(r.testo).length);
@@ -1080,13 +1153,11 @@ function tokenizza(t) {
       // accusasse la parola sbaglierebbe per meta' delle volte.
       var suVerbi = "";
       if (direzione === "it-fe" && DATI.verbi && DATI.verbi.forme) {
-        var caselle = DATI.verbi.vuoto.map(function (v) {
-          return v[0] + " " + v[1];
-        }).join(", ");
-        suVerbi = " Il progetto non coniuga: le fonti attestano " +
-          DATI.verbi.forme + " forme verbali su " + DATI.verbi.verbi +
-          " verbi, e le caselle che nessuna fonte scrive sono " + caselle +
-          ". Una parola coniugata che non è fra quelle resta un buco dichiarato, non una forma indovinata.";
+        suVerbi = " Il progetto coniuga solo quello che le fonti scrivono: " +
+          DATI.verbi.forme + " forme verbali di " + DATI.verbi.verbi +
+          " verbi, e per intero i " + DATI.verbi.paradigmi.length +
+          " verbi modello di S015 (" + DATI.verbi.paradigmi.join(", ") +
+          "). Una forma di un altro verbo resta un buco dichiarato, non una forma indovinata.";
       }
       // Il numero concorda con la parola che segue: «1 parole» e' la prima
       // cosa che si vede in un messaggio che vuol dire «guarda, questo e' un

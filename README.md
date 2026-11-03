@@ -1,7 +1,7 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.37
-data: 2026-11-02
+versione: 0.38
+data: 2026-11-03
 autore: progetto «I cinque duchi»
 ---
 
@@ -733,7 +733,7 @@ correggerlo sarebbe scrivere una forma che la fonte non scrive.
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 360 test
+python3 prove/test_traduttore.py     # 363 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

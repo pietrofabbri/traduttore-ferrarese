@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.37
-data: 2026-11-02
+versione: 0.38
+data: 2026-11-03
 ---
 
 # Registro delle modifiche
@@ -23,6 +23,28 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.38 — 2026-11-03 · Ogni «e» si traduceva «Trinca»
+
+**Perché.** La voce V9566 del Ferri è «Trinca → Trincato, e»: la «e» è la desinenza
+(«trincato, trincate»), ma il glossario divide l'italiano sulle virgole e ogni pezzo
+diventa una chiave di ricerca, quindi ogni congiunzione «e» usciva `Trinca`. Le voci con
+un pezzo di una lettera sola dopo una virgola sono dieci, e sono tutte spurie: desinenze
+(«Trincato, e», «Trinciato, s») o sporcizia dell'OCR («Inaugurare, I», «Bastòn: t, di
+calligrafia»).
+
+- **Un pezzo di una lettera sola non è più una chiave**, in `Voce._chiavi_resi` e nella
+  copia della pagina (`chiaviResi`). Il campo intero resta una chiave, quindi una voce il
+  cui italiano è davvero una lettera si trova lo stesso, e «trincato» trova ancora
+  `Trinca`.
+- «il cane e il gatto» esce `il Càn e il ɣat`, con la «e» come buco dichiarato invece che
+  `Trinca`.
+- **Una voce da correggere a mano, segnalata e non toccata.** V1077 («Bastòn», Ferri
+  pag. 47) ha `principale_italiano: "t"`, che viene dallo stesso OCR. È un dato, e i
+  dati non si correggono da programma: resta finché qualcuno non apre il libro.
+
+**Verifiche.** 363 test (erano 360): tre sui pezzi di una lettera. Il confronto fra
+Python e la pagina ha una frase in più: 23 frasi, 0 divergenze. `verifica`: 0 errori.
 
 ## 0.37 — 2026-11-02 · La coniugazione c'era, in dodici tabelle, e ne avevamo preso il presente di cinque verbi
 

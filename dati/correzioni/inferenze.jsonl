@@ -1,0 +1,5 @@
+// Le inferenze ricavate dalle correzioni: file GENERATO da
+// `python3 -m traduttore.cli correzioni inferisci`, non si modifica a
+// mano. Un'inferenza non e' una fonte: dice dove guardare, e diventa un
+// dato solo quando un parlante conferma la voce. Vedi
+// dati/correzioni/README.md.

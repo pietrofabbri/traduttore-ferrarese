@@ -10969,6 +10969,76 @@ function tokenizza(t) {
     return unita;
   }
 
+  // --- la correzione di un parlante ---------------------------------------
+  // La pagina non manda niente: prepara una riga che la persona consegna, come
+  // fa la verifica a campione. La riga la legge `correzioni importa`, e i
+  // controlli qui sono gli stessi di `correzioni.controlla_riga` (X2–X6, X9):
+  // una riga che il repository rifiuterebbe non si prepara.
+  var ULTIMA = null;
+  function ricorda(italiano, direzione, proposta, parole) {
+    ULTIMA = { italiano: italiano, direzione: direzione, proposta: proposta,
+               parole: parole };
+    var campo = el("ferraresCorretto");
+    if (direzione === "it-fe" && campo && !campo.value) campo.value = proposta;
+  }
+  function oggiIso() { return new Date().toISOString().slice(0, 10); }
+  function rigaCorrezione(campi, ultima, data) {
+    var problemi = [];
+    if (!ultima || ultima.direzione !== "it-fe") {
+      problemi.push("prima traduci una frase dall'italiano al ferrarese");
+    }
+    var ferrarese = (campi.ferrarese || "").trim();
+    if (!ferrarese) problemi.push("scrivi come si dice in ferrarese");
+    if (ultima && ferrarese && ferrarese === ultima.proposta) {
+      problemi.push("la frase e' uguale alla traduzione proposta: che cosa cambia?");
+    }
+    if (!(campi.chi || "").trim()) problemi.push("scrivi chi sei: una correzione e' una fonte solo se dice chi l'ha scritta");
+    if (!(DATI.nomi_varieta || {})[campi.varieta]) problemi.push("scegli la tua varieta'");
+    if (campi.consenso !== true) problemi.push("serve il consenso a mettere la correzione, con il tuo nome, nel repository");
+    var ipa = (campi.ipa || "").trim();
+    if (ipa) {
+      if (ipa.charAt(0) !== "[" || ipa.charAt(ipa.length - 1) !== "]") {
+        problemi.push("la pronuncia va fra parentesi quadre, [cosi']");
+      }
+      var ammessi = ((DATI.correzione || {}).simboli || "") + "/-().[] ";
+      var strani = [];
+      Array.prototype.forEach.call(ipa, function (c) {
+        if (ammessi.indexOf(c) === -1 && strani.indexOf(c) === -1) strani.push(c);
+      });
+      if (strani.length) problemi.push("nella pronuncia ci sono simboli che non sono IPA: " + strani.join(" "));
+    }
+    if (problemi.length) return { riga: "", problemi: problemi };
+    var riga = { tipo: "correzione", data: data, chi: campi.chi.trim(),
+                 varieta: campi.varieta, consenso: true,
+                 italiano: ultima.italiano, proposta: ultima.proposta,
+                 ferrarese: ferrarese, parole: ultima.parole,
+                 versione: (DATI.correzione || {}).versione || "" };
+    if ((campi.luogo || "").trim()) riga.luogo = campi.luogo.trim();
+    if (ipa) riga.ipa = ipa;
+    if ((campi.nota || "").trim()) riga.nota = campi.nota.trim();
+    return { riga: JSON.stringify(riga), problemi: [] };
+  }
+  function preparaCorrezione() {
+    var esito = rigaCorrezione({
+      ferrarese: el("ferraresCorretto").value, ipa: el("ipaCorretta").value,
+      chi: el("chiCorregge").value, varieta: el("varietaCorregge").value,
+      luogo: el("luogoCorregge").value, nota: el("notaCorregge").value,
+      consenso: !!el("consensoCorregge").checked
+    }, ULTIMA, oggiIso());
+    el("rigaCorrezione").value = esito.riga;
+    el("esitoCorrezione").innerHTML = esito.problemi.length
+      ? '<p class="errore">' + esito.problemi.map(scappa).join("<br>") + '</p>'
+      : '<p>Pronta. Copiala, scaricala o apri la segnalazione: chi tiene il repository la importa.</p>';
+    var link = el("segnalaCorrezione");
+    var repository = (DATI.correzione || {}).repository || "";
+    link.href = (esito.riga && repository)
+      ? repository + "/issues/new?template=correzione.yml&title=" +
+        encodeURIComponent("Correzione: " + ULTIMA.italiano) + "&righe=" +
+        encodeURIComponent(esito.riga)
+      : "#";
+    return esito.riga;
+  }
+
   function traduci() {
     var testo = el("testo").value.trim();
     var box = el("risposta");
@@ -11011,6 +11081,8 @@ function tokenizza(t) {
         '<div class="dettaglio">frase intera dal corpus, ' + scappa(gemella.id) + ': ' + scappa(gemella.fonte || "senza fonte") +
         ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div>';
       avviso.innerHTML = '<div class="avviso ok">La frase era gia\' nel corpus, con la sua fonte. Non e\' stata ricostruita parola per parola.</div>';
+      ricorda(testo, direzione, resa, [{ italiano: testo, proposto: resa,
+                                         origine: "corpo", voce: gemella.id }]);
       return;
     }
 
@@ -11031,6 +11103,10 @@ function tokenizza(t) {
         scappa(r.testo) + '</span>';
     });
     var traduzione = risultati.map(function (r) { return r.testo; }).join(" ");
+    ricorda(testo, direzione, traduzione, unita.map(function (u) {
+      return { italiano: u.testo, proposto: u.risposta.testo,
+               origine: u.risposta.origine, voce: u.risposta.id || "" };
+    }));
     box.innerHTML =
       '<div class="riga-parola">' + righe.join(" ") + '</div>' +
       '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(traduzione) + '</div>' +
@@ -11681,6 +11757,32 @@ function tokenizza(t) {
   }
 
   el("traduci").addEventListener("click", traduci);
+  (function () {
+    var scelta = el("varietaCorregge");
+    if (scelta.appendChild && document.createElement) {
+      Object.keys(DATI.nomi_varieta || {}).forEach(function (codice) {
+        var o = document.createElement("option");
+        o.value = codice; o.textContent = DATI.nomi_varieta[codice];
+        scelta.appendChild(o);
+      });
+    }
+    el("preparaCorrezione").addEventListener("click", preparaCorrezione);
+    el("copiaCorrezione").addEventListener("click", function () {
+      var riga = preparaCorrezione();
+      if (riga && navigator.clipboard) navigator.clipboard.writeText(riga).catch(function () {});
+    });
+    el("scaricaCorrezione").addEventListener("click", function () {
+      var riga = preparaCorrezione();
+      if (!riga) return;
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([riga + "\n"], { type: "application/x-ndjson" }));
+      a.download = "correzione-" + oggiIso() + ".jsonl";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+    el("segnalaCorrezione").addEventListener("click", function (evento) {
+      if (!preparaCorrezione() && evento.preventDefault) evento.preventDefault();
+    });
+  })();
   el("testo").addEventListener("keydown", function (e) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) traduci();
   });

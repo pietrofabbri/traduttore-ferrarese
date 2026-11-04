@@ -4382,6 +4382,238 @@ class TestLeFormeVerbali(unittest.TestCase):
         self.assertIn("casella inventata", messaggi)
 
 
+def _correzione(**campi):
+    riga = {"tipo": "correzione", "data": "2026-11-04", "chi": "Prova Parlante",
+            "varieta": "cittadino", "consenso": True, "italiano": "andare",
+            "proposta": "aŋdàr", "ferrarese": "andàr"}
+    riga.update(campi)
+    return riga
+
+
+def _glossario_bigoni():
+    """Tre voci di S006 con la stessa grafia, e una del Ferri."""
+    fonte = "Roberto Bigoni, vocabolario (S006), voce n. %d"
+    return Glossario([
+        _voce("V1", "aŋdàr", "andare", fonte % 1, attendibilita="I"),
+        _voce("V2", "abaŋdunàr", "abbandonare", fonte % 2, attendibilita="I"),
+        _voce("V3", "kaŋdéla", "candela", fonte % 3, attendibilita="I"),
+        _voce("V4", "Caŋdéla", "candela", "Luigi Ferri, Vocabolario, 1889, pag. 1",
+              attendibilita="I"),
+    ])
+
+
+class TestLeCorrezioni(unittest.TestCase):
+    """Le correzioni dei parlanti (0.39): una correzione e' una fonte, un'inferenza no.
+
+    I test guardano le decisioni che reggono il modulo: che una riga senza
+    chi, senza varieta' o senza consenso non entri; che la pronuncia stia fra
+    quadre; che un'inferenza trovi le voci della **stessa fonte** e non le
+    tocchi; che una conferma diventi una correzione con il nome di chi
+    conferma; e che una voce che ne corregge un'altra venga prima di lei.
+    """
+
+    def setUp(self):
+        from traduttore import correzioni
+        self.c = correzioni
+        self.cartella = tempfile.mkdtemp()
+        self.percorso = os.path.join(self.cartella, "correzioni.jsonl")
+
+    def tearDown(self):
+        shutil.rmtree(self.cartella, ignore_errors=True)
+
+    def test_si_importano_solo_le_righe_complete(self):
+        testo = "\n".join([
+            "un messaggio con dentro le righe",
+            json.dumps(_correzione(), ensure_ascii=False),
+            json.dumps(_correzione(chi=""), ensure_ascii=False),
+            json.dumps(_correzione(consenso=False, italiano="x"), ensure_ascii=False),
+            json.dumps(_correzione(varieta="bolognese", italiano="y"), ensure_ascii=False),
+            json.dumps(_correzione(ipa="/anˈdar/", italiano="z"), ensure_ascii=False),
+        ])
+        esito = self.c.importa(testo, self.percorso)
+        self.assertEqual([r["id"] for r in esito["nuove"]], ["X0001"])
+        codici = sorted(p.codice for _, problemi in esito["scartate"]
+                        for p in problemi)
+        self.assertEqual(codici, ["X2", "X3", "X4", "X6"])
+        # La stessa correzione due volte non entra due volte.
+        esito = self.c.importa(json.dumps(_correzione(), ensure_ascii=False),
+                               self.percorso)
+        self.assertEqual((len(esito["nuove"]), len(esito["ripetute"])), (0, 1))
+        self.assertEqual(self.c.leggi(self.percorso)[0]["stato"], "da_applicare")
+
+    def test_la_pronuncia_sta_fra_quadre_e_in_ipa(self):
+        self.assertEqual(self.c.controlla_riga(_correzione(ipa="[anˈdar]")), [])
+        codici = [p.codice for p in
+                  self.c.controlla_riga(_correzione(ipa="[an#dar]"))]
+        self.assertEqual(codici, ["X6"])
+
+    def test_i_controlli_sul_file(self):
+        righe = [dict(_correzione(), id="X0001", stato="applicata", crea=["V9"]),
+                 dict(_correzione(), id="X0001", stato="respinta"),
+                 dict(_correzione(), id="X0003", stato="boh")]
+        codici = sorted({p.codice for p in self.c.controlla(righe, {"V1"})})
+        self.assertEqual(codici, ["X1", "X10", "X7", "X8"])
+
+    def test_la_differenza_ha_il_suo_contesto(self):
+        regole = self.c.differenze("aŋdàr", "andàr")
+        self.assertEqual(regole, [{"sinistra": "a", "vecchio": "ŋ",
+                                   "nuovo": "n", "destra": "d"}])
+        self.assertEqual(self.c.applica_regola("kaŋtàr", regole[0]), None,
+                         "la «ŋ» davanti alla «t» non e' il contesto della regola")
+        self.assertEqual(self.c.applica_regola("Abaŋdunàr", regole[0]),
+                         "Abandunàr")
+        fine = self.c.differenze("rašóŋ", "rasón")
+        self.assertIn({"sinistra": "ó", "vecchio": "ŋ", "nuovo": "n",
+                       "destra": "$"}, fine)
+        self.assertIn("a fine parola", self.c.descrivi(fine[-1]))
+
+    def test_l_allineamento_dice_che_cosa_e_cambiato(self):
+        from traduttore.motore import Motore
+        motore = Motore(glossario_di_prova(), corpus_di_prova())
+        coppie = self.c.allinea(motore, _correzione(
+            italiano="mangiare pane", ferrarese="magnàr al pan"))
+        tipi = [(c["tipo"], c["corretto"]) for c in coppie]
+        self.assertIn(("confermata", "magnàr"), tipi)
+        self.assertIn(("aggiunta", "al"), tipi)
+        self.assertIn(("confermata", "pan"), tipi)
+        coppie = self.c.allinea(motore, _correzione(
+            italiano="mangiare", ferrarese="magnar"))
+        self.assertEqual(coppie[0]["tipo"], "forma",
+                         "una differenza di solo accento e' un dato di grafia")
+
+    def test_l_inferenza_cerca_nella_stessa_fonte_e_non_tocca_niente(self):
+        from traduttore.motore import Motore
+        glossario = _glossario_bigoni()
+        motore = Motore(glossario, Corpus([]))
+        prima = [(v.id, v.ferrarese) for v in glossario.voci]
+        inferenze = self.c.inferisci(
+            motore, glossario, [dict(_correzione(), id="X0001")])
+        self.assertEqual(len(inferenze), 1)
+        inferenza = inferenze[0]
+        self.assertEqual(inferenza["famiglia"], "S006")
+        self.assertEqual(inferenza["da"], ["X0001"])
+        # V2 e V3 sono della stessa fonte e hanno lo stesso contesto «aŋd»;
+        # V4 e' del Ferri, e la grafia di un'altra fonte non si propone.
+        candidate = {e["voce"]: e["proposta"] for e in inferenza["esempi"]}
+        self.assertEqual(candidate, {"V2": "abandunàr", "V3": "kandéla"})
+        self.assertNotIn("fonte", inferenza)
+        self.assertEqual([(v.id, v.ferrarese) for v in glossario.voci], prima,
+                         "un'inferenza non cambia il glossario")
+        self.assertEqual(self.c.controlla_inferenze(inferenze, {"V1", "V2", "V3"}), [])
+
+    def test_una_conferma_smentisce_una_regola(self):
+        from traduttore.motore import Motore
+        glossario = _glossario_bigoni()
+        motore = Motore(glossario, Corpus([]))
+        giudizi = [{"id": "K0001", "voce": "V3", "esito": "si_dice",
+                    "come_si_dice": ""}]
+        inferenza = self.c.inferisci(
+            motore, glossario, [dict(_correzione(), id="X0001")], giudizi)[0]
+        self.assertEqual(inferenza["contro"], ["K0001"])
+
+    def test_la_conferma_diventa_una_correzione_e_poi_una_voce(self):
+        from traduttore.motore import Motore
+        glossario = _glossario_bigoni()
+        motore = Motore(glossario, Corpus([]))
+        inferenza = self.c.inferisci(
+            motore, glossario, [dict(_correzione(), id="X0001")])[0]
+        nuove = self.c.conferma(inferenza, ["V2"], "Altra Parlante",
+                                "cittadino", "2026-11-05", "segnalazione #1",
+                                glossario, self.percorso)
+        self.assertEqual(nuove[0]["voce"], "V2")
+        self.assertEqual(nuove[0]["ferrarese"], "abandunàr")
+        self.assertEqual(nuove[0]["chi"], "Altra Parlante")
+        with self.assertRaises(ValueError):
+            self.c.conferma(inferenza, ["V4"], "x", "cittadino", "2026-11-05",
+                            "y", glossario, self.percorso)
+        # L'applicazione, su file temporanei.
+        percorsi = {k: os.path.join(self.cartella, k + ".jsonl")
+                    for k in ("glossario", "coppie", "fonetica")}
+        with io.open(percorsi["glossario"], "w", encoding="utf-8") as f:
+            for v in glossario.voci:
+                f.write(json.dumps({"id": v.id, "ferrarese": v.ferrarese,
+                                    "italiano": v.italiano, "fonte": v.fonte,
+                                    "attendibilita": "I",
+                                    "varieta": "cittadino"},
+                                   ensure_ascii=False) + "\n")
+        for p in ("coppie", "fonetica"):
+            io.open(percorsi[p], "w", encoding="utf-8").close()
+        create = self.c.applica(motore, nuove[0], percorsi)
+        self.assertEqual(create, ["V0005"])
+        g = Glossario.da_file(percorsi["glossario"])
+        self.assertEqual(g.cerca_italiano("abbandonare")[0].ferrarese,
+                         "abandunàr", "la correzione viene prima della voce "
+                         "che corregge")
+        self.assertEqual(g.cerca_italiano("abbandonare")[1].id, "V2",
+                         "la voce corretta resta: e' quello che la fonte scrive")
+
+    def test_una_frase_corretta_diventa_coppia_e_pronuncia(self):
+        from traduttore.motore import Motore
+        motore = Motore(glossario_di_prova(), corpus_di_prova())
+        percorsi = {k: os.path.join(self.cartella, k + ".jsonl")
+                    for k in ("glossario", "coppie", "fonetica")}
+        for p in percorsi.values():
+            io.open(p, "w", encoding="utf-8").close()
+        riga = dict(_correzione(italiano="mangiare il pane",
+                                ferrarese="magnàr al pan",
+                                ipa="[maˈɲar al ˈpan]"), id="X0007")
+        create = self.c.applica(motore, riga, percorsi)
+        self.assertEqual(create, ["F0001", "T0001"],
+                         "«il» → «al» resta nella frase e non diventa una voce")
+        coppia = json.loads(io.open(percorsi["coppie"], encoding="utf-8").read())
+        self.assertEqual((coppia["attendibilita"], coppia["ferrarese"]),
+                         ("D", "magnàr al pan"))
+        self.assertIn("Prova Parlante", coppia["fonte"])
+        trascrizione = json.loads(io.open(percorsi["fonetica"],
+                                          encoding="utf-8").read())
+        self.assertEqual((trascrizione["riferimento"], trascrizione["ipa"]),
+                         ("F0001", "[maˈɲar al ˈpan]"))
+
+    def test_i_file_del_repository_passano_i_controlli(self):
+        from traduttore.cli import PERCORSI
+        self.assertEqual(self.c.controlla(self.c.leggi(PERCORSI["correzioni"])), [])
+        self.assertEqual(self.c.controlla_inferenze(
+            self.c.leggi(PERCORSI["inferenze"])), [])
+
+
+class TestLaCorrezioneNellaPagina(_ModelloInNode, unittest.TestCase):
+    """La pagina prepara la riga con gli stessi controlli di `correzioni`."""
+
+    DATI = {"glossario": None, "nomi_varieta": {"cittadino": "cittadino"},
+            "correzione": {"simboli": "abdeiklmnoprstuˈɲ", "repository": "x",
+                           "versione": "0.39"}}
+    ULTIMA = {"italiano": "andare", "direzione": "it-fe", "proposta": "aŋdàr",
+              "parole": []}
+
+    def _riga(self, **campi):
+        base = {"ferrarese": "andàr", "chi": "Prova", "varieta": "cittadino",
+                "consenso": True, "ipa": ""}
+        base.update(campi)
+        return self._valuta_js("rigaCorrezione(c, u, '2026-11-04')",
+                               variabili={"c": base, "u": self.ULTIMA},
+                               dati=self.DATI)
+
+    def test_una_riga_completa(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
+        esito = self._riga(ipa="[anˈdar]")
+        self.assertEqual(esito["problemi"], [])
+        riga = json.loads(esito["riga"])
+        from traduttore import correzioni
+        self.assertEqual(correzioni.controlla_riga(riga), [],
+                         "la pagina prepara una riga che il repository rifiuta")
+        self.assertEqual(correzioni.righe_dal_testo(esito["riga"]), [riga])
+
+    def test_senza_consenso_o_con_la_pronuncia_sbagliata_non_si_prepara(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
+        self.assertTrue(self._riga(consenso=False)["problemi"])
+        self.assertTrue(self._riga(ipa="anˈdar")["problemi"])
+        self.assertTrue(self._riga(ipa="[an#dar]")["problemi"])
+        self.assertTrue(self._riga(ferrarese="aŋdàr")["problemi"],
+                        "una correzione uguale alla proposta non corregge")
+
+
 class TestIPezziDiUnaLettera(unittest.TestCase):
     """Un pezzo di una lettera sola, dopo una virgola, non e' una traduzione.
 

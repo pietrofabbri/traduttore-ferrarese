@@ -1,7 +1,7 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.38
-data: 2026-11-03
+versione: 0.39
+data: 2026-11-04
 autore: progetto «I cinque duchi»
 ---
 
@@ -124,6 +124,33 @@ parte che non si può ripetere, quindi c'è sempre.
 ```bash
 python3 -m traduttore.cli web     # genera tutte le pagine e stampa i pesi
 ```
+
+## Le correzioni dei parlanti, e quello che se ne inferisce
+
+Sotto ogni traduzione la pagina ha **«La traduzione è sbagliata? Correggila»**: chi
+parla ferrarese scrive la frase giusta, se vuole la pronuncia in IPA fra parentesi
+quadre (`[al ˈkan]`, un ascolto e non una lettura della grafia), il nome, la varietà
+e il consenso. La pagina non manda niente: prepara una riga da consegnare, anche
+come segnalazione su GitHub già compilata.
+
+```bash
+python3 -m traduttore.cli correzioni importa FILE
+python3 -m traduttore.cli correzioni allinea X0001
+python3 -m traduttore.cli correzioni applica X0001
+python3 -m traduttore.cli correzioni inferisci
+python3 -m traduttore.cli correzioni conferma I0001 --voci V10405 --chi "..." --varieta cittadino --dove "..."
+```
+
+**Una correzione è una fonte; un'inferenza no.** Applicata, la correzione diventa una
+coppia `D` (la frase), una voce `D` del glossario che **corregge** quella sbagliata
+(e viene prima di lei, senza cancellarla) e una trascrizione ascoltata. Poi il
+programma confronta la forma sbagliata con quella giusta, ne ricava la differenza con
+il suo contesto («`ŋ` → `n` dopo `a`, prima di `d`») e cerca le voci **della stessa
+fonte** dove si ripete: da una sola correzione di «andare» trova sessanta voci di
+Bigoni. Le scrive in `dati/correzioni/inferenze.jsonl` con chi le sostiene e chi le
+smentisce, e **non tocca il glossario**: diventano dati quando un parlante le conferma.
+Il protocollo, compreso che cosa fa Claude con le inferenze, è in
+[dati/correzioni/README.md](dati/correzioni/README.md).
 
 ## La verifica a campione: quanto sbaglia ogni fonte
 
@@ -481,6 +508,8 @@ traduttore-ferrarese/
                        possediamo, non li pubblichiamo, e il controllo D1
                        controlla che non vengano usati per errore
     proposte/          la coda di revisione delle risposte del livello IA
+    correzioni/        le correzioni dei parlanti e le inferenze che se ne
+                       ricavano (queste ultime generate, mai dati)
   audio/               i brani registrati, il protocollo di sessione e il
                        modello di consenso: adesso non c'e' nessun brano
   sorgenti/
@@ -733,7 +762,7 @@ correggerlo sarebbe scrivere una forma che la fonte non scrive.
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 363 test
+python3 prove/test_traduttore.py     # 375 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

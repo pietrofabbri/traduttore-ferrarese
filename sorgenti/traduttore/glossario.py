@@ -96,6 +96,10 @@ class Voce:
     moderno: str = ""
     fonte_moderno: str = ""
     sinonimi: list = field(default_factory=list)
+    # L'id della voce che questa corregge: la scrive `correzioni applica`
+    # quando un parlante corregge una voce. La voce corretta resta (e' quello
+    # che la fonte scrive), e questa viene prima di lei in ogni ricerca.
+    corregge: str = ""
 
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
@@ -176,7 +180,7 @@ class Glossario:
     """Le voci del glossario, indicizzate per direzione."""
 
     def __init__(self, voci=None):
-        self.voci = list(voci or [])
+        self.voci = _prima_le_correzioni(list(voci or []))
         self._per_ferrarese = {}
         self._per_italiano = {}
         self.indizza()
@@ -279,6 +283,34 @@ class Glossario:
         return None
 
 
+def _prima_le_correzioni(voci: list) -> list:
+    """Le voci nell'ordine del file, con ogni correzione subito prima della
+    voce che corregge.
+
+    L'ordine e' quello che decide quale voce risponde quando piu' voci hanno
+    la stessa parola, e una correzione di un parlante viene scritta in fondo
+    al file. Spostarla qui, e non nell'indice, fa si' che la pagina — che
+    riceve le voci in questo stesso ordine — risponda come il motore senza
+    una seconda copia della regola.
+    """
+    presenti = {v.id for v in voci}
+    correzioni = {}
+    for voce in voci:
+        if voce.corregge and voce.corregge in presenti and \
+                voce.corregge != voce.id:
+            correzioni.setdefault(voce.corregge, []).append(voce)
+    if not correzioni:
+        return voci
+    spostate = {id(v) for gruppo in correzioni.values() for v in gruppo}
+    ordinate = []
+    for voce in voci:
+        if id(voce) in spostate:
+            continue
+        ordinate.extend(correzioni.get(voce.id, []))
+        ordinate.append(voce)
+    return ordinate
+
+
 def _uniche_per_id(voci: list) -> list:
     visti = set()
     uniche = []
@@ -299,7 +331,7 @@ def _voce_da_dict(grezzo: dict) -> Voce:
     noto = {"id", "ferrarese", "italiano", "varianti", "campo", "note",
             "fonte", "attendibilita", "registro", "da_verificare",
             "principale_italiano", "principale_ferrarese", "varieta",
-            "moderno", "fonte_moderno", "sinonimi"}
+            "moderno", "fonte_moderno", "sinonimi", "corregge"}
     grezzo = dict(grezzo)
     varianti = grezzo.pop("varianti", []) or []
     if isinstance(varianti, str):
@@ -333,4 +365,5 @@ def _voce_da_dict(grezzo: dict) -> Voce:
         moderno=str(grezzo.get("moderno", "") or "").strip(),
         fonte_moderno=str(grezzo.get("fonte_moderno", "") or "").strip(),
         sinonimi=[str(s).strip() for s in sinonimi if str(s).strip()],
+        corregge=str(grezzo.get("corregge", "") or "").strip(),
     )

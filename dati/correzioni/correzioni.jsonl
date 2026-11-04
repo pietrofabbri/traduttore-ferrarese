@@ -1,0 +1,3 @@
+// Le correzioni dei parlanti: una riga per correzione, scritta da
+// `python3 -m traduttore.cli correzioni importa`, mai a mano. Il
+// protocollo e' in dati/correzioni/README.md.

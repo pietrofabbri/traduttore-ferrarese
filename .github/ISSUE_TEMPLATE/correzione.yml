@@ -1,0 +1,31 @@
+name: Correzione di un parlante
+description: Una traduzione sbagliata, corretta da chi parla ferrarese. La riga la prepara la pagina del traduttore.
+title: "Correzione: "
+labels: ["correzione", "dati"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        La riga qui sotto l'ha preparata la pagina del traduttore («La traduzione è sbagliata? Correggila»). Non serve modificarla.
+        Chi tiene il repository la importa con `python3 -m traduttore.cli correzioni importa` e segue `dati/correzioni/README.md`.
+        **La segnalazione è pubblica**, come il nome che hai scritto nella riga.
+  - type: textarea
+    id: righe
+    attributes:
+      label: La riga della correzione
+      description: Una riga JSON per correzione, come la prepara la pagina.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: nota
+    attributes:
+      label: Altro da dire (facoltativo)
+      description: Per esempio dove si dice così, o se c'è un'altra forma.
+  - type: checkboxes
+    id: consenso
+    attributes:
+      label: Consenso
+      options:
+        - label: Ho almeno 18 anni e acconsento che questa correzione, con il nome che ho scritto, entri nel repository pubblico del progetto.
+          required: true

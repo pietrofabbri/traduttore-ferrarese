@@ -59,7 +59,12 @@ from traduttore import verbi as verbi_modulo  # noqa: E402
 from traduttore.audio import Archivio  # noqa: E402
 from traduttore.sintesi import Sintesi  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
-from traduttore.fonetica import Fonetica  # noqa: E402
+from traduttore.fonetica import SIMBOLI_IPA, Fonetica  # noqa: E402
+from traduttore import __version__  # noqa: E402
+
+# Il repository, per il link della segnalazione di una correzione: un rimando
+# e non una richiesta (AGENTS.md §2).
+REPOSITORY = "https://github.com/pietrofabbri/traduttore-ferrarese"
 from traduttore import verifica_dati  # noqa: E402
 from traduttore import campioni as campioni_modulo  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
@@ -805,6 +810,13 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
             dati["proverbi"] = _proverbi(corpus)
             dati["regole"] = _regole(regole)
             dati["verbi"] = _verbi()
+            # Il modulo di correzione: i simboli IPA ammessi (gli stessi di
+            # `fonetica.SIMBOLI_IPA`, perche' la pagina rifiuti quello che il
+            # controllo X6 rifiuterebbe) e l'indirizzo per la segnalazione.
+            dati["correzione"] = {
+                "simboli": "".join(sorted(SIMBOLI_IPA)),
+                "repository": REPOSITORY,
+                "versione": __version__}
             # Le classi grammaticali, perche' la pagina applichi le regole
             # con lo stesso cancello del motore. Vanno su questa pagina e
             # non su tutte: le altre non applicano regole.

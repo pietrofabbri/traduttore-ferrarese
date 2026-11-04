@@ -67,7 +67,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 363 test
+python3 prove/test_traduttore.py           # 375 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -167,6 +167,19 @@ I codici da conoscere:
 | D2 | voce in attesa che si dichiara documentata (avviso) |
 | K1&ndash;K9 | verifica a campione: estrazioni senza seme o con voci di un'altra fonte, **giudizio su una voce non estratta (K5)**, esito fuori dai tre, giudizio senza chi o data; vedi `dati/campioni/README.md` |
 | M1&ndash;M4 | proposte IA: stato fuori dall'insieme, **campo `fonte` o `attendibilita D` su una proposta**, id citato inesistente, promozione che non esiste |
+| X1&ndash;X10 | correzioni dei parlanti: id, **chi, varieta', consenso**, lati, pronuncia fra quadre, stato, righe create, data, motivo del rifiuto; vedi `dati/correzioni/README.md` |
+| Z1&ndash;Z3 | inferenze: **un'inferenza con `fonte` o `attendibilita D`**, senza le correzioni da cui viene, su una voce che non c'e' |
+
+## 4 bis. Quando arriva una correzione
+
+Le correzioni dei parlanti arrivano dalla pagina del traduttore, come righe da
+importare o come segnalazioni su GitHub con l'etichetta `correzione`. Il
+procedimento e' in `dati/correzioni/README.md`, ed e' lo stesso per una persona
+e per Claude: importare, guardare l'allineamento, applicare (o respingere con il
+motivo), rigenerare le inferenze, far confermare le voci candidate a un
+parlante, registrare le conferme con `correzioni conferma`. **Un'inferenza non
+si applica mai senza una conferma**: e' la regola del §1 applicata a un
+programma che trova le regolarita'.
 
 ## 5. Le cose che non si fanno
 

@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.38
-data: 2026-11-03
+versione: 0.39
+data: 2026-11-04
 ---
 
 # Registro delle modifiche
@@ -23,6 +23,42 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.39 — 2026-11-04 · Un parlante corregge una parola, e il programma dice dove altro guardare
+
+**Perché.** Il titolare ha chiesto che chi legge una traduzione sbagliata possa scrivere
+quella giusta, con la pronuncia fra quadre, e che il programma ne tragga inferenze per
+correggere altre voci. Le due cose vanno tenute separate, ed è la regola del §1: **una
+correzione è una fonte, un'inferenza no.**
+
+- **La pagina.** Sotto ogni traduzione, «La traduzione è sbagliata? Correggila»: la frase
+  giusta, la pronuncia IPA fra quadre, chi, varietà, paese, consenso (almeno 18 anni, nome
+  nel repository pubblico). La pagina non manda niente: prepara una riga da copiare,
+  scaricare o consegnare in una segnalazione su GitHub già compilata
+  (`.github/ISSUE_TEMPLATE/correzione.yml`). I controlli sono quelli del repository.
+- **`sorgenti/traduttore/correzioni.py` e il comando `correzioni`**: `importa`, `allinea`
+  (parola per parola, proposta e correzione, con il tipo di differenza), `applica`,
+  `respingi`, `inferisci`, `conferma`. Una correzione applicata diventa una coppia `D`, una
+  voce `D` che **corregge** la voce sbagliata (campo nuovo `corregge`: la voce sbagliata
+  resta, e quella giusta viene prima di lei nel motore e nella pagina) e una trascrizione
+  ascoltata.
+- **Le inferenze** (`dati/correzioni/inferenze.jsonl`, generato): ogni differenza fra forma
+  sbagliata e forma giusta, con una lettera di contesto per parte, cercata fra le voci
+  **della stessa fonte**, con chi la sostiene e chi la smentisce (anche dai giudizi della
+  verifica a campione). Non cambiano il glossario: `conferma` registra le voci che un
+  parlante conferma come correzioni con il suo nome, e solo allora diventano dati.
+- **Le parole che il traduttore non sapeva** («il» → `al`) restano nella frase e non
+  diventano voci, se non lo si chiede: sono le parole funzionali di `AGENTS.md` §6 punto 8.
+- **I controlli** X1–X10 (correzioni) e Z1–Z3 (inferenze) in `verifica`. Il procedimento,
+  compreso che cosa fa Claude con le inferenze, è in `dati/correzioni/README.md` e in
+  `AGENTS.md` §4 bis.
+
+**Verifiche.** 375 test (erano 363): dieci sulle correzioni (importazione, pronuncia,
+controlli, contesto della regola, allineamento, inferenza nella stessa fonte, prova
+contraria, conferma e applicazione, frase con pronuncia, file del repository) e due sulla
+pagina, che prepara una riga che il repository accetta e rifiuta quelle che il
+repository rifiuterebbe. Confronto Python/pagina: 23 frasi, 0 divergenze. `verifica`: 0
+errori.
 
 ## 0.38 — 2026-11-03 · Ogni «e» si traduceva «Trinca»
 

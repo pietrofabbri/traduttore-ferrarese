@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.40
+versione: 0.41
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -180,7 +180,11 @@ porta con se' **da dove viene** e **quanto si e' sicuri**:
 
 | Livello | Origine | Confidenza | Quando |
 |---|---|---|---|
+| 0 | `frase` | 0.95 | una regola di frase promossa dalle correzioni |
+| 0 | `grammatica` | 0.90 | articoli, pronomi, possessivi, numeri, giorni e mesi di S015 |
 | 1 | `glossario` | 0.95 | la voce c'e' nel glossario |
+| 1 bis | `plurale` | 0.60 | il plurale di una voce, con le regole di S015 |
+| 1 bis | `analogia` | 0.55 | un verbo regolare coniugato sul modello della sua coniugazione |
 | 2 | `corpo` | 0.80 &ndash; 0.92 | la frase c'e' nel corpus parallelo, o c'e' il pezzo che combacia |
 | 3 | `regola` | 0.55 &times; accordo | una regola morfologica imparata dal corpus |
 | 4 | `modello` | 0.50 | un modello linguistico, solo con chiave API |
@@ -750,16 +754,64 @@ Quattro regole che il motore segue, e che valgono uguali nella pagina:
   `Cantòn` del glossario) e con una parola accentata che il glossario trova solo
   togliendo l'accento.
 
-**Che cosa resta fuori.** Gli altri verbi: *mangiare*, *parlare* e tutti quelli che
-non sono i dodici modelli restano un buco, perché coniugarli sul modello della loro
-coniugazione sarebbe una regola e non una fonte. E il futuro di `tašér` alla seconda
-plurale, dove la fonte scrive la forma di `kaŋtàr`: quasi certamente un refuso, ma
-correggerlo sarebbe scrivere una forma che la fonte non scrive.
+**Gli altri verbi, per analogia (0.41).** *Mangiare*, *cercare*, *ballare* e i verbi
+regolari che il glossario ha all'infinito si coniugano sul modello della loro
+coniugazione (`kaŋtàr`, `tašér`, `lèžar`, `kapìr`): la radice ferrarese
+dell'infinito più la desinenza del modello. La forma è **ricavata, non attestata**:
+ha l'origine `analogia`, la confidenza 0,55, e il dettaglio cita la cella del modello.
+L'accento della radice è la parte difficile, e il motore la fa solo quando la sa:
+
+- quando la desinenza porta l'accento («mangiamo» → `a magnén`, «mangerò» →
+  `a magnarò`) la radice resta quella dell'infinito;
+- quando l'accento cade sulla radice e la vocale è *a*, *i* o *u* («mangia» →
+  `al màgna`) l'accento è grave o acuto senza ambiguità;
+- quando la vocale ferrarese è *a* e quella italiana è *e*, S015 dice che è
+  l'alternanza di `zarkàr`: «nu a zarkéŋ ma mi a zérk» → «cerco» `a zérc`;
+- quando la vocale è *e* o *o* e non si sa se è aperta o chiusa («porto» da
+  `purtàr`) la forma **non si fa**: resta un buco, perché scegliere sarebbe
+  inventare.
+
+Resta fuori anche il futuro di `tašér` alla seconda plurale, dove la fonte scrive la
+forma di `kaŋtàr`: quasi certamente un refuso, ma correggerlo sarebbe scrivere una
+forma che la fonte non scrive.
+
+## La grammatica di S015, e la parola che segue
+
+Una parola funzionale ferrarese dipende dalla parola che la segue: «il cane» è
+`al can`, «l'uomo» è `l'òm` (S015, §4 «Articoli»). Dalla 0.41 il motore ha la
+grammatica degli appunti di Bigoni in `dati/grammatica.json` (raccolta da
+`raccolta/da_grammatica.py`, con la riga e la frase della fonte per ogni forma):
+articoli, pronomi personali, possessivi, dimostrativi, numeri, giorni, mesi, e le
+regole del plurale (`-àl` → `-àj`, `-èl` → `-jé`, `-óŋ` → `-ùŋ`, `-a` → `-i`,
+`òm` → `òman`).
+
+**Perché due passaggi.** Il motore traduce da sinistra a destra: quando arriva
+all'articolo la parola ferrarese che segue non c'è ancora, e guardare quella
+italiana sbaglia quando le due cominciano diversamente. Succede: S015 scrive che il
+prefisso *re-* diventa *ar-*, quindi «il ricordo» comincia per consonante in
+italiano e per vocale in ferrarese (`l'Arcórd`); e «l'arancia» il contrario
+(`la naràŋz`). Perciò il motore traduce prima tutte le parole, e poi rifà gli
+articoli e le regole di frase guardando la parola **ferrarese** che segue. Se
+quella non ha traduzione si guarda l'italiana, l'unica che c'è.
+
+Tre indizi in più, dichiarati nel dettaglio di ogni risposta:
+
+- le elisioni italiane si separano: «l'uomo» è l'articolo e il nome, e il nome il
+  glossario lo conosce;
+- «le», «gli», «lo», «la» davanti a un verbo coniugato sono pronomi, non articoli
+  («le dico»);
+- «due» e «tre» hanno il femminile (`dó`, `tré`), e il genere lo dice la desinenza
+  della parola italiana che segue: -e femminile, il resto maschile.
+
+I plurali: una parola che il glossario non ha può essere il plurale di una che ha
+(«cavalli» di «cavallo»); il singolare si cerca con la grammatica dell'italiano e il
+plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
+`plurale`, confidenza 0,60.
 
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 382 test
+python3 prove/test_traduttore.py     # 397 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

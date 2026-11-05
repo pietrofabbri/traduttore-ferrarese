@@ -100,6 +100,23 @@ FRASI = [
     ("it-fe", "vorrei che tu facessi"),
     # Un pezzo di una lettera sola non e' un resi (0.38): «e» non e' «Trinca».
     ("it-fe", "il cane e il gatto"),
+    # La grammatica di S015 e il secondo passaggio (0.41): l'articolo scelto
+    # sulla parola ferrarese che segue («il ricordo» → `l'Arcórd`, «l'arancia»
+    # → `la naràŋz`), l'elisione, il pronome davanti al verbo, il genere di due.
+    ("it-fe", "il ricordo e l'arancia"),
+    ("it-fe", "l'uomo e la donna"),
+    ("it-fe", "le dico che gli uomini sono qui"),
+    ("it-fe", "lui ha due case e tre cani"),
+    ("it-fe", "questo libro è mio da lunedì"),
+    # I plurali ricavati con le regole di S015 (0.41).
+    ("it-fe", "le case e i cavalli dei padroni"),
+    ("it-fe", "gli uomini e le amiche nei campi"),
+    # I verbi regolari coniugati sul modello (0.41): accento sulla desinenza,
+    # sulla radice, l'alternanza a/é di S015, il pronome che sceglie la persona.
+    ("it-fe", "noi mangiamo e lui mangia"),
+    ("it-fe", "io cerco e tu cerchi"),
+    ("it-fe", "loro parlavano e io credo"),
+    ("it-fe", "domani lui balla con le amiche"),
 ]
 
 # Il codice che avvolge la pagina e' tutto quello che tocca il DOM: si

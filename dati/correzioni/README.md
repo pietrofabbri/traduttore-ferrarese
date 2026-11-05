@@ -43,7 +43,7 @@ pagina «Invia» ──► segnalazione GitHub ──► workflow «Correzioni»
    | Elemento | Esempio | Soglia predefinita | Che cosa diventa |
    |---|---|---|---|
    | `parola` | «casa» → `ca` | 2 correzioni concordi, 0 contrarie | una voce `D` del glossario che **corregge** la voce sbagliata (che resta, e viene dopo) |
-   | `funzionale` | «il» davanti a consonante → `al` | 2 e 0 | una **regola di frase** in `dati/regole_frase.json`: il motore la applica guardando la parola che segue |
+   | `funzionale` | «il» davanti a consonante → `al` | 2 e 0 | una **regola di frase** in `dati/regole_frase.json`: il motore la applica guardando la prima lettera della parola **ferrarese** che segue (vocale, consonante, fine), nel secondo passaggio (0.41) |
    | `grafia` | «`ŋ` → `n` dopo `a`, prima di `d`» | 3 e 0 | una voce `I` e `da_verificare` per ogni voce candidata della stessa fonte: è la regola applicata, non un ascolto |
 
    Una correzione è **contraria** a un elemento se per la stessa parola (e lo stesso

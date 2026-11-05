@@ -1,0 +1,933 @@
+{
+ "_nota": "Le parole della grammatica di S015 (Bigoni, «Il Ferrarese», §4): articoli, pronomi, possessivi, dimostrativi, numeri, giorni e mesi. File GENERATO da raccolta/da_grammatica.py, non si modifica a mano. Le forme sono nella grafia del progetto (dati/conversione_bigoni.json); quella della fonte e' in forma_fonte. Gli articoli dipendono dalla parola ferrarese che segue: il motore li sceglie in un secondo passaggio (sorgenti/traduttore/grammatica.py).",
+ "fonte": "S015",
+ "articoli": [
+  {
+   "italiano": "il",
+   "genere": "m",
+   "numero": "s",
+   "consonante": "al",
+   "vocale": "l'",
+   "scritto_dalla_fonte": "L'articolo determinativo singolare maschile è l che davanti a parola iniziante per consonante si vocalizza in al.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "lo",
+   "genere": "m",
+   "numero": "s",
+   "consonante": "al",
+   "vocale": "l'",
+   "scritto_dalla_fonte": "L'articolo determinativo singolare maschile è l che davanti a parola iniziante per consonante si vocalizza in al.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "la",
+   "genere": "f",
+   "numero": "s",
+   "consonante": "la",
+   "vocale": "l'",
+   "scritto_dalla_fonte": "L'articolo determinativo singolare femminile è la con elisione davanti a parola iniziante per vocale.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "l'",
+   "genere": "",
+   "numero": "s",
+   "consonante": "",
+   "vocale": "l'",
+   "scritto_dalla_fonte": "l'òman = l'uomo; l'amìɣa = l'amica",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "i",
+   "genere": "m",
+   "numero": "p",
+   "consonante": "i",
+   "vocale": "j",
+   "scritto_dalla_fonte": "Il plurale è i davanti a consonante, j davanti a vocale.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "gli",
+   "genere": "m",
+   "numero": "p",
+   "consonante": "i",
+   "vocale": "j",
+   "scritto_dalla_fonte": "Il plurale è i davanti a consonante, j davanti a vocale. ... j òman = gli uomini.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "le",
+   "genere": "f",
+   "numero": "p",
+   "consonante": "il",
+   "vocale": "j",
+   "scritto_dalla_fonte": "Il plurale è il davanti a consonante, j davanti a vocale. ... il kavàli = le cavalle; ... j amìɣi = le amiche.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "un",
+   "genere": "m",
+   "numero": "s",
+   "consonante": "un",
+   "vocale": "n'",
+   "scritto_dalla_fonte": "L'articolo indeterminativo singolare maschile è un spesso ridotto semplicemente a n davanti a vocale. Esempi: un can = un cane, n'àrbul = un albero.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "uno",
+   "genere": "m",
+   "numero": "s",
+   "consonante": "un",
+   "vocale": "n'",
+   "scritto_dalla_fonte": "L'articolo indeterminativo singolare maschile è un spesso ridotto semplicemente a n davanti a vocale.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  },
+  {
+   "italiano": "una",
+   "genere": "f",
+   "numero": "s",
+   "consonante": "na",
+   "vocale": "",
+   "scritto_dalla_fonte": "L'articolo indeterminativo singolare femminile è una spesso ridotto semplicemente a na.",
+   "fonte": "S015",
+   "dove": "§4 «Articoli»"
+  }
+ ],
+ "secondo_genere": [
+  {
+   "italiano": "due",
+   "m": "du",
+   "f": "dó",
+   "scritto_dalla_fonte": "du màsc, dó féman",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "italiano": "tre",
+   "m": "tri",
+   "f": "tré",
+   "scritto_dalla_fonte": "tri màsc, tré féman",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  }
+ ],
+ "parole": [
+  {
+   "italiano": "io",
+   "ferrarese": "mi",
+   "forma_fonte": "mi",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "me",
+   "ferrarese": "mi",
+   "forma_fonte": "mi",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "tu",
+   "ferrarese": "ti",
+   "forma_fonte": "ti",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "lui",
+   "ferrarese": "lu",
+   "forma_fonte": "lu",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "lei",
+   "ferrarese": "lié",
+   "forma_fonte": "lié",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "varianti": [
+    "ela"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "noi",
+   "ferrarese": "nu",
+   "forma_fonte": "nu",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "voi",
+   "ferrarese": "vu",
+   "forma_fonte": "vu",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "loro",
+   "ferrarese": "lór",
+   "forma_fonte": "lór",
+   "categoria": "pronome personale",
+   "dove": "§4, tabella «Pronomi personali»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "mio",
+   "ferrarese": "mjé",
+   "forma_fonte": "mjé",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "mia",
+   "ferrarese": "mjé",
+   "forma_fonte": "mjé",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "miei",
+   "ferrarese": "mjé",
+   "forma_fonte": "mjé",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "mie",
+   "ferrarese": "mjé",
+   "forma_fonte": "mjé",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "tuo",
+   "ferrarese": "tò",
+   "forma_fonte": "tò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "tua",
+   "ferrarese": "tò",
+   "forma_fonte": "tò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "tuoi",
+   "ferrarese": "tò",
+   "forma_fonte": "tò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "tue",
+   "ferrarese": "tò",
+   "forma_fonte": "tò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "suo",
+   "ferrarese": "sò",
+   "forma_fonte": "sò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sua",
+   "ferrarese": "sò",
+   "forma_fonte": "sò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "suoi",
+   "ferrarese": "sò",
+   "forma_fonte": "sò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sue",
+   "ferrarese": "sò",
+   "forma_fonte": "sò",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "nostro",
+   "ferrarese": "nòstar",
+   "forma_fonte": "nòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "nostra",
+   "ferrarese": "nòstar",
+   "forma_fonte": "nòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "nostri",
+   "ferrarese": "nòstar",
+   "forma_fonte": "nòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "nostre",
+   "ferrarese": "nòstar",
+   "forma_fonte": "nòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "vostro",
+   "ferrarese": "vòstar",
+   "forma_fonte": "vòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "vostra",
+   "ferrarese": "vòstar",
+   "forma_fonte": "vòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "vostri",
+   "ferrarese": "vòstar",
+   "forma_fonte": "vòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "vostre",
+   "ferrarese": "vòstar",
+   "forma_fonte": "vòstar",
+   "categoria": "possessivo",
+   "dove": "§4, tabella «Aggettivi possessivi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "questo",
+   "ferrarese": "quést",
+   "forma_fonte": "quést",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "questa",
+   "ferrarese": "quésta",
+   "forma_fonte": "quésta",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "questi",
+   "ferrarese": "quìsti",
+   "forma_fonte": "quìsti",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "queste",
+   "ferrarese": "quésti",
+   "forma_fonte": "quésti",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quello",
+   "ferrarese": "quél",
+   "forma_fonte": "quél",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quella",
+   "ferrarese": "quéla",
+   "forma_fonte": "quéla",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quelli",
+   "ferrarese": "quéj",
+   "forma_fonte": "quéj",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quelle",
+   "ferrarese": "quéli",
+   "forma_fonte": "quéli",
+   "categoria": "dimostrativo",
+   "dove": "§4, tabella «Aggettivi e pronomi dimostrativi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quattro",
+   "ferrarese": "quàtar",
+   "forma_fonte": "quàtar",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "cinque",
+   "ferrarese": "zinc",
+   "forma_fonte": "ziŋk",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sei",
+   "ferrarese": "sjé",
+   "forma_fonte": "sjé",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sette",
+   "ferrarese": "sèt",
+   "forma_fonte": "sèt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "otto",
+   "ferrarese": "òt",
+   "forma_fonte": "òt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "nove",
+   "ferrarese": "nóv",
+   "forma_fonte": "nóv",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "dieci",
+   "ferrarese": "djés",
+   "forma_fonte": "djéš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "undici",
+   "ferrarese": "óndas",
+   "forma_fonte": "óŋdaš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "óng"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "dodici",
+   "ferrarese": "dódas",
+   "forma_fonte": "dódaš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "dóg"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "tredici",
+   "ferrarese": "trédas",
+   "forma_fonte": "trédaš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "trég"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quattordici",
+   "ferrarese": "quatòrdas",
+   "forma_fonte": "quatòrdaš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "quatòrg"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quindici",
+   "ferrarese": "quìndas",
+   "forma_fonte": "quìŋdaš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "quing"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sedici",
+   "ferrarese": "sédas",
+   "forma_fonte": "sédaš",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "ség"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "diciassette",
+   "ferrarese": "darsét",
+   "forma_fonte": "darsét",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "diciotto",
+   "ferrarese": "darzdòt",
+   "forma_fonte": "darždòt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "zdòt"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "diciannove",
+   "ferrarese": "darznóv",
+   "forma_fonte": "daržnóv",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "varianti": [
+    "znóv"
+   ],
+   "fonte": "S015"
+  },
+  {
+   "italiano": "venti",
+   "ferrarese": "vint",
+   "forma_fonte": "viŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "trenta",
+   "ferrarese": "trénta",
+   "forma_fonte": "tréŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quaranta",
+   "ferrarese": "quarànta",
+   "forma_fonte": "quaràŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "cinquanta",
+   "ferrarese": "zinquànta",
+   "forma_fonte": "ziŋquàŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sessanta",
+   "ferrarese": "sànta",
+   "forma_fonte": "sàŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "settanta",
+   "ferrarese": "stànta",
+   "forma_fonte": "stàŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "ottanta",
+   "ferrarese": "utànta",
+   "forma_fonte": "utàŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "novanta",
+   "ferrarese": "nuvànta",
+   "forma_fonte": "nuvàŋta",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "cento",
+   "ferrarese": "zént",
+   "forma_fonte": "zéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "duecento",
+   "ferrarese": "dusént",
+   "forma_fonte": "dušéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "trecento",
+   "ferrarese": "tarsént",
+   "forma_fonte": "taršéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "quattrocento",
+   "ferrarese": "quatarzént",
+   "forma_fonte": "quatarzéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "cinquecento",
+   "ferrarese": "zinczént",
+   "forma_fonte": "ziŋkzéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "seicento",
+   "ferrarese": "sjézént",
+   "forma_fonte": "sjêzéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "settecento",
+   "ferrarese": "sètzént",
+   "forma_fonte": "sětzéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "ottocento",
+   "ferrarese": "òtzént",
+   "forma_fonte": "ǒtzéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "novecento",
+   "ferrarese": "nóvzént",
+   "forma_fonte": "nôvzéŋt",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "mille",
+   "ferrarese": "mil",
+   "forma_fonte": "mil",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "duemila",
+   "ferrarese": "dómìla",
+   "forma_fonte": "dômìla",
+   "categoria": "numero",
+   "dove": "§4, tabella «Numeri»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "lunedì",
+   "ferrarese": "lùni",
+   "forma_fonte": "lùni",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "martedì",
+   "ferrarese": "màrti",
+   "forma_fonte": "màrti",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "mercoledì",
+   "ferrarese": "mèrcul",
+   "forma_fonte": "mèrkul",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "giovedì",
+   "ferrarese": "zòbja",
+   "forma_fonte": "žòbja",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "venerdì",
+   "ferrarese": "vènar",
+   "forma_fonte": "vènar",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "sabato",
+   "ferrarese": "sàbat",
+   "forma_fonte": "sàbat",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "domenica",
+   "ferrarese": "dménga",
+   "forma_fonte": "dméŋɣa",
+   "categoria": "giorno",
+   "dove": "§4, tabella «Giorni»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "gennaio",
+   "ferrarese": "znar",
+   "forma_fonte": "žnar",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "febbraio",
+   "ferrarese": "favràr",
+   "forma_fonte": "favràr",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "marzo",
+   "ferrarese": "marz",
+   "forma_fonte": "marz",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "aprile",
+   "ferrarese": "avrìl",
+   "forma_fonte": "avrìl",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "maggio",
+   "ferrarese": "mag",
+   "forma_fonte": "mag",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "giugno",
+   "ferrarese": "zugn",
+   "forma_fonte": "žuñ",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "luglio",
+   "ferrarese": "lùj",
+   "forma_fonte": "lùj",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "agosto",
+   "ferrarese": "agóst",
+   "forma_fonte": "aɣóst",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "settembre",
+   "ferrarese": "sétémbar",
+   "forma_fonte": "sêtémbar",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "ottobre",
+   "ferrarese": "utòbar",
+   "forma_fonte": "utòbar",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "novembre",
+   "ferrarese": "nuvémbar",
+   "forma_fonte": "nuvémbar",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  },
+  {
+   "italiano": "dicembre",
+   "ferrarese": "dicémbar",
+   "forma_fonte": "dicémbar",
+   "categoria": "mese",
+   "dove": "§4, tabella «Mesi»",
+   "fonte": "S015"
+  }
+ ],
+ "plurali": [
+  {
+   "fine": "éš",
+   "plurale": "ìš",
+   "scritto_dalla_fonte": "un fraréš, du frarìš; un buluñéš, du buluñìš",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "fine": "és",
+   "plurale": "ìs",
+   "scritto_dalla_fonte": "un fraréš, du frarìš (nella grafia del progetto)",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "fine": "óŋ",
+   "plurale": "ùŋ",
+   "scritto_dalla_fonte": "un padrón, du padrùn; un pitón, du pitùn",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "fine": "ón",
+   "plurale": "ùn",
+   "scritto_dalla_fonte": "un padrón, du padrùn; un pitón, du pitùn",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "fine": "àl",
+   "plurale": "àj",
+   "scritto_dalla_fonte": "un kavàl, du kavàj; un grumbiàl, du grumbiàj",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "fine": "èl",
+   "plurale": "jé",
+   "scritto_dalla_fonte": "un fradèl, du fradjé; un ušèl, du ušjé",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  },
+  {
+   "fine": "a",
+   "plurale": "i",
+   "scritto_dalla_fonte": "ùna putìna, dó putìni; ùna kavàla, dó kavàli; ... la i finale risulta spesso molto evanescente e ... viene elisa",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  }
+ ],
+ "plurali_irregolari": [
+  {
+   "singolare": "òm",
+   "plurale": "òman",
+   "scritto_dalla_fonte": "un òm débul, du òman débul; l'òman = l'uomo; j òman = gli uomini",
+   "fonte": "S015",
+   "dove": "§4 «Sostantivi e aggettivi»"
+  }
+ ]
+}

@@ -35,6 +35,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import unicodedata
 
 from . import normalizza
@@ -344,3 +345,178 @@ def spiega_buco(parola: str = "", percorso: str = PERCORSO) -> str:
             "forma indovinata."
             % (sa["forme"], sa["verbi"], len(sa["paradigmi"]),
                ", ".join(sa["paradigmi"])))
+
+
+# --- la coniugazione per analogia con i verbi modello (0.41) -----------------
+#
+# S015 coniuga per intero un verbo modello per ciascuna delle quattro
+# coniugazioni (`kaŋtàr`, `tašér`, `lèžar`, `kapìr`) e dice che le coniugazioni
+# regolari sono quattro (R035). Un verbo regolare che il glossario ha
+# all'infinito si coniuga quindi sul modello della sua coniugazione. La forma e'
+# **ricavata**, non attestata: ha l'origine `analogia` e una confidenza bassa.
+#
+# Il riconoscimento dell'italiano usa le desinenze italiane dei modelli (le
+# righe `italiano` dei paradigmi). Le forme ferraresi si fanno cosi':
+#
+# - quando l'accento cade sulla **desinenza** (`magnén`, `magnàva`, `magnarò`)
+#   la radice dell'infinito resta com'e' e la desinenza e' quella del modello;
+# - quando cade sulla **radice** (`màgna`) la vocale accentata si sa per `a`,
+#   `i`, `u`; se l'italiano ha *e* dove il ferrarese ha *a*, la tonica e' `é`
+#   (S015: «zarkàr = cercare, nu a zarkéŋ ma mi a zérk»); se la vocale e' `e` o
+#   `o` non si sa se e' aperta o chiusa, e la forma **non si fa**: resta un buco.
+
+CLASSI = (
+    # lemma della fonte, infinito italiano, desinenza italiana, desinenza ferrarese
+    ("kaŋtàr", "cantare", "are", "àr"),
+    ("tašér", "tacere", "ere", "ér"),
+    ("lèžar", "leggere", "ere", "ar"),
+    ("kapìr", "capire", "ire", "ìr"),
+)
+_VOCALI_IT = "aeiouàèéìòóù"
+
+
+def _senza_accenti(testo: str) -> str:
+    return "".join(c for c in unicodedata.normalize("NFD", testo or "")
+                   if not unicodedata.combining(c))
+
+
+def modelli(percorso: str = PERCORSO) -> list:
+    """Le celle dei verbi modello, ridotte a desinenze italiane e ferraresi.
+
+    E' la tabella che usano il motore e la pagina (che la riceve nei dati): una
+    copia sola del calcolo, in Python.
+    """
+    dati = carica(percorso)
+    sistema = dati["sistema"]
+    risultato = []
+    for lemma_fonte, inf_it, fine_it, fine_fe in CLASSI:
+        righe = [r for r in dati["righe"] if r.get("lemma_fonte") == lemma_fonte
+                 and r.get("persona") in ("1sing", "2sing", "3sing", "1plur",
+                                          "2plur", "3plur")
+                 and not r.get("variante_di") and not r.get("clitico")]
+        if not righe:
+            continue
+        radice_it = inf_it[:-len(fine_it)]
+        lemma = righe[0]["lemma"]
+        radice_fe = _senza_accenti(lemma[:-len(fine_fe)].lower()) \
+            if _senza_accenti(lemma.lower()).endswith(_senza_accenti(fine_fe)) \
+            else ""
+        celle = []
+        for r in ordina(righe, sistema):
+            italiano = r["italiano"]
+            if not italiano.startswith(radice_it):
+                continue
+            desinenza_it = italiano[len(radice_it):]
+            # Le forme irregolari dell'italiano («taccio», «tacciono») non
+            # sono una desinenza: non si usano per riconoscere.
+            if not desinenza_it or desinenza_it[0] not in _VOCALI_IT:
+                continue
+            forma = r["forma"].lower()
+            if not _senza_accenti(forma).startswith(radice_fe):
+                continue
+            desinenza_fe = forma[len(radice_fe):]
+            sulla_radice = not any(c in "àèéìíòóùú" for c in desinenza_fe)
+            celle.append({"tempo": r["tempo"], "persona": r["persona"],
+                          "it": desinenza_it, "fe": desinenza_fe,
+                          "radice": sulla_radice,
+                          "proclitica": r.get("proclitica", ""),
+                          "riga": r["id"]})
+        risultato.append({"lemma_fonte": lemma_fonte, "infinito": inf_it,
+                          "fine_it": fine_it, "fine_fe": fine_fe,
+                          "celle": celle})
+    return risultato
+
+
+def _accentua(radice: str, radice_it: str):
+    """La radice con l'accento sull'ultima vocale, e se e' un'alternanza.
+
+    Torna `(radice, alternanza)` o None se non si sa quale vocale. La «i» di
+    «mangi-are», «baci-are» e' grafia dell'italiano e non una vocale: si toglie
+    prima di confrontare.
+    """
+    posizioni = [i for i, c in enumerate(radice.lower()) if c in "aeiou"]
+    if not posizioni:
+        return None
+    i = posizioni[-1]
+    vocale = radice[i].lower()
+    base_it = radice_it.lower()
+    if base_it.endswith(("ci", "gi", "sci")):
+        base_it = base_it[:-1]
+    vocali_it = [c for c in base_it if c in "aeiou"]
+    vocale_it = vocali_it[-1] if vocali_it else ""
+    if vocale == "a" and vocale_it == "e":
+        return radice[:i] + "é" + radice[i + 1:], True
+    if vocale == vocale_it and vocale in "aiu":
+        nuova = {"a": "à", "i": "ì", "u": "ù"}[vocale]
+        return radice[:i] + nuova + radice[i + 1:], False
+    return None
+
+
+def _sillabe(parola: str) -> int:
+    return len(re.findall(r"[aeiouàèéìíòóùú]+", parola.lower()))
+
+
+def per_analogia(parola: str, glossario, persona: str = "",
+                 tabella: list = None) -> dict:
+    """La forma di un verbo regolare, coniugato sul modello della sua classe."""
+    w = chiave_italiano(parola)
+    candidati = []
+    for modello in (tabella if tabella is not None else modelli()):
+        for cella in modello["celle"]:
+            if not w.endswith(cella["it"]) or len(w) <= len(cella["it"]) + 1:
+                continue
+            radice_it = w[:-len(cella["it"])]
+            # «mangi», «mangerò»: l'italiano toglie la i di -giare/-ciare
+            # davanti a i ed e; «cerchi»: aggiunge la h di -care/-gare.
+            prove = [radice_it]
+            if cella["it"][:1] in "ie":
+                prove.append(radice_it + "i")
+            if radice_it.endswith(("ch", "gh")):
+                prove.append(radice_it[:-1])
+            for radice in prove:
+                infinito = radice + modello["fine_it"]
+                voci = glossario.cerca_italiano(infinito)
+                if not voci:
+                    continue
+                forma = (voci[0].principale("it-fe") or "").strip()
+                if " " in forma or "," in forma or not \
+                        _senza_accenti(forma.lower()).endswith(
+                            _senza_accenti(modello["fine_fe"])):
+                    continue
+                if modello["fine_fe"] == "ar" and forma.lower().endswith(
+                        ("àr", "ár")):
+                    continue
+                candidati.append((modello, cella, radice, forma, voci[0]))
+                break
+    if not candidati:
+        return {"forma": "", "testo": ""}
+    if persona:
+        della = [c for c in candidati if c[1]["persona"] == persona]
+        candidati = della or candidati
+    for modello, cella, radice_it, infinito_fe, voce in candidati:
+        radice_fe = infinito_fe[:-len(modello["fine_fe"])]
+        if cella["radice"] and modello["fine_fe"] != "ar":
+            accentata = _accentua(radice_fe, radice_it)
+            if accentata is None:
+                continue
+            radice_tonica, alternanza = accentata
+            forma = radice_tonica + cella["fe"]
+            # Una sillaba sola non porta l'accento («a magn», come «a kaŋt»),
+            # tranne l'alternanza, che e' una vocale diversa («a zérk»).
+            if _sillabe(forma) < 2 and not alternanza:
+                forma = radice_fe + cella["fe"]
+        else:
+            # Nella terza coniugazione l'accento e' gia' sulla radice
+            # dell'infinito («lèžar»), e la radice resta com'e'.
+            forma = radice_fe + cella["fe"]
+        riga = {"forma": forma, "proclitica": cella["proclitica"],
+                "persona": cella["persona"], "tempo": cella["tempo"]}
+        return {"forma": forma, "testo": con_soggetto(riga),
+                "fonte": "S015", "riga": riga,
+                "nota": "per analogia con «%s» (%s, %s %s, riga %s): "
+                        "infinito %s «%s» (%s)" % (
+                            modello["lemma_fonte"], modello["infinito"],
+                            cella["tempo"], cella["persona"], cella["riga"],
+                            radice_it + modello["fine_it"], infinito_fe,
+                            voce.id)}
+    return {"forma": "", "testo": ""}

@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.40
+versione: 0.41
 data: 2026-11-05
 ---
 
@@ -23,6 +23,35 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.41 — 2026-11-05 · La grammatica di S015, la parola ferrarese che segue, e l'analogia
+
+**Perché.** Il traduttore sbagliava gli articoli, non conosceva pronomi, numeri,
+plurali e i verbi fuori dai dodici modelli; e la regola di frase guardava la parola
+italiana che segue, che non sempre comincia come quella ferrarese.
+
+- **La grammatica di S015** (`dati/grammatica.json` da `raccolta/da_grammatica.py`,
+  modulo `grammatica.py`): articoli, pronomi, possessivi, dimostrativi, numeri, giorni
+  e mesi, ognuno con la riga e la frase della fonte; origine nuova `grammatica` (0,90).
+- **Il secondo passaggio**: il motore traduce tutte le parole e poi sceglie articoli e
+  regole di frase guardando la parola **ferrarese** che segue («il ricordo» →
+  `l'Arcórd`, «l'arancia» → `la naràŋz`). Il contesto delle correzioni è ora quello
+  ferrarese.
+- **Le elisioni** italiane si separano («l'uomo», «un'amica»); «le», «lo», «la» davanti
+  a un verbo non sono articoli; «due» e «tre» prendono il genere dalla desinenza
+  italiana che segue.
+- **I plurali** di una voce con le regole di S015 (origine `plurale`, 0,60).
+- **L'analogia**: i verbi regolari del glossario coniugati sul modello della loro
+  coniugazione (origine `analogia`, 0,55), con l'accento della radice solo quando la
+  fonte permette di saperlo (alternanza *e*/*a* di `zarkàr`); con *e* od *o* toniche
+  la forma resta un buco.
+- Tutto copiato nella pagina e confrontato da `controlla_equivalenza.py` (34 frasi).
+
+**Verifiche.** 397 test (erano 382): i dati con la fonte, elisioni e unione, l'articolo
+secondo la parola ferrarese, il verbo dopo il pronome atono, il genere di due e tre,
+pronomi e possessivi, i singolari italiani, le regole del plurale, l'analogia con
+l'accento sulla desinenza e sulla radice, l'alternanza, il buco su *e*/*o*, e le copie
+in JavaScript.
 
 ## 0.40 — 2026-11-05 · Un pulsante «Invia», l'archivio da verificare, e il margine
 

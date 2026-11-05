@@ -7,9 +7,11 @@ una voce e' una parola sola. Queste regole lo dicono, e vengono **solo** dalle
 correzioni dei parlanti promosse da `correzioni promuovi` (una regola per
 parola italiana e contesto, con le correzioni che la sostengono).
 
-Il contesto e' quello di `correzioni.contesto`: la prima lettera della parola
-**italiana** che segue (`vocale`, `consonante`), o `fine` se non c'e'. La copia
-nella pagina e' `regolaDiFrase` in `modello.html`.
+Il contesto e' la prima lettera della parola **ferrarese** che segue
+(`vocale`, `consonante`), o `fine` se non c'e' (0.41). Il motore la conosce nel
+secondo passaggio (`grammatica.py`), quando la frase e' gia' tradotta; se la
+parola che segue non ha traduzione si guarda quella italiana, l'unica che c'e'.
+La copia nella pagina e' `regolaDiFrase` in `modello.html`.
 """
 from __future__ import annotations
 
@@ -46,6 +48,11 @@ def carica(percorso: str = None) -> dict:
                 regole[(normalizza.normale(r["italiano"]), r["contesto"])] = r
     _cache[percorso] = regole
     return regole
+
+
+def cerca_contesto(parola: str, ctx: str, percorso: str = None):
+    """La regola per una parola in un contesto gia' calcolato."""
+    return carica(percorso).get((normalizza.normale(parola or ""), ctx))
 
 
 def cerca(parola: str, seguente: str, percorso: str = None):

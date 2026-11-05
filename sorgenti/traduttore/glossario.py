@@ -26,7 +26,7 @@ import os
 import re
 from dataclasses import dataclass, field
 
-from . import normalizza
+from . import grafia, normalizza
 from .varieta import codice_valido
 
 ATTENDIBILITA = ("D", "I", "M", "L", "C")
@@ -100,6 +100,11 @@ class Voce:
     # quando un parlante corregge una voce. La voce corretta resta (e' quello
     # che la fonte scrive), e questa viene prima di lei in ogni ricerca.
     corregge: str = ""
+    # La forma come la scrive la fonte, quando non e' quella che si legge
+    # (0.42): le voci di Bigoni sono scritte nel suo alfabeto fonetico e il
+    # glossario le legge all'italiana (`grafia.py`). Questa resta, si cerca e
+    # da' la pronuncia.
+    grafia_fonte: str = ""
 
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
@@ -149,6 +154,10 @@ class Voce:
         # I pezzi del lato ferrarese vengono dai `varianti` dichiarati a mano
         # e dai resi multipli: stesso ragionamento del lato italiano.
         chiavi = self._chiavi_resi(self.ferrarese, self.principale_ferrarese)
+        if self.grafia_fonte:
+            for k in self._chiavi_resi(self.grafia_fonte, ""):
+                if k not in chiavi:
+                    chiavi.append(k)
         for v in self.varianti:
             k = normalizza.chiave(v)
             if k and k not in chiavi:
@@ -181,6 +190,7 @@ class Glossario:
 
     def __init__(self, voci=None):
         self.voci = _prima_le_correzioni(list(voci or []))
+        _senza_maiuscole_del_lemma(self.voci)
         self._per_ferrarese = {}
         self._per_italiano = {}
         self.indizza()
@@ -322,6 +332,26 @@ def _uniche_per_id(voci: list) -> list:
     return uniche
 
 
+def _senza_maiuscole_del_lemma(voci: list) -> None:
+    """Toglie la maiuscola tipografica dei lemmi del Ferri e di Musacchi.
+
+    I nomi propri si riconoscono da Bigoni, che scrive minuscolo e mette la
+    maiuscola solo a loro: una voce del Ferri il cui italiano e' quello di una
+    voce maiuscola di Bigoni resta maiuscola (`grafia.py`).
+    """
+    propri = {normalizza.chiave(v.italiano) for v in voci
+              if v.grafia_fonte and v.grafia_fonte[:1].isupper()}
+    for v in voci:
+        if not grafia.lemma_maiuscolo(v.fonte):
+            continue
+        if normalizza.chiave(v.italiano) in propri:
+            continue
+        v.ferrarese = grafia.senza_maiuscola(v.ferrarese)
+        v.principale_ferrarese = grafia.senza_maiuscola(v.principale_ferrarese)
+        v.italiano = grafia.senza_maiuscola(v.italiano)
+        v.principale_italiano = grafia.senza_maiuscola(v.principale_italiano)
+
+
 def _voce_da_dict(grezzo: dict) -> Voce:
     """Costruisce una voce da un dizionario, senza perdere i campi ignoti.
 
@@ -331,7 +361,7 @@ def _voce_da_dict(grezzo: dict) -> Voce:
     noto = {"id", "ferrarese", "italiano", "varianti", "campo", "note",
             "fonte", "attendibilita", "registro", "da_verificare",
             "principale_italiano", "principale_ferrarese", "varieta",
-            "moderno", "fonte_moderno", "sinonimi", "corregge",
+            "moderno", "fonte_moderno", "sinonimi", "corregge", "grafia_fonte",
             # Il segno lasciato da `correzioni promuovi`: quale elemento e da
             # quali correzioni. Si legge dal file, non serve alla voce.
             "elemento", "da_correzioni"}
@@ -351,17 +381,32 @@ def _voce_da_dict(grezzo: dict) -> Voce:
         nota = (nota + " " if nota else "") + "[campi non noti: %s]" % json.dumps(
             sconosciuti, ensure_ascii=False
         )
+    ferrarese = str(grezzo.get("ferrarese", "")).strip()
+    principale_fe = str(grezzo.get("principale_ferrarese", "") or "").strip()
+    grafia_fonte = str(grezzo.get("grafia_fonte", "") or "").strip()
+    fonte = str(grezzo.get("fonte", "") or "").strip()
+    if grafia.e_di_bigoni(fonte) and not grafia_fonte:
+        # L'alfabeto di Bigoni letto all'italiana (0.42): il file resta come
+        # la fonte lo scrive, la voce si legge in una grafia sola.
+        grafia_fonte = ferrarese
+        facoltative = [grafia.da_bigoni(f) for f in grafia.facoltative(ferrarese)]
+        ferrarese = grafia.da_bigoni(ferrarese)
+        principale_fe = grafia.da_bigoni(principale_fe) if principale_fe else ""
+        varianti = [grafia.da_bigoni(v) for v in varianti] + [
+            f for f in facoltative if f not in varianti]
+        if grafia_fonte == ferrarese:
+            grafia_fonte = ""
     return Voce(
         id=str(grezzo.get("id", "")).strip(),
-        ferrarese=str(grezzo.get("ferrarese", "")).strip(),
+        ferrarese=ferrarese,
         italiano=str(grezzo.get("italiano", "")).strip(),
         varianti=varianti,
         campo=str(grezzo.get("campo", "") or "").strip(),
         varieta=str(grezzo.get("varieta", "") or "").strip(),
         note=nota.strip(),
         principale_italiano=str(grezzo.get("principale_italiano", "") or "").strip(),
-        principale_ferrarese=str(grezzo.get("principale_ferrarese", "") or "").strip(),
-        fonte=str(grezzo.get("fonte", "") or "").strip(),
+        principale_ferrarese=principale_fe,
+        fonte=fonte,
         attendibilita=str(grezzo.get("attendibilita", "M") or "M").strip().upper()[:1],
         registro=str(grezzo.get("registro", "") or "").strip(),
         da_verificare=bool(da_verificare),
@@ -369,4 +414,5 @@ def _voce_da_dict(grezzo: dict) -> Voce:
         fonte_moderno=str(grezzo.get("fonte_moderno", "") or "").strip(),
         sinonimi=[str(s).strip() for s in sinonimi if str(s).strip()],
         corregge=str(grezzo.get("corregge", "") or "").strip(),
+        grafia_fonte=grafia_fonte,
     )

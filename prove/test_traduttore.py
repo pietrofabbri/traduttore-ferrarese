@@ -4588,6 +4588,84 @@ class TestLeCorrezioni(unittest.TestCase):
             self.c.leggi(PERCORSI["inferenze"])), [])
 
 
+class TestLaGrafiaUnica(unittest.TestCase):
+    """Le voci di Bigoni lette all'italiana, con la pronuncia in IPA (0.42)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore import grafia
+        from traduttore.cli import carica
+        cls.g = grafia
+        cls.motore = carica()
+
+    def test_gli_esempi_dichiarati_nella_tabella(self):
+        with io.open(os.path.join(RADICE, "dati", "conversione_bigoni.json"),
+                     encoding="utf-8") as f:
+            tabella = json.load(f)
+        self.assertGreaterEqual(len(tabella["esempi"]), 10)
+        for e in tabella["esempi"]:
+            self.assertEqual(self.g.da_bigoni(e["fonte"]), e["progetto"], e)
+            self.assertEqual(self.g.ipa_da_bigoni(e["fonte"]), e["ipa"], e)
+
+    def test_le_regole_di_contesto(self):
+        attesi = {"kaŋtàr": "cantàr", "kjàv": "chiàv", "bjaŋk": "bianch",
+                  "laɣ": "lagh", "amìɣ": "amìgh", "cav": "ciav",
+                  "scaf": "s'ciaf", "abitazjóŋ": "abitazión",
+                  "artiʎjér": "artigliér", "aděstràr": "adestràr",
+                  "alñàda": "algnàda", "aŋ ɣ'è paŋ": "an gh'è pan",
+                  "Krist": "Crist", "ajutàr": "ajutàr"}
+        for fonte, resa in attesi.items():
+            self.assertEqual(self.g.da_bigoni(fonte), resa, fonte)
+
+    def test_nessun_segno_di_bigoni_resta_nelle_voci(self):
+        for v in self.motore.glossario.voci:
+            if not v.grafia_fonte:
+                continue
+            for segno in "ŋšžɣñěêǒôkʎλ":
+                self.assertNotIn(segno, v.ferrarese.lower(), (v.id, v.ferrarese))
+
+    def test_la_pronuncia_e_una_trascrizione_valida(self):
+        from traduttore.fonetica import ipa_valida
+        for v in self.motore.glossario.voci:
+            if v.grafia_fonte:
+                valida = ipa_valida(self.g.ipa_da_bigoni(v.grafia_fonte))
+                self.assertTrue(valida[0], (v.id, v.grafia_fonte, valida))
+
+    def test_l_accento_va_all_inizio_della_sillaba(self):
+        self.assertEqual(self.g.ipa_da_bigoni("abaŋdóŋ"), "/abaŋˈdoŋ/")
+        self.assertEqual(self.g.ipa_da_bigoni("aděstràr"), "/adɛsˈtrar/")
+        self.assertEqual(self.g.ipa_da_bigoni("kuóɣ"), "/ˈkwog/")
+        # senza accento scritto dalla fonte, nessun accento
+        self.assertEqual(self.g.ipa_da_bigoni("sak"), "/sak/")
+
+    def test_la_forma_della_fonte_si_cerca(self):
+        self.assertEqual(self.motore.traduci("kaŋtàr", "fe-it").testo,
+                         self.motore.traduci("cantàr", "fe-it").testo)
+
+    def test_le_parti_facoltative_sono_varianti(self):
+        voce = [v for v in self.motore.glossario.voci
+                if v.grafia_fonte == "[a]m[b]réŋda"]
+        self.assertTrue(voce, "V10534 «[a]m[b]réŋda» non c'e' piu'")
+        self.assertEqual(voce[0].ferrarese, "ambrénda")
+        self.assertIn("mrénda", voce[0].varianti)
+
+    def test_la_giunzione_della_c_e_della_g(self):
+        casi = {("zarc", "àr", "én"): "zarchén", ("zarc", "àr", ""): "zarch",
+                ("amìg", "a", "i"): "amìghi", ("vèc", "", "a"): "vècia",
+                ("lèg", "", "i"): "lègi", ("mangi", "àr", "ò"): "mangiò",
+                ("lagh", "", "o"): "lago", ("magn", "àr", "én"): "magnén"}
+        for argomenti, atteso in casi.items():
+            self.assertEqual(self.g.giunta(*argomenti), atteso, argomenti)
+
+    def test_la_maiuscola_del_lemma_si_toglie(self):
+        self.assertEqual(self.motore.traduci("i cani", IT_FE).testo, "i càn")
+        ferri = [v for v in self.motore.glossario.voci
+                 if v.fonte.startswith("Luigi Ferri")]
+        maiuscole = [v for v in ferri if v.ferrarese[:1].isupper()]
+        self.assertLess(len(maiuscole), 50,
+                        "restano maiuscole solo i nomi propri di Bigoni")
+
+
 class TestLaGrammaticaDiS015(unittest.TestCase):
     """Articoli, pronomi, numeri e il secondo passaggio (0.41)."""
 
@@ -4694,8 +4772,9 @@ class TestLAnalogia(unittest.TestCase):
 
     def test_l_alternanza_di_s015(self):
         # «zarkàr = cercare, nu a zarkéŋ ma mi a zérk»
-        self.assertTrue(self._f("cerco").lower().endswith("zérc"))
-        self.assertTrue(self._f("cerchiamo").lower().endswith("zarcén"))
+        # Con la c dura scritta all'italiana (0.42): «zérch», «zarchén».
+        self.assertTrue(self._f("cerco").lower().endswith("zérch"))
+        self.assertTrue(self._f("cerchiamo").lower().endswith("zarchén"))
 
     def test_quando_non_si_sa_la_vocale_resta_un_buco(self):
         # portare → purtàr: la tonica di «porto» e' aperta o chiusa? La fonte
@@ -5024,7 +5103,7 @@ class TestIParadigmiDiS015(unittest.TestCase):
         # da solo resta il nome, con «io» davanti e' il verbo.
         from traduttore.cli import carica
         motore = carica()
-        self.assertEqual(motore.traduci("canto", IT_FE).testo, "Cantòn")
+        self.assertEqual(motore.traduci("canto", IT_FE).testo, "cantòn")
         # «io» e' `mi` dalla grammatica di S015 (0.41).
         self.assertEqual(motore.traduci("io canto", IT_FE).testo, "mi a cant")
 
@@ -5314,7 +5393,14 @@ class TestLeParticelleNonSonoParole(unittest.TestCase):
         for riga in righe:
             voce = voci.get(riga["voce_id"])
             self.assertIsNotNone(voce, "la voce %s non c'e'" % riga["voce_id"])
-            self.assertEqual(riga["ferrarese"], voce.ferrarese)
+            # La riga copia la forma del file; la voce la legge nella grafia
+            # unica (0.42): senza la maiuscola del lemma, o all'italiana.
+            from traduttore.grafia import senza_maiuscola
+            self.assertTrue(
+                riga["ferrarese"] in (voce.ferrarese, voce.grafia_fonte) or
+                senza_maiuscola(riga["ferrarese"]) == voce.ferrarese,
+                "%s: %s non e' la forma della voce %s" % (
+                    riga["id"], riga["ferrarese"], voce.ferrarese))
             self.assertEqual(riga["fonte"], voce.fonte,
                              "%s racconta una fonte che la voce non conferma"
                              % riga["id"])

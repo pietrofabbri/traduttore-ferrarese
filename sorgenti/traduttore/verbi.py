@@ -38,7 +38,7 @@ import os
 import re
 import unicodedata
 
-from . import normalizza
+from . import grafia, normalizza
 
 RADICE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -495,20 +495,25 @@ def per_analogia(parola: str, glossario, persona: str = "",
         candidati = della or candidati
     for modello, cella, radice_it, infinito_fe, voce in candidati:
         radice_fe = infinito_fe[:-len(modello["fine_fe"])]
+        seguito = infinito_fe[len(radice_fe):]
         if cella["radice"] and modello["fine_fe"] != "ar":
             accentata = _accentua(radice_fe, radice_it)
             if accentata is None:
                 continue
             radice_tonica, alternanza = accentata
-            forma = radice_tonica + cella["fe"]
+            forma = grafia.giunta(radice_tonica, seguito,
+                                  cella["fe"])
             # Una sillaba sola non porta l'accento («a magn», come «a kaŋt»),
             # tranne l'alternanza, che e' una vocale diversa («a zérk»).
             if _sillabe(forma) < 2 and not alternanza:
-                forma = radice_fe + cella["fe"]
+                forma = grafia.giunta(radice_fe, seguito,
+                                      cella["fe"])
         else:
             # Nella terza coniugazione l'accento e' gia' sulla radice
             # dell'infinito («lèžar»), e la radice resta com'e'.
-            forma = radice_fe + cella["fe"]
+            # La c e la g si riscrivono per la vocale che segue (0.42):
+            # «zarcàr» → «nu a zarchén».
+            forma = grafia.giunta(radice_fe, seguito, cella["fe"])
         riga = {"forma": forma, "proclitica": cella["proclitica"],
                 "persona": cella["persona"], "tempo": cella["tempo"]}
         return {"forma": forma, "testo": con_soggetto(riga),

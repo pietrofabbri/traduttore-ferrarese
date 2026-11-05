@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.41
+versione: 0.42
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -92,7 +92,7 @@ Ora il sito è ramificato, e ogni pagina porta dentro quello che le serve:
 | pagina | cosa c'è | peso |
 |---|---|---|
 | `index.html` | i numeri, i buchi dichiarati, la strada per le altre pagine | **123 KB** |
-| `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa | 2,7 MB (tetto: 3 MB) |
+| `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa, in JSON compatto | 2,0 MB (tetto: 3 MB) |
 | `glossario.html` | l'indice delle fette | 111 KB |
 | `glossario-01.html` … `-35.html` | una fetta di 500 voci, con ricerca dentro | ~280 KB |
 | `frasi.html` | coppie parallele e proverbi | 146 KB |
@@ -704,6 +704,38 @@ di prima. Il numero di ciò che resta fuori è stampato, perché una risposta in
 meno che nessuno conta è una risposta che il progetto non sa di non dare.
 
 
+## Una grafia sola: Bigoni letto all'italiana, il suono in IPA
+
+Dalla 0.42 il traduttore scrive in **una grafia sola**, quella all'italiana del
+Ferri. Le 6352 voci del vocabolario di Bigoni (S006) sono scritte nel suo alfabeto
+fonetico (`kaŋtàr`, `bjaŋk`, `abitazjóŋ`) e nella stessa frase convivevano con le
+forme del Ferri (`Biànch`, `Làgh`). Ora il glossario, quando si legge, le scrive
+all'italiana (`cantàr`, `bianch`, `abitazión`), e la precisione dell'alfabeto di
+Bigoni — la s sonora, la n velare, il timbro delle vocali atone — passa nella
+**pronuncia IPA**, che si ricava segno per segno (`/ˈbjaŋk/`, `/abitaˈtsjoŋ/`).
+
+- **Il file non cambia**: `dati/glossario.jsonl` scrive quello che la fonte scrive;
+  la conversione si fa alla lettura (`sorgenti/traduttore/grafia.py`) e la forma
+  della fonte resta nella voce (`grafia_fonte`), si vede nel glossario e **si
+  cerca**: «kaŋtàr» e «cantàr» trovano la stessa voce.
+- **Le regole di contesto** sono in `dati/conversione_bigoni.json`: `ch` e `gh`
+  davanti a e, i e in fondo alla parola (come il Ferri: `Biànch`, `Làgh`), `ci` e
+  `gi` davanti ad a, o, u, `s'c` per la s seguita dalla c dolce, la `j` dopo una
+  consonante scritta `i`, le vocali atone senza accento (l'accento nella grafia
+  all'italiana dice dove cade la voce).
+- **La giunzione**: quando il motore attacca una desinenza (un plurale, un verbo per
+  analogia) la c e la g si riscrivono per il suono: `amìga` → `amìghi`, `zarcàr` →
+  `nu a zarchén`.
+- **La maiuscola del lemma** del Ferri e di Musacchi, che e' tipografica, si toglie
+  (`i càn`, non `i Càn`); restano maiuscoli i nomi propri che Bigoni scrive
+  maiuscoli. Un nome proprio che Bigoni non ha la perde: e' un limite dichiarato.
+- **La pronuncia** e' una lettura, quindi `I` e da verificare, e non suona: il
+  riproduttore suona solo trascrizioni senza dubbi.
+
+Quello che resta diverso: il Ferri scrive a volte `zz` iniziale (`Zzarcàr`) e la `j`
+fra due vocali o in fondo (`piciadàj`) dove Bigoni scrive lo stesso; sono scelte
+della fonte, non della conversione, e una correzione le sistema voce per voce.
+
 ## Il paradigma, e la conversione che l'ha reso leggibile
 
 Il buco che il progetto dichiarava da più versioni — «nel repository non esiste una
@@ -751,7 +783,7 @@ Quattro regole che il motore segue, e che valgono uguali nella pagina:
   «sia», che sono anche parole funzionali, non si cercano;
 - **la tabella vince sul glossario solo in due casi**: con un pronome soggetto della
   stessa persona davanti («io canto» è il verbo, «canto» da solo resta il nome
-  `Cantòn` del glossario) e con una parola accentata che il glossario trova solo
+  `cantòn` del glossario) e con una parola accentata che il glossario trova solo
   togliendo l'accento.
 
 **Gli altri verbi, per analogia (0.41).** *Mangiare*, *cercare*, *ballare* e i verbi
@@ -766,7 +798,7 @@ L'accento della radice è la parte difficile, e il motore la fa solo quando la s
 - quando l'accento cade sulla radice e la vocale è *a*, *i* o *u* («mangia» →
   `al màgna`) l'accento è grave o acuto senza ambiguità;
 - quando la vocale ferrarese è *a* e quella italiana è *e*, S015 dice che è
-  l'alternanza di `zarkàr`: «nu a zarkéŋ ma mi a zérk» → «cerco» `a zérc`;
+  l'alternanza di `zarkàr`: «nu a zarkéŋ ma mi a zérk» → «cerco» `a zérch`;
 - quando la vocale è *e* o *o* e non si sa se è aperta o chiusa («porto» da
   `purtàr`) la forma **non si fa**: resta un buco, perché scegliere sarebbe
   inventare.
@@ -811,7 +843,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 397 test
+python3 prove/test_traduttore.py     # 406 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

@@ -29,8 +29,20 @@ pagina «Invia» ──► segnalazione GitHub ──► workflow «Correzioni»
    volta sola in «Impostazioni di invio» e restano nel browser; senza nome la
    correzione è firmata «titolare del sito», senza varietà è `cittadino`.
 
-   L'invio usa un **token GitHub** *fine-grained*, limitato a questo repository,
-   con il solo permesso **Issues: read and write**. Senza token la pagina non chiama
+   L'invio usa un **token GitHub**, che dipende da chi lo crea:
+
+   - il **proprietario** del repository (`pietrofabbri`) crea un token
+     *fine-grained* (Settings → Developer settings → Personal access tokens →
+     Fine-grained tokens), con *Repository access* limitato a questo repository e
+     il solo permesso **Issues: read and write**. E' la strada piu' stretta;
+   - un **collaboratore** crea un token *classic* (stessa pagina, Tokens
+     (classic)) con il solo permesso `public_repo`: GitHub non da' i token
+     fine-grained per i repository di un altro account personale. Il token puo'
+     scrivere su tutti i repository pubblici del collaboratore: va dato con una
+     scadenza e revocato se si perde il computer.
+
+   Il workflow accetta le segnalazioni del proprietario e dei collaboratori; la
+   correzione e' firmata con il nome scritto nelle impostazioni. Senza token la pagina non chiama
    nessuno: «Copia» e «Scarica» danno la riga, che si importa a mano.
 2. **Archiviare.** Il workflow `.github/workflows/correzioni.yml` importa la riga in
    `correzioni.jsonl` con `stato: "da_verificare"` e `da_verificare: true`, scrive da

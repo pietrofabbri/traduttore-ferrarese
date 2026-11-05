@@ -14,9 +14,12 @@ name: Correzioni
 # Si puo' lanciare anche a mano (workflow_dispatch) per rifare la promozione,
 # per esempio dopo aver cambiato le soglie o confermato una correzione.
 
+# Solo `opened` e `reopened`: una segnalazione creata gia' con l'etichetta
+# genera anche `labeled`, e il workflow partiva due volte (e commentava due
+# volte). Per rifare l'archiviazione di una segnalazione basta riaprirla.
 on:
   issues:
-    types: [opened, edited, labeled]
+    types: [opened, reopened]
   workflow_dispatch:
 
 permissions:

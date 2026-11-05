@@ -46,6 +46,7 @@ permesso di copiarlo e' chiesto tre volte prima (vedi `audio/README.md`).
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
@@ -437,7 +438,10 @@ def _verbi(solo_numeri: bool = False) -> dict:
             "rango": rango,
         })
     numeri.update({"per_italiano": per_italiano,
-                   "pronomi": verbi_modulo.PRONOMI_SOGGETTO})
+                   "pronomi": verbi_modulo.PRONOMI_SOGGETTO,
+                   # La tabella dei verbi modello per la coniugazione per
+                   # analogia: calcolata qui, letta dalla pagina (0.41).
+                   "modelli": verbi_modulo.modelli()})
     return numeri
 
 
@@ -819,6 +823,21 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
                 "api": REPOSITORY.replace("https://github.com/",
                                           "https://api.github.com/repos/"),
                 "versione": __version__}
+            # La grammatica di S015 (0.41): articoli, pronomi, numeri...
+            percorso_grammatica = os.path.join(radice, "dati", "grammatica.json")
+            if os.path.exists(percorso_grammatica):
+                with io.open(percorso_grammatica, encoding="utf-8") as f:
+                    grezzo = json.load(f)
+                from traduttore import grammatica as grammatica_modulo
+                dati["grammatica"] = {k: grezzo[k] for k in
+                                      ("articoli", "parole", "secondo_genere",
+                                       "plurali", "plurali_irregolari")}
+                # Le liste di grammatica italiana vengono dal modulo, non sono
+                # scritte una seconda volta nella pagina.
+                dati["grammatica"]["non_plurali"] = sorted(
+                    grammatica_modulo.NON_PLURALI)
+                dati["grammatica"]["singolari_irregolari"] = \
+                    grammatica_modulo.SINGOLARI_IRREGOLARI
             # Le regole di frase promosse dalle correzioni (0.40).
             from traduttore import correzioni as correzioni_modulo
             dati["regole_frase"] = [

@@ -27,6 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from . import frase as frase_modulo
+from . import grammatica
 from . import italiano, morfologia, normalizza, pronominali, verbi
 from .glossario import IT_FE
 
@@ -53,6 +54,15 @@ ORIGINE = {
     # quanto il glossario: e' un dato documentato, e piu' preciso di una voce
     # perche' tiene conto di quello che viene dopo.
     "frase": 0.95,
+    # `grammatica` e' una parola funzionale delle tabelle di S015: articoli,
+    # pronomi, possessivi, dimostrativi, numeri, giorni e mesi (0.41).
+    "grammatica": 0.90,
+    # `plurale` e' il plurale di una voce del glossario, fatto con le regole di
+    # S015: e' ricavato, non attestato, e vale come una regola imparata.
+    "plurale": 0.60,
+    # `analogia` e' una forma di un verbo regolare coniugato sul modello della
+    # sua coniugazione (S015): ricavata, non attestata.
+    "analogia": 0.55,
     "regola": 0.55,
     "modello": 0.50,
     "nessuna": 0.0,
@@ -175,7 +185,7 @@ class Motore:
             return Risposta(testo, tradotto, direzione, corrispondenze, [])
 
         corrispondenze = self._risolvi_token(token, direzione)
-        tradotto = " ".join(t for _, t, _, _, _ in corrispondenze)
+        tradotto = grammatica.unisci([t for _, t, _, _, _ in corrispondenze])
         # Il buco e' la parola che resta senza risposta: o il motore non ha
         # trovato nulla, o il modello ha risposto sotto soglia. Una risposta
         # da rivedere resta nel testo, ma non e' pubblicabile.
@@ -210,6 +220,9 @@ class Motore:
         questa e' la stessa cosa che fa chi legge il vocabolario: cerca
         l'espressione intera prima delle parole che la compongono.
         """
+        # «l'uomo» sono due parole: l'articolo e il nome (0.41).
+        if direzione == IT_FE:
+            token = grammatica.separa_elisioni(token)
         risultati = []
         # Il contesto di frase serve al livello 2 e al 4: e' la frase intera,
         # non il token, e per questo si calcola una volta sola.
@@ -250,7 +263,61 @@ class Motore:
                 parola, frase, direzione, contesto, persona, seguente)
             risultati.append((parola, tradotto, origine, confidenza, dettaglio))
             i += 1
+        if direzione == IT_FE:
+            risultati = self._secondo_passaggio(risultati)
         return risultati
+
+    def _contestuale(self, parola: str, ctx: str, seguente_italiano: str):
+        """La parola funzionale nel contesto: regola di frase, poi articolo.
+
+        Torna `(tradotto, origine, confidenza, dettaglio)` o None. La regola di
+        frase viene dalle correzioni dei parlanti e passa prima dell'articolo
+        di S015: un parlante che corregge l'articolo ha l'ultima parola.
+        """
+        regola = frase_modulo.cerca_contesto(parola, ctx)
+        if regola is not None:
+            return (regola["ferrarese"], "frase", ORIGINE["frase"],
+                    "regola di frase, davanti a %s: %s"
+                    % (ctx, regola["fonte"]))
+        if grammatica.e_articolo(parola, seguente_italiano, self._e_verbo):
+            trovato = grammatica.articolo(parola, ctx, seguente_italiano)
+            if trovato is not None:
+                return (trovato[0], "grammatica", ORIGINE["grammatica"],
+                        trovato[1])
+        return None
+
+    def _modelli(self) -> list:
+        if not hasattr(self, "_tabella_modelli"):
+            self._tabella_modelli = verbi.modelli()
+        return self._tabella_modelli
+
+    @staticmethod
+    def _e_verbo(parola: str) -> bool:
+        return bool(verbi.dall_italiano(parola)["forma"])
+
+    def _secondo_passaggio(self, risultati: list) -> list:
+        """Le parole funzionali, scelte guardando la parola ferrarese che segue.
+
+        Nel primo passaggio un articolo e una regola di frase hanno guardato la
+        parola **italiana** che segue, perche' quella ferrarese non c'era. Qui
+        c'e': si guarda lei, e la scelta si rifa'. Se la parola che segue non ha
+        traduzione si guarda quella italiana, che e' l'unica che c'e'.
+        """
+        nuovi = list(risultati)
+        for i, (testo, _, origine, _, _) in enumerate(risultati):
+            if origine not in ("frase", "grammatica"):
+                continue
+            dopo = risultati[i + 1] if i + 1 < len(risultati) else None
+            if dopo is None:
+                ctx, italiano = "fine", ""
+            else:
+                ctx = grammatica.contesto(dopo[0] if dopo[2] == "nessuna"
+                                          else dopo[1])
+                italiano = dopo[0]
+            scelta = self._contestuale(testo, ctx, italiano)
+            if scelta is not None:
+                nuovi[i] = (testo,) + scelta
+        return nuovi
 
     def _accorpa(self, token: list, i: int, direzione: str):
         """La locuzione piu' lunga che comincia in `token[i]`, se c'e'.
@@ -273,11 +340,17 @@ class Motore:
         # parlanti promosse, e dicono una cosa che il glossario non puo' dire:
         # la parola funzionale secondo la parola che segue («il cane» → `al`).
         if direzione == IT_FE:
-            regola = frase_modulo.cerca(parola, seguente)
-            if regola is not None:
-                return (regola["ferrarese"], "frase", ORIGINE["frase"],
-                        "regola di frase, davanti a %s: %s"
-                        % (regola["contesto"], regola["fonte"]))
+            # Il primo passaggio guarda la parola italiana che segue; il
+            # secondo (`_secondo_passaggio`) rifa' la scelta con quella
+            # ferrarese.
+            scelta = self._contestuale(parola, grammatica.contesto(seguente),
+                                       seguente)
+            if scelta is not None:
+                return scelta
+            fissa = grammatica.parola_fissa(parola, seguente)
+            if fissa is not None:
+                return (fissa[0], "grammatica", ORIGINE["grammatica"],
+                        fissa[1])
 
         # Le forme verbali si cercano una volta sola: servono qui, nei due casi
         # in cui una casella di una tabella di coniugazione vince sul glossario
@@ -286,6 +359,14 @@ class Motore:
                      if direzione == IT_FE else {"forma": ""})
         if verbi.prima_del_glossario(attestata, parola, persona):
             return self._forma_verbale(attestata)
+        # Anche un verbo per analogia vince sul nome del glossario quando un
+        # pronome soggetto della stessa persona lo precede («lui balla»).
+        if direzione == IT_FE and persona and not attestata["forma"]:
+            analoga = verbi.per_analogia(parola, self.glossario, persona,
+                                         self._modelli())
+            if analoga["forma"] and analoga["riga"]["persona"] == persona:
+                return (analoga["testo"], "analogia", ORIGINE["analogia"],
+                        analoga["nota"])
 
         # Livello 1: il glossario. Vince sempre, tranne nei due casi sopra.
         voci = self.glossario.cerca(parola, direzione)
@@ -324,6 +405,19 @@ class Motore:
         # che le fonti non documentano.
         if attestata["forma"]:
             return self._forma_verbale(attestata)
+
+        # Livello 2 ter: il plurale di una voce del glossario (0.41), dopo le
+        # forme verbali — «canti» e' prima il verbo — e prima del frammento.
+        if direzione == IT_FE:
+            trovato = grammatica.plurale(parola, self.glossario)
+            if trovato is not None:
+                return trovato[0], "plurale", ORIGINE["plurale"], trovato[1]
+            # Livello 2 quater: un verbo regolare coniugato sul modello (0.41).
+            analoga = verbi.per_analogia(parola, self.glossario, persona,
+                                         self._modelli())
+            if analoga["forma"]:
+                return (analoga["testo"], "analogia", ORIGINE["analogia"],
+                        analoga["nota"])
 
         cercate = self.corpus.corrispondenze(parola, direzione, soglia=0.62)
         if cercate:

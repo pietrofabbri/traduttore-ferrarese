@@ -792,29 +792,45 @@ def contesto(seguente: str) -> str:
     return "vocale" if testo[0] in VOCALI else "consonante"
 
 
+# Le origini delle parole funzionali: quelle che il motore sceglie guardando la
+# parola che segue (o che non sapeva affatto). Una correzione di una di queste e'
+# un elemento `funzionale`, con il suo contesto.
+ORIGINI_FUNZIONALI = ("nessuna", "grammatica", "frase")
+
+
 def elementi(motore, correzione: dict) -> list:
-    """Gli elementi di una correzione, con la chiave che li confronta."""
+    """Gli elementi di una correzione, con la chiave che li confronta.
+
+    Il contesto di un elemento funzionale e' la prima lettera della parola
+    **ferrarese** che segue nella correzione (0.41): e' quella che il motore
+    guarda nel suo secondo passaggio, quindi e' quella su cui la regola si
+    impara. Se il parlante non ha scritto niente dopo, il contesto e' `fine`.
+    """
+    from . import grammatica
     coppie = allinea(motore, correzione)
     risultato = []
     for i, c in enumerate(coppie):
         italiano = (c["italiano"] or "").strip()
         if not italiano or " " in italiano:
             continue
-        if c["tipo"] in ("forma", "sostituzione"):
+        funzionale = c["origine"] in ORIGINI_FUNZIONALI
+        if funzionale and c["tipo"] in ("buco", "forma", "sostituzione",
+                                        "confermata"):
+            seguente = next((d["corretto"] for d in coppie[i + 1:]
+                             if d["corretto"]), "")
+            ctx = grammatica.contesto(seguente.split(" ")[0])
+            gruppo = "funzionale|%s|%s" % (chiave_italiano(italiano), ctx)
+            risultato.append({
+                "tipo": "conferma" if c["tipo"] == "confermata"
+                else "funzionale", "gruppo": gruppo,
+                "italiano": _minuscola(italiano), "contesto": ctx,
+                "ferrarese": c["corretto"]})
+        elif c["tipo"] in ("forma", "sostituzione"):
             gruppo = "parola|" + chiave_italiano(italiano)
             risultato.append({"tipo": "parola", "gruppo": gruppo,
                               "italiano": italiano,
                               "ferrarese": c["corretto"],
                               "proposto": c["proposto"], "voce": c["voce"]})
-        elif c["tipo"] == "buco":
-            seguente = next((d["italiano"] for d in coppie[i + 1:]
-                             if d["italiano"] and d["italiano"] != italiano),
-                            "")
-            ctx = contesto(seguente.split(" ")[0] if seguente else "")
-            gruppo = "funzionale|%s|%s" % (chiave_italiano(italiano), ctx)
-            risultato.append({"tipo": "funzionale", "gruppo": gruppo,
-                              "italiano": _minuscola(italiano),
-                              "contesto": ctx, "ferrarese": c["corretto"]})
         elif c["tipo"] == "confermata":
             risultato.append({"tipo": "conferma",
                               "gruppo": "parola|" + chiave_italiano(italiano),

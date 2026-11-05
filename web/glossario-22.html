@@ -50,6 +50,9 @@
   .parola.corpo { border-color: var(--corpus); }
   .parola.verbo { border-color: var(--corpus); border-bottom-style: double; }
   .parola.frase { border-color: var(--glossario); border-bottom-style: double; }
+  .parola.grammatica { border-color: var(--glossario); border-bottom-style: dashed; }
+  .parola.plurale { border-color: var(--regola); border-bottom-style: double; }
+  .parola.analogia { border-color: var(--regola); border-bottom-style: dashed; }
   .parola.regola { border-color: var(--regola); border-bottom-style: dotted; }
   .parola.modello { border-color: var(--modello); border-bottom-style: dashed; }
   .parola.nessuna { border-color: var(--nessuna); background: #fdf0f0; }
@@ -229,6 +232,9 @@
   "corpo_frase": 0.92,
   "verbo": 0.75,
   "frase": 0.95,
+  "grammatica": 0.9,
+  "plurale": 0.6,
+  "analogia": 0.55,
   "regola": 0.55,
   "modello": 0.5,
   "nessuna": 0.0
@@ -10302,6 +10308,9 @@
     verbo: "da una forma verbale attestata",
     // `frase` e' una regola di frase promossa da correzioni di parlanti.
     frase: "da una regola di frase",
+    grammatica: "dalla grammatica di S015",
+    plurale: "plurale ricavato con le regole di S015",
+    analogia: "verbo coniugato sul modello della sua coniugazione",
     regola: "da una regola morfologica",
     modello: "dal modello",
     nessuna: "NON LO SO"
@@ -10688,7 +10697,8 @@ function tokenizza(t) {
   }
 
   // Copia di `frase.contesto` e di `frase.cerca`: la parola funzionale
-  // secondo la prima lettera della parola italiana che segue.
+  // secondo la prima lettera della parola che segue (ferrarese nel secondo
+  // passaggio, italiana se quella ferrarese non c'e').
   var VOCALI = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fah";
   function contestoDi(seguente) {
     var t = normale(seguente || "").trim();
@@ -10702,6 +10712,210 @@ function tokenizza(t) {
       if (normale(regole[i].italiano) === k && regole[i].contesto === c) return regole[i];
     }
     return null;
+  }
+
+  // --- la grammatica di S015 e il secondo passaggio (copia di grammatica.py) ---
+  var VOCALI_FE = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa";
+  var PRONOMI_ATONI = ["le", "gli", "lo", "la", "l'"];
+  var GRAMMATICA = { articoli: {}, parole: {}, genere: {} };
+  (function () {
+    var g = DATI.grammatica || {};
+    (g.articoli || []).forEach(function (r) { GRAMMATICA.articoli[r.italiano] = r; });
+    (g.parole || []).forEach(function (r) { GRAMMATICA.parole[r.italiano] = r; });
+    (g.secondo_genere || []).forEach(function (r) { GRAMMATICA.genere[r.italiano] = r; });
+  })();
+  function chiaveGr(t) { return normale(t || "").replace(/\u2019/g, "'"); }
+  function separaElisioni(token) {
+    var fuori = [];
+    token.forEach(function (t) {
+      var m = /^(l|un|quell|quest)['\u2019](.+)$/.exec(t);
+      if (m) { fuori.push(m[1] + "'"); fuori.push(m[2]); } else fuori.push(t);
+    });
+    return fuori;
+  }
+  function contestoGr(parola) {
+    var t = normale(parola || "").trim();
+    if (!t) return "fine";
+    return VOCALI_FE.indexOf(t.charAt(0)) !== -1 ? "vocale" : "consonante";
+  }
+  function eArticolo(parola, seguenteIt) {
+    var k = chiaveGr(parola);
+    if (!GRAMMATICA.articoli[k]) return false;
+    if (PRONOMI_ATONI.indexOf(k) !== -1 && seguenteIt && formaVerbale(seguenteIt, "")) return false;
+    return true;
+  }
+  function contestuale(parola, ctx, seguenteIt) {
+    var regole = DATI.regole_frase || [], k = normale(parola || "");
+    for (var i = 0; i < regole.length; i++) {
+      if (normale(regole[i].italiano) === k && regole[i].contesto === ctx) {
+        return { testo: regole[i].ferrarese, origine: "frase", confidenza: DATI.origine.frase,
+                 dettaglio: "regola di frase, davanti a " + ctx + ": " + regole[i].fonte };
+      }
+    }
+    if (eArticolo(parola, seguenteIt)) {
+      var r = GRAMMATICA.articoli[chiaveGr(parola)];
+      // Copia di `grammatica.articolo`: «l'» davanti a una parola ferrarese
+      // che comincia per consonante prende il genere dalla desinenza italiana.
+      if (chiaveGr(parola) === "l'" && ctx !== "vocale") {
+        var fine = normale(seguenteIt || "").trim().slice(-1);
+        r = GRAMMATICA.articoli[{ a: "la", o: "il" }[fine] || ""];
+        if (!r) return null;
+      }
+      var forma = ctx === "vocale" ? r.vocale : r.consonante;
+      if (forma) {
+        return { testo: forma, origine: "grammatica", confidenza: DATI.origine.grammatica,
+                 dettaglio: "articolo di S015 (" + r.dove + "), davanti a " + ctx + ": \u00ab" + r.scritto_dalla_fonte + "\u00bb" };
+      }
+    }
+    return null;
+  }
+  function parolaFissa(parola, seguenteIt) {
+    var k = chiaveGr(parola), r = GRAMMATICA.parole[k];
+    if (r) return { testo: r.ferrarese, origine: "grammatica", confidenza: DATI.origine.grammatica,
+                    dettaglio: r.categoria + " di S015 (" + r.dove + ")" };
+    r = GRAMMATICA.genere[k];
+    if (r) {
+      var f = /e$/.test(normale(seguenteIt || "").trim());
+      return { testo: f ? r.f : r.m, origine: "grammatica", confidenza: DATI.origine.grammatica,
+               dettaglio: "numero di S015 (" + r.dove + "): " + r.scritto_dalla_fonte + ", " +
+                 (f ? "femminile" : "maschile") };
+    }
+    return null;
+  }
+  function secondoPassaggio(unita) {
+    unita.forEach(function (u, i) {
+      var o = u.risposta.origine;
+      if (o !== "frase" && o !== "grammatica") return;
+      var dopo = unita[i + 1], ctx = "fine", it = "";
+      if (dopo) {
+        ctx = contestoGr(dopo.risposta.origine === "nessuna" ? dopo.testo : dopo.risposta.testo);
+        it = dopo.testo;
+      }
+      var scelta = contestuale(u.testo, ctx, it);
+      if (scelta) u.risposta = scelta;
+    });
+    return unita;
+  }
+  // I plurali: copia di `grammatica.singolari`, `plurale_ferrarese`, `plurale`.
+  function singolari(parola) {
+    var g = DATI.grammatica || {}, w = normale(parola || "").trim();
+    if (w.length < 3 || (g.non_plurali || []).indexOf(w) !== -1 || w.indexOf("'") !== -1) return [];
+    var fuori = [];
+    var irr = (g.singolari_irregolari || {})[w];
+    if (irr) fuori.push(irr);
+    if (/hi$/.test(w)) fuori.push(w.slice(0, -2) + "o");
+    if (/he$/.test(w)) fuori.push(w.slice(0, -2) + "a");
+    if (/i$/.test(w)) { fuori.push(w.slice(0, -1) + "o"); fuori.push(w.slice(0, -1) + "e"); fuori.push(w.slice(0, -1) + "a"); }
+    if (/e$/.test(w)) fuori.push(w.slice(0, -1) + "a");
+    var visti = {}, ordinati = [];
+    fuori.forEach(function (s) { if (!visti[s] && s !== w) { visti[s] = true; ordinati.push(s); } });
+    return ordinati;
+  }
+  function pluraleFerrarese(singolare) {
+    var g = DATI.grammatica || {}, basso = normale(singolare);
+    var irr = (g.plurali_irregolari || []).filter(function (r) { return r.singolare === basso; })[0];
+    if (irr) {
+      var f = irr.plurale;
+      if (singolare.charAt(0) !== singolare.charAt(0).toLowerCase()) f = f.charAt(0).toUpperCase() + f.slice(1);
+      return { forma: f, regola: irr };
+    }
+    var regole = g.plurali || [];
+    for (var i = 0; i < regole.length; i++) {
+      var fine = regole[i].fine;
+      if (basso.length > fine.length && basso.slice(-fine.length) === fine) {
+        return { forma: singolare.slice(0, -fine.length) + regole[i].plurale, regola: regole[i] };
+      }
+    }
+    return { forma: singolare, regola: null };
+  }
+  function plurale(parola) {
+    var cand = singolari(parola);
+    for (var i = 0; i < cand.length; i++) {
+      var voci = IDX.perIt[chiave(cand[i])] || [];
+      if (!voci.length) continue;
+      var v = voci[0], forma = (v.principale_fe || v.fe || "").trim();
+      if (!forma || forma.indexOf(" ") !== -1 || forma.indexOf(",") !== -1) continue;
+      var p = pluraleFerrarese(forma);
+      var perche = p.regola ? "S015, " + p.regola.dove + ": \u00ab" + p.regola.scritto_dalla_fonte + "\u00bb"
+                            : "maschile con il plurale uguale al singolare (S015, \u00a74 \u00abSostantivi e aggettivi\u00bb)";
+      return { testo: p.forma, origine: "plurale", confidenza: DATI.origine.plurale,
+               dettaglio: "plurale di \u00ab" + cand[i] + "\u00bb (" + v.id + " " + forma + "), " + perche };
+    }
+    return null;
+  }
+
+  // La coniugazione per analogia: copia di `verbi.per_analogia`. La tabella
+  // dei modelli arriva calcolata nei dati (`DATI.verbi.modelli`).
+  function senzaAccenti(t) { return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  function sillabe(p) { return (String(p).toLowerCase().match(/[aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa]+/g) || []).length; }
+  function accentua(radice, radiceIt) {
+    var basso = radice.toLowerCase(), pos = -1;
+    for (var i = 0; i < basso.length; i++) if ("aeiou".indexOf(basso.charAt(i)) !== -1) pos = i;
+    if (pos < 0) return null;
+    var v = basso.charAt(pos), it = radiceIt.toLowerCase();
+    if (/(ci|gi|sci)$/.test(it)) it = it.slice(0, -1);
+    var vit = "";
+    for (var j = 0; j < it.length; j++) if ("aeiou".indexOf(it.charAt(j)) !== -1) vit = it.charAt(j);
+    if (v === "a" && vit === "e") return { radice: radice.slice(0, pos) + "\u00e9" + radice.slice(pos + 1), alternanza: true };
+    if (v === vit && "aiu".indexOf(v) !== -1) {
+      var n = { a: "\u00e0", i: "\u00ec", u: "\u00f9" }[v];
+      return { radice: radice.slice(0, pos) + n + radice.slice(pos + 1), alternanza: false };
+    }
+    return null;
+  }
+  function perAnalogia(parola, persona) {
+    var w = chiaveItaliano(parola), cand = [];
+    ((DATI.verbi || {}).modelli || []).forEach(function (m) {
+      m.celle.forEach(function (c) {
+        if (w.slice(-c.it.length) !== c.it || w.length <= c.it.length + 1) return;
+        var radiceIt = w.slice(0, -c.it.length), prove = [radiceIt];
+        if ("ie".indexOf(c.it.charAt(0)) !== -1) prove.push(radiceIt + "i");
+        if (/(ch|gh)$/.test(radiceIt)) prove.push(radiceIt.slice(0, -1));
+        for (var k = 0; k < prove.length; k++) {
+          var voci = IDX.perIt[chiave(prove[k] + m.fine_it)] || [];
+          if (!voci.length) continue;
+          var forma = (voci[0].principale_fe || voci[0].fe || "").trim();
+          if (forma.indexOf(" ") !== -1 || forma.indexOf(",") !== -1) continue;
+          if (senzaAccenti(forma.toLowerCase()).slice(-m.fine_fe.length) !== senzaAccenti(m.fine_fe)) continue;
+          if (m.fine_fe === "ar" && /(\u00e0r|\u00e1r)$/.test(forma.toLowerCase())) continue;
+          cand.push({ m: m, c: c, radiceIt: prove[k], forma: forma, voce: voci[0] });
+          break;
+        }
+      });
+    });
+    if (!cand.length) return null;
+    if (persona) {
+      var della = cand.filter(function (x) { return x.c.persona === persona; });
+      if (della.length) cand = della;
+    }
+    for (var i = 0; i < cand.length; i++) {
+      var x = cand[i], radiceFe = x.forma.slice(0, -x.m.fine_fe.length), forma;
+      if (x.c.radice && x.m.fine_fe !== "ar") {
+        var a = accentua(radiceFe, x.radiceIt);
+        if (!a) continue;
+        forma = a.radice + x.c.fe;
+        if (sillabe(forma) < 2 && !a.alternanza) forma = radiceFe + x.c.fe;
+      } else {
+        forma = radiceFe + x.c.fe;
+      }
+      var p = x.c.proclitica || "";
+      var testo = !p ? forma : (p.charAt(p.length - 1) === "'" ? p + forma : p + " " + forma);
+      return { testo: testo, origine: "analogia", confidenza: DATI.origine.analogia,
+               dettaglio: "per analogia con \u00ab" + x.m.lemma_fonte + "\u00bb (" + x.m.infinito + ", " +
+                 x.c.tempo + " " + x.c.persona + ", riga " + x.c.riga + "): infinito " +
+                 x.radiceIt + x.m.fine_it + " \u00ab" + x.forma + "\u00bb (" + x.voce.id + ")" };
+    }
+    return null;
+  }
+
+  function unisci(parole) {
+    var testo = "";
+    parole.forEach(function (p) {
+      if (!p) return;
+      if (testo && testo.charAt(testo.length - 1) !== "'") testo += " ";
+      testo += p;
+    });
+    return testo;
   }
 
   function risolvi(parola, verso, frase, persona, seguente) {
@@ -10746,15 +10960,23 @@ function tokenizza(t) {
     // Le forme verbali si cercano una volta sola, come in `motore.py`: vincono
     // sul glossario solo nei due casi di `primaDelGlossario`, e altrimenti
     // vengono dopo il glossario e prima del frammento.
-    // Livello 0: le regole di frase, come in `motore.py`.
-    var diFrase = verso === "it-fe" ? regolaDiFrase(parola, seguente) : null;
-    if (diFrase) {
-      return { testo: diFrase.ferrarese, origine: "frase",
-               confidenza: DATI.origine.frase,
-               dettaglio: "regola di frase, davanti a " + diFrase.contesto + ": " + diFrase.fonte };
+    // Livello 0: le parole funzionali, come in `motore.py`. Il primo
+    // passaggio guarda la parola italiana che segue; `secondoPassaggio` rifa'
+    // la scelta con quella ferrarese.
+    if (verso === "it-fe") {
+      var scelta = contestuale(parola, contestoGr(seguente), seguente);
+      if (scelta) return scelta;
+      var fissa = parolaFissa(parola, seguente);
+      if (fissa) return fissa;
     }
     var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
     if (primaDelGlossario(verbale, parola, persona)) return rispostaVerbo(verbale);
+    // Copia di `motore.py`: anche un verbo per analogia vince sul nome del
+    // glossario quando un pronome soggetto della stessa persona lo precede.
+    if (verso === "it-fe" && persona && !verbale) {
+      var anPrima = perAnalogia(parola, persona);
+      if (anPrima && anPrima.dettaglio.indexOf(" " + persona + ", riga") !== -1) return anPrima;
+    }
 
     // Livello 1: il glossario.
     var voci = (verso === "it-fe" ? IDX.perIt : IDX.perFe)[chiave(parola)] || [];
@@ -10789,6 +11011,13 @@ function tokenizza(t) {
     // casella di una tabella di coniugazione scrive esattamente quella parola;
     // il frammento e' una somiglianza fra stringhe dentro un'altra frase.
     if (verbale) return rispostaVerbo(verbale);
+    // Livello 2 ter: il plurale di una voce del glossario, come in `motore.py`.
+    if (verso === "it-fe") {
+      var pl = plurale(parola);
+      if (pl) return pl;
+      var an = perAnalogia(parola, persona);
+      if (an) return an;
+    }
 // Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
 // se il frammento non combacia, la coppia resta un esempio e non una
 // traduzione.
@@ -10865,6 +11094,7 @@ function tokenizza(t) {
   // rifaceva il ciclo per conto suo. Ora avanza di quante parole ha accorpato,
   // come `motore.py`.
   function risolviUnita(token, direzione, testo) {
+    if (direzione === "it-fe") token = separaElisioni(token);
     var unita = [], iToken = 0;
     while (iToken < token.length) {
       var pronominale = (direzione === "it-fe")
@@ -10886,6 +11116,7 @@ function tokenizza(t) {
                    risposta: risolvi(pezzo, direzione, testo, persona, seguente) });
       iToken += a ? a.quante : 1;
     }
+    if (direzione === "it-fe") secondoPassaggio(unita);
     return unita;
   }
 
@@ -11058,7 +11289,7 @@ function tokenizza(t) {
         '<span class="parola ' + r.origine + '" title="' + scappa(ETICHETTE[r.origine] + ": " + r.dettaglio) + '">' +
         scappa(r.testo) + '</span>';
     });
-    var traduzione = risultati.map(function (r) { return r.testo; }).join(" ");
+    var traduzione = unisci(risultati.map(function (r) { return r.testo; }));
     ricorda(testo, direzione, traduzione, unita.map(function (u) {
       return { italiano: u.testo, proposto: u.risposta.testo,
                origine: u.risposta.origine, voce: u.risposta.id || "" };

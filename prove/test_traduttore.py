@@ -196,8 +196,9 @@ class TestMotore(unittest.TestCase):
         # somiglia a «non» dentro quella frase. Ma in quella frase non c'e' un
         # pezzo che valga come «un»: restituire tutta la coppia risponderebbe a
         # una domanda che non e' stata fatta.
-        risposta = self.motore.traduci("un pane", IT_FE)
-        self.assertIn("un", risposta.buchi)
+        # «nun» e non «un», che dalla 0.41 e' un articolo di S015.
+        risposta = self.motore.traduci("nun pane", IT_FE)
+        self.assertIn("nun", risposta.buchi)
         self.assertFalse(risposta.da_pubblicare)
 
     def test_la_frase_gemella_viene_resa_intera(self):
@@ -4587,6 +4588,148 @@ class TestLeCorrezioni(unittest.TestCase):
             self.c.leggi(PERCORSI["inferenze"])), [])
 
 
+class TestLaGrammaticaDiS015(unittest.TestCase):
+    """Articoli, pronomi, numeri e il secondo passaggio (0.41)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore import grammatica
+        from traduttore.cli import carica
+        cls.g = grammatica
+        cls.motore = carica()
+
+    def _t(self, frase):
+        return self.motore.traduci(frase, IT_FE).testo
+
+    def test_ogni_parola_viene_dalla_fonte(self):
+        with io.open(os.path.join(RADICE, "dati", "grammatica.json"),
+                     encoding="utf-8") as f:
+            dati = json.load(f)
+        self.assertGreaterEqual(len(dati["parole"]), 80)
+        for riga in dati["parole"] + dati["articoli"]:
+            self.assertEqual(riga["fonte"], "S015", riga["italiano"])
+            self.assertTrue(riga["dove"].startswith("§4"), riga["italiano"])
+
+    def test_l_elisione_si_separa_e_si_riunisce(self):
+        self.assertEqual(self.g.separa_elisioni(["l'uomo", "un'amica", "casa"]),
+                         ["l'", "uomo", "un'", "amica", "casa"])
+        self.assertEqual(self.g.unisci(["l'", "òm", "e", "la", "Dona"]),
+                         "l'òm e la Dona")
+
+    def test_l_articolo_guarda_la_parola_ferrarese_che_segue(self):
+        # «ricordo» comincia per consonante, `Arcórd` per vocale (S015: il
+        # prefisso re- diventa ar-). «arancia» il contrario: `naràŋz`.
+        self.assertTrue(self._t("il ricordo").startswith("l'"))
+        self.assertTrue(self._t("l'arancia").startswith("la "))
+        self.assertEqual(self._t("il cane").split()[0], "al")
+        self.assertEqual(self._t("gli uomini"), "j òman")
+
+    def test_davanti_a_un_verbo_non_e_un_articolo(self):
+        risposta = self.motore.traduci("le dico", IT_FE)
+        self.assertNotEqual(risposta.per_corrispondenza[0][2], "grammatica")
+
+    def test_due_e_tre_prendono_il_genere(self):
+        self.assertEqual(self._t("due case").split()[0], "dó")
+        self.assertEqual(self._t("tre cani").split()[0], "tri")
+
+    def test_i_pronomi_e_i_possessivi(self):
+        self.assertEqual(self._t("lui"), "lu")
+        self.assertEqual(self._t("questo libro è mio").split()[0], "quést")
+
+
+class TestIPlurali(unittest.TestCase):
+    """Il plurale di una voce, con le regole di S015 (0.41)."""
+
+    def setUp(self):
+        from traduttore import grammatica
+        self.g = grammatica
+
+    def test_i_singolari_italiani(self):
+        self.assertIn("casa", self.g.singolari("case"))
+        self.assertIn("amica", self.g.singolari("amiche"))
+        self.assertIn("lago", self.g.singolari("laghi"))
+        self.assertEqual(self.g.singolari("uomini")[0], "uomo")
+        self.assertEqual(self.g.singolari("nei"), [],
+                         "una preposizione articolata non e' un plurale")
+
+    def test_le_regole_della_fonte(self):
+        attesi = {"kavàl": "kavàj", "padrón": "padrùn", "fradèl": "fradjé",
+                  "putìna": "putìni", "òm": "òman", "can": "can",
+                  "fraréš": "frarìš"}
+        for singolare, plurale in attesi.items():
+            self.assertEqual(self.g.plurale_ferrarese(singolare)[0], plurale)
+
+    def test_nel_motore_il_plurale_e_ricavato(self):
+        from traduttore.cli import carica
+        risposta = carica().traduci("cavalli", IT_FE)
+        _, tradotto, origine, confidenza, dettaglio = \
+            risposta.per_corrispondenza[0]
+        self.assertEqual((origine, confidenza), ("plurale", 0.60))
+        self.assertIn("S015", dettaglio)
+
+
+class TestLAnalogia(unittest.TestCase):
+    """I verbi regolari coniugati sul modello della loro coniugazione (0.41)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore import verbi
+        from traduttore.cli import carica
+        cls.v = verbi
+        cls.motore = carica()
+
+    def _f(self, parola, persona=""):
+        return self.v.per_analogia(parola, self.motore.glossario,
+                                   persona)["testo"]
+
+    def test_i_quattro_modelli(self):
+        self.assertEqual([m["lemma_fonte"] for m in self.v.modelli()],
+                         ["kaŋtàr", "tašér", "lèžar", "kapìr"])
+
+    def test_accento_sulla_desinenza_e_sulla_radice(self):
+        self.assertEqual(self._f("mangiamo"), "a magnén")
+        self.assertEqual(self._f("mangerò"), "a magnarò")
+        self.assertEqual(self._f("mangio"), "a magn")
+        self.assertEqual(self._f("mangia"), "al màgna")
+
+    def test_l_alternanza_di_s015(self):
+        # «zarkàr = cercare, nu a zarkéŋ ma mi a zérk»
+        self.assertTrue(self._f("cerco").lower().endswith("zérc"))
+        self.assertTrue(self._f("cerchiamo").lower().endswith("zarcén"))
+
+    def test_quando_non_si_sa_la_vocale_resta_un_buco(self):
+        # portare → purtàr: la tonica di «porto» e' aperta o chiusa? La fonte
+        # non lo dice per questo verbo, e la forma non si fa.
+        self.assertEqual(self._f("portano"), "")
+
+    def test_nel_motore_vale_meno_di_una_forma_attestata(self):
+        risposta = self.motore.traduci("noi mangiamo", IT_FE)
+        origine, confidenza = risposta.per_corrispondenza[1][2:4]
+        self.assertEqual((origine, confidenza), ("analogia", 0.55))
+        self.assertEqual(self.motore.traduci("lui balla", IT_FE).testo,
+                         "lu al bàla", "con il pronome il verbo vince sul nome")
+
+
+class TestLaGrammaticaNellaPagina(_ModelloInNode, unittest.TestCase):
+    """Le copie in JavaScript delle funzioni pure della grammatica."""
+
+    def test_elisioni_unione_e_plurali(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
+        dati = {"glossario": None, "grammatica": {
+            "plurali": [{"fine": "àl", "plurale": "àj", "dove": "x",
+                         "scritto_dalla_fonte": "y"}],
+            "plurali_irregolari": [{"singolare": "òm", "plurale": "òman"}],
+            "non_plurali": ["nei"], "singolari_irregolari": {"uomini": "uomo"}}}
+        esito = self._valuta_js(
+            '[separaElisioni(["l\'uomo", "casa"]), unisci(["l\'", "òm", "e"]),'
+            ' pluraleFerrarese("kavàl").forma, pluraleFerrarese("Òm").forma,'
+            ' singolari("uomini")[0], singolari("nei"), contestoGr("Arcórd")]',
+            dati=dati)
+        self.assertEqual(esito, [["l'", "uomo", "casa"], "l'òm e", "kavàj",
+                                 "Òman", "uomo", [], "vocale"])
+
+
 class TestLaPromozione(unittest.TestCase):
     """Una correzione archiviata entra nel traduttore quando ha il suo margine (0.40)."""
 
@@ -4624,8 +4767,11 @@ class TestLaPromozione(unittest.TestCase):
                      stato="da_verificare", da_verificare=True)
                 for n, (it, fe) in enumerate(coppie, 1)]
 
+    # «di» non e' nella grammatica di S015: e' la parola funzionale che le
+    # correzioni insegnano. («il» dalla 0.41 lo traduce gia' la grammatica.)
+
     def test_sotto_la_soglia_resta_da_verificare(self):
-        correzioni = self._correzioni(("il cane", "al can"))
+        correzioni = self._correzioni(("cane di Mario", "can ad Mario"))
         fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
                                 "2026-11-05", {"parola": 2, "funzionale": 2,
                                                "grafia": 3})
@@ -4634,14 +4780,16 @@ class TestLaPromozione(unittest.TestCase):
         self.assertEqual(correzioni[0]["stato"], "da_verificare")
 
     def test_con_il_margine_entrano_la_regola_di_frase_e_la_parola(self):
-        correzioni = self._correzioni(("il cane", "al can"),
-                                      ("il gatto in casa", "al gat in ca"),
+        correzioni = self._correzioni(("cane di Mario", "can ad Mario"),
+                                      ("gatto di casa", "gat ad ca"),
                                       ("la casa", "la ca"))
         fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
                                 "2026-11-05")
-        self.assertEqual(fatto["regole_frase"], ["funzionale|il|consonante|al"])
+        self.assertEqual(fatto["regole_frase"], ["funzionale|di|consonante|ad"])
         self.assertEqual(len(fatto["parole"]), 1, "«casa» → «ca» due volte")
-        # «cane» → «can» ha una sola correzione: la prima resta da verificare.
+        # «càn» → «can» (l'accento) ha una correzione sola, e la prima resta da
+        # verificare; nella seconda «gat» e' gia' nel glossario, e con «di» e
+        # «casa» entrati entra per intero, come la terza.
         self.assertEqual([c["stato"] for c in correzioni],
                          ["da_verificare", "applicata", "applicata"])
         regole = self.c.leggi_regole_frase(self.percorsi["regole_frase"])
@@ -4649,10 +4797,10 @@ class TestLaPromozione(unittest.TestCase):
             regole["regole"], {"X0001", "X0002", "X0003"}), [])
         # Il motore la usa, guardando la parola che segue.
         self.frase._cache.clear()
-        regola = self.frase.cerca("il", "libro",
+        regola = self.frase.cerca("di", "libro",
                                   self.percorsi["regole_frase"])
-        self.assertEqual(regola["ferrarese"], "al")
-        self.assertIsNone(self.frase.cerca("il", "uomo",
+        self.assertEqual(regola["ferrarese"], "ad")
+        self.assertIsNone(self.frase.cerca("di", "òm",
                                            self.percorsi["regole_frase"]),
                           "davanti a vocale nessuno ha corretto niente")
         # Rifarlo non scrive due volte.
@@ -4661,16 +4809,19 @@ class TestLaPromozione(unittest.TestCase):
         self.assertEqual(di_nuovo["regole_frase"] + di_nuovo["parole"], [])
 
     def test_una_correzione_contraria_ferma_la_promozione(self):
-        correzioni = self._correzioni(("il cane", "al can"),
-                                      ("il gatto", "al gat"),
-                                      ("il pane", "el pan"))
+        correzioni = self._correzioni(("cane di Mario", "can ad Mario"),
+                                      ("gatto di Luca", "gat ad Luca"),
+                                      ("pane di Ugo", "pan d'Ugo"),
+                                      ("pane di Rita", "pan dla Rita"))
         valutati = self.c.valuta(self.motore, correzioni)
-        al = valutati["funzionale|il|consonante|al"]
+        al = valutati["funzionale|di|consonante|ad"]
         self.assertEqual((al["da"], al["contro"], al["pronto"]),
-                         (["X0001", "X0002"], ["X0003"], False))
+                         (["X0001", "X0002"], ["X0004"], False),
+                         "«d'Ugo» e' davanti a vocale: un altro contesto, non "
+                         "una prova contraria")
 
     def test_la_conferma_a_mano_e_il_margine(self):
-        correzioni = self._correzioni(("il cane", "al can"))
+        correzioni = self._correzioni(("cane di Mario", "can ad Mario"))
         correzioni[0]["confermata"] = True
         fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
                                 "2026-11-05")
@@ -4874,7 +5025,8 @@ class TestIParadigmiDiS015(unittest.TestCase):
         from traduttore.cli import carica
         motore = carica()
         self.assertEqual(motore.traduci("canto", IT_FE).testo, "Cantòn")
-        self.assertEqual(motore.traduci("io canto", IT_FE).testo, "Mi a cant")
+        # «io» e' `mi` dalla grammatica di S015 (0.41).
+        self.assertEqual(motore.traduci("io canto", IT_FE).testo, "mi a cant")
 
 
 class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):

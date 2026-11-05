@@ -66,6 +66,7 @@ import unicodedata
 RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 
+from traduttore import grafia  # noqa: E402
 from traduttore.normalizza import chiave  # noqa: E402
 
 VERBI = os.path.join(RADICE, "dati", "verbi.jsonl")
@@ -483,27 +484,24 @@ def _tabella() -> dict:
 PERDITE = {
     "š": "la «š» (s sonora) e' resa «s», che non porta la sonorita'",
     "ž": "la «ž» (z sonora) e' resa «z», che non porta la sonorita'",
-    "ě": "la «ě» (e atona aperta) e' resa con l'accento, che la fonte non mette",
-    "ê": "la «ê» (e atona chiusa) e' resa con l'accento, che la fonte non mette",
-    "ǒ": "la «ǒ» (o atona aperta) e' resa con l'accento, che la fonte non mette",
-    "ô": "la «ô» (o atona chiusa) e' resa con l'accento, che la fonte non mette",
+    "ě": "la «ě» (e atona aperta) e' resa «e»: il timbro resta nell'IPA",
+    "ê": "la «ê» (e atona chiusa) e' resa «e»: il timbro resta nell'IPA",
+    "ǒ": "la «ǒ» (o atona aperta) e' resa «o»: il timbro resta nell'IPA",
+    "ô": "la «ô» (o atona chiusa) e' resa «o»: il timbro resta nell'IPA",
 }
 
 
-def converti(forma: str, tabella: dict) -> tuple:
+def converti(forma: str, tabella: dict = None) -> tuple:
     """La forma nella grafia del progetto, e le cose che la conversione perde.
 
-    La conversione e' lettera per lettera, come la tabella la dichiara. Le
-    letture che l'italiano farebbe in un altro modo — una `k` o una `ɣ` davanti
-    a `e` o `i`, che in italiano si leggerebbero dolci — non si correggono: la
-    tabella non dichiara un `ch` o un `gh`, e la riga lo nomina.
+    Dalla 0.42 la conversione e' quella di `sorgenti/traduttore/grafia.py`, la
+    stessa con cui il glossario legge le voci di Bigoni: le regole di contesto
+    (`ch` e `gh` davanti a e/i, `ci` e `gi` davanti ad a/o/u, la `j` dopo una
+    consonante scritta `i`, le atone senza accento) sono dichiarate li' e in
+    `dati/conversione_bigoni.json`. `tabella` resta per compatibilita'.
     """
-    resa = "".join(tabella.get(c, c) for c in forma.replace("[", "")
-                   .replace("]", ""))
+    resa = grafia.da_bigoni(forma)
     perdite = [testo for segno, testo in PERDITE.items() if segno in forma]
-    if re.search(r"[kɣ][eiéèìěê]", forma):
-        perdite.append("la «k» o la «ɣ» davanti a e/i e' resa «c» o «g», che "
-                       "in italiano si leggerebbe dolce: la fonte la vuole dura")
     if "[" in forma:
         tolta = re.findall(r"\[([^\]]*)\]", forma)
         perdite.append("la fonte mette fra parentesi quadre «%s»: si puo' "
@@ -683,8 +681,13 @@ def controlla_grezzo() -> list:
 # --- la scrittura ---------------------------------------------------------------
 
 def _chiave_riga(riga: dict) -> str:
-    return "|".join([chiave(riga["lemma"]), riga["persona"], riga["tempo"],
-                     chiave(riga.get("clitico") or ""), chiave(riga["forma"])])
+    # Una riga dei paradigmi si riconosce dalla forma **della fonte**, quando
+    # c'e': cosi' una conversione che cambia (0.42: «dag» → «dagh») rifa' la
+    # riga tenendo il suo id invece di aggiungerne una.
+    forma = riga.get("forma_fonte") or riga["forma"]
+    return "|".join([chiave(riga.get("lemma_fonte") or riga["lemma"]),
+                     riga["persona"], riga["tempo"],
+                     chiave(riga.get("clitico") or ""), chiave(forma)])
 
 
 def leggi_file() -> tuple:

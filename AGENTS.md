@@ -73,7 +73,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 397 test
+python3 prove/test_traduttore.py           # 406 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -199,6 +199,12 @@ Il contesto di una parola funzionale e' la prima lettera della parola
 ricavate — `plurale` e `analogia` — non sono attestate: non si dichiarano `D` e
 non si scrivono nel glossario; se una e' sbagliata la si corregge con una
 correzione, che entra come voce che corregge.
+
+La grafia e' una sola, all'italiana (0.42): le voci di Bigoni si convertono
+**alla lettura** con `sorgenti/traduttore/grafia.py`, e `dati/glossario.jsonl`
+resta come la fonte lo scrive. Non si riscrivono a mano le forme di S006 nel
+file; una regola di conversione nuova si dichiara in
+`dati/conversione_bigoni.json` con un esempio, e i test controllano gli esempi.
 
 ## 5. Le cose che non si fanno
 

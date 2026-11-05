@@ -48,6 +48,7 @@ RADICE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAGINA_CON_MOTORE = "traduttore.html"
 sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 
+from traduttore import grafia  # noqa: E402
 from traduttore.cli import PERCORSI  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
@@ -59,6 +60,13 @@ from traduttore.varieta import Varieta  # noqa: E402
 # conosce per intero. Se manca uno di questi tre casi il confronto non
 # dice niente.
 FRASI = [
+    # La grafia unica (0.42): le voci di Bigoni lette all'italiana, la c e la
+    # g dure davanti alla desinenza, la forma della fonte che si cerca.
+    ("it-fe", "noi cerchiamo un amico"),
+    ("it-fe", "le amiche e i laghi"),
+    ("it-fe", "fischiare"),
+    ("fe-it", "kaŋtàr"),
+    ("fe-it", "cantàr"),
     ("it-fe", "a braccia aperte"),
     ("it-fe", "non a caso, ma a braccia aperte"),
     ("it-fe", "a poco a poco"),
@@ -200,7 +208,8 @@ def apre_lo_script(script: str, dati: str) -> str:
   return { accorpa: accorpa, accorpaTutto: accorpaTutto, tokenizza: tokenizza,
            risolvi: risolvi, chiave: chiave, fraseGemella: fraseGemella,
            perRegola: perRegola, classeDi: classeDi,
-           risolviUnita: risolviUnita };
+           risolviUnita: risolviUnita, ipaDaBigoni: ipaDaBigoni,
+           giunta: giunta };
 """
     return (INCOLLANCI % json.dumps(dati)) + "\n" + (
         "var PAGINA = (function () {" + dentro + porta + "})();")
@@ -335,6 +344,54 @@ def confronto_cancello(script: str, dati: str, analizzatore) -> int:
     return problemi
 
 
+# Le giunzioni di radice e desinenza (0.42): i casi della c e della g, dure,
+# dolci e gia' scritte.
+GIUNZIONI = [("zarc", "àr", "én"), ("zarc", "àr", ""), ("amìg", "a", "i"),
+             ("vèc", "", "a"), ("lèg", "", "i"), ("magn", "àr", "én"),
+             ("mangi", "àr", "ò"), ("bianch", "", "a"), ("lagh", "", "o"),
+             ("tas", "ér", "én"), ("ciac", "ér", "a")]
+
+
+def confronto_grafia(script: str, dati: str, glossario) -> int:
+    """La pronuncia di ogni voce di Bigoni, e le giunzioni, nelle due copie."""
+    forme = sorted({v.grafia_fonte for v in glossario.voci if v.grafia_fonte})
+    attese = {"ipa": [grafia.ipa_da_bigoni(f) for f in forme],
+              "giunte": [grafia.giunta(*g) for g in GIUNZIONI]}
+    programma = apre_lo_script(script, dati) + """
+var forme = %s, giunzioni = %s;
+console.log(JSON.stringify({
+  ipa: forme.map(function (f) { return PAGINA.ipaDaBigoni(f); }),
+  giunte: giunzioni.map(function (g) { return PAGINA.giunta(g[0], g[1], g[2]); })
+}));
+""" % (json.dumps(forme), json.dumps(GIUNZIONI))
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False,
+                                     encoding="utf-8") as f:
+        f.write(programma)
+        percorso = f.name
+    try:
+        esito = subprocess.run(["node", percorso], capture_output=True,
+                               text=True, timeout=120)
+    finally:
+        os.unlink(percorso)
+    if esito.returncode != 0:
+        raise SystemExit("node ha fallito sulla grafia: %s"
+                         % esito.stderr.strip()[:400])
+    trovate = json.loads(esito.stdout.strip().splitlines()[-1])
+    problemi = 0
+    for f, a, t in zip(forme, attese["ipa"], trovate["ipa"]):
+        if a != t:
+            problemi += 1
+            if problemi <= 10:
+                print("DIVERGENZA IPA su %r: python %s, pagina %s" % (f, a, t))
+    for g, a, t in zip(GIUNZIONI, attese["giunte"], trovate["giunte"]):
+        if a != t:
+            problemi += 1
+            print("DIVERGENZA giunta %r: python %s, pagina %s" % (g, a, t))
+    print("%d pronunce di Bigoni e %d giunzioni confrontate, %d divergenze"
+          % (len(forme), len(GIUNZIONI), problemi))
+    return problemi
+
+
 def main() -> int:
     if not shutil.which("node"):
         print("node non e' installato: il confronto delle due copie e' saltato.")
@@ -391,6 +448,7 @@ def main() -> int:
         script, dati,
         analisi_italiana.Italiano.da_file(glossario=glossario,
                                           verbi=verbi.carica()))
+    problemi += confronto_grafia(script, dati, glossario)
     return 1 if problemi else 0
 
 

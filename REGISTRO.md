@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.41
+versione: 0.42
 data: 2026-11-05
 ---
 
@@ -23,6 +23,37 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.42 — 2026-11-05 · Una grafia sola, la pronuncia di Bigoni, la pagina piu' leggera
+
+**Perché.** Nella stessa frase convivevano due scritture, quella fonetica di Bigoni
+(`kaŋtàr`) e quella all'italiana del Ferri (`Biànch`); chi usa il sito ha scelto di
+scrivere tutto all'italiana e di tenere la precisione di Bigoni nella pronuncia IPA.
+
+- **`grafia.py`**: le 6352 voci di S006 si leggono all'italiana con regole di
+  contesto dichiarate in `dati/conversione_bigoni.json` (`ch`/`gh`, `ci`/`gi`,
+  `s'c`, la `j` dopo consonante, le atone senza accento, le parti facoltative come
+  varianti). Il file del glossario non cambia; la forma della fonte resta in
+  `grafia_fonte`, si cerca e si vede nel glossario.
+- **La pronuncia IPA** delle voci di Bigoni si ricava dal suo alfabeto, con l'accento
+  all'inizio della sillaba tonica; e' `I`, da verificare, e non suona.
+- **La giunzione** della c e della g quando il motore attacca una desinenza
+  (plurali e analogia): `amìghi`, `nu a zarchén`, `mi a zérch`.
+- **La maiuscola tipografica** dei lemmi del Ferri e di Musacchi si toglie.
+- **Verbi e grammatica rigenerati** con la stessa conversione (`mié`, `dagh`); la
+  riga dei paradigmi si riconosce dalla forma della fonte e tiene il suo id.
+- **La pagina del traduttore** scende da 2988 a 1967 KB: il blocco dati e' JSON
+  compatto.
+- **Il token per l'invio**: le istruzioni dicevano *fine-grained* per tutti, ma
+  GitHub lo da' solo al proprietario del repository; un collaboratore usa un token
+  *classic* con `public_repo`.
+- Il confronto delle due copie controlla anche la pronuncia di tutte le 4706 forme
+  di Bigoni e la giunzione.
+
+**Verifiche.** 406 test (erano 397): gli esempi della tabella, le regole di
+contesto, nessun segno di Bigoni nelle voci lette, l'IPA valida per ogni voce,
+l'accento nella sillaba, la ricerca con la forma della fonte, le parti facoltative,
+la giunzione, la maiuscola del lemma.
 
 ## 0.41 — 2026-11-05 · La grammatica di S015, la parola ferrarese che segue, e l'analogia
 

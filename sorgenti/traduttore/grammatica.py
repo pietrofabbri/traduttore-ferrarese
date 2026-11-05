@@ -37,7 +37,7 @@ import json
 import os
 import re
 
-from . import normalizza
+from . import grafia, normalizza
 
 RADICE = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))))
@@ -234,7 +234,9 @@ def plurale_ferrarese(singolare: str):
     for regola in dati["plurali"]:
         fine = regola["fine"]
         if basso.endswith(fine) and len(basso) > len(fine):
-            return singolare[:-len(fine)] + regola["plurale"], regola
+            # «amìga» → «amìghi»: la g resta dura (0.42, `grafia.giunta`).
+            return grafia.giunta(singolare[:-len(fine)], singolare[-len(fine):],
+                                 regola["plurale"]), regola
     return singolare, None
 
 

@@ -100,7 +100,8 @@ AVVERTIMENTO_SINTESI = (
 # e quindi `intestazione` e `voci` non possono separarsi.
 CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
                  "attendibilita", "da_verificare", "fonte", "moderno",
-                 "fonte_moderno", "sinonimi", "principale_it", "principale_fe")
+                 "fonte_moderno", "sinonimi", "principale_it", "principale_fe",
+                 "grafia_fonte")
 # I campi che la pagina del traduttore riceve. Dieci, e non undici: `note`
 # e' stato tolto, e la ragione sta nel peso.
 #
@@ -121,7 +122,7 @@ CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
 # glossario: questo e' solo il trasporto della pagina del traduttore.
 CAMPI_MOTORE = ("id", "fe", "it", "varianti", "campo", "varieta",
                 "attendibilita", "da_verificare", "principale_it",
-                "principale_fe")
+                "principale_fe", "grafia_fonte")
 
 # Le pagine del sito. `sezioni` sono i marcatori di `modello.html` che la
 # pagina tiene: tutto il resto viene rimosso. La lista e' qui e non nel
@@ -202,6 +203,8 @@ CAMPI_VOCE = {
     "sinonimi": "sinonimi",
     "principale_it": "principale_italiano",
     "principale_fe": "principale_ferrarese",
+    # La forma nell'alfabeto di Bigoni (0.42): si cerca e da' la pronuncia.
+    "grafia_fonte": "grafia_fonte",
 }
 
 
@@ -750,7 +753,10 @@ def _pagina(modello: str, sezioni: tuple, dati: dict, titolo: str,
     testo = re.sub(r'<p class="occhiello">.*?</p>',
                    '<p class="occhiello">%s</p>' % occhiello, testo,
                    count=1, flags=re.S)
-    grezzo = json.dumps(dati, ensure_ascii=False, indent=1)
+    # Compatto (0.42): i rientri e gli spazi dopo le virgole pesavano piu' di
+    # un megabyte su tre in `traduttore.html`, e nessuno legge il blocco dati
+    # della pagina a occhio — i dati leggibili sono in `dati/`.
+    grezzo = json.dumps(dati, ensure_ascii=False, separators=(",", ":"))
     # Il JSON va in un elemento di tipo non eseguibile, perche' una voce con
     # la sequenza `</script>` dentro romperebbe la pagina. Il carattere di
     # escape e' la barra rovesciata, che JSON accetta e il browser no dentro

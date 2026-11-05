@@ -1,144 +1,110 @@
-# `dati/correzioni/` — le correzioni dei parlanti, e le inferenze
+# `dati/correzioni/` — le correzioni, l'archivio e il margine
 
-Questa cartella risponde a due domande:
+Questa cartella risponde a tre domande:
 
-1. **Il traduttore ha sbagliato: come si dice?** Lo dice un parlante, e la sua
-   risposta diventa un dato con il suo nome.
-2. **Dove altro sbaglia allo stesso modo?** Lo cerca il programma, confrontando la
-   forma sbagliata con quella giusta. La sua risposta non è un dato: è un elenco di
-   voci da far confermare.
+1. **Il traduttore ha sbagliato: come si dice?** Lo dice chi parla ferrarese, dalla
+   pagina, con un pulsante.
+2. **Quando la correzione fa parte del traduttore?** Non subito: quando i suoi pezzi
+   hanno un **margine**, cioè abbastanza correzioni concordi e nessuna contraria, o
+   quando qualcuno la conferma.
+3. **Dove altro sbaglia allo stesso modo?** Lo cerca il programma, e le sue risposte
+   (le inferenze) dicono dove guardare.
 
-La linea fra le due è la regola del progetto (`AGENTS.md` §1): **una correzione è
-una fonte, un'inferenza no.**
+## Il flusso
 
-## I due file
-
-| File | Che cosa contiene | Chi lo scrive |
-|---|---|---|
-| `correzioni.jsonl` | una riga per correzione: chi, che varietà, consenso, l'italiano, che cosa proponeva il traduttore, come si dice, la pronuncia fra quadre; poi lo stato | `correzioni importa` e `correzioni conferma`, mai a mano |
-| `inferenze.jsonl` | le regole di grafia ricavate dalle correzioni, con chi le sostiene, chi le smentisce e le voci della stessa fonte che cambierebbero | `correzioni inferisci`: è **generato**, e si rigenera |
-
-Una correzione:
-
-```json
-{"id": "X0001", "stato": "da_applicare", "data": "2026-11-04",
- "chi": "Maria Rossi", "luogo": "Ferrara", "varieta": "cittadino", "consenso": true,
- "italiano": "andare", "proposta": "aŋdàr", "ferrarese": "andàr", "ipa": "[anˈdar]"}
+```
+pagina «Invia» ──► segnalazione GitHub ──► workflow «Correzioni»
+                     (etichetta correzione)     │
+                                                ├─ importa: correzioni.jsonl, da_verificare
+                                                ├─ promuove quello che ha il suo margine
+                                                ├─ rigenera inferenze, regole, pagine
+                                                └─ commit su main, chiude la segnalazione,
+                                                   ripubblica il sito se il traduttore è cambiato
 ```
 
-Un'inferenza:
+1. **Inviare.** Nella pagina del traduttore, sotto la traduzione: «La traduzione è
+   sbagliata? Correggila». Si scrive la frase giusta, se si vuole la pronuncia IPA
+   **fra parentesi quadre** (`[al ˈkan]`, un ascolto e non una lettura della grafia)
+   e una nota, e si preme **Invia**. Nome, varietà, paese e token si impostano una
+   volta sola in «Impostazioni di invio» e restano nel browser; senza nome la
+   correzione è firmata «titolare del sito», senza varietà è `cittadino`.
 
-```json
-{"id": "I0001", "descrizione": "«ŋ» → «n» dopo «a», prima di «d»", "famiglia": "S006",
- "da": ["X0001"], "supporto": 1, "contro": [], "candidate": 60,
- "esempi": [{"voce": "V10405", "ora": "abaŋdóŋ", "proposta": "abandóŋ", "italiano": "abbandono"}],
- "stato": "da rivedere", "giudizio": "una sola correzione: è un indizio, ..."}
-```
+   L'invio usa un **token GitHub** *fine-grained*, limitato a questo repository,
+   con il solo permesso **Issues: read and write**. Senza token la pagina non chiama
+   nessuno: «Copia» e «Scarica» danno la riga, che si importa a mano.
+2. **Archiviare.** Il workflow `.github/workflows/correzioni.yml` importa la riga in
+   `correzioni.jsonl` con `stato: "da_verificare"` e `da_verificare: true`, scrive da
+   quale segnalazione viene (`origine`) e chiude la segnalazione con l'esito. Accetta
+   solo segnalazioni di chi ha accesso al repository. **Una correzione archiviata
+   non fa ancora parte del traduttore.**
+3. **Promuovere.** Una correzione si scompone in **elementi**, e ognuno entra nel
+   traduttore per conto suo quando ha il suo margine (soglie in `soglie.json`):
 
-## Da dove arrivano: la pagina
+   | Elemento | Esempio | Soglia predefinita | Che cosa diventa |
+   |---|---|---|---|
+   | `parola` | «casa» → `ca` | 2 correzioni concordi, 0 contrarie | una voce `D` del glossario che **corregge** la voce sbagliata (che resta, e viene dopo) |
+   | `funzionale` | «il» davanti a consonante → `al` | 2 e 0 | una **regola di frase** in `dati/regole_frase.json`: il motore la applica guardando la parola che segue |
+   | `grafia` | «`ŋ` → `n` dopo `a`, prima di `d`» | 3 e 0 | una voce `I` e `da_verificare` per ogni voce candidata della stessa fonte: è la regola applicata, non un ascolto |
 
-Nella pagina del traduttore, sotto ogni traduzione, c'è **«La traduzione è
-sbagliata? Correggila»**. Chi parla ferrarese scrive la frase giusta, se vuole la
-pronuncia in IPA **fra parentesi quadre** (`[al ˈkan]`: è un ascolto, non la lettura
-della grafia che `dati/fonetica.jsonl` scrive fra barre), il proprio nome, la
-varietà e il paese, e dà il consenso: ha almeno 18 anni e accetta che la correzione,
-con il nome, stia nel repository pubblico. **I dati degli studenti non entrano**
-(`AGENTS.md` §2): una correzione è di un adulto che si firma.
+   Una correzione è **contraria** a un elemento se per la stessa parola (e lo stesso
+   contesto) scrive un'altra forma, o la lascia com'era. Quando **tutti** gli elementi
+   di una correzione sono nel traduttore, entra anche lei per intero: la frase come
+   coppia `D` (la prossima volta il traduttore la trova identica) e la pronuncia come
+   trascrizione `D`. La correzione passa a `stato: "applicata"` e dice che cosa ha
+   creato (`crea`).
+4. **Confermare a mano.** Quando chi tiene il repository è sicuro di una correzione:
+   `correzioni conferma X0001` la segna come confermata e i suoi elementi passano
+   senza soglia alla prossima promozione; `correzioni applica X0001` conferma e
+   promuove subito. Una correzione sbagliata si chiude con
+   `correzioni respingi X0001 --motivo "..."`.
 
-La pagina **non manda niente**. Prepara la riga, e la persona la consegna in uno
-di tre modi: copiata in un messaggio, scaricata, o aprendo una **segnalazione su
-GitHub** già compilata (modulo `.github/ISSUE_TEMPLATE/correzione.yml`, etichetta
-`correzione`). I controlli della pagina sono gli stessi del repository: una riga
-che il repository rifiuterebbe non si prepara.
-
-## Il procedimento, per chi tiene il repository (persona o Claude)
+## I comandi
 
 ```bash
 export PYTHONPATH=sorgenti
-python3 -m traduttore.cli correzioni importa FILE      # o - per lo standard input
-python3 -m traduttore.cli correzioni                   # che cosa aspetta
-python3 -m traduttore.cli correzioni allinea X0001     # parola per parola
-python3 -m traduttore.cli correzioni applica X0001     # scrive i dati
-python3 -m traduttore.cli correzioni inferisci         # rigenera le inferenze
-python3 -m traduttore.cli impara && python3 -m traduttore.cli web
-python3 -m traduttore.cli verifica                     # X1–X10, Z1–Z3
+python3 -m traduttore.cli correzioni                         # che cosa aspetta
+python3 -m traduttore.cli correzioni importa FILE --origine "..."
+python3 -m traduttore.cli correzioni allinea X0001           # parola per parola
+python3 -m traduttore.cli correzioni promuovi                # entra quello che ha il margine
+python3 -m traduttore.cli correzioni conferma X0001          # confermata a mano
+python3 -m traduttore.cli correzioni applica X0001           # confermata e promossa subito
+python3 -m traduttore.cli correzioni respingi X0001 --motivo "..."
+python3 -m traduttore.cli correzioni inferisci               # rigenera inferenze.jsonl
+python3 -m traduttore.cli correzioni conferma-inferenza I0001 --voci V1,V2=forma \
+    --chi "..." --varieta cittadino --dove "..."
 ```
 
-1. **Importare.** Le righe si incollano anche dentro un messaggio o dal testo di una
-   segnalazione: tutto quello che non è una riga di correzione si salta. Una riga
-   senza chi, senza varietà, senza consenso o con una pronuncia fuori dalle quadre
-   viene **scartata e detta**.
-2. **Guardare l'allineamento** prima di applicare. `allinea` ritraduce l'italiano e
-   mette accanto, parola per parola, la proposta e la correzione, con un tipo:
-   `confermata`, `forma` (la stessa parola scritta diversamente, anche solo
-   nell'accento), `sostituzione` (un'altra parola), `buco` (il traduttore non la
-   sapeva), `aggiunta`, `tolta`. Se l'allineamento è sbagliato — una frase
-   riformulata, un ordine diverso — si applica lo stesso: la frase intera entra
-   comunque, ed è quella che conta.
-3. **Applicare.** `applica` scrive, con `attendibilita: "D"` e la fonte «correzione
-   X0001: chi, luogo, varietà, data»:
-   - la **frase intera** in `dati/coppie.jsonl`, se l'italiano ha più di una parola:
-     la prossima volta il traduttore la trova come frase gemella;
-   - una **voce del glossario** per ogni parola di tipo `forma` o `sostituzione`,
-     con il campo `corregge` che punta alla voce sbagliata. **La voce sbagliata non
-     si cancella**: è quello che la fonte scrive, ed è un fatto anche quando è
-     sbagliato. La voce che corregge viene prima di lei in ogni ricerca, nel motore
-     e nella pagina;
-   - la **pronuncia** fra quadre in `dati/fonetica.jsonl`, riferita alla frase o
-     alla voce nuova: è la prima trascrizione ascoltata del progetto, non una
-     lettura.
+`promuovi` stampa anche gli elementi **in attesa**, con chi li sostiene e chi li
+smentisce: è la lista di che cosa manca per farli entrare.
 
-   Le parole che il traduttore non sapeva (`buco`) restano nella frase e non
-   diventano voci, a meno di `--anche-buchi`: sono quasi sempre parole funzionali
-   («il» → `al`), su cui `AGENTS.md` §6 punto 8 lascia aperta la decisione, e una
-   voce «il → al» da sola sbaglierebbe davanti a vocale.
+## I file
 
-   Una correzione che non si applica si **respinge** con il motivo:
-   `correzioni respingi X0001 --motivo "..."`.
-4. **Inferire.** `inferisci` confronta ogni forma sbagliata con quella giusta e ne
-   ricava le sostituzioni con una lettera di contesto per parte («`ŋ` → `n` dopo
-   `a`, prima di `d`»). Poi cerca le voci **della stessa fonte** (la stessa
-   grafia: S006, il Ferri, Musacchi) dove la sostituzione si potrebbe fare. Conta
-   anche le prove contrarie: le parole che un parlante ha confermato, in una
-   correzione o nella verifica a campione, e a cui la regola si sarebbe applicata.
-   Usa anche i giudizi della verifica a campione con `come_si_dice`, che sono
-   correzioni di grafia.
+| File | Che cosa contiene | Chi lo scrive |
+|---|---|---|
+| `correzioni.jsonl` | una riga per correzione: chi, varietà, l'italiano, la proposta del traduttore, la frase giusta, la pronuncia; lo stato e da dove viene | `correzioni importa`, `promuovi`, `conferma`, mai a mano |
+| `soglie.json` | il margine di ogni tipo di elemento | a mano: cambiarlo cambia quando le correzioni entrano |
+| `inferenze.jsonl` | le regole di grafia ricavate dalle correzioni, con chi le sostiene, chi le smentisce e le voci candidate | `correzioni inferisci`: è **generato** |
+| `../regole_frase.json` | le regole di frase promosse | `correzioni promuovi`, mai a mano |
 
-   **Il glossario non cambia.** Il file dice dove guardare.
-5. **Far confermare.** Le voci candidate si mostrano a un parlante — nella
-   segnalazione su GitHub, in un messaggio, di persona — e quelle che conferma si
-   registrano:
+## Le inferenze, e che cosa ci fa Claude
 
-   ```bash
-   python3 -m traduttore.cli correzioni conferma I0001 \
-       --voci V10405,V10406=abandunàr --chi "Maria Rossi" --varieta cittadino \
-       --dove "segnalazione #12"
-   ```
+Un'inferenza confronta una forma sbagliata con quella giusta e ne ricava la
+sostituzione con una lettera di contesto per parte; poi la cerca fra le voci **della
+stessa fonte** (la stessa grafia). Usa anche i giudizi della verifica a campione con
+`come_si_dice`. Sotto la soglia `grafia` non cambia niente; sopra, applica la regola
+alle candidate come voci `I` e `da_verificare`, mai `D`.
 
-   Ogni voce confermata diventa una correzione `da_applicare` **di quella voce**,
-   con il nome di chi ha confermato; `V=forma` registra la forma che il parlante
-   dice, se è diversa da quella proposta. Poi si applica come le altre.
+Quando gli si chiede di lavorare sulle correzioni, Claude legge `correzioni` e le
+inferenze e fa il lavoro che il programma non sa fare:
 
-## Che cosa fa Claude con le inferenze
-
-Quando gli si chiede di lavorare sulle correzioni, Claude segue il procedimento
-sopra e in più **legge le inferenze**, che è il lavoro che il programma non può
-fare:
-
-- un'inferenza con **una sola correzione** è un indizio: Claude sceglie poche
-  voci candidate, diverse fra loro, e le propone a un parlante, invece di
-  proporle tutte;
-- un'inferenza **smentita** quanto è sostenuta riguarda probabilmente una parola,
-  non la grafia: Claude lo scrive e non la propone;
-- due inferenze con lo **stesso cambiamento** in contesti diversi («`ŋ` → `n`
-  prima di `d`» e «prima di `t`») sono probabilmente la stessa regola più larga:
-  Claude lo dice, ma la regola larga non la scrive, finché le correzioni non
-  coprono quei contesti;
+- due inferenze con lo **stesso cambiamento** in contesti diversi sono probabilmente
+  una regola più larga: Claude lo dice e propone le correzioni che servirebbero a
+  confermarla;
+- un elemento **smentito** riguarda probabilmente una parola, non la grafia;
+- un elemento in attesa con **una sola** correzione si conferma meglio con una frase
+  nuova che lo contenga: Claude suggerisce quali frasi tradurre e correggere;
 - una regola che **contraddice una fonte** (`dati/regole_grammaticali.json`,
-  `dati/conversione_bigoni.json`) si segnala nella pull request.
-
-Claude non applica mai un'inferenza senza una conferma: una voce cambiata perché
-«la regola lo dice» è esattamente la parola inventata che `AGENTS.md` §1 vieta.
+  `dati/conversione_bigoni.json`) si segnala.
 
 ## I controlli
 
@@ -147,13 +113,17 @@ Claude non applica mai un'inferenza senza una conferma: una voce cambiata perch�
 | X1 | id mancante o duplicato |
 | X2 | correzione senza `chi` |
 | X3 | varietà fuori dalle cinque |
-| X4 | senza consenso |
 | X5 | senza l'italiano o senza il ferrarese |
 | X6 | pronuncia fuori dalle quadre, o con simboli che non sono IPA |
-| X7 | stato fuori da `da_applicare`, `applicata`, `respinta` |
+| X7 | stato fuori da `da_verificare`, `applicata`, `respinta` |
 | X8 | correzione applicata che non dice che cosa ha creato, o rimanda a righe che non ci sono |
 | X9 | data non nella forma AAAA-MM-GG |
 | X10 | correzione respinta senza motivo |
 | Z1 | inferenza con `fonte` o `attendibilita D`: un'inferenza non è un dato |
 | Z2 | inferenza che non dice da quali correzioni viene |
 | Z3 | inferenza su una voce che non c'è |
+| Z4 | regola di frase con un contesto che non è vocale, consonante o fine |
+| Z5 | regola di frase senza le correzioni da cui viene, o con correzioni che non ci sono |
+
+(X4, il consenso, c'era nella 0.39 e non c'è più: dalla 0.40 il sito lo usa chi lo
+tiene.)

@@ -1,0 +1,116 @@
+name: Correzioni
+
+# Archivia le correzioni inviate dalla pagina del traduttore (0.40).
+#
+# La pagina, premendo «Invia», apre una segnalazione con l'etichetta
+# `correzione` e la riga della correzione dentro. Questo workflow la importa in
+# `dati/correzioni/correzioni.jsonl` **da verificare**, prova a promuovere gli
+# elementi che hanno raggiunto il loro margine (`dati/correzioni/soglie.json`),
+# fa il commit su `main` e chiude la segnalazione dicendo che cosa e' successo.
+#
+# Accetta solo segnalazioni di chi ha accesso al repository (OWNER, MEMBER,
+# COLLABORATOR): una segnalazione di chiunque altro non diventa un dato.
+#
+# Si puo' lanciare anche a mano (workflow_dispatch) per rifare la promozione,
+# per esempio dopo aver cambiato le soglie o confermato una correzione.
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: correzioni
+  cancel-in-progress: false
+
+jobs:
+  archivia:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.issue.labels.*.name, 'correzione') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Importa la segnalazione
+        if: github.event_name == 'issues'
+        # Il corpo passa da una variabile d'ambiente e non dentro lo script:
+        # cosi' il testo della segnalazione non puo' diventare un comando.
+        env:
+          CORPO: ${{ github.event.issue.body }}
+          NUMERO: ${{ github.event.issue.number }}
+        run: |
+          export PYTHONPATH=sorgenti
+          printf '%s\n' "$CORPO" > "$RUNNER_TEMP/correzione.txt"
+          python3 -m traduttore.cli correzioni importa "$RUNNER_TEMP/correzione.txt" \
+            --origine "segnalazione #$NUMERO" > "$RUNNER_TEMP/esito.txt" 2>&1 || true
+          cat "$RUNNER_TEMP/esito.txt"
+
+      - name: Promuove quello che ha il suo margine
+        run: |
+          export PYTHONPATH=sorgenti
+          python3 -m traduttore.cli correzioni promuovi | tee -a "$RUNNER_TEMP/esito.txt"
+          python3 -m traduttore.cli correzioni inferisci > /dev/null
+          if ! git diff --quiet -- dati/glossario.jsonl dati/coppie.jsonl dati/fonetica.jsonl dati/regole_frase.json; then
+            python3 -m traduttore.cli impara
+            python3 -m traduttore.cli web
+            echo "CAMBIATO=1" >> "$GITHUB_ENV"
+          fi
+          python3 -m traduttore.cli verifica > "$RUNNER_TEMP/verifica.txt" || {
+            cat "$RUNNER_TEMP/verifica.txt"; echo "la verifica non passa: non scrivo"; exit 1; }
+
+      - name: Commit su main
+        run: |
+          git config user.name "correzioni[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A dati web
+          if git diff --cached --quiet; then
+            echo "niente da scrivere"
+            exit 0
+          fi
+          git commit -q -m "Correzioni: archiviate e promosse (${{ github.event.issue.number && format('segnalazione #{0}', github.event.issue.number) || 'a mano' }})"
+          for tentativo in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase -q origin main
+          done
+          exit 1
+
+      - name: Risponde e chiude la segnalazione
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMERO: ${{ github.event.issue.number }}
+        run: |
+          {
+            echo "Esito dell'archiviazione:"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/esito.txt"
+            echo '```'
+          } > "$RUNNER_TEMP/commento.md"
+          gh issue comment "$NUMERO" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/commento.md"
+          if grep -q "SCARTATA" "$RUNNER_TEMP/esito.txt"; then
+            echo "una riga e' stata scartata: la segnalazione resta aperta"
+          else
+            gh issue close "$NUMERO" --repo "$GITHUB_REPOSITORY"
+          fi
+
+      - name: Ripubblica il sito se il traduttore e' cambiato
+        if: env.CAMBIATO == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # Un push fatto con il token del workflow non fa partire gli altri
+        # workflow: la pubblicazione si chiede esplicitamente.
+        run: gh workflow run pagine.yml --repo "$GITHUB_REPOSITORY" --ref main

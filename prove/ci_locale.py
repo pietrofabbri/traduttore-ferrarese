@@ -103,6 +103,17 @@ def valida_yaml() -> int:
     return rotti
 
 
+# I workflow che non sono controlli: girano solo su GitHub e non si eseguono
+# qui. `correzioni.yml` archivia le segnalazioni, fa il commit e il push su
+# `main` e risponde sulle segnalazioni: eseguirlo in locale vorrebbe dire
+# scrivere su `main` da una macchina qualsiasi. La sua logica e' provata dai
+# test (`TestLeCorrezioni`, `TestLaPromozione`), non dai suoi passi.
+SOLO_SU_GITHUB = {
+    "correzioni.yml": "scrive su main e risponde alle segnalazioni: non e' un "
+                      "controllo",
+}
+
+
 def main() -> int:
     if valida_yaml():
         return 1
@@ -114,6 +125,10 @@ def main() -> int:
     numero = 0
     for nome in sorted(os.listdir(FLUSSI)):
         if not nome.endswith(".yml"):
+            continue
+        if nome in SOLO_SU_GITHUB:
+            print("=" * 72)
+            print("%s: saltato, %s" % (nome, SOLO_SU_GITHUB[nome]))
             continue
         with io.open(os.path.join(FLUSSI, nome), encoding="utf-8") as f:
             testo = f.read()

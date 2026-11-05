@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.39
-data: 2026-11-04
+versione: 0.40
+data: 2026-11-05
 ---
 
 # Registro delle modifiche
@@ -23,6 +23,44 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.40 — 2026-11-05 · Un pulsante «Invia», l'archivio da verificare, e il margine
+
+**Perché.** Chi usa il sito vuole correggere in fretta e in quantità: niente consenso né
+nome a ogni correzione, un pulsante di invio, le correzioni archiviate subito come da
+verificare, e nel traduttore — anche come regole di frase — quando c'è un margine
+ragionevole per confermarle.
+
+- **Il pulsante «Invia»** apre una segnalazione su GitHub con l'API, usando un token
+  salvato nel browser. È **l'unica chiamata di rete** della pagina, un'eccezione
+  decisa da chi usa il sito e scritta in `AGENTS.md` §2; è marcata `RETE-DICHIARATA`,
+  e il controllo della CI rifiuta ogni altra chiamata. Senza token la pagina non chiama
+  nessuno. Nome, varietà, paese e token si impostano una volta; il consenso non si
+  chiede più (X4 tolto).
+- **Il workflow `Correzioni`** (`.github/workflows/correzioni.yml`) importa la
+  segnalazione **da verificare**, promuove, rigenera, fa il commit su `main`, chiude la
+  segnalazione con l'esito e ripubblica il sito se il traduttore è cambiato. Accetta
+  solo segnalazioni di chi ha accesso al repository.
+- **Il margine** (`correzioni promuovi`, soglie in `dati/correzioni/soglie.json`): una
+  correzione si scompone in elementi, e ognuno entra quando ha abbastanza correzioni
+  concordi e nessuna contraria — `parola` (2) come voce `D` che corregge,
+  `funzionale` (2) come regola di frase, `grafia` (3) come voci `I` da verificare
+  sulle candidate della stessa fonte. Quando tutti gli elementi sono entrati entra
+  la frase intera con la pronuncia. `correzioni conferma` è il margine a mano.
+- **Le regole di frase** (`dati/regole_frase.json`, modulo `frase.py`, `regolaDiFrase`
+  nella pagina): una parola funzionale secondo la prima lettera della parola italiana
+  che segue (vocale, consonante, fine). Nel motore vengono prima del glossario, con
+  l'origine nuova `frase` (0,95). È la prima strada per le parole funzionali di
+  `AGENTS.md` §6 punto 8: non l'elenco del Ferri, ma un elenco che si costruisce con le
+  correzioni.
+- **I controlli** Z4–Z5 sulle regole di frase.
+
+**Verifiche.** 382 test (erano 375): l'importazione da verificare con i valori
+predefiniti, la soglia, il margine con la regola di frase e la parola, la correzione
+contraria che ferma la promozione, la conferma a mano, il contesto uguale nelle due
+copie, la regola di frase nella pagina, la firma predefinita nella pagina; il controllo
+della rete ammette solo la riga marcata. Confronto Python/pagina: 23 frasi, 0
+divergenze. `verifica`: 0 errori.
 
 ## 0.39 — 2026-11-04 · Un parlante corregge una parola, e il programma dice dove altro guardare
 

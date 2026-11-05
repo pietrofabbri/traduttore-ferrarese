@@ -69,6 +69,7 @@ PERCORSI = {
     # Le correzioni dei parlanti, e le inferenze che se ne ricavano.
     "correzioni": os.path.join(DATI, "correzioni", "correzioni.jsonl"),
     "inferenze": os.path.join(DATI, "correzioni", "inferenze.jsonl"),
+    "regole_frase": os.path.join(DATI, "regole_frase.json"),
 }
 
 # La fila d'attesa: materiale raccolto ma non ancora pubblicabile. Non entra
@@ -389,7 +390,11 @@ def _controlla_correzioni(glossario, corpus, fonetica) -> list:
     from . import correzioni as modulo
     esistenti = ({v.id for v in glossario.voci} | {c.id for c in corpus.coppie}
                  | {t.id for t in fonetica.trascrizioni})
-    return (modulo.controlla(modulo.leggi(PERCORSI["correzioni"]), esistenti)
+    correzioni = modulo.leggi(PERCORSI["correzioni"])
+    return (modulo.controlla(correzioni, esistenti)
+            + modulo.controlla_regole_frase(
+                modulo.leggi_regole_frase(PERCORSI["regole_frase"])["regole"],
+                {c["id"] for c in correzioni})
             + modulo.controlla_inferenze(modulo.leggi(PERCORSI["inferenze"]),
                                          {v.id for v in glossario.voci}))
 
@@ -415,7 +420,9 @@ def comando_correzioni(args) -> int:
     if azione == "importa":
         testo = (sys.stdin.read() if args.file == "-" else
                  io.open(args.file, encoding="utf-8").read())
-        esito = modulo.importa(testo, PERCORSI["correzioni"])
+        esito = modulo.importa(testo, PERCORSI["correzioni"],
+                               origine=args.origine or "",
+                               oggi=datetime.date.today().isoformat())
         for riga in esito["nuove"]:
             print("importata %s  %s → %s  (%s, %s)" % (
                 riga["id"], riga["italiano"], riga["ferrarese"], riga["chi"],
@@ -433,7 +440,7 @@ def comando_correzioni(args) -> int:
                  len(esito["scartate"])))
         return 1 if esito["scartate"] else 0
 
-    if azione in ("allinea", "applica", "respingi"):
+    if azione in ("allinea", "applica", "respingi", "conferma"):
         riga = per_id.get(args.id)
         if riga is None:
             print("non c'e' nessuna correzione %s" % args.id)
@@ -452,25 +459,21 @@ def comando_correzioni(args) -> int:
                 c["corretto"] or "-", c["voce"]))
         return 0
 
-    if azione == "applica":
-        if riga["stato"] != "da_applicare":
+    if azione in ("applica", "conferma"):
+        # Confermare una correzione e' dire «si', e' giusta»: i suoi elementi
+        # passano senza soglia alla prossima promozione. `applica` conferma e
+        # promuove subito.
+        if riga["stato"] != "da_verificare":
             print("%s e' gia' %s" % (riga["id"], riga["stato"]))
             return 1
-        problemi = modulo.controlla_riga(riga)
-        if problemi:
-            for problema in problemi:
-                print(problema.riga())
-            return 1
-        create = modulo.applica(carica(), riga, PERCORSI,
-                                anche_buchi=args.anche_buchi)
-        riga["stato"] = "applicata"
-        riga["crea"] = create
-        riga["applicata_il"] = datetime.date.today().isoformat()
+        riga["confermata"] = True
+        riga["confermata_il"] = datetime.date.today().isoformat()
         modulo.scrivi(righe, PERCORSI["correzioni"])
-        print("%s applicata: %s" % (riga["id"], ", ".join(create) or
-                                    "nessuna riga"))
-        print("Rilancia `impara`, `web` e `correzioni inferisci`.")
-        return 0
+        print("%s confermata." % riga["id"])
+        if azione == "conferma":
+            print("Entra nel traduttore alla prossima `correzioni promuovi`.")
+            return 0
+        azione = "promuovi"
 
     if azione == "respingi":
         riga["stato"] = "respinta"
@@ -479,7 +482,33 @@ def comando_correzioni(args) -> int:
         print("%s respinta: %s" % (riga["id"], args.motivo))
         return 0
 
-    if azione == "conferma":
+    if azione == "promuovi":
+        motore = carica()
+        fatto = modulo.promuovi(
+            motore, righe, {**PERCORSI, "regole_frase": PERCORSI["regole_frase"]},
+            datetime.date.today().isoformat(), modulo.soglie(), motore.glossario)
+        modulo.scrivi(righe, PERCORSI["correzioni"])
+        print("parole nel glossario:        %d %s" % (
+            len(fatto["parole"]), " ".join(fatto["parole"])))
+        print("regole di frase:             %d %s" % (
+            len(fatto["regole_frase"]), " ".join(fatto["regole_frase"])))
+        print("voci da regole di grafia:    %d" % len(fatto["grafia"]))
+        print("correzioni entrate per intero: %d %s" % (
+            len(fatto["correzioni"]), " ".join(fatto["correzioni"])))
+        if not args.json:
+            for chiave, dati in sorted(modulo.valuta(
+                    motore, righe, modulo.soglie()).items()):
+                if not dati["pronto"]:
+                    print("  in attesa: %-40s da %s%s" % (
+                        chiave, ", ".join(dati["da"]),
+                        "; contro " + ", ".join(dati["contro"])
+                        if dati["contro"] else ""))
+        cambiato = any(fatto.values())
+        if cambiato:
+            print("Rilancia `impara` e `web`.")
+        return 0
+
+    if azione == "conferma-inferenza":
         inferenze = {i["id"]: i for i in modulo.leggi(PERCORSI["inferenze"])}
         inferenza = inferenze.get(args.inferenza)
         if inferenza is None:
@@ -542,7 +571,7 @@ def comando_correzioni(args) -> int:
     print("correzioni: %d (%s)" % (len(righe), ", ".join(
         "%s %d" % (k, v) for k, v in sorted(conto.items())) or "nessuna"))
     for riga in righe:
-        if riga.get("stato") == "da_applicare":
+        if riga.get("stato") == "da_verificare":
             print("  %s  %s → %s  (%s, %s, %s)" % (
                 riga["id"], riga["italiano"], riga["ferrarese"], riga["chi"],
                 riga["varieta"], riga["data"]))
@@ -1353,21 +1382,24 @@ def costruisci_parser() -> argparse.ArgumentParser:
     azioni = p.add_subparsers(dest="azione")
     a = azioni.add_parser("importa", help="importa le righe della pagina")
     a.add_argument("file", help="file con le righe copiate dalla pagina, o -")
+    a.add_argument("--origine", help="da dove arriva: es. segnalazione #12")
     a.set_defaults(func=comando_correzioni)
     for nome, aiuto in (("allinea", "parola per parola, prima e dopo"),
-                        ("applica", "scrive i dati che la correzione documenta"),
+                        ("conferma", "conferma a mano: entra senza soglia"),
+                        ("applica", "conferma e promuove subito"),
                         ("respingi", "chiude la correzione senza dati")):
         a = azioni.add_parser(nome, help=aiuto)
         a.add_argument("id", help="es. X0001")
         if nome == "respingi":
             a.add_argument("--motivo", required=True)
-        if nome == "applica":
-            a.add_argument("--anche-buchi", action="store_true",
-                           help="crea voci anche per le parole che il motore "
-                                "non sapeva (di solito parole funzionali)")
         a.set_defaults(func=comando_correzioni)
+    a = azioni.add_parser("promuovi", help="porta nel traduttore gli elementi "
+                                           "che hanno il loro margine")
+    a.add_argument("--json", action="store_true")
+    a.set_defaults(func=comando_correzioni)
     a = azioni.add_parser(
-        "conferma", help="le voci di un'inferenza che un parlante conferma")
+        "conferma-inferenza",
+        help="le voci di un'inferenza che un parlante conferma")
     a.add_argument("inferenza", help="es. I0001")
     a.add_argument("--voci", required=True,
                    help="V1,V2 oppure V1=forma,V2 se il parlante la dice diversa")

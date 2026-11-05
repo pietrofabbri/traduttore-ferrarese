@@ -331,7 +331,10 @@ def _voce_da_dict(grezzo: dict) -> Voce:
     noto = {"id", "ferrarese", "italiano", "varianti", "campo", "note",
             "fonte", "attendibilita", "registro", "da_verificare",
             "principale_italiano", "principale_ferrarese", "varieta",
-            "moderno", "fonte_moderno", "sinonimi", "corregge"}
+            "moderno", "fonte_moderno", "sinonimi", "corregge",
+            # Il segno lasciato da `correzioni promuovi`: quale elemento e da
+            # quali correzioni. Si legge dal file, non serve alla voce.
+            "elemento", "da_correzioni"}
     grezzo = dict(grezzo)
     varianti = grezzo.pop("varianti", []) or []
     if isinstance(varianti, str):

@@ -49,6 +49,7 @@
   .parola.glossario { border-color: var(--glossario); }
   .parola.corpo { border-color: var(--corpus); }
   .parola.verbo { border-color: var(--corpus); border-bottom-style: double; }
+  .parola.frase { border-color: var(--glossario); border-bottom-style: double; }
   .parola.regola { border-color: var(--regola); border-bottom-style: dotted; }
   .parola.modello { border-color: var(--modello); border-bottom-style: dashed; }
   .parola.nessuna { border-color: var(--nessuna); background: #fdf0f0; }
@@ -171,6 +172,7 @@
     <span><i class="pastiglia" style="border-color:var(--glossario)"></i>glossario</span>
     <span><i class="pastiglia" style="border-color:var(--corpus)"></i>corpus</span>
     <span><i class="pastiglia" style="border-color:var(--corpus);border-bottom-style:double"></i>forma verbale attestata</span>
+    <span><i class="pastiglia" style="border-color:var(--glossario);border-bottom-style:double"></i>regola di frase</span>
     <span><i class="pastiglia" style="border-color:var(--regola);border-bottom-style:dotted"></i>regola</span>
     <span><i class="pastiglia" style="border-color:var(--modello);border-bottom-style:dashed"></i>modello</span>
     <span><i class="pastiglia" style="border-color:var(--nessuna);background:#fdf0f0"></i>non lo so</span>
@@ -184,30 +186,32 @@
     <style>
       #correzione { margin-top: 1rem; }
       #correzione label { display: block; margin: .5rem 0; }
-      #correzione input[type=text], #correzione textarea { width: 100%; box-sizing: border-box; }
+      #correzione input[type=text], #correzione input[type=password], #correzione textarea { width: 100%; box-sizing: border-box; }
       #correzione textarea { min-height: 3.5rem; }
       #esitoCorrezione .errore { color: #a11; }
     </style>
-    <p>Se parli ferrarese e la traduzione non &egrave; come la diresti, scrivila giusta. Diventa un dato del progetto <b>con il tuo nome</b>, e il programma cerca le altre parole del glossario dove lo stesso errore si ripete: quelle restano proposte finch&eacute; un parlante non le conferma.</p>
-    <p class="vuoto">Si corregge la direzione italiano &rarr; ferrarese. La pagina non manda niente: prepara una riga che consegni tu.</p>
-    <label>Come si dice in ferrarese<textarea id="ferraresCorretto" placeholder="la frase giusta, come la diresti"></textarea></label>
-    <label>Pronuncia, se la sai scrivere, in IPA fra parentesi quadre (facoltativa)<input type="text" id="ipaCorretta" placeholder="[al ˈkan]"></label>
-    <label>Chi sei: nome, o come vuoi essere citato<input type="text" id="chiCorregge" placeholder="es. Maria Rossi"></label>
-    <div class="riga">
-      <label>Il tuo ferrarese <select id="varietaCorregge"></select></label>
-      <label>Paese <input type="text" id="luogoCorregge" placeholder="es. Bondeno" size="16"></label>
-    </div>
+    <p>Scrivi la frase giusta e premi <b>Invia</b>: la correzione viene archiviata <b>da verificare</b>. Entra nel traduttore quando i suoi pezzi hanno abbastanza conferme (le soglie sono in <code>dati/correzioni/soglie.json</code>), e il programma cerca da solo dove altro si ripete lo stesso errore.</p>
+    <label>Come si dice in ferrarese<textarea id="ferraresCorretto" placeholder="la frase giusta"></textarea></label>
+    <label>Pronuncia in IPA fra parentesi quadre (facoltativa)<input type="text" id="ipaCorretta" placeholder="[al ˈkan]"></label>
     <label>Nota (facoltativa)<input type="text" id="notaCorregge" placeholder="es. si dice cos&igrave; in campagna"></label>
-    <label><input type="checkbox" id="consensoCorregge"> Ho almeno 18 anni e acconsento che questa correzione, con il nome che ho scritto, entri nel repository pubblico del progetto.</label>
     <div class="riga">
-      <button type="button" id="preparaCorrezione">Prepara la correzione</button>
+      <button type="button" id="inviaCorrezione"><b>Invia</b></button>
       <button type="button" id="copiaCorrezione">Copia</button>
       <button type="button" id="scaricaCorrezione">Scarica</button>
-      <a id="segnalaCorrezione" href="#" target="_blank" rel="noopener">Apri una segnalazione su GitHub</a>
     </div>
     <div id="esitoCorrezione"></div>
-    <textarea id="rigaCorrezione" readonly placeholder="Qui compare la riga da consegnare."></textarea>
-    <p class="vuoto">Si consegna a chi tiene il repository (anche incollata in un messaggio) o con la segnalazione su GitHub, e si importa con <code>python3 -m traduttore.cli correzioni importa FILE</code>.</p>
+    <details id="impostazioniCorrezione">
+      <summary>Impostazioni di invio (una volta sola, restano in questo browser)</summary>
+      <p class="vuoto">L'invio apre una segnalazione con l'etichetta <code>correzione</code> nel repository, e un workflow la archivia in <code>dati/correzioni/</code>. Serve un token GitHub <i>fine-grained</i> limitato a questo repository con il permesso <b>Issues: read and write</b>. Il token resta solo in questo browser. Senza token la pagina non chiama nessuno: Copia e Scarica funzionano lo stesso.</p>
+      <label>Token GitHub<input type="password" id="tokenCorrezione" autocomplete="off"></label>
+      <label>Nome con cui firmi le correzioni<input type="text" id="chiCorregge" placeholder="titolare del sito"></label>
+      <div class="riga">
+        <label>Il tuo ferrarese <select id="varietaCorregge"></select></label>
+        <label>Paese <input type="text" id="luogoCorregge" placeholder="es. Ferrara" size="16"></label>
+      </div>
+      <button type="button" id="salvaImpostazioni">Salva</button>
+    </details>
+    <textarea id="rigaCorrezione" readonly placeholder="Qui compare la riga della correzione."></textarea>
   </details>
   <!-- /pagina:traduttore -->
 
@@ -549,6 +553,8 @@
     // meno di una voce di dizionario, perche' copre una persona sola, e vale
     // piu' di una regola imparata, perche' qualcuno l'ha scritta.
     verbo: "da una forma verbale attestata",
+    // `frase` e' una regola di frase promossa da correzioni di parlanti.
+    frase: "da una regola di frase",
     regola: "da una regola morfologica",
     modello: "dal modello",
     nessuna: "NON LO SO"
@@ -934,7 +940,24 @@ function tokenizza(t) {
     };
   }
 
-  function risolvi(parola, verso, frase, persona) {
+  // Copia di `frase.contesto` e di `frase.cerca`: la parola funzionale
+  // secondo la prima lettera della parola italiana che segue.
+  var VOCALI = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fah";
+  function contestoDi(seguente) {
+    var t = normale(seguente || "").trim();
+    if (!t) return "fine";
+    return VOCALI.indexOf(t.charAt(0)) !== -1 ? "vocale" : "consonante";
+  }
+  function regolaDiFrase(parola, seguente) {
+    var regole = DATI.regole_frase || [];
+    var k = normale(parola || ""), c = contestoDi(seguente);
+    for (var i = 0; i < regole.length; i++) {
+      if (normale(regole[i].italiano) === k && regole[i].contesto === c) return regole[i];
+    }
+    return null;
+  }
+
+  function risolvi(parola, verso, frase, persona, seguente) {
     // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
     var gemella = fraseGemella(frase, verso);
     if (gemella) {
@@ -976,6 +999,13 @@ function tokenizza(t) {
     // Le forme verbali si cercano una volta sola, come in `motore.py`: vincono
     // sul glossario solo nei due casi di `primaDelGlossario`, e altrimenti
     // vengono dopo il glossario e prima del frammento.
+    // Livello 0: le regole di frase, come in `motore.py`.
+    var diFrase = verso === "it-fe" ? regolaDiFrase(parola, seguente) : null;
+    if (diFrase) {
+      return { testo: diFrase.ferrarese, origine: "frase",
+               confidenza: DATI.origine.frase,
+               dettaglio: "regola di frase, davanti a " + diFrase.contesto + ": " + diFrase.fonte };
+    }
     var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
     if (primaDelGlossario(verbale, parola, persona)) return rispostaVerbo(verbale);
 
@@ -1104,8 +1134,9 @@ function tokenizza(t) {
       // `motore.py`: «loro sono» e' la terza plurale.
       var persona = (direzione === "it-fe" && iToken > 0)
         ? personaDelSoggetto(token[iToken - 1]) : "";
+      var seguente = a ? "" : (token[iToken + 1] || "");
       unita.push({ testo: pezzo, indice: iToken,
-                   risposta: risolvi(pezzo, direzione, testo, persona) });
+                   risposta: risolvi(pezzo, direzione, testo, persona, seguente) });
       iToken += a ? a.quante : 1;
     }
     return unita;
@@ -1124,6 +1155,7 @@ function tokenizza(t) {
     if (direzione === "it-fe" && campo && !campo.value) campo.value = proposta;
   }
   function oggiIso() { return new Date().toISOString().slice(0, 10); }
+  var CHI_PREDEFINITO = "titolare del sito", VARIETA_PREDEFINITA = "cittadino";
   function rigaCorrezione(campi, ultima, data) {
     var problemi = [];
     if (!ultima || ultima.direzione !== "it-fe") {
@@ -1134,9 +1166,8 @@ function tokenizza(t) {
     if (ultima && ferrarese && ferrarese === ultima.proposta) {
       problemi.push("la frase e' uguale alla traduzione proposta: che cosa cambia?");
     }
-    if (!(campi.chi || "").trim()) problemi.push("scrivi chi sei: una correzione e' una fonte solo se dice chi l'ha scritta");
-    if (!(DATI.nomi_varieta || {})[campi.varieta]) problemi.push("scegli la tua varieta'");
-    if (campi.consenso !== true) problemi.push("serve il consenso a mettere la correzione, con il tuo nome, nel repository");
+    var varieta = campi.varieta || VARIETA_PREDEFINITA;
+    if (!(DATI.nomi_varieta || {})[varieta]) problemi.push("varieta' sconosciuta: " + varieta);
     var ipa = (campi.ipa || "").trim();
     if (ipa) {
       if (ipa.charAt(0) !== "[" || ipa.charAt(ipa.length - 1) !== "]") {
@@ -1150,35 +1181,71 @@ function tokenizza(t) {
       if (strani.length) problemi.push("nella pronuncia ci sono simboli che non sono IPA: " + strani.join(" "));
     }
     if (problemi.length) return { riga: "", problemi: problemi };
-    var riga = { tipo: "correzione", data: data, chi: campi.chi.trim(),
-                 varieta: campi.varieta, consenso: true,
-                 italiano: ultima.italiano, proposta: ultima.proposta,
-                 ferrarese: ferrarese, parole: ultima.parole,
+    var riga = { tipo: "correzione", data: data,
+                 chi: (campi.chi || "").trim() || CHI_PREDEFINITO,
+                 varieta: varieta, italiano: ultima.italiano,
+                 proposta: ultima.proposta, ferrarese: ferrarese,
+                 parole: ultima.parole,
                  versione: (DATI.correzione || {}).versione || "" };
     if ((campi.luogo || "").trim()) riga.luogo = campi.luogo.trim();
     if (ipa) riga.ipa = ipa;
     if ((campi.nota || "").trim()) riga.nota = campi.nota.trim();
     return { riga: JSON.stringify(riga), problemi: [] };
   }
+  var CHIAVE_IMPOSTAZIONI = "traduttore-ferrarese-invio";
+  function leggiImpostazioni() {
+    try { return JSON.parse(window.localStorage.getItem(CHIAVE_IMPOSTAZIONI) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function salvaImpostazioni() {
+    var i = { token: el("tokenCorrezione").value.trim(), chi: el("chiCorregge").value.trim(),
+              varieta: el("varietaCorregge").value, luogo: el("luogoCorregge").value.trim() };
+    try { window.localStorage.setItem(CHIAVE_IMPOSTAZIONI, JSON.stringify(i)); } catch (e) { /* niente */ }
+    return i;
+  }
   function preparaCorrezione() {
+    var i = leggiImpostazioni();
     var esito = rigaCorrezione({
       ferrarese: el("ferraresCorretto").value, ipa: el("ipaCorretta").value,
-      chi: el("chiCorregge").value, varieta: el("varietaCorregge").value,
-      luogo: el("luogoCorregge").value, nota: el("notaCorregge").value,
-      consenso: !!el("consensoCorregge").checked
+      nota: el("notaCorregge").value, chi: i.chi, varieta: i.varieta, luogo: i.luogo
     }, ULTIMA, oggiIso());
     el("rigaCorrezione").value = esito.riga;
     el("esitoCorrezione").innerHTML = esito.problemi.length
-      ? '<p class="errore">' + esito.problemi.map(scappa).join("<br>") + '</p>'
-      : '<p>Pronta. Copiala, scaricala o apri la segnalazione: chi tiene il repository la importa.</p>';
-    var link = el("segnalaCorrezione");
-    var repository = (DATI.correzione || {}).repository || "";
-    link.href = (esito.riga && repository)
-      ? repository + "/issues/new?template=correzione.yml&title=" +
-        encodeURIComponent("Correzione: " + ULTIMA.italiano) + "&righe=" +
-        encodeURIComponent(esito.riga)
-      : "#";
+      ? '<p class="errore">' + esito.problemi.map(scappa).join("<br>") + '</p>' : "";
     return esito.riga;
+  }
+  // L'UNICA chiamata di rete della pagina (AGENTS.md §2, eccezione decisa il
+  // 2026-11-05): parte solo premendo «Invia», solo con un token salvato in
+  // questo browser, e solo verso l'API di GitHub di questo repository. Il
+  // controllo della CI accetta soltanto le righe marcate RETE-DICHIARATA.
+  function inviaCorrezione() {
+    var riga = preparaCorrezione();
+    if (!riga) return;
+    var i = leggiImpostazioni();
+    var repository = (DATI.correzione || {}).api || "";
+    if (!i.token || !repository) {
+      el("esitoCorrezione").innerHTML = '<p class="errore">Manca il token: aprilo in «Impostazioni di invio». Intanto puoi copiare o scaricare la riga.</p>';
+      return;
+    }
+    el("esitoCorrezione").innerHTML = "<p>Invio&hellip;</p>";
+    var corpo = { title: "Correzione: " + ULTIMA.italiano, labels: ["correzione"],
+                  body: "Correzione inviata dalla pagina del traduttore.\n\n```json\n" + riga + "\n```\n" };
+    window.fetch(repository + "/issues", {  // RETE-DICHIARATA
+      method: "POST",
+      headers: { "Authorization": "Bearer " + i.token, "Accept": "application/vnd.github+json",
+                 "Content-Type": "application/json" },
+      body: JSON.stringify(corpo)
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, stato: r.status, j: j }; });
+    }).then(function (e) {
+      if (!e.ok) throw new Error(e.stato + " " + ((e.j && e.j.message) || ""));
+      el("esitoCorrezione").innerHTML = '<p>Inviata: <a href="' + scappa(e.j.html_url) +
+        '" target="_blank" rel="noopener">segnalazione #' + e.j.number + '</a>. Il workflow la archivia da verificare.</p>';
+      el("ferraresCorretto").value = ""; el("ipaCorretta").value = ""; el("notaCorregge").value = "";
+    }).catch(function (errore) {
+      el("esitoCorrezione").innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) +
+        '). La riga e\' qui sotto: copiala o scaricala.</p>';
+    });
   }
 
   function traduci() {
@@ -1908,7 +1975,16 @@ function tokenizza(t) {
         scelta.appendChild(o);
       });
     }
-    el("preparaCorrezione").addEventListener("click", preparaCorrezione);
+    var imp = leggiImpostazioni();
+    el("tokenCorrezione").value = imp.token || "";
+    el("chiCorregge").value = imp.chi || "";
+    el("luogoCorregge").value = imp.luogo || "";
+    if (imp.varieta) el("varietaCorregge").value = imp.varieta;
+    el("salvaImpostazioni").addEventListener("click", function () {
+      salvaImpostazioni();
+      el("esitoCorrezione").innerHTML = "<p>Impostazioni salvate in questo browser.</p>";
+    });
+    el("inviaCorrezione").addEventListener("click", inviaCorrezione);
     el("copiaCorrezione").addEventListener("click", function () {
       var riga = preparaCorrezione();
       if (riga && navigator.clipboard) navigator.clipboard.writeText(riga).catch(function () {});
@@ -1920,9 +1996,6 @@ function tokenizza(t) {
       a.href = URL.createObjectURL(new Blob([riga + "\n"], { type: "application/x-ndjson" }));
       a.download = "correzione-" + oggiIso() + ".jsonl";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    });
-    el("segnalaCorrezione").addEventListener("click", function (evento) {
-      if (!preparaCorrezione() && evento.preventDefault) evento.preventDefault();
     });
   })();
   el("testo").addEventListener("keydown", function (e) {

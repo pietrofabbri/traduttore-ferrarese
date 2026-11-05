@@ -54,7 +54,7 @@ CARTELLA = os.path.join(RADICE, "dati", "correzioni")
 PERCORSO = os.path.join(CARTELLA, "correzioni.jsonl")
 PERCORSO_INFERENZE = os.path.join(CARTELLA, "inferenze.jsonl")
 
-STATI = ("da_applicare", "applicata", "respinta")
+STATI = ("da_verificare", "applicata", "respinta")
 # I tipi di differenza fra la parola proposta e quella corretta.
 TIPI = ("confermata", "forma", "sostituzione", "buco", "aggiunta", "tolta")
 # Una differenza di forma con piu' di tante regole non e' una grafia diversa:
@@ -140,10 +140,6 @@ def controlla_riga(riga: dict, dove: str = "") -> list:
             "X3", dove, "varieta' %r fuori dalle cinque: una forma di Bondeno "
             "data a uno studente di Ferrara e' una forma sbagliata"
             % riga.get("varieta")))
-    if riga.get("consenso") is not True:
-        problemi.append(_problema(
-            "X4", dove, "manca il consenso: la correzione, con il nome di chi "
-            "l'ha scritta, non entra nel repository senza"))
     if not (riga.get("italiano") or "").strip() or \
             not (riga.get("ferrarese") or "").strip():
         problemi.append(_problema(
@@ -202,6 +198,28 @@ def controlla(righe: list, ids_esistenti=None) -> list:
     return problemi
 
 
+def controlla_regole_frase(regole: list, correzioni_ids=None) -> list:
+    """Z4–Z5: una regola di frase viene da correzioni, e ha un contesto vero."""
+    problemi = []
+    for regola in regole:
+        dove = "regola di frase «%s» %s" % (regola.get("italiano"),
+                                           regola.get("contesto"))
+        if regola.get("contesto") not in ("vocale", "consonante", "fine"):
+            problemi.append(_problema(
+                "Z4", dove, "contesto fuori da vocale, consonante, fine"))
+        if not regola.get("da") or not regola.get("fonte"):
+            problemi.append(_problema(
+                "Z5", dove, "regola di frase senza le correzioni da cui viene: "
+                "non si scrive a mano"))
+        elif correzioni_ids is not None:
+            mancanti = [i for i in regola["da"] if i not in correzioni_ids]
+            if mancanti:
+                problemi.append(_problema(
+                    "Z5", dove, "rimanda a correzioni che non ci sono: %s"
+                    % ", ".join(mancanti)))
+    return problemi
+
+
 def controlla_inferenze(inferenze: list, ids_esistenti=None) -> list:
     """Z1–Z3: un'inferenza non si dichiara una fonte."""
     problemi = []
@@ -232,14 +250,37 @@ def _chiave_correzione(riga: dict) -> tuple:
             normalizza.chiave(riga.get("chi") or ""))
 
 
-def importa(testo: str, percorso: str = PERCORSO) -> dict:
-    """Aggiunge al file le correzioni valide del testo; dice che cosa ha fatto."""
+# Chi scrive e che varieta' parla, quando la riga non lo dice. Dal 0.40 il sito
+# lo usa solo chi lo tiene (vedi `AGENTS.md` §2), e la pagina non chiede piu'
+# nome e consenso a ogni correzione.
+CHI_PREDEFINITO = "titolare del sito"
+VARIETA_PREDEFINITA = "cittadino"
+
+
+def importa(testo: str, percorso: str = PERCORSO, origine: str = "",
+            oggi: str = "") -> dict:
+    """Aggiunge al file le correzioni valide del testo; dice che cosa ha fatto.
+
+    Ogni correzione entra **archiviata e da verificare** (`stato:
+    "da_verificare"`, `da_verificare: true`): non fa ancora parte del
+    traduttore. Ne fa parte quando `promuovi` trova abbastanza conferme dei
+    suoi elementi, o quando qualcuno la conferma (`conferma_correzione`).
+    `origine` dice da dove e' arrivata (per esempio «segnalazione #12»).
+    """
     esistenti = leggi(percorso)
     gia = {_chiave_correzione(r) for r in esistenti}
     maggiore = max([int(r["id"][1:]) for r in esistenti
                     if re.match(r"^X\d{4}$", r.get("id") or "")] or [0])
     nuove, ripetute, scartate = [], [], []
     for riga in righe_dal_testo(testo):
+        riga = dict(riga)
+        riga.setdefault("chi", CHI_PREDEFINITO)
+        if not (riga.get("chi") or "").strip():
+            riga["chi"] = CHI_PREDEFINITO
+        if not riga.get("varieta"):
+            riga["varieta"] = VARIETA_PREDEFINITA
+        if not riga.get("data") and oggi:
+            riga["data"] = oggi
         problemi = controlla_riga(riga, "(riga da importare)")
         if problemi:
             scartate.append((riga, problemi))
@@ -249,8 +290,11 @@ def importa(testo: str, percorso: str = PERCORSO) -> dict:
             continue
         gia.add(_chiave_correzione(riga))
         maggiore += 1
-        pulita = {"id": "X%04d" % maggiore, "stato": "da_applicare"}
-        for campo in ("data", "chi", "luogo", "varieta", "consenso",
+        pulita = {"id": "X%04d" % maggiore, "stato": "da_verificare",
+                  "da_verificare": True}
+        if origine:
+            pulita["origine"] = origine
+        for campo in ("data", "chi", "luogo", "varieta",
                       "italiano", "proposta", "ferrarese", "ipa", "nota",
                       "parole", "versione"):
             if campo in riga and riga[campo] not in (None, ""):
@@ -266,7 +310,7 @@ def conferma(inferenza: dict, voci: list, chi: str, varieta: str, data: str,
              forme: dict = None) -> list:
     """Le voci candidate di un'inferenza che un parlante ha confermato.
 
-    Ogni voce confermata diventa una correzione `da_applicare` **di quella
+    Ogni voce confermata diventa una correzione `da_verificare` **di quella
     voce** (campo `voce`), con il nome di chi l'ha confermata e il posto dove
     l'ha detto (`dove`: una segnalazione, un messaggio, una sessione). E' cosi'
     che un'inferenza smette di essere un'inferenza: non perche' il programma
@@ -287,8 +331,8 @@ def conferma(inferenza: dict, voci: list, chi: str, varieta: str, data: str,
                              % (voce_id, inferenza.get("id")))
         maggiore += 1
         nuove.append({
-            "id": "X%04d" % maggiore, "stato": "da_applicare", "data": data,
-            "chi": chi, "varieta": varieta, "consenso": True,
+            "id": "X%04d" % maggiore, "stato": "da_verificare", "data": data,
+            "chi": chi, "varieta": varieta, "da_verificare": True,
             "italiano": voce.italiano,
             "proposta": voce.ferrarese, "ferrarese": forma, "voce": voce.id,
             "inferenza": inferenza.get("id"), "dove": dove,
@@ -493,7 +537,8 @@ def prove(motore, glossario, correzioni: list, giudizi=None) -> list:
     return risultato
 
 
-def inferisci(motore, glossario, correzioni: list, giudizi=None) -> list:
+def inferisci(motore, glossario, correzioni: list, giudizi=None,
+              tutte_le_candidate: bool = False) -> list:
     """Le regole di grafia, con chi le sostiene, chi le smentisce e dove valgono.
 
     Per ogni regola: `supporto` sono le correzioni che la mostrano, `contro`
@@ -546,6 +591,7 @@ def inferisci(motore, glossario, correzioni: list, giudizi=None) -> list:
             "contro": contro,
             "attestate": dati["attestate"],
             "candidate": len(candidate), "esempi": candidate[:ESEMPI],
+            **({"tutte": candidate} if tutte_le_candidate else {}),
             "stato": "da rivedere",
             "giudizio": _giudizio(len(dati["da"]), len(contro)),
         })
@@ -687,6 +733,301 @@ def applica(motore, correzione: dict, percorsi: dict,
                  "forma": correzione["ferrarese"].strip(),
                  "ipa": ipa, "varieta": correzione["varieta"],
                  "fonte": fonte, "attendibilita": "D",
+                 "nota": "Pronuncia ascoltata, scritta fra quadre da chi ha "
+                         "corretto: e' un ascolto, non una lettura della "
+                         "grafia.",
+                 "da_verificare": False}
+        _appendi(percorsi["fonetica"], nuova)
+        create.append(nuova["id"])
+    return create
+
+
+# --- la promozione: quando una correzione entra nel traduttore -----------------
+#
+# Dal 0.40 una correzione entra **archiviata e da verificare**, e il traduttore
+# non la usa. Ne usa gli **elementi** quando hanno un margine: abbastanza
+# correzioni concordi e nessuna contraria. Gli elementi sono tre:
+#
+# - `parola`: una parola italiana che il parlante traduce diversamente dal
+#   glossario («casa» → `ca`). Promossa, e' una voce `D` che corregge la voce
+#   sbagliata;
+# - `funzionale`: una parola che il glossario non aveva («il» → `al`), con il
+#   suo contesto — davanti a vocale, a consonante, in fine di frase — perche'
+#   «il» e' `al` davanti a consonante e `l'` davanti a vocale. Promossa, e' una
+#   **regola di frase** in `dati/regole_frase.json`, che il motore applica
+#   guardando la parola che segue;
+# - `grafia`: una regola dell'inferenza («`ŋ` → `n` dopo `a`, prima di `d`»).
+#   Promossa, cambia le voci candidate della stessa fonte, ma le nuove voci
+#   restano `I` e `da_verificare`: sono la regola applicata, non un ascolto.
+#
+# Le soglie sono in `dati/correzioni/soglie.json`. Una correzione confermata a
+# mano (`conferma_correzione`) passa senza soglia: chi conferma e' il margine.
+
+PERCORSO_SOGLIE = os.path.join(CARTELLA, "soglie.json")
+PERCORSO_REGOLE_FRASE = os.path.join(RADICE, "dati", "regole_frase.json")
+SOGLIE_PREDEFINITE = {"parola": 2, "funzionale": 2, "grafia": 3}
+VOCALI = "aeiouàèéìíòóùúh"
+
+
+def soglie(percorso: str = PERCORSO_SOGLIE) -> dict:
+    valori = dict(SOGLIE_PREDEFINITE)
+    if os.path.exists(percorso):
+        with io.open(percorso, encoding="utf-8") as f:
+            valori.update({k: int(v) for k, v in json.load(f).items()
+                           if k in SOGLIE_PREDEFINITE})
+    return valori
+
+
+def contesto(seguente: str) -> str:
+    """Davanti a che cosa sta una parola: `vocale`, `consonante` o `fine`.
+
+    E' la stessa funzione di `frase.contesto` e di `contestoDi` nella pagina:
+    guarda la prima lettera della parola **italiana** che segue, perche' quando
+    il motore decide la parola ferrarese che segue non c'e' ancora. La «h» conta
+    come vocale: «hanno», «ho» cominciano con un suono vocalico.
+    """
+    testo = _minuscola(seguente or "").strip()
+    if not testo:
+        return "fine"
+    return "vocale" if testo[0] in VOCALI else "consonante"
+
+
+def elementi(motore, correzione: dict) -> list:
+    """Gli elementi di una correzione, con la chiave che li confronta."""
+    coppie = allinea(motore, correzione)
+    risultato = []
+    for i, c in enumerate(coppie):
+        italiano = (c["italiano"] or "").strip()
+        if not italiano or " " in italiano:
+            continue
+        if c["tipo"] in ("forma", "sostituzione"):
+            gruppo = "parola|" + chiave_italiano(italiano)
+            risultato.append({"tipo": "parola", "gruppo": gruppo,
+                              "italiano": italiano,
+                              "ferrarese": c["corretto"],
+                              "proposto": c["proposto"], "voce": c["voce"]})
+        elif c["tipo"] == "buco":
+            seguente = next((d["italiano"] for d in coppie[i + 1:]
+                             if d["italiano"] and d["italiano"] != italiano),
+                            "")
+            ctx = contesto(seguente.split(" ")[0] if seguente else "")
+            gruppo = "funzionale|%s|%s" % (chiave_italiano(italiano), ctx)
+            risultato.append({"tipo": "funzionale", "gruppo": gruppo,
+                              "italiano": _minuscola(italiano),
+                              "contesto": ctx, "ferrarese": c["corretto"]})
+        elif c["tipo"] == "confermata":
+            risultato.append({"tipo": "conferma",
+                              "gruppo": "parola|" + chiave_italiano(italiano),
+                              "italiano": italiano,
+                              "ferrarese": c["corretto"]})
+    for e in risultato:
+        e["elemento"] = "%s|%s" % (e["gruppo"], _minuscola(e["ferrarese"]))
+    return risultato
+
+
+def chiave_italiano(parola: str) -> str:
+    """La parola italiana come chiave, con l'accento (come `verbi`)."""
+    from .verbi import chiave_italiano as chiave
+    return chiave(parola)
+
+
+def valuta(motore, correzioni: list, soglie_usate: dict = None) -> dict:
+    """Per ogni elemento: chi lo sostiene, chi lo smentisce, se e' pronto.
+
+    Una correzione **sostiene** un elemento se lo contiene; lo **smentisce** se
+    per la stessa parola (e lo stesso contesto) scrive un'altra forma, o se la
+    conferma com'era. Un elemento e' pronto quando i sostenitori arrivano alla
+    soglia e nessuno lo smentisce, oppure quando una delle sue correzioni e'
+    stata confermata a mano.
+    """
+    soglie_usate = soglie_usate or SOGLIE_PREDEFINITE
+    per_gruppo, per_elemento = {}, {}
+    for correzione in correzioni:
+        if correzione.get("stato") == "respinta":
+            continue
+        for e in elementi(motore, correzione):
+            per_gruppo.setdefault(e["gruppo"], []).append(
+                (correzione["id"], e))
+            if e["tipo"] == "conferma":
+                continue
+            dati = per_elemento.setdefault(e["elemento"], {
+                "elemento": e, "da": [], "contro": [], "confermata": False})
+            if correzione["id"] not in dati["da"]:
+                dati["da"].append(correzione["id"])
+            if correzione.get("confermata"):
+                dati["confermata"] = True
+    for chiave, dati in per_elemento.items():
+        gruppo = dati["elemento"]["gruppo"]
+        forma = _minuscola(dati["elemento"]["ferrarese"])
+        dati["contro"] = sorted({cid for cid, e in per_gruppo.get(gruppo, [])
+                                 if _minuscola(e["ferrarese"]) != forma
+                                 and cid not in dati["da"]})
+        soglia = soglie_usate.get(dati["elemento"]["tipo"], 2)
+        dati["pronto"] = dati["confermata"] or (
+            len(dati["da"]) >= soglia and not dati["contro"])
+    return per_elemento
+
+
+def leggi_regole_frase(percorso: str = PERCORSO_REGOLE_FRASE) -> dict:
+    if not os.path.exists(percorso):
+        return {"_nota": "", "regole": []}
+    with io.open(percorso, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _scrivi_regole_frase(dati: dict, percorso: str) -> None:
+    dati["_nota"] = (
+        "Le regole di frase: una parola funzionale italiana e la sua resa "
+        "ferrarese davanti a vocale, a consonante o in fine di frase. File "
+        "scritto da `correzioni promuovi`, mai a mano: ogni regola viene da "
+        "correzioni di parlanti che la sostengono e che nessuna smentisce. "
+        "Vedi dati/correzioni/README.md.")
+    dati["regole"].sort(key=lambda r: (r["italiano"], r["contesto"]))
+    with io.open(percorso, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(dati, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
+def promuovi(motore, correzioni: list, percorsi: dict, oggi: str,
+             soglie_usate: dict = None, glossario=None) -> dict:
+    """Porta nel traduttore gli elementi pronti, e le correzioni complete.
+
+    Scrive: le voci `D` delle parole pronte, le regole di frase pronte, le voci
+    `I` delle regole di grafia pronte, e per ogni correzione i cui elementi
+    sono tutti nel traduttore (o confermata a mano) la frase intera e la
+    pronuncia. Non scrive mai due volte la stessa cosa: ogni riga scritta
+    porta il suo `elemento`. Le correzioni cambiate le aggiorna nella lista;
+    salvarle e' di chi chiama.
+    """
+    soglie_usate = soglie_usate or SOGLIE_PREDEFINITE
+    valutati = valuta(motore, correzioni, soglie_usate)
+    voci = _leggi_jsonl(percorsi["glossario"])
+    gia = {v.get("elemento") for v in voci if v.get("elemento")}
+    per_id = {v["id"]: v for v in voci}
+    regole = leggi_regole_frase(percorsi["regole_frase"])
+    gia |= {r.get("elemento") for r in regole["regole"]}
+    numero = _prossimo(voci, "V")
+    fatto = {"parole": [], "regole_frase": [], "grafia": [], "correzioni": []}
+    per_correzione = {c["id"]: c for c in correzioni}
+
+    def fonte_elemento(ids):
+        chi = sorted({per_correzione[i].get("chi", "") for i in ids})
+        return ("correzioni %s (%s), %d concordi e nessuna contraria"
+                % (", ".join(ids), ", ".join(chi), len(ids)))
+
+    for chiave, dati in sorted(valutati.items()):
+        e = dati["elemento"]
+        if not dati["pronto"] or chiave in gia:
+            continue
+        prima = per_correzione[dati["da"][0]]
+        if e["tipo"] == "parola":
+            vecchia = per_id.get(e["voce"])
+            nuova = {"id": "V%04d" % numero, "ferrarese": e["ferrarese"],
+                     "italiano": e["italiano"],
+                     "campo": (vecchia or {}).get("campo", ""),
+                     "varieta": prima["varieta"],
+                     "note": "Correzione di un parlante: il traduttore "
+                             "proponeva «%s»." % e["proposto"],
+                     "fonte": fonte_elemento(dati["da"]),
+                     "attendibilita": "D", "da_verificare": False,
+                     "elemento": chiave, "da_correzioni": dati["da"]}
+            if vecchia is not None:
+                nuova["corregge"] = vecchia["id"]
+            numero += 1
+            _appendi(percorsi["glossario"], nuova)
+            fatto["parole"].append(nuova["id"])
+        elif e["tipo"] == "funzionale":
+            regole["regole"].append({
+                "italiano": e["italiano"], "contesto": e["contesto"],
+                "ferrarese": e["ferrarese"], "varieta": prima["varieta"],
+                "fonte": fonte_elemento(dati["da"]), "da": dati["da"],
+                "elemento": chiave, "data": oggi})
+            fatto["regole_frase"].append(chiave)
+        gia.add(chiave)
+    if fatto["regole_frase"]:
+        _scrivi_regole_frase(regole, percorsi["regole_frase"])
+
+    # Le regole di grafia, dalle inferenze con il loro margine.
+    if glossario is not None:
+        for inferenza in inferisci(motore, glossario, correzioni,
+                                   tutte_le_candidate=True):
+            if inferenza["supporto"] < soglie_usate["grafia"] or \
+                    inferenza["contro"]:
+                continue
+            for esempio in inferenza["tutte"]:
+                chiave = "grafia|%s|%s|%s" % (inferenza["famiglia"],
+                                              inferenza["descrizione"],
+                                              esempio["voce"])
+                if chiave in gia:
+                    continue
+                vecchia = per_id.get(esempio["voce"]) or {}
+                nuova = {"id": "V%04d" % numero,
+                         "ferrarese": esempio["proposta"],
+                         "italiano": esempio["italiano"],
+                         "campo": vecchia.get("campo", ""),
+                         "varieta": vecchia.get("varieta", "cittadino"),
+                         "note": "Regola di grafia applicata alla voce %s: %s."
+                                 % (esempio["voce"], inferenza["descrizione"]),
+                         "fonte": "regola di grafia ricavata dalle " +
+                                  fonte_elemento(inferenza["da"]),
+                         "attendibilita": "I", "da_verificare": True,
+                         "corregge": esempio["voce"], "elemento": chiave,
+                         "da_correzioni": inferenza["da"]}
+                numero += 1
+                _appendi(percorsi["glossario"], nuova)
+                gia.add(chiave)
+                fatto["grafia"].append(nuova["id"])
+
+    # Le correzioni complete: la frase intera e la pronuncia.
+    for correzione in correzioni:
+        if correzione.get("stato") != "da_verificare":
+            continue
+        propri = [e for e in elementi(motore, correzione)
+                  if e["tipo"] != "conferma"]
+        if not correzione.get("confermata") and (
+                not propri or any(e["elemento"] not in gia for e in propri)):
+            continue
+        create = _frase_e_pronuncia(correzione, percorsi, voci_nuove=[
+            v for v in _leggi_jsonl(percorsi["glossario"])
+            if correzione["id"] in (v.get("da_correzioni") or [])])
+        correzione["stato"] = "applicata"
+        correzione["da_verificare"] = False
+        correzione["applicata_il"] = oggi
+        correzione["crea"] = create + [
+            v["id"] for v in _leggi_jsonl(percorsi["glossario"])
+            if correzione["id"] in (v.get("da_correzioni") or [])]
+        fatto["correzioni"].append(correzione["id"])
+    return fatto
+
+
+def _frase_e_pronuncia(correzione: dict, percorsi: dict,
+                       voci_nuove: list) -> list:
+    fonte = fonte_di(correzione)
+    create, riferimento = [], ""
+    if len(normalizza.tokenizza(correzione["italiano"])) > 1:
+        coppie = _leggi_jsonl(percorsi["coppie"])
+        nuova = {"id": "F%04d" % _prossimo(coppie, "F"),
+                 "varieta": correzione["varieta"],
+                 "italiano": correzione["italiano"].strip(),
+                 "ferrarese": correzione["ferrarese"].strip(),
+                 "tipo": "conversazione", "fonte": fonte,
+                 "nota": "Frase corretta da un parlante." + (
+                     " Il traduttore proponeva «%s»." % correzione["proposta"]
+                     if correzione.get("proposta") else ""),
+                 "attendibilita": "D", "ricorrenze": 1}
+        _appendi(percorsi["coppie"], nuova)
+        create.append(nuova["id"])
+        riferimento = nuova["id"]
+    elif voci_nuove:
+        riferimento = voci_nuove[0]["id"]
+    ipa = (correzione.get("ipa") or "").strip()
+    if ipa and riferimento:
+        trascrizioni = _leggi_jsonl(percorsi["fonetica"])
+        nuova = {"id": "T%04d" % _prossimo(trascrizioni, "T"),
+                 "riferimento": riferimento,
+                 "forma": correzione["ferrarese"].strip(), "ipa": ipa,
+                 "varieta": correzione["varieta"], "fonte": fonte,
+                 "attendibilita": "D",
                  "nota": "Pronuncia ascoltata, scritta fra quadre da chi ha "
                          "corretto: e' un ascolto, non una lettura della "
                          "grafia.",

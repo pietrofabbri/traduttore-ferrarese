@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from . import frase as frase_modulo
 from . import italiano, morfologia, normalizza, pronominali, verbi
 from .glossario import IT_FE
 
@@ -47,6 +48,11 @@ ORIGINE = {
     # la parola, e vale piu' di una regola imparata, perche' qualcuno l'ha
     # scritta: e' un'attestazione, non un calcolo.
     "verbo": 0.75,
+    # `frase` e' una regola di frase (0.40): una parola funzionale secondo la
+    # parola che segue, promossa da correzioni concordi di parlanti. Vale
+    # quanto il glossario: e' un dato documentato, e piu' preciso di una voce
+    # perche' tiene conto di quello che viene dopo.
+    "frase": 0.95,
     "regola": 0.55,
     "modello": 0.50,
     "nessuna": 0.0,
@@ -239,8 +245,9 @@ class Motore:
             # «loro sono» e' la terza plurale, non la prima singolare.
             persona = (verbi.persona_del_soggetto(token[i - 1])
                        if i > 0 and direzione == IT_FE else "")
+            seguente = token[i + 1] if i + 1 < len(token) else ""
             tradotto, origine, confidenza, dettaglio = self._risolvi_una(
-                parola, frase, direzione, contesto, persona)
+                parola, frase, direzione, contesto, persona, seguente)
             risultati.append((parola, tradotto, origine, confidenza, dettaglio))
             i += 1
         return risultati
@@ -259,8 +266,18 @@ class Motore:
         return None
 
     def _risolvi_una(self, parola: str, frase: str, direzione: str, contesto,
-                     persona: str = "") -> tuple:
+                     persona: str = "", seguente: str = "") -> tuple:
         """Risolve un token e restituisce (tradotto, origine, confidenza, dettaglio)."""
+
+        # Livello 0: le regole di frase (0.40). Vengono solo da correzioni di
+        # parlanti promosse, e dicono una cosa che il glossario non puo' dire:
+        # la parola funzionale secondo la parola che segue («il cane» → `al`).
+        if direzione == IT_FE:
+            regola = frase_modulo.cerca(parola, seguente)
+            if regola is not None:
+                return (regola["ferrarese"], "frase", ORIGINE["frase"],
+                        "regola di frase, davanti a %s: %s"
+                        % (regola["contesto"], regola["fonte"]))
 
         # Le forme verbali si cercano una volta sola: servono qui, nei due casi
         # in cui una casella di una tabella di coniugazione vince sul glossario

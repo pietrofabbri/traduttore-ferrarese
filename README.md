@@ -1,7 +1,7 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.39
-data: 2026-11-04
+versione: 0.40
+data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
 
@@ -125,31 +125,28 @@ parte che non si può ripetere, quindi c'è sempre.
 python3 -m traduttore.cli web     # genera tutte le pagine e stampa i pesi
 ```
 
-## Le correzioni dei parlanti, e quello che se ne inferisce
+## Le correzioni: si inviano con un pulsante, entrano con un margine
 
-Sotto ogni traduzione la pagina ha **«La traduzione è sbagliata? Correggila»**: chi
-parla ferrarese scrive la frase giusta, se vuole la pronuncia in IPA fra parentesi
-quadre (`[al ˈkan]`, un ascolto e non una lettura della grafia), il nome, la varietà
-e il consenso. La pagina non manda niente: prepara una riga da consegnare, anche
-come segnalazione su GitHub già compilata.
+Sotto ogni traduzione la pagina ha **«La traduzione è sbagliata? Correggila»**: la
+frase giusta, se si vuole la pronuncia IPA fra parentesi quadre (`[al ˈkan]`), e
+**Invia**. L'invio apre una segnalazione su GitHub (serve un token salvato nel
+browser; senza token la pagina non chiama nessuno e «Copia» e «Scarica» danno la riga)
+e il workflow `Correzioni` la **archivia da verificare** in `dati/correzioni/`.
 
-```bash
-python3 -m traduttore.cli correzioni importa FILE
-python3 -m traduttore.cli correzioni allinea X0001
-python3 -m traduttore.cli correzioni applica X0001
-python3 -m traduttore.cli correzioni inferisci
-python3 -m traduttore.cli correzioni conferma I0001 --voci V10405 --chi "..." --varieta cittadino --dove "..."
-```
+La correzione entra nel traduttore **a pezzi, quando ogni pezzo ha il suo margine**:
 
-**Una correzione è una fonte; un'inferenza no.** Applicata, la correzione diventa una
-coppia `D` (la frase), una voce `D` del glossario che **corregge** quella sbagliata
-(e viene prima di lei, senza cancellarla) e una trascrizione ascoltata. Poi il
-programma confronta la forma sbagliata con quella giusta, ne ricava la differenza con
-il suo contesto («`ŋ` → `n` dopo `a`, prima di `d`») e cerca le voci **della stessa
-fonte** dove si ripete: da una sola correzione di «andare» trova sessanta voci di
-Bigoni. Le scrive in `dati/correzioni/inferenze.jsonl` con chi le sostiene e chi le
-smentisce, e **non tocca il glossario**: diventano dati quando un parlante le conferma.
-Il protocollo, compreso che cosa fa Claude con le inferenze, è in
+- una **parola** («casa» → `ca`) dopo due correzioni concordi e nessuna contraria
+  diventa una voce `D` che corregge quella sbagliata;
+- una **parola funzionale** nel suo contesto («il» davanti a consonante → `al`) dopo
+  due diventa una **regola di frase**: il motore la applica guardando la parola che
+  segue, quindi «il libro» esce `al Libar` anche se nessuno ha corretto «il libro»;
+- una **regola di grafia** ricavata dalle correzioni («`ŋ` → `n` dopo `a`, prima di
+  `d`») dopo tre cambia le voci candidate della stessa fonte, che restano `I` e da
+  verificare.
+
+Quando tutti i pezzi sono entrati entra anche la frase intera, con la pronuncia. Le
+soglie sono in `dati/correzioni/soglie.json`, e una correzione si può confermare a
+mano (`correzioni conferma X0001`). Il protocollo è in
 [dati/correzioni/README.md](dati/correzioni/README.md).
 
 ## La verifica a campione: quanto sbaglia ogni fonte
@@ -762,7 +759,7 @@ correggerlo sarebbe scrivere una forma che la fonte non scrive.
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 375 test
+python3 prove/test_traduttore.py     # 382 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

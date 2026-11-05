@@ -816,7 +816,15 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
             dati["correzione"] = {
                 "simboli": "".join(sorted(SIMBOLI_IPA)),
                 "repository": REPOSITORY,
+                "api": REPOSITORY.replace("https://github.com/",
+                                          "https://api.github.com/repos/"),
                 "versione": __version__}
+            # Le regole di frase promosse dalle correzioni (0.40).
+            from traduttore import correzioni as correzioni_modulo
+            dati["regole_frase"] = [
+                {k: r[k] for k in ("italiano", "contesto", "ferrarese",
+                                   "fonte")}
+                for r in correzioni_modulo.leggi_regole_frase()["regole"]]
             # Le classi grammaticali, perche' la pagina applichi le regole
             # con lo stesso cancello del motore. Vanno su questa pagina e
             # non su tutte: le altre non applicano regole.

@@ -8,7 +8,7 @@ body:
       value: |
         La riga qui sotto l'ha preparata la pagina del traduttore («La traduzione è sbagliata? Correggila»). Non serve modificarla.
         Chi tiene il repository la importa con `python3 -m traduttore.cli correzioni importa` e segue `dati/correzioni/README.md`.
-        **La segnalazione è pubblica**, come il nome che hai scritto nella riga.
+        Il workflow «Correzioni» la archivia da verificare e chiude la segnalazione.
   - type: textarea
     id: righe
     attributes:
@@ -22,10 +22,3 @@ body:
     attributes:
       label: Altro da dire (facoltativo)
       description: Per esempio dove si dice così, o se c'è un'altra forma.
-  - type: checkboxes
-    id: consenso
-    attributes:
-      label: Consenso
-      options:
-        - label: Ho almeno 18 anni e acconsento che questa correzione, con il nome che ho scritto, entri nel repository pubblico del progetto.
-          required: true

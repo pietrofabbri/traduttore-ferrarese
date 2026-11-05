@@ -4421,25 +4421,36 @@ class TestLeCorrezioni(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.cartella, ignore_errors=True)
 
-    def test_si_importano_solo_le_righe_complete(self):
+    def test_si_importano_archiviate_e_da_verificare(self):
+        # Dal 0.40 il nome e la varieta' hanno un valore predefinito e il
+        # consenso non si chiede: il sito lo usa chi lo tiene.
         testo = "\n".join([
             "un messaggio con dentro le righe",
             json.dumps(_correzione(), ensure_ascii=False),
-            json.dumps(_correzione(chi=""), ensure_ascii=False),
-            json.dumps(_correzione(consenso=False, italiano="x"), ensure_ascii=False),
+            json.dumps({"tipo": "correzione", "italiano": "pane",
+                        "ferrarese": "pan"}, ensure_ascii=False),
             json.dumps(_correzione(varieta="bolognese", italiano="y"), ensure_ascii=False),
             json.dumps(_correzione(ipa="/anˈdar/", italiano="z"), ensure_ascii=False),
+            json.dumps(_correzione(ferrarese="", italiano="w"), ensure_ascii=False),
         ])
-        esito = self.c.importa(testo, self.percorso)
-        self.assertEqual([r["id"] for r in esito["nuove"]], ["X0001"])
+        esito = self.c.importa(testo, self.percorso, origine="segnalazione #1",
+                               oggi="2026-11-05")
+        self.assertEqual([r["id"] for r in esito["nuove"]], ["X0001", "X0002"])
+        seconda = esito["nuove"][1]
+        self.assertEqual((seconda["chi"], seconda["varieta"], seconda["data"]),
+                         (self.c.CHI_PREDEFINITO, "cittadino", "2026-11-05"))
+        for riga in esito["nuove"]:
+            self.assertEqual((riga["stato"], riga["da_verificare"],
+                              riga["origine"]),
+                             ("da_verificare", True, "segnalazione #1"))
         codici = sorted(p.codice for _, problemi in esito["scartate"]
                         for p in problemi)
-        self.assertEqual(codici, ["X2", "X3", "X4", "X6"])
+        self.assertEqual(codici, ["X3", "X5", "X6"])
         # La stessa correzione due volte non entra due volte.
         esito = self.c.importa(json.dumps(_correzione(), ensure_ascii=False),
                                self.percorso)
         self.assertEqual((len(esito["nuove"]), len(esito["ripetute"])), (0, 1))
-        self.assertEqual(self.c.leggi(self.percorso)[0]["stato"], "da_applicare")
+        self.assertEqual(self.c.leggi(self.percorso)[0]["stato"], "da_verificare")
 
     def test_la_pronuncia_sta_fra_quadre_e_in_ipa(self):
         self.assertEqual(self.c.controlla_riga(_correzione(ipa="[anˈdar]")), [])
@@ -4576,6 +4587,124 @@ class TestLeCorrezioni(unittest.TestCase):
             self.c.leggi(PERCORSI["inferenze"])), [])
 
 
+class TestLaPromozione(unittest.TestCase):
+    """Una correzione archiviata entra nel traduttore quando ha il suo margine (0.40)."""
+
+    def setUp(self):
+        from traduttore import correzioni, frase
+        from traduttore.motore import Motore
+        self.c, self.frase = correzioni, frase
+        self.cartella = tempfile.mkdtemp()
+        self.percorsi = {k: os.path.join(self.cartella, k + ".jsonl")
+                         for k in ("glossario", "coppie", "fonetica")}
+        self.percorsi["regole_frase"] = os.path.join(self.cartella,
+                                                     "regole_frase.json")
+        glossario = Glossario([
+            _voce("V1", "càn", "cane", "Ferri 1889, pag. 1", attendibilita="I"),
+            _voce("V2", "casa", "casa", "Ferri 1889, pag. 2", attendibilita="I"),
+            _voce("V3", "gat", "gatto", "Ferri 1889, pag. 3", attendibilita="I"),
+            _voce("V4", "òm", "uomo", "Ferri 1889, pag. 4", attendibilita="I")])
+        with io.open(self.percorsi["glossario"], "w", encoding="utf-8") as f:
+            for v in glossario.voci:
+                f.write(json.dumps({"id": v.id, "ferrarese": v.ferrarese,
+                                    "italiano": v.italiano, "fonte": v.fonte,
+                                    "attendibilita": "I", "varieta": "cittadino"},
+                                   ensure_ascii=False) + "\n")
+        for k in ("coppie", "fonetica"):
+            io.open(self.percorsi[k], "w", encoding="utf-8").close()
+        self.glossario = glossario
+        self.motore = Motore(glossario, Corpus([]))
+
+    def tearDown(self):
+        shutil.rmtree(self.cartella, ignore_errors=True)
+        self.frase._cache.clear()
+
+    def _correzioni(self, *coppie):
+        return [dict(_correzione(italiano=it, ferrarese=fe), id="X%04d" % n,
+                     stato="da_verificare", da_verificare=True)
+                for n, (it, fe) in enumerate(coppie, 1)]
+
+    def test_sotto_la_soglia_resta_da_verificare(self):
+        correzioni = self._correzioni(("il cane", "al can"))
+        fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
+                                "2026-11-05", {"parola": 2, "funzionale": 2,
+                                               "grafia": 3})
+        self.assertEqual(fatto, {"parole": [], "regole_frase": [],
+                                 "grafia": [], "correzioni": []})
+        self.assertEqual(correzioni[0]["stato"], "da_verificare")
+
+    def test_con_il_margine_entrano_la_regola_di_frase_e_la_parola(self):
+        correzioni = self._correzioni(("il cane", "al can"),
+                                      ("il gatto in casa", "al gat in ca"),
+                                      ("la casa", "la ca"))
+        fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
+                                "2026-11-05")
+        self.assertEqual(fatto["regole_frase"], ["funzionale|il|consonante|al"])
+        self.assertEqual(len(fatto["parole"]), 1, "«casa» → «ca» due volte")
+        # «cane» → «can» ha una sola correzione: la prima resta da verificare.
+        self.assertEqual([c["stato"] for c in correzioni],
+                         ["da_verificare", "applicata", "applicata"])
+        regole = self.c.leggi_regole_frase(self.percorsi["regole_frase"])
+        self.assertEqual(self.c.controlla_regole_frase(
+            regole["regole"], {"X0001", "X0002", "X0003"}), [])
+        # Il motore la usa, guardando la parola che segue.
+        self.frase._cache.clear()
+        regola = self.frase.cerca("il", "libro",
+                                  self.percorsi["regole_frase"])
+        self.assertEqual(regola["ferrarese"], "al")
+        self.assertIsNone(self.frase.cerca("il", "uomo",
+                                           self.percorsi["regole_frase"]),
+                          "davanti a vocale nessuno ha corretto niente")
+        # Rifarlo non scrive due volte.
+        di_nuovo = self.c.promuovi(self.motore, correzioni, self.percorsi,
+                                   "2026-11-05")
+        self.assertEqual(di_nuovo["regole_frase"] + di_nuovo["parole"], [])
+
+    def test_una_correzione_contraria_ferma_la_promozione(self):
+        correzioni = self._correzioni(("il cane", "al can"),
+                                      ("il gatto", "al gat"),
+                                      ("il pane", "el pan"))
+        valutati = self.c.valuta(self.motore, correzioni)
+        al = valutati["funzionale|il|consonante|al"]
+        self.assertEqual((al["da"], al["contro"], al["pronto"]),
+                         (["X0001", "X0002"], ["X0003"], False))
+
+    def test_la_conferma_a_mano_e_il_margine(self):
+        correzioni = self._correzioni(("il cane", "al can"))
+        correzioni[0]["confermata"] = True
+        fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
+                                "2026-11-05")
+        self.assertEqual(fatto["correzioni"], ["X0001"])
+        self.assertEqual(correzioni[0]["stato"], "applicata")
+        self.assertTrue(fatto["regole_frase"] and fatto["parole"])
+
+    def test_il_contesto_e_lo_stesso_nelle_due_copie(self):
+        for parola, atteso in (("libro", "consonante"), ("uomo", "vocale"),
+                               ("ho", "vocale"), ("", "fine"),
+                               ("È", "vocale")):
+            self.assertEqual(self.frase.contesto(parola), atteso)
+            self.assertEqual(self.c.contesto(parola), atteso)
+
+
+class TestLaRegolaDiFraseNellaPagina(_ModelloInNode, unittest.TestCase):
+    """La pagina applica le regole di frase come il motore."""
+
+    def test_la_regola_guarda_la_parola_che_segue(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
+        dati = {"glossario": None, "origine": {"frase": 0.95},
+                "regole_frase": [{"italiano": "il", "contesto": "consonante",
+                                  "ferrarese": "al", "fonte": "X0001"}]}
+        esito = self._valuta_js(
+            '[risolvi("il", "it-fe", "il libro", "", "libro"),'
+            ' risolvi("il", "it-fe", "il uomo", "", "uomo"),'
+            ' contestoDi("ho"), contestoDi("")]', dati=dati)
+        self.assertEqual((esito[0]["testo"], esito[0]["origine"]),
+                         ("al", "frase"))
+        self.assertNotEqual(esito[1]["origine"], "frase")
+        self.assertEqual(esito[2:], ["vocale", "fine"])
+
+
 class TestLaCorrezioneNellaPagina(_ModelloInNode, unittest.TestCase):
     """La pagina prepara la riga con gli stessi controlli di `correzioni`."""
 
@@ -4604,10 +4733,17 @@ class TestLaCorrezioneNellaPagina(_ModelloInNode, unittest.TestCase):
                          "la pagina prepara una riga che il repository rifiuta")
         self.assertEqual(correzioni.righe_dal_testo(esito["riga"]), [riga])
 
-    def test_senza_consenso_o_con_la_pronuncia_sbagliata_non_si_prepara(self):
+    def test_senza_nome_si_firma_il_titolare(self):
         if not self._js():
             self.skipTest("node non e' installato")
-        self.assertTrue(self._riga(consenso=False)["problemi"])
+        riga = json.loads(self._riga(chi="", varieta="")["riga"])
+        self.assertEqual((riga["chi"], riga["varieta"]),
+                         ("titolare del sito", "cittadino"))
+        self.assertNotIn("consenso", riga)
+
+    def test_con_la_pronuncia_sbagliata_non_si_prepara(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
         self.assertTrue(self._riga(ipa="anˈdar")["problemi"])
         self.assertTrue(self._riga(ipa="[an#dar]")["problemi"])
         self.assertTrue(self._riga(ferrarese="aŋdàr")["problemi"],
@@ -6274,8 +6410,13 @@ class TestVerificaACampione(unittest.TestCase):
                     self.assertIn(attesa, pagina,
                                   "%s di %s non e' in verifica.html" % (vid, e.id))
         self.assertNotIn("<!--VERIFICA-->", pagina)
-        self.assertIsNone(re.search(
-            r"\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(", pagina))
+        # L'unica chiamata ammessa e' l'invio delle correzioni, marcata
+        # RETE-DICHIARATA (AGENTS.md §2, eccezione del 2026-11-05).
+        chiamate = [r for r in pagina.splitlines()
+                    if re.search(r"\b(fetch|XMLHttpRequest|WebSocket|"
+                                 r"EventSource)\s*\(", r)]
+        self.assertEqual([r for r in chiamate if "RETE-DICHIARATA" not in r], [])
+        self.assertLessEqual(len(chiamate), 1)
 
 
 if __name__ == "__main__":

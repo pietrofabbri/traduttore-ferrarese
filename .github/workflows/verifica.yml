@@ -133,7 +133,11 @@ jobs:
             echo "ERRORE: una pagina carica una risorsa esterna"
             exit 1
           fi
-          if grep -rnE '\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(' web/*.html; then
+          # L'unica eccezione e' l'invio delle correzioni (AGENTS.md §2,
+          # decisa il 2026-11-05): una riga marcata RETE-DICHIARATA, che parte
+          # solo premendo «Invia» con un token salvato nel browser. Ogni altra
+          # chiamata resta un errore.
+          if grep -rnE '\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(' web/*.html | grep -v 'RETE-DICHIARATA'; then
             echo "ERRORE: una pagina chiama la rete dal codice"
             exit 1
           fi

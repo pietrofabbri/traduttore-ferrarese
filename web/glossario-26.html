@@ -49,6 +49,7 @@
   .parola.glossario { border-color: var(--glossario); }
   .parola.corpo { border-color: var(--corpus); }
   .parola.verbo { border-color: var(--corpus); border-bottom-style: double; }
+  .parola.frase { border-color: var(--glossario); border-bottom-style: double; }
   .parola.regola { border-color: var(--regola); border-bottom-style: dotted; }
   .parola.modello { border-color: var(--modello); border-bottom-style: dashed; }
   .parola.nessuna { border-color: var(--nessuna); background: #fdf0f0; }
@@ -227,6 +228,7 @@
   "corpo": 0.8,
   "corpo_frase": 0.92,
   "verbo": 0.75,
+  "frase": 0.95,
   "regola": 0.55,
   "modello": 0.5,
   "nessuna": 0.0
@@ -10520,6 +10522,8 @@
     // meno di una voce di dizionario, perche' copre una persona sola, e vale
     // piu' di una regola imparata, perche' qualcuno l'ha scritta.
     verbo: "da una forma verbale attestata",
+    // `frase` e' una regola di frase promossa da correzioni di parlanti.
+    frase: "da una regola di frase",
     regola: "da una regola morfologica",
     modello: "dal modello",
     nessuna: "NON LO SO"
@@ -10905,7 +10909,24 @@ function tokenizza(t) {
     };
   }
 
-  function risolvi(parola, verso, frase, persona) {
+  // Copia di `frase.contesto` e di `frase.cerca`: la parola funzionale
+  // secondo la prima lettera della parola italiana che segue.
+  var VOCALI = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fah";
+  function contestoDi(seguente) {
+    var t = normale(seguente || "").trim();
+    if (!t) return "fine";
+    return VOCALI.indexOf(t.charAt(0)) !== -1 ? "vocale" : "consonante";
+  }
+  function regolaDiFrase(parola, seguente) {
+    var regole = DATI.regole_frase || [];
+    var k = normale(parola || ""), c = contestoDi(seguente);
+    for (var i = 0; i < regole.length; i++) {
+      if (normale(regole[i].italiano) === k && regole[i].contesto === c) return regole[i];
+    }
+    return null;
+  }
+
+  function risolvi(parola, verso, frase, persona, seguente) {
     // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
     var gemella = fraseGemella(frase, verso);
     if (gemella) {
@@ -10947,6 +10968,13 @@ function tokenizza(t) {
     // Le forme verbali si cercano una volta sola, come in `motore.py`: vincono
     // sul glossario solo nei due casi di `primaDelGlossario`, e altrimenti
     // vengono dopo il glossario e prima del frammento.
+    // Livello 0: le regole di frase, come in `motore.py`.
+    var diFrase = verso === "it-fe" ? regolaDiFrase(parola, seguente) : null;
+    if (diFrase) {
+      return { testo: diFrase.ferrarese, origine: "frase",
+               confidenza: DATI.origine.frase,
+               dettaglio: "regola di frase, davanti a " + diFrase.contesto + ": " + diFrase.fonte };
+    }
     var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
     if (primaDelGlossario(verbale, parola, persona)) return rispostaVerbo(verbale);
 
@@ -11075,8 +11103,9 @@ function tokenizza(t) {
       // `motore.py`: «loro sono» e' la terza plurale.
       var persona = (direzione === "it-fe" && iToken > 0)
         ? personaDelSoggetto(token[iToken - 1]) : "";
+      var seguente = a ? "" : (token[iToken + 1] || "");
       unita.push({ testo: pezzo, indice: iToken,
-                   risposta: risolvi(pezzo, direzione, testo, persona) });
+                   risposta: risolvi(pezzo, direzione, testo, persona, seguente) });
       iToken += a ? a.quante : 1;
     }
     return unita;
@@ -11095,6 +11124,7 @@ function tokenizza(t) {
     if (direzione === "it-fe" && campo && !campo.value) campo.value = proposta;
   }
   function oggiIso() { return new Date().toISOString().slice(0, 10); }
+  var CHI_PREDEFINITO = "titolare del sito", VARIETA_PREDEFINITA = "cittadino";
   function rigaCorrezione(campi, ultima, data) {
     var problemi = [];
     if (!ultima || ultima.direzione !== "it-fe") {
@@ -11105,9 +11135,8 @@ function tokenizza(t) {
     if (ultima && ferrarese && ferrarese === ultima.proposta) {
       problemi.push("la frase e' uguale alla traduzione proposta: che cosa cambia?");
     }
-    if (!(campi.chi || "").trim()) problemi.push("scrivi chi sei: una correzione e' una fonte solo se dice chi l'ha scritta");
-    if (!(DATI.nomi_varieta || {})[campi.varieta]) problemi.push("scegli la tua varieta'");
-    if (campi.consenso !== true) problemi.push("serve il consenso a mettere la correzione, con il tuo nome, nel repository");
+    var varieta = campi.varieta || VARIETA_PREDEFINITA;
+    if (!(DATI.nomi_varieta || {})[varieta]) problemi.push("varieta' sconosciuta: " + varieta);
     var ipa = (campi.ipa || "").trim();
     if (ipa) {
       if (ipa.charAt(0) !== "[" || ipa.charAt(ipa.length - 1) !== "]") {
@@ -11121,35 +11150,71 @@ function tokenizza(t) {
       if (strani.length) problemi.push("nella pronuncia ci sono simboli che non sono IPA: " + strani.join(" "));
     }
     if (problemi.length) return { riga: "", problemi: problemi };
-    var riga = { tipo: "correzione", data: data, chi: campi.chi.trim(),
-                 varieta: campi.varieta, consenso: true,
-                 italiano: ultima.italiano, proposta: ultima.proposta,
-                 ferrarese: ferrarese, parole: ultima.parole,
+    var riga = { tipo: "correzione", data: data,
+                 chi: (campi.chi || "").trim() || CHI_PREDEFINITO,
+                 varieta: varieta, italiano: ultima.italiano,
+                 proposta: ultima.proposta, ferrarese: ferrarese,
+                 parole: ultima.parole,
                  versione: (DATI.correzione || {}).versione || "" };
     if ((campi.luogo || "").trim()) riga.luogo = campi.luogo.trim();
     if (ipa) riga.ipa = ipa;
     if ((campi.nota || "").trim()) riga.nota = campi.nota.trim();
     return { riga: JSON.stringify(riga), problemi: [] };
   }
+  var CHIAVE_IMPOSTAZIONI = "traduttore-ferrarese-invio";
+  function leggiImpostazioni() {
+    try { return JSON.parse(window.localStorage.getItem(CHIAVE_IMPOSTAZIONI) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function salvaImpostazioni() {
+    var i = { token: el("tokenCorrezione").value.trim(), chi: el("chiCorregge").value.trim(),
+              varieta: el("varietaCorregge").value, luogo: el("luogoCorregge").value.trim() };
+    try { window.localStorage.setItem(CHIAVE_IMPOSTAZIONI, JSON.stringify(i)); } catch (e) { /* niente */ }
+    return i;
+  }
   function preparaCorrezione() {
+    var i = leggiImpostazioni();
     var esito = rigaCorrezione({
       ferrarese: el("ferraresCorretto").value, ipa: el("ipaCorretta").value,
-      chi: el("chiCorregge").value, varieta: el("varietaCorregge").value,
-      luogo: el("luogoCorregge").value, nota: el("notaCorregge").value,
-      consenso: !!el("consensoCorregge").checked
+      nota: el("notaCorregge").value, chi: i.chi, varieta: i.varieta, luogo: i.luogo
     }, ULTIMA, oggiIso());
     el("rigaCorrezione").value = esito.riga;
     el("esitoCorrezione").innerHTML = esito.problemi.length
-      ? '<p class="errore">' + esito.problemi.map(scappa).join("<br>") + '</p>'
-      : '<p>Pronta. Copiala, scaricala o apri la segnalazione: chi tiene il repository la importa.</p>';
-    var link = el("segnalaCorrezione");
-    var repository = (DATI.correzione || {}).repository || "";
-    link.href = (esito.riga && repository)
-      ? repository + "/issues/new?template=correzione.yml&title=" +
-        encodeURIComponent("Correzione: " + ULTIMA.italiano) + "&righe=" +
-        encodeURIComponent(esito.riga)
-      : "#";
+      ? '<p class="errore">' + esito.problemi.map(scappa).join("<br>") + '</p>' : "";
     return esito.riga;
+  }
+  // L'UNICA chiamata di rete della pagina (AGENTS.md §2, eccezione decisa il
+  // 2026-11-05): parte solo premendo «Invia», solo con un token salvato in
+  // questo browser, e solo verso l'API di GitHub di questo repository. Il
+  // controllo della CI accetta soltanto le righe marcate RETE-DICHIARATA.
+  function inviaCorrezione() {
+    var riga = preparaCorrezione();
+    if (!riga) return;
+    var i = leggiImpostazioni();
+    var repository = (DATI.correzione || {}).api || "";
+    if (!i.token || !repository) {
+      el("esitoCorrezione").innerHTML = '<p class="errore">Manca il token: aprilo in «Impostazioni di invio». Intanto puoi copiare o scaricare la riga.</p>';
+      return;
+    }
+    el("esitoCorrezione").innerHTML = "<p>Invio&hellip;</p>";
+    var corpo = { title: "Correzione: " + ULTIMA.italiano, labels: ["correzione"],
+                  body: "Correzione inviata dalla pagina del traduttore.\n\n```json\n" + riga + "\n```\n" };
+    window.fetch(repository + "/issues", {  // RETE-DICHIARATA
+      method: "POST",
+      headers: { "Authorization": "Bearer " + i.token, "Accept": "application/vnd.github+json",
+                 "Content-Type": "application/json" },
+      body: JSON.stringify(corpo)
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, stato: r.status, j: j }; });
+    }).then(function (e) {
+      if (!e.ok) throw new Error(e.stato + " " + ((e.j && e.j.message) || ""));
+      el("esitoCorrezione").innerHTML = '<p>Inviata: <a href="' + scappa(e.j.html_url) +
+        '" target="_blank" rel="noopener">segnalazione #' + e.j.number + '</a>. Il workflow la archivia da verificare.</p>';
+      el("ferraresCorretto").value = ""; el("ipaCorretta").value = ""; el("notaCorregge").value = "";
+    }).catch(function (errore) {
+      el("esitoCorrezione").innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) +
+        '). La riga e\' qui sotto: copiala o scaricala.</p>';
+    });
   }
 
   function traduci() {
@@ -11879,7 +11944,16 @@ function tokenizza(t) {
         scelta.appendChild(o);
       });
     }
-    el("preparaCorrezione").addEventListener("click", preparaCorrezione);
+    var imp = leggiImpostazioni();
+    el("tokenCorrezione").value = imp.token || "";
+    el("chiCorregge").value = imp.chi || "";
+    el("luogoCorregge").value = imp.luogo || "";
+    if (imp.varieta) el("varietaCorregge").value = imp.varieta;
+    el("salvaImpostazioni").addEventListener("click", function () {
+      salvaImpostazioni();
+      el("esitoCorrezione").innerHTML = "<p>Impostazioni salvate in questo browser.</p>";
+    });
+    el("inviaCorrezione").addEventListener("click", inviaCorrezione);
     el("copiaCorrezione").addEventListener("click", function () {
       var riga = preparaCorrezione();
       if (riga && navigator.clipboard) navigator.clipboard.writeText(riga).catch(function () {});
@@ -11891,9 +11965,6 @@ function tokenizza(t) {
       a.href = URL.createObjectURL(new Blob([riga + "\n"], { type: "application/x-ndjson" }));
       a.download = "correzione-" + oggiIso() + ".jsonl";
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    });
-    el("segnalaCorrezione").addEventListener("click", function (evento) {
-      if (!preparaCorrezione() && evento.preventDefault) evento.preventDefault();
     });
   })();
   el("testo").addEventListener("keydown", function (e) {

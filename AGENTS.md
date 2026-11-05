@@ -33,6 +33,12 @@ un dizionario che non esiste.
 - **Nessuna richiesta di rete a runtime.** La pagina web funziona da `file://`,
   il gioco funziona offline. E' la condizione che li rende distribuibili in
   una classe.
+  **Un'eccezione, decisa il 2026-11-05 da chi usa il sito:** il pulsante
+  «Invia» delle correzioni chiama l'API di GitHub per aprire una segnalazione.
+  Parte solo premendolo, solo con un token salvato nel browser di chi lo usa, e
+  solo verso questo repository; senza token la pagina non chiama nessuno e
+  funziona da `file://` come prima. E' **una riga sola**, marcata
+  `RETE-DICHIARATA`, e il controllo della CI rifiuta ogni altra chiamata.
 - **Un rimando non e' una richiesta.** Nella pagina si puo' mettere un
   `<a href>` verso la fonte di una voce — e nella colonna del significato
   moderno c'e', perche' una fonte citata e non cliccabile e' una dichiarazione.
@@ -67,7 +73,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 375 test
+python3 prove/test_traduttore.py           # 382 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -167,19 +173,25 @@ I codici da conoscere:
 | D2 | voce in attesa che si dichiara documentata (avviso) |
 | K1&ndash;K9 | verifica a campione: estrazioni senza seme o con voci di un'altra fonte, **giudizio su una voce non estratta (K5)**, esito fuori dai tre, giudizio senza chi o data; vedi `dati/campioni/README.md` |
 | M1&ndash;M4 | proposte IA: stato fuori dall'insieme, **campo `fonte` o `attendibilita D` su una proposta**, id citato inesistente, promozione che non esiste |
-| X1&ndash;X10 | correzioni dei parlanti: id, **chi, varieta', consenso**, lati, pronuncia fra quadre, stato, righe create, data, motivo del rifiuto; vedi `dati/correzioni/README.md` |
-| Z1&ndash;Z3 | inferenze: **un'inferenza con `fonte` o `attendibilita D`**, senza le correzioni da cui viene, su una voce che non c'e' |
+| X1&ndash;X10 | correzioni: id, chi, varieta', lati, pronuncia fra quadre, stato, righe create, data, motivo del rifiuto; vedi `dati/correzioni/README.md` |
+| Z1&ndash;Z5 | inferenze e regole di frase: **un'inferenza con `fonte` o `attendibilita D`**, senza le correzioni da cui viene, su una voce che non c'e'; regola di frase con un contesto falso o **senza le correzioni che la sostengono** |
 
-## 4 bis. Quando arriva una correzione
+## 4 bis. Le correzioni: archiviate subito, nel traduttore con un margine
 
-Le correzioni dei parlanti arrivano dalla pagina del traduttore, come righe da
-importare o come segnalazioni su GitHub con l'etichetta `correzione`. Il
-procedimento e' in `dati/correzioni/README.md`, ed e' lo stesso per una persona
-e per Claude: importare, guardare l'allineamento, applicare (o respingere con il
-motivo), rigenerare le inferenze, far confermare le voci candidate a un
-parlante, registrare le conferme con `correzioni conferma`. **Un'inferenza non
-si applica mai senza una conferma**: e' la regola del §1 applicata a un
-programma che trova le regolarita'.
+Le correzioni arrivano dalla pagina del traduttore con il pulsante «Invia»: il
+workflow `Correzioni` le archivia in `dati/correzioni/correzioni.jsonl` **da
+verificare**, e non fanno ancora parte del traduttore. Ne fanno parte i loro
+**elementi** — una parola, una parola funzionale nel suo contesto, una regola di
+grafia — quando hanno il loro **margine**: abbastanza correzioni concordi e
+nessuna contraria (soglie in `dati/correzioni/soglie.json`), oppure una
+conferma a mano. Lo fa `correzioni promuovi`, che il workflow lancia a ogni
+invio. Il procedimento e' in `dati/correzioni/README.md`, ed e' lo stesso per
+una persona e per Claude.
+
+Due cose non si fanno: scrivere a mano in `dati/regole_frase.json` (una regola
+di frase viene solo da correzioni promosse) e dichiarare `D` una voce che viene
+da una regola di grafia (resta `I` e `da_verificare`: e' la regola applicata,
+non un ascolto).
 
 ## 5. Le cose che non si fanno
 
@@ -299,6 +311,13 @@ lavorare:
    funzionali con la pagina, sapendo che il motore non le tratta e che il
    gioco dovrebbe accettarle come riempimento. Finche' la risposta non c'e',
    il buco resta dichiarato e non si aggiunge niente a mano.
+
+   **Una strada aperta il 2026-11-05 (0.40):** le parole funzionali entrano
+   dalle **correzioni** dei parlanti, come regole di frase che guardano la
+   parola che segue («il» davanti a consonante → `al`), in
+   `dati/regole_frase.json`, quando hanno il loro margine. Non e' l'elenco del
+   Ferri e non risolve la domanda per il Ferri: e' un elenco che si costruisce
+   con le correzioni, una regola alla volta.
 
 9. **Il glossario e' scritto in tre grafie, e nessuna e' dichiarata quella di
    riferimento.** (Aperta il 2026-10-06.) Il campo `ferrarese` contiene la

@@ -208,6 +208,47 @@ CAMPI_VOCE = {
 }
 
 
+# --- il blocco dei dati, compresso (0.43) -------------------------------------
+#
+# Il blocco dati e' JSON compresso con DEFLATE e scritto in base64, e la pagina
+# lo decomprime da sola all'apertura (`inflate` in `modello.html`, scritta li'
+# e non presa da una libreria esterna, perche' la pagina non chiama la rete e
+# deve aprirsi anche da un file sul disco). Il motivo e' il peso: il glossario
+# cresce a ogni fonte e a ogni correzione, e la pagina del traduttore era a
+# 2,9 MB su un tetto di 3. Compresso, lo stesso blocco pesa circa un quarto, e
+# il tetto corrisponde a circa 12 MB di dati: un margine che regge anni di
+# aggiunte invece di qualche settimana.
+#
+# I dati leggibili restano in `dati/`; per guardare quelli di una pagina c'e'
+# `dati_della_pagina`, che usano anche la CI e il confronto delle due copie.
+BLOCCO_JSON = '<script id="dati" type="application/json">/*DATI*/null</script>'
+TIPO_COMPRESSO = "application/x-deflate-base64"
+
+
+def blocco_dati(dati) -> str:
+    """Il blocco `<script id="dati">` della pagina, compresso."""
+    import base64
+    import zlib
+    grezzo = json.dumps(dati, ensure_ascii=False, separators=(",", ":"))
+    compressore = zlib.compressobj(9, zlib.DEFLATED, -15)
+    corpo = compressore.compress(grezzo.encode("utf-8")) + compressore.flush()
+    return '<script id="dati" type="%s">%s</script>' % (
+        TIPO_COMPRESSO, base64.b64encode(corpo).decode("ascii"))
+
+
+def dati_della_pagina(testo: str):
+    """I dati di una pagina generata, compressi o no."""
+    import base64
+    import zlib
+    m = re.search(r'<script id="dati" type="([^"]*)">(.*?)</script>', testo, re.S)
+    if not m:
+        raise ValueError("la pagina non ha il blocco dati")
+    if m.group(1) == TIPO_COMPRESSO:
+        grezzo = zlib.decompress(base64.b64decode(m.group(2)), -15)
+        return json.loads(grezzo.decode("utf-8"))
+    return json.loads(m.group(2).replace("<\\/", "</"))
+
+
 def _voce(v, campi: tuple) -> list:
     """Una voce come lista di valori, nell'ordine dichiarato in `campi`.
 
@@ -753,16 +794,10 @@ def _pagina(modello: str, sezioni: tuple, dati: dict, titolo: str,
     testo = re.sub(r'<p class="occhiello">.*?</p>',
                    '<p class="occhiello">%s</p>' % occhiello, testo,
                    count=1, flags=re.S)
-    # Compatto (0.42): i rientri e gli spazi dopo le virgole pesavano piu' di
-    # un megabyte su tre in `traduttore.html`, e nessuno legge il blocco dati
-    # della pagina a occhio — i dati leggibili sono in `dati/`.
-    grezzo = json.dumps(dati, ensure_ascii=False, separators=(",", ":"))
-    # Il JSON va in un elemento di tipo non eseguibile, perche' una voce con
-    # la sequenza `</script>` dentro romperebbe la pagina. Il carattere di
-    # escape e' la barra rovesciata, che JSON accetta e il browser no dentro
-    # un elemento script: e' il modo piu' semplice per non doverlo sostituire.
-    grezzo = grezzo.replace("</", "<\\/")
-    pagina = testo.replace("/*DATI*/null", grezzo)
+    if BLOCCO_JSON not in testo:
+        raise ValueError("modello.html non ha il blocco dati atteso: %s"
+                         % BLOCCO_JSON)
+    pagina = testo.replace(BLOCCO_JSON, blocco_dati(dati))
     return pagina.replace("<title>Traduttore italiano",
                           "<title>%s &ndash; Traduttore italiano" % titolo) \
         if "<title>Traduttore italiano" in pagina else pagina

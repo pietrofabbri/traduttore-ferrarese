@@ -4588,6 +4588,49 @@ class TestLeCorrezioni(unittest.TestCase):
             self.c.leggi(PERCORSI["inferenze"])), [])
 
 
+def _testo_dei_dati(pagina: str) -> str:
+    """I dati di una pagina generata come testo JSON: il blocco e' compresso
+    (0.43), e cercare una chiave nell'HTML non la troverebbe piu'."""
+    sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+    from costruisci_web import dati_della_pagina
+    return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
+
+
+class TestIlBloccoDatiCompresso(_ModelloInNode, unittest.TestCase):
+    """Il blocco dati compresso e il decompressore della pagina (0.43)."""
+
+    def test_python_rilegge_quello_che_scrive(self):
+        sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+        from costruisci_web import blocco_dati, dati_della_pagina
+        dati = {"glossario": None, "parola": "àɣ ŋ «ciao»", "n": list(range(50))}
+        self.assertEqual(dati_della_pagina(blocco_dati(dati)), dati)
+        # e anche un blocco non compresso, come quello del modello
+        self.assertEqual(dati_della_pagina(
+            '<script id="dati" type="application/json">{"a":1}</script>'),
+            {"a": 1})
+
+    def test_la_pagina_decomprime_i_tre_tipi_di_blocco(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
+        import base64
+        import zlib
+
+        def compresso(testo, livello):
+            c = zlib.compressobj(livello, zlib.DEFLATED, -15)
+            return base64.b64encode(c.compress(testo.encode("utf-8"))
+                                    + c.flush()).decode("ascii")
+        lungo = json.dumps([{"fe": "kaŋtàr %d" % i, "it": "cantare"}
+                            for i in range(400)], ensure_ascii=False)
+        casi = [("non compresso", lungo, 0), ("codici fissi", "àɣ ŋ ciao", 9),
+                ("codici dinamici", lungo, 9)]
+        for nome, testo, livello in casi:
+            esito = self._valuta_js(
+                'testoDelBlocco({getAttribute: function () { return '
+                '"application/x-deflate-base64"; }, textContent: %s})'
+                % json.dumps(compresso(testo, livello)))
+            self.assertEqual(esito, testo, nome)
+
+
 class TestLaGrafiaUnica(unittest.TestCase):
     """Le voci di Bigoni lette all'italiana, con la pronuncia in IPA (0.42)."""
 
@@ -5136,7 +5179,7 @@ class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):
         # perche' il codice funziona benissimo su un indice vuoto.
         with io.open(os.path.join(RADICE, "web", "traduttore.html"),
                      encoding="utf-8") as f:
-            pagina = f.read()
+            pagina = _testo_dei_dati(f.read())
         self.assertIn('"per_italiano"', pagina,
                       "i dati dei verbi non sono nella pagina costruita")
         from traduttore import verbi
@@ -5523,7 +5566,7 @@ class TestLeParticelleNellaPagina(_ModelloInNode, unittest.TestCase):
     def test_i_dati_arrivano_alla_pagina_costruita(self):
         with io.open(os.path.join(RADICE, "web", "traduttore.html"),
                      encoding="utf-8") as f:
-            pagina = f.read()
+            pagina = _testo_dei_dati(f.read())
         self.assertIn('"particelle"', pagina,
                       "i dati delle particelle non sono nella pagina costruita")
 

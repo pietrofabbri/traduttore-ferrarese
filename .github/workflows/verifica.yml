@@ -159,14 +159,15 @@ jobs:
           python3 - <<'PY'
           import json, os, re, sys
           sys.path.insert(0, "sorgenti")
-          from costruisci_web import PAGINE, NAVIGAZIONE
+          from costruisci_web import PAGINE, NAVIGAZIONE, dati_della_pagina
 
+          # Il blocco dati e' compresso (0.43): lo legge la stessa funzione
+          # del generatore, che sa leggere anche un blocco non compresso.
           def dati_di(pagina):
-              m = re.search(r'<script id="dati"[^>]*>(.*?)</script>',
-                            pagina, re.S)
-              if not m:
+              try:
+                  return dati_della_pagina(pagina)
+              except ValueError:
                   raise SystemExit("una pagina non ha il blocco dati")
-              return json.loads(m.group(1).replace("<\\/", "</"))
 
           # Cosa ogni pagina deve avere, e cosa non deve. Una pagina che
           # dichiara di contenere il glossario e non lo contiene e' una pagina

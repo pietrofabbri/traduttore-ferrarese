@@ -498,7 +498,120 @@
   // legge con `document` e non con `el()`: `el()` e' definito qui sotto e
   // accetterebbe un elemento mancante, e un glossario che non c'e' diventerebbe
   // uno `{}` silenzioso invece di un errore che dice che la pagina e' rotta.
-  var DATI = JSON.parse(document.getElementById("dati").textContent);
+  var DATI = JSON.parse(testoDelBlocco(document.getElementById("dati")));
+
+  // Il blocco dati e' compresso (0.43, `blocco_dati` in `costruisci_web.py`):
+  // DEFLATE in base64. Si decomprime qui, senza librerie e senza rete, perche'
+  // la pagina deve aprirsi anche da un file sul disco. Un blocco senza il tipo
+  // compresso (le prove, che passano il JSON) si legge com'e'.
+  function testoDelBlocco(blocco) {
+    var tipo = blocco.getAttribute ? blocco.getAttribute("type") : "";
+    if (tipo !== "application/x-deflate-base64") return blocco.textContent;
+    var binario = atob(blocco.textContent.trim());
+    var byte = new Uint8Array(binario.length);
+    for (var i = 0; i < binario.length; i++) byte[i] = binario.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(inflate(byte));
+  }
+
+  // DEFLATE (RFC 1951), solo la decompressione. Scritta seguendo la norma:
+  // blocchi non compressi, con codici fissi e con codici dinamici.
+  function inflate(sorgente) {
+    var pos = 0, riserva = 0, nRiserva = 0;
+    var fuori = new Uint8Array(Math.max(1024, sorgente.length * 6)), n = 0;
+    function spazio(quanti) {
+      if (n + quanti <= fuori.length) return;
+      var nuovo = new Uint8Array(Math.max(fuori.length * 2, n + quanti));
+      nuovo.set(fuori.subarray(0, n)); fuori = nuovo;
+    }
+    function bit(quanti) {
+      while (nRiserva < quanti) {
+        if (pos >= sorgente.length) throw new Error("dati compressi troncati");
+        riserva |= sorgente[pos++] << nRiserva; nRiserva += 8;
+      }
+      var valore = riserva & ((1 << quanti) - 1);
+      riserva >>>= quanti; nRiserva -= quanti;
+      return valore;
+    }
+    function codice(lunghezze, quante) {
+      var conta = new Uint16Array(16), simboli = new Uint16Array(quante), inizio = new Uint16Array(16), i;
+      for (i = 0; i < quante; i++) conta[lunghezze[i]]++;
+      conta[0] = 0;
+      for (i = 1; i < 15; i++) inizio[i + 1] = inizio[i] + conta[i];
+      for (i = 0; i < quante; i++) if (lunghezze[i]) simboli[inizio[lunghezze[i]]++] = i;
+      return { conta: conta, simboli: simboli };
+    }
+    function decodifica(c) {
+      var cod = 0, primo = 0, indice = 0;
+      for (var lung = 1; lung < 16; lung++) {
+        cod |= bit(1);
+        var quanti = c.conta[lung];
+        if (cod - quanti < primo) return c.simboli[indice + (cod - primo)];
+        indice += quanti; primo += quanti; primo <<= 1; cod <<= 1;
+      }
+      throw new Error("codice di Huffman non valido");
+    }
+    var LBASE = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+    var LEXT = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+    var DBASE = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+    var DEXT = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+    var ORDINE = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+    var fissiL = null, fissiD = null, ultimo;
+    do {
+      ultimo = bit(1);
+      var tipo = bit(2), lunghezze, i;
+      if (tipo === 0) {
+        riserva = 0; nRiserva = 0;
+        var len = sorgente[pos] | (sorgente[pos + 1] << 8); pos += 4;
+        spazio(len); fuori.set(sorgente.subarray(pos, pos + len), n); n += len; pos += len;
+        continue;
+      }
+      var cl, cd;
+      if (tipo === 1) {
+        if (!fissiL) {
+          lunghezze = new Uint8Array(288);
+          for (i = 0; i < 144; i++) lunghezze[i] = 8;
+          for (; i < 256; i++) lunghezze[i] = 9;
+          for (; i < 280; i++) lunghezze[i] = 7;
+          for (; i < 288; i++) lunghezze[i] = 8;
+          fissiL = codice(lunghezze, 288);
+          lunghezze = new Uint8Array(30);
+          for (i = 0; i < 30; i++) lunghezze[i] = 5;
+          fissiD = codice(lunghezze, 30);
+        }
+        cl = fissiL; cd = fissiD;
+      } else if (tipo === 2) {
+        var nlen = bit(5) + 257, ndist = bit(5) + 1, ncod = bit(4) + 4;
+        lunghezze = new Uint8Array(19);
+        for (i = 0; i < ncod; i++) lunghezze[ORDINE[i]] = bit(3);
+        var cc = codice(lunghezze, 19);
+        lunghezze = new Uint8Array(nlen + ndist);
+        i = 0;
+        while (i < nlen + ndist) {
+          var s = decodifica(cc), ripeti, valore = 0;
+          if (s < 16) { lunghezze[i++] = s; continue; }
+          if (s === 16) { valore = lunghezze[i - 1]; ripeti = 3 + bit(2); }
+          else if (s === 17) ripeti = 3 + bit(3);
+          else ripeti = 11 + bit(7);
+          while (ripeti--) lunghezze[i++] = valore;
+        }
+        cl = codice(lunghezze.subarray(0, nlen), nlen);
+        cd = codice(lunghezze.subarray(nlen), ndist);
+      } else {
+        throw new Error("blocco compresso di tipo sconosciuto");
+      }
+      for (;;) {
+        var simbolo = decodifica(cl);
+        if (simbolo < 256) { spazio(1); fuori[n++] = simbolo; continue; }
+        if (simbolo === 256) break;
+        simbolo -= 257;
+        var quanto = LBASE[simbolo] + bit(LEXT[simbolo]);
+        var d = decodifica(cd), distanza = DBASE[d] + bit(DEXT[d]);
+        spazio(quanto);
+        for (var k = 0; k < quanto; k++) { fuori[n] = fuori[n - distanza]; n++; }
+      }
+    } while (!ultimo);
+    return fuori.subarray(0, n);
+  }
 
   // Le pagine non hanno tutte gli stessi elementi: la home non ha il campo
   // per scrivere una frase, la pagina dei suoni non ha la tabella del

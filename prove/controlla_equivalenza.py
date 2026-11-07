@@ -50,6 +50,7 @@ sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 
 from traduttore import grafia  # noqa: E402
 from traduttore.cli import PERCORSI  # noqa: E402
+from costruisci_web import TIPO_COMPRESSO, dati_della_pagina  # noqa: E402
 from traduttore.corpora import Corpus  # noqa: E402
 from traduttore.glossario import Glossario  # noqa: E402
 from traduttore import italiano as analisi_italiana, morfologia, verbi
@@ -178,10 +179,46 @@ def estrae_script(pagina: str) -> str:
 
 
 def estrae_dati(pagina: str) -> str:
-    m = re.search(r'<script id="dati"[^>]*>(.*?)</script>', pagina, re.S)
-    if not m:
+    """Il JSON dei dati della pagina, decompresso da Python (0.43).
+
+    Il blocco della pagina e' compresso; alla copia JavaScript si passa il
+    JSON, e il decompressore della pagina si controlla a parte
+    (`confronto_compressione`), sullo stesso blocco.
+    """
+    try:
+        return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
+    except ValueError:
         raise SystemExit("la pagina non ha il blocco dei dati: non c'e' niente da confrontare")
-    return m.group(1)
+
+
+def confronto_compressione(pagina: str, script: str, dati: str) -> int:
+    """La pagina decomprime il suo blocco come lo decomprime Python?"""
+    m = re.search(r'<script id="dati" type="([^"]*)">(.*?)</script>', pagina, re.S)
+    if not m or m.group(1) != TIPO_COMPRESSO:
+        print("il blocco dati non e' compresso: niente da confrontare")
+        return 1
+    programma = apre_lo_script(script, dati) + """
+var testo = PAGINA.testoDelBlocco({ getAttribute: function () { return %s; },
+                                    textContent: %s });
+console.log(testo);
+""" % (json.dumps(TIPO_COMPRESSO), json.dumps(m.group(2)))
+    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False,
+                                     encoding="utf-8") as f:
+        f.write(programma)
+        percorso = f.name
+    try:
+        esito = subprocess.run(["node", percorso], capture_output=True,
+                               text=True, timeout=120)
+    finally:
+        os.unlink(percorso)
+    if esito.returncode != 0:
+        print("la pagina non decomprime il suo blocco: %s"
+              % esito.stderr.strip()[:400])
+        return 1
+    uguale = json.loads(esito.stdout) == dati_della_pagina(pagina)
+    print("blocco dati di %d byte compressi: la pagina lo decomprime %s"
+          % (len(m.group(2)), "uguale a Python" if uguale else "DIVERSO"))
+    return 0 if uguale else 1
 
 
 def apre_lo_script(script: str, dati: str) -> str:
@@ -209,7 +246,7 @@ def apre_lo_script(script: str, dati: str) -> str:
            risolvi: risolvi, chiave: chiave, fraseGemella: fraseGemella,
            perRegola: perRegola, classeDi: classeDi,
            risolviUnita: risolviUnita, ipaDaBigoni: ipaDaBigoni,
-           giunta: giunta };
+           giunta: giunta, testoDelBlocco: testoDelBlocco };
 """
     return (INCOLLANCI % json.dumps(dati)) + "\n" + (
         "var PAGINA = (function () {" + dentro + porta + "})();")
@@ -449,6 +486,7 @@ def main() -> int:
         analisi_italiana.Italiano.da_file(glossario=glossario,
                                           verbi=verbi.carica()))
     problemi += confronto_grafia(script, dati, glossario)
+    problemi += confronto_compressione(testo_pagina, script, dati)
     return 1 if problemi else 0
 
 

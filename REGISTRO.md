@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.42
+versione: 0.43
 data: 2026-11-05
 ---
 
@@ -23,6 +23,23 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.43 — 2026-11-07 · Il blocco dati compresso
+
+**Perché.** Il glossario cresce a ogni fonte e a ogni correzione, e togliere gli spazi
+aveva dato un margine di settimane, non di anni: serviva una soluzione che regga.
+
+- **Il blocco dati di ogni pagina è compresso** con DEFLATE e scritto in base64
+  (`blocco_dati` in `costruisci_web.py`); la pagina lo decomprime all'apertura con
+  `inflate`, scritta nella pagina secondo la RFC 1951, senza librerie e senza rete.
+  `traduttore.html` passa da 1967 a 603 KB, il sito intero da 11,8 a 6,6 MB.
+- `dati_della_pagina` legge il blocco di una pagina, compresso o no: la usano la CI,
+  il confronto delle due copie e i test.
+- Il confronto delle due copie controlla che la pagina decomprima il suo blocco
+  uguale a Python; la pagina è stata aperta in Chromium da file, senza errori.
+
+**Verifiche.** 408 test (erano 406): Python rilegge il blocco che scrive, e la
+pagina decomprime blocchi non compressi, con codici fissi e con codici dinamici.
 
 ## 0.42 — 2026-11-05 · Una grafia sola, la pronuncia di Bigoni, la pagina piu' leggera
 

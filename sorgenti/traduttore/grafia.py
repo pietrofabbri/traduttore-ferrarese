@@ -56,7 +56,7 @@ import unicodedata
 # L'identificativo che dice che una voce e' scritta nell'alfabeto di Bigoni.
 FONTI_BIGONI = ("(S006)",)
 # Le fonti che scrivono il lemma con la maiuscola tipografica.
-FONTI_LEMMA_MAIUSCOLO = ("Luigi Ferri", "Maurizio Musacchi")
+FONTI_LEMMA_MAIUSCOLO = ("Luigi Ferri", "Maurizio Musacchi", "Francesco Nannini")
 
 # Le vocali, e quelle davanti a cui c e g si leggono dolci in italiano.
 VOCALI = "aeiouàèéìíòóùúáěêǒô"

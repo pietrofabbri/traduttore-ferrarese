@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.43
+versione: 0.44
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -81,7 +81,7 @@ python3 -m traduttore.cli cerca "lupo non mangia di lupo"
 python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
 ```
 
-## Il sito: quarantadue pagine invece di una da sei megabyte
+## Il sito: quarantacinque pagine invece di una da sei megabyte
 
 La pagina era **una sola** e pesava **6,2 megabyte**. Di quelli, il 99,2% era il
 blocco dei dati e l'87,5% era il glossario: la pagina che serve solo a leggere
@@ -104,13 +104,13 @@ esattamente come Python.
 | `index.html` | i numeri, i buchi dichiarati, la strada per le altre pagine | **123 KB** |
 | `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa, compresso | 0,6 MB (tetto: 3 MB) |
 | `glossario.html` | l'indice delle fette | 111 KB |
-| `glossario-01.html` … `-35.html` | una fetta di 500 voci, con ricerca dentro | ~280 KB |
+| `glossario-01.html` … `-38.html` | una fetta di 500 voci, con ricerca dentro | ~110 KB |
 | `frasi.html` | coppie parallele e proverbi | 146 KB |
 | `suoni.html` | le cinque varietà e i suoni | 143 KB |
 | `regole.html` | le regole del ferrarese, con la fonte su ognuna | 130 KB |
 | `verifica.html` | la verifica a campione: le voci estratte da giudicare | 166 KB |
 
-In tutto 42 pagine e 13,9 MB; `python3 -m traduttore.cli web` stampa i pesi
+In tutto 45 pagine e 7,1 MB; `python3 -m traduttore.cli web` stampa i pesi
 veri ogni volta, e quelli valgono piu' di questa tabella.
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
@@ -853,7 +853,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 408 test
+python3 prove/test_traduttore.py     # 414 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

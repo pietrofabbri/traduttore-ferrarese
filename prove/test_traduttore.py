@@ -4596,6 +4596,66 @@ def _testo_dei_dati(pagina: str) -> str:
     return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
 
 
+class TestIlNannini(unittest.TestCase):
+    """La lettura del vocabolario del Nannini, 1805 (S005, 0.44)."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, os.path.join(RADICE, "raccolta"))
+        import da_nannini
+        cls.n = da_nannini
+        cls.lessico = {"mangiare", "cibarsi", "loglio", "capello", "nuovo",
+                       "fuso", "bollato", "segnato"}
+
+    def test_una_voce_con_la_categoria(self):
+        self.assertEqual(self.n.leggi_voce("Magnàr , verbo , mangiare , cibarsi .",
+                                           self.lessico)[:3],
+                         ("Magnàr", "mangiare, cibarsi", "mangiare"))
+        self.assertEqual(self.n.leggi_voce("Bullà, agg., segnato, marcato",
+                                           self.lessico)[2], "segnato")
+
+    def test_il_timbro_va_nella_nota_e_non_nel_reso(self):
+        esito = self.n.leggi_voce("Loi , stretta , loglio .", self.lessico)
+        self.assertEqual((esito[2], esito[4]), ("loglio", "stretta"))
+        esito = self.n.leggi_voce("Cavell' , capello stretto", self.lessico)
+        self.assertEqual((esito[2], esito[4]), ("capello", "stretto"))
+
+    def test_quello_che_non_entra(self):
+        motivi = {
+            "Blisgar , v. Sblìsgar .": "rimando",
+            "Capplazx , cappellaccio": "lemma illeggibile",
+            "Alvar , le vare , alzare": "reso illeggibile",
+            "Bocch , far dil bocch , sberleffare": "reso illeggibile",
+        }
+        for testo, motivo in motivi.items():
+            self.assertEqual(self.n.leggi_voce(testo, self.lessico)[3], motivo,
+                             testo)
+
+    def test_lo_scarto_delle_pagine_viene_dalla_maggioranza(self):
+        testate = {40: "36 BU BU", 41: "BU 37", 42: "56 BU", 43: "BU"}
+        self.assertEqual(self.n.scarto_delle_pagine(testate), 4)
+
+    def test_le_righe_si_uniscono_in_voci(self):
+        righe = ["Bullar, bollare, suggel-", "lare, sigillare .",
+                 "Bullin , bollino ."]
+        self.assertEqual(self.n.voci_della_pagina(righe),
+                         ["Bullar, bollare, suggellare, sigillare .",
+                          "Bullin , bollino ."])
+
+    def test_le_voci_scritte_hanno_fonte_pagina_e_minuscola(self):
+        from traduttore.cli import carica
+        voci = [v for v in carica().glossario.voci if "(S005)" in v.fonte]
+        self.assertGreater(len(voci), 500)
+        for v in voci:
+            self.assertRegex(v.fonte, r"^Francesco Nannini, .*, 1805, pag\. \d+ \(S005\)$")
+            self.assertEqual((v.attendibilita, v.da_verificare, v.varieta),
+                             ("I", True, "cittadino"))
+        # La maiuscola tipografica del lemma si toglie; restano maiuscoli solo
+        # i nomi propri, i giorni e i mesi che Bigoni scrive maiuscoli.
+        maiuscole = [v.ferrarese for v in voci if v.ferrarese[:1].isupper()]
+        self.assertLess(len(maiuscole), len(voci) // 50, maiuscole[:20])
+
+
 class TestIlBloccoDatiCompresso(_ModelloInNode, unittest.TestCase):
     """Il blocco dati compresso e il decompressore della pagina (0.43)."""
 
@@ -5456,7 +5516,8 @@ class TestLeParticelleNonSonoParole(unittest.TestCase):
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
         righe = modulo.trova(modulo.voci())
-        self.assertEqual(len(righe), 109,
+        # 114 dalla 0.44: il Nannini porta cinque verbi riflessivi in -rs.
+        self.assertEqual(len(righe), 114,
                          "il glossario non porta il numero di voci attese: %d"
                          % len(righe))
 

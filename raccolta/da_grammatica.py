@@ -241,6 +241,31 @@ PLURALI_IRREGOLARI = [
 ]
 
 
+# Dalla 0.47: quello che «Scrìvar e lèźar al fraréś» (S011, Tréb dal Tridèl)
+# aggiunge agli articoli di S015. Le forme sono gia' nella grafia del progetto
+# (sono le stesse lettere). Una riga di qui con lo stesso italiano di una di
+# S015 la sostituisce: «una» di S015 non dice la forma davanti a vocale, S011 si'.
+ARTICOLI_S011 = [
+    {"italiano": "di", "genere": "", "numero": "",
+     "consonante": "ad", "vocale": "d'",
+     "scritto_dalla_fonte": "la preposizione 'di', in ferrarese d (dal lat. de), "
+     "che si appoggia alla parola seguente: d'èrba d'erba ... se la parola "
+     "successiva cominci per consonante ... subentra davanti una a eufonica ... "
+     "ad Gino di Gino, ad córsa di corsa."},
+    {"italiano": "una", "genere": "f", "numero": "s",
+     "consonante": "na", "vocale": "n'",
+     "scritto_dalla_fonte": "il femminile una è praticamente sempre pronunciato "
+     "na davanti a consonante (na scarpa una scarpa, na vòlta una volta) e "
+     "davanti a vocale è n' (n'èrba un'erba, n'idèa un'idea)."},
+    # «un'» italiano e' «una» elisa davanti a vocale
+    {"italiano": "un'", "genere": "f", "numero": "s",
+     "consonante": "na", "vocale": "n'",
+     "scritto_dalla_fonte": "davanti a vocale è n' (n'èrba un'erba, n'idèa "
+     "un'idea)."},
+]
+DOVE_S011 = "«Scrìvar e lèźar al fraréś», Osservazioni"
+
+
 def costruisci() -> dict:
     tabella = _tabella()
 
@@ -257,6 +282,9 @@ def costruisci() -> dict:
             riga["varianti"] = [resa(f) for f in forme[1:]]
         parole.append(riga)
     articoli = [dict(a, fonte=FONTE, dove="§4 «Articoli»") for a in ARTICOLI]
+    sostituiti = {a["italiano"] for a in ARTICOLI_S011}
+    articoli = [a for a in articoli if a["italiano"] not in sostituiti] + [
+        dict(a, fonte="S011", dove=DOVE_S011) for a in ARTICOLI_S011]
     genere = [dict(g, m=resa(g["m"]), f=resa(g["f"]), fonte=FONTE,
                    dove="§4 «Sostantivi e aggettivi»") for g in SECONDO_GENERE]
     return {

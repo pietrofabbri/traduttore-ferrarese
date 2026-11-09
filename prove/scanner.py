@@ -45,6 +45,7 @@ AMMESSI = {
     "χ": "chi IPA, in SIMBOLI_IPA",
     "β": "beta IPA, in SIMBOLI_IPA",
     "λ": "lambda della fonte S006 (Bigoni, voci 701 e 702)",
+    "η": "n velare dell'alfabeto del Tréb dal Tridèl (S011, S025), dichiarata in grafia.py",
 }
 
 INTERESSANTI = (

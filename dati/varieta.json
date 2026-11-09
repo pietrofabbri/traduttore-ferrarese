@@ -89,6 +89,18 @@
       "varieta": "cittadino",
       "attendibilita": "M",
       "motivo": "Il blog e il Calendario Frarès parlano di «ferrarese» senza distinguere le varieta'. «Frarès» e' il nome del dialetto della citta'; la scelta `cittadino` e' quindi nostra e si dichiara come memoria, come per S004 e S006."
+    },
+    {
+      "fonte": "S011",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Il testo descrive il ferrarese e ne distingue i distretti, ma le parole che traduce non portano la zona; le voci sono del ferrarese cittadino per scelta nostra, dichiarata come memoria. Le parole che il testo attribuisce a una zona lo dicono nella fonte della voce."
+    },
+    {
+      "fonte": "S025",
+      "varieta": "cittadino",
+      "attendibilita": "M",
+      "motivo": "Il testo descrive il ferrarese e ne distingue i distretti, ma le parole che traduce non portano la zona; le voci sono del ferrarese cittadino per scelta nostra, dichiarata come memoria. Le parole che il testo attribuisce a una zona lo dicono nella fonte della voce."
     }
   ],
   "altre_zone": [

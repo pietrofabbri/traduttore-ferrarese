@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.46
+versione: 0.47
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -81,7 +81,7 @@ python3 -m traduttore.cli cerca "lupo non mangia di lupo"
 python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
 ```
 
-## Il sito: quarantacinque pagine invece di una da sei megabyte
+## Il sito: quarantasei pagine invece di una da sei megabyte
 
 La pagina era **una sola** e pesava **6,2 megabyte**. Di quelli, il 99,2% era il
 blocco dei dati e l'87,5% era il glossario: la pagina che serve solo a leggere
@@ -104,13 +104,13 @@ esattamente come Python.
 | `index.html` | i numeri, i buchi dichiarati, la strada per le altre pagine | **123 KB** |
 | `traduttore.html` | il traduttore, con il glossario ridotto ai campi che usa, compresso | 0,6 MB (tetto: 3 MB) |
 | `glossario.html` | l'indice delle fette | 111 KB |
-| `glossario-01.html` … `-38.html` | una fetta di 500 voci, con ricerca dentro | ~110 KB |
+| `glossario-01.html` … `-39.html` | una fetta di 500 voci, con ricerca dentro | ~110 KB |
 | `frasi.html` | coppie parallele e proverbi | 146 KB |
 | `suoni.html` | le cinque varietà e i suoni | 143 KB |
 | `regole.html` | le regole del ferrarese, con la fonte su ognuna | 130 KB |
 | `verifica.html` | la verifica a campione: le voci estratte da giudicare | 166 KB |
 
-In tutto 45 pagine e 7,1 MB; `python3 -m traduttore.cli web` stampa i pesi
+In tutto 46 pagine e 7,4 MB; `python3 -m traduttore.cli web` stampa i pesi
 veri ogni volta, e quelli valgono piu' di questa tabella.
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
@@ -746,11 +746,32 @@ Quello che resta diverso: il Ferri scrive a volte `zz` iniziale (`Zzarcàr`) e l
 fra due vocali o in fondo (`piciadàj`) dove Bigoni scrive lo stesso; sono scelte
 della fonte, non della conversione, e una correzione le sistema voce per voce.
 
+## Il Tréb dal Tridèl: un alfabeto, due regole, centosessanta parole
+
+Dalla 0.47 entrano due testi dell'associazione Al Tréb dal Tridèl, allegati e
+controllati dal titolare: «Scrìvar e lèźar al fraréś» (S011), la grafia proposta da
+chi ha compilato i lavori di Baiolini e Guidetti, e «Storie dei nostri dialetti»
+(S025), a cura di Floriana Guidetti.
+
+- **L'alfabeto** scrive all'italiana con cinque segni della dialettologia: `ś` e `ź`
+  (s e z sonore, mentre `s` e `z` semplici sono sorde), `ć` e `ǵ` (c e g dolci in
+  fondo alla parola), `η` (n velare). E' un alfabeto senza ambiguita', quindi si porta
+  segno per segno in quello di Bigoni (`grafia.treb_a_bigoni`), e da li' nella grafia
+  unica e nella pronuncia: «àśan» si legge `àsan` e si pronuncia /ˈazan/.
+- **La grammatica**: «di» e' `ad` davanti a consonante e `d'` davanti a vocale; «una» e
+  «un'» davanti a vocale sono `n'` (S015 non lo diceva).
+- **Le parole** che i due testi scrivono con la traduzione accanto: 160 voci, 91 delle
+  quali date uguali da un'altra fonte, che quindi entrano e la **confermano**: «il
+  fuoco» ora e' `al fógh` (Bigoni e il Tréb) e non piu' `bubù` (il Ferri). Sono `D`,
+  verificate dal titolare.
+
+La conferma fra fonti, qui sotto, le conta.
+
 ## La conferma fra fonti
 
 Dalla 0.45 il glossario sa quando due fonti indipendenti — il Nannini (1805), il Ferri
 (1889), Bigoni, Musacchi, FEdetails — danno per la stessa parola italiana la stessa
-forma ferrarese (a meno di accenti, consonanti doppie e j/i). Sono 3146 voci. Non
+forma ferrarese (a meno di accenti, consonanti doppie e j/i). Sono 3314 voci (0.47). Non
 diventano «documentate», perche' nessuno le ha confrontate col libro, ma fra le voci di
 una stessa parola il traduttore mette prima quella confermata (dopo le correzioni dei
 parlanti), e il dettaglio della risposta dice da quali voci. Il calcolo e' in
@@ -864,7 +885,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 421 test
+python3 prove/test_traduttore.py     # 425 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

@@ -70,6 +70,10 @@ FRASI = [
     ("it-fe", "la ragione del cane bianco"),
     ("it-fe", "il lago e la casa"),
     ("it-fe", "niente da cuocere"),
+    # Il Tréb dal Tridèl (0.47): «di», «una», «un'», e le conferme che porta.
+    ("it-fe", "un'idea e una scarpa di corsa"),
+    ("it-fe", "il fuoco della febbre"),
+    ("fe-it", "àśan"),
     ("it-fe", "trebbiare e guastare"),
     ("fe-it", "biànch"),
     ("fe-it", "kaŋtàr"),
@@ -252,7 +256,8 @@ def apre_lo_script(script: str, dati: str) -> str:
            risolvi: risolvi, chiave: chiave, fraseGemella: fraseGemella,
            perRegola: perRegola, classeDi: classeDi,
            risolviUnita: risolviUnita, ipaDaBigoni: ipaDaBigoni,
-           giunta: giunta, testoDelBlocco: testoDelBlocco };
+           giunta: giunta, testoDelBlocco: testoDelBlocco,
+           trebABigoni: trebABigoni };
 """
     return (INCOLLANCI % json.dumps(dati)) + "\n" + (
         "var PAGINA = (function () {" + dentro + porta + "})();")
@@ -397,16 +402,20 @@ GIUNZIONI = [("zarc", "àr", "én"), ("zarc", "àr", ""), ("amìg", "a", "i"),
 
 def confronto_grafia(script: str, dati: str, glossario) -> int:
     """La pronuncia di ogni voce di Bigoni, e le giunzioni, nelle due copie."""
-    forme = sorted({v.grafia_fonte for v in glossario.voci if v.grafia_fonte})
+    forme = sorted({v.grafia_fonte for v in glossario.voci
+                    if v.grafia_fonte and not v.alfabeto})
+    treb = sorted({v.grafia_fonte for v in glossario.voci if v.alfabeto == "treb"})
     attese = {"ipa": [grafia.ipa_da_bigoni(f) for f in forme],
-              "giunte": [grafia.giunta(*g) for g in GIUNZIONI]}
+              "giunte": [grafia.giunta(*g) for g in GIUNZIONI],
+              "treb": [grafia.treb_a_bigoni(f) for f in treb]}
     programma = apre_lo_script(script, dati) + """
-var forme = %s, giunzioni = %s;
+var forme = %s, giunzioni = %s, treb = %s;
 console.log(JSON.stringify({
   ipa: forme.map(function (f) { return PAGINA.ipaDaBigoni(f); }),
-  giunte: giunzioni.map(function (g) { return PAGINA.giunta(g[0], g[1], g[2]); })
+  giunte: giunzioni.map(function (g) { return PAGINA.giunta(g[0], g[1], g[2]); }),
+  treb: treb.map(function (f) { return PAGINA.trebABigoni(f); })
 }));
-""" % (json.dumps(forme), json.dumps(GIUNZIONI))
+""" % (json.dumps(forme), json.dumps(GIUNZIONI), json.dumps(treb))
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False,
                                      encoding="utf-8") as f:
         f.write(programma)
@@ -430,8 +439,14 @@ console.log(JSON.stringify({
         if a != t:
             problemi += 1
             print("DIVERGENZA giunta %r: python %s, pagina %s" % (g, a, t))
-    print("%d pronunce di Bigoni e %d giunzioni confrontate, %d divergenze"
-          % (len(forme), len(GIUNZIONI), problemi))
+    for f, a, t in zip(treb, attese["treb"], trovate["treb"]):
+        if a != t:
+            problemi += 1
+            print("DIVERGENZA alfabeto del Tréb su %r: python %s, pagina %s"
+                  % (f, a, t))
+    print("%d pronunce di Bigoni, %d forme del Tréb e %d giunzioni "
+          "confrontate, %d divergenze"
+          % (len(forme), len(treb), len(GIUNZIONI), problemi))
     return problemi
 
 

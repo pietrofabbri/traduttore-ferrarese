@@ -1783,8 +1783,9 @@ class TestLettereDellAlfabeto(unittest.TestCase):
                         if _chiave_vecchia(testo) == chiave(testo):
                             continue
                         cambiate += 1
+                        # η e ƞ: la n velare del Tréb dal Tridèl (0.47)
                         if any(c in testo.lower() for c in
-                   ("\u0263", "\u028e", "\u03bb")):
+                   ("\u0263", "\u028e", "\u03bb", "\u03b7", "\u019e")):
                             con_lettera += 1
                         else:
                             ingannevoli.append((nome, voce.get("id"), testo))
@@ -1799,9 +1800,10 @@ class TestLettereDellAlfabeto(unittest.TestCase):
         # numero che si muove senza che nessuno lo dica e' un numero che
         # smette di essere controllato, e qui il cambiamento e' reale: sono
         # le parole che l'indice non trovava piu'.
-        self.assertEqual(cambiate, 861,
-                         "le chiavi che il filtro vecchio perdeva sono 861")
-        self.assertEqual(con_lettera, 861)
+        # 875 dalla 0.47: le 14 forme del Tréb dal Tridèl con la η.
+        self.assertEqual(cambiate, 875,
+                         "le chiavi che il filtro vecchio perdeva sono 875")
+        self.assertEqual(con_lettera, 875)
 
 
 def _chiave_vecchia(testo):
@@ -4641,6 +4643,50 @@ class TestLaConfermaFraFonti(unittest.TestCase):
         self.assertLess(self.g.priorita(a), self.g.priorita(b))
 
 
+class TestIlTrebDalTridel(unittest.TestCase):
+    """L'alfabeto, la grammatica e le parole del Tréb dal Tridèl (0.47)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore import grafia
+        from traduttore.cli import carica
+        cls.g = grafia
+        cls.motore = carica()
+
+    def test_l_alfabeto_si_porta_in_quello_di_bigoni(self):
+        casi = {"gat": "gat", "gucia": "gucia", "póc": "póch", "fóg": "fógh",
+                "patéć": "patéc", "sćèt": "s'cèt", "misćiàr": "mis'ciàr",
+                "àśan": "àsan", "źént": "zént", "paη": "pan", "fió": "fió",
+                "viljàch": "viliàch", "bagnàr": "bagnàr", "zìlî": "zìli"}
+        for treb, resa in casi.items():
+            self.assertEqual(self.g.da_bigoni(self.g.treb_a_bigoni(treb)), resa,
+                             treb)
+
+    def test_la_pronuncia_tiene_quello_che_la_grafia_perde(self):
+        ipa = lambda f: self.g.ipa_da_bigoni(self.g.treb_a_bigoni(f))
+        self.assertEqual(ipa("àśan"), "/ˈazan/")
+        self.assertEqual(ipa("paη"), "/paŋ/")
+        self.assertEqual(ipa("pan"), "/pan/")
+        self.assertEqual(ipa("źént"), "/ˈdzent/")
+        self.assertEqual(ipa("zént"), "/ˈtsent/")
+
+    def test_di_e_una_secondo_la_parola_che_segue(self):
+        t = lambda f: self.motore.traduci(f, IT_FE).testo
+        self.assertTrue(t("di corsa").startswith("ad "))
+        self.assertTrue(t("una scarpa").startswith("na "))
+        self.assertTrue(t("un'idea").startswith("n'"))
+
+    def test_le_parole_entrano_verificate_e_confermano(self):
+        voci = [v for v in self.motore.glossario.voci
+                if "(S011)" in v.fonte or "(S025)" in v.fonte]
+        self.assertGreater(len(voci), 150)
+        for v in voci:
+            self.assertEqual((v.attendibilita, v.da_verificare), ("D", False))
+            self.assertIn("Pietro Fabbri", v.verificata)
+        # il Ferri dava «bubù» per «fuoco»; Bigoni e il Tréb danno «fógh»
+        self.assertEqual(self.motore.traduci("il fuoco", IT_FE).testo, "al fógh")
+
+
 class TestLeVerificheDeiParlanti(unittest.TestCase):
     """Le voci verificate da un parlante e le righe che lo registrano (0.46)."""
 
@@ -4878,8 +4924,10 @@ class TestLaGrammaticaDiS015(unittest.TestCase):
             dati = json.load(f)
         self.assertGreaterEqual(len(dati["parole"]), 80)
         for riga in dati["parole"] + dati["articoli"]:
-            self.assertEqual(riga["fonte"], "S015", riga["italiano"])
-            self.assertTrue(riga["dove"].startswith("§4"), riga["italiano"])
+            # S015 (Bigoni) e, dalla 0.47, S011 (Tréb dal Tridèl)
+            self.assertIn(riga["fonte"], ("S015", "S011"), riga["italiano"])
+            self.assertTrue(riga["dove"].startswith(("§4", "«Scrìvar")),
+                            riga["italiano"])
 
     def test_l_elisione_si_separa_e_si_riunisce(self):
         self.assertEqual(self.g.separa_elisioni(["l'uomo", "un'amica", "casa"]),
@@ -5039,11 +5087,11 @@ class TestLaPromozione(unittest.TestCase):
                      stato="da_verificare", da_verificare=True)
                 for n, (it, fe) in enumerate(coppie, 1)]
 
-    # «di» non e' nella grammatica di S015: e' la parola funzionale che le
+    # «con» non e' nella grammatica (dalla 0.47 «di» lo e', per S011): e' la parola funzionale che le
     # correzioni insegnano. («il» dalla 0.41 lo traduce gia' la grammatica.)
 
     def test_sotto_la_soglia_resta_da_verificare(self):
-        correzioni = self._correzioni(("cane di Mario", "can ad Mario"))
+        correzioni = self._correzioni(("cane con Mario", "can cun Mario"))
         fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
                                 "2026-11-05", {"parola": 2, "funzionale": 2,
                                                "grafia": 3})
@@ -5052,15 +5100,15 @@ class TestLaPromozione(unittest.TestCase):
         self.assertEqual(correzioni[0]["stato"], "da_verificare")
 
     def test_con_il_margine_entrano_la_regola_di_frase_e_la_parola(self):
-        correzioni = self._correzioni(("cane di Mario", "can ad Mario"),
-                                      ("gatto di casa", "gat ad ca"),
+        correzioni = self._correzioni(("cane con Mario", "can cun Mario"),
+                                      ("gatto con casa", "gat cun ca"),
                                       ("la casa", "la ca"))
         fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
                                 "2026-11-05")
-        self.assertEqual(fatto["regole_frase"], ["funzionale|di|consonante|ad"])
+        self.assertEqual(fatto["regole_frase"], ["funzionale|con|consonante|cun"])
         self.assertEqual(len(fatto["parole"]), 1, "«casa» → «ca» due volte")
         # «càn» → «can» (l'accento) ha una correzione sola, e la prima resta da
-        # verificare; nella seconda «gat» e' gia' nel glossario, e con «di» e
+        # verificare; nella seconda «gat» e' gia' nel glossario, e con «con» e
         # «casa» entrati entra per intero, come la terza.
         self.assertEqual([c["stato"] for c in correzioni],
                          ["da_verificare", "applicata", "applicata"])
@@ -5069,10 +5117,10 @@ class TestLaPromozione(unittest.TestCase):
             regole["regole"], {"X0001", "X0002", "X0003"}), [])
         # Il motore la usa, guardando la parola che segue.
         self.frase._cache.clear()
-        regola = self.frase.cerca("di", "libro",
+        regola = self.frase.cerca("con", "libro",
                                   self.percorsi["regole_frase"])
-        self.assertEqual(regola["ferrarese"], "ad")
-        self.assertIsNone(self.frase.cerca("di", "òm",
+        self.assertEqual(regola["ferrarese"], "cun")
+        self.assertIsNone(self.frase.cerca("con", "òm",
                                            self.percorsi["regole_frase"]),
                           "davanti a vocale nessuno ha corretto niente")
         # Rifarlo non scrive due volte.
@@ -5081,19 +5129,19 @@ class TestLaPromozione(unittest.TestCase):
         self.assertEqual(di_nuovo["regole_frase"] + di_nuovo["parole"], [])
 
     def test_una_correzione_contraria_ferma_la_promozione(self):
-        correzioni = self._correzioni(("cane di Mario", "can ad Mario"),
-                                      ("gatto di Luca", "gat ad Luca"),
-                                      ("pane di Ugo", "pan d'Ugo"),
-                                      ("pane di Rita", "pan dla Rita"))
+        correzioni = self._correzioni(("cane con Mario", "can cun Mario"),
+                                      ("gatto con Luca", "gat cun Luca"),
+                                      ("pane con Ugo", "pan cun Ugo"),
+                                      ("pane con Rita", "pan con Rita"))
         valutati = self.c.valuta(self.motore, correzioni)
-        al = valutati["funzionale|di|consonante|ad"]
+        al = valutati["funzionale|con|consonante|cun"]
         self.assertEqual((al["da"], al["contro"], al["pronto"]),
                          (["X0001", "X0002"], ["X0004"], False),
                          "«d'Ugo» e' davanti a vocale: un altro contesto, non "
                          "una prova contraria")
 
     def test_la_conferma_a_mano_e_il_margine(self):
-        correzioni = self._correzioni(("cane di Mario", "can ad Mario"))
+        correzioni = self._correzioni(("cane con Mario", "can cun Mario"))
         correzioni[0]["confermata"] = True
         fatto = self.c.promuovi(self.motore, correzioni, self.percorsi,
                                 "2026-11-05")

@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.46
+versione: 0.47
 data: 2026-11-05
 ---
 
@@ -23,6 +23,29 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.47 — 2026-11-09 · Il Tréb dal Tridèl: l'alfabeto, «di», centosessanta parole
+
+**Perché.** Il titolare ha allegato i testi di S011 e S025 (Al Tréb dal Tridèl) e ne
+ha controllato il ferrarese; l'articolo di estense.com (S026) non si trova piu'.
+
+- **L'alfabeto del Tréb** (ś ź ć ǵ η î) si porta segno per segno in quello di Bigoni
+  (`grafia.treb_a_bigoni`, copia `trebABigoni` nella pagina, confrontata su tutte le
+  forme): grafia unica e pronuncia come per Bigoni. Il campo `alfabeto` dice alla
+  pagina quale alfabeto ha la forma della fonte.
+- **La grammatica di S011**: «di» → `ad`/`d'`, «una» e «un'» → `na`/`n'`.
+- **160 voci** da `raccolta/da_treb.py`, solo quelle con la traduzione accanto nel
+  testo; 91 sono date uguali da un'altra fonte ed entrano lo stesso, perche' una
+  fonte in piu' e' una conferma («il fuoco» → `al fógh`, non `bubù`). Tutte `D`,
+  verificate dal titolare il 2026-11-09 (`dati/verifiche/`).
+- S011 e S025 `acquisite`; S026 `esclusa` (irreperibile).
+- Le prove della promozione usano «con» invece di «di», che ora e' nella grammatica.
+
+Il glossario conta **2610 locuzioni** e **16463 parole singole**.
+
+**Verifiche.** 425 test (erano 421): l'alfabeto del Tréb nella grafia unica, la
+pronuncia che tiene s/z sonore e n velare, «di» e «una» secondo la parola che segue,
+le voci verificate e la conferma che cambia «fuoco».
 
 ## 0.46 — 2026-11-09 · La prima verifica di un parlante
 

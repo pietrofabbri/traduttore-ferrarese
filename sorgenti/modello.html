@@ -881,10 +881,12 @@
     // suona: il riproduttore suona solo trascrizioni senza dubbi.
     var v = voceId ? vocePerId(voceId) : null;
     if (v && v.grafia_fonte) {
-      return { forma: v.fe, ipa: ipaDaBigoni(v.grafia_fonte), attendibilita: "I",
-        da_verificare: true, riferimento: v.id,
-        nota: "letta dall'alfabeto di Bigoni (S006): «" + v.grafia_fonte +
-          "», con la tabella di dati/conversione_bigoni.json; non e' un ascolto" };
+      var treb = v.alfabeto === "treb";
+      return { forma: v.fe, ipa: ipaDaBigoni(treb ? trebABigoni(v.grafia_fonte) : v.grafia_fonte),
+        attendibilita: "I", da_verificare: true, riferimento: v.id,
+        nota: (treb ? "letta dall'alfabeto del Tr\u00e9b dal Trid\u00e8l (S011): \u00ab"
+                    : "letta dall'alfabeto di Bigoni (S006): \u00ab") + v.grafia_fonte +
+          "\u00bb, con la tabella di dati/conversione_bigoni.json; non e' un ascolto" };
     }
     return null;
   }
@@ -1262,6 +1264,40 @@ function tokenizza(t) {
       }
     }
     return segni.map(function (x, k) { return (k === inizio ? "\u02c8" : "") + x[0]; }).join("");
+  }
+  // Copia di `grafia.treb_a_bigoni` (0.47): l'alfabeto del Tréb dal Tridèl
+  // in quello di Bigoni, per la pronuncia.
+  var TREB = {"\u015b": "\u0161", "\u017a": "\u017e", "\u0107": "c", "\u01f5": "g", "\u0123": "g",
+    "\u03b7": "\u014b", "\u019e": "\u014b", "\u00ee": "i"};
+  var FRONTALI_T = "ei\u00e9\u00e8\u00ec\u00ed";
+  function maiuscolaCome(c, resa) { return c !== c.toLowerCase() && resa ? resa.charAt(0).toUpperCase() + resa.slice(1) : resa; }
+  function trebABigoni(forma) {
+    var s = Array.from(String(forma || "").normalize("NFC")), fuori = [], i = 0, n = s.length;
+    while (i < n) {
+      var c = s[i], b = c.toLowerCase();
+      var dopo = i + 1 < n ? s[i + 1].toLowerCase() : "", dopo2 = i + 2 < n ? s[i + 2].toLowerCase() : "";
+      if ((b === "c" || b === "g") && dopo === "h") { fuori.push(maiuscolaCome(c, b === "c" ? "k" : "\u0263")); i += 2; continue; }
+      if (b === "g" && dopo === "n") { fuori.push(maiuscolaCome(c, "\u00f1")); i += 2; continue; }
+      if (b === "g" && dopo === "l" && (dopo2 === "i" || dopo2 === "\u00ec")) {
+        var dopo3 = i + 3 < n ? s[i + 3].toLowerCase() : "";
+        fuori.push("\u028e"); i += (dopo3 && VOCALI_B.indexOf(dopo3) !== -1) ? 3 : 2; continue;
+      }
+      if (b === "c" || b === "g") {
+        if (dopo && FRONTALI_T.indexOf(dopo) !== -1) {
+          fuori.push(c);
+          if (dopo === "i" && dopo2 && VOCALI_B.indexOf(dopo2) !== -1) i += 1;
+        } else fuori.push(maiuscolaCome(c, b === "c" ? "k" : "\u0263"));
+        i += 1; continue;
+      }
+      if ((b === "\u0107" || b === "\u01f5" || b === "\u0123") && dopo === "i" && dopo2 && VOCALI_B.indexOf(dopo2) !== -1) {
+        fuori.push(TREB[b]); i += 2; continue;
+      }
+      if (b === "i" && i > 0 && (VOCALI_B + "'\u2019").indexOf(s[i - 1].toLowerCase()) === -1 &&
+          dopo && VOCALI_B.indexOf(dopo) !== -1) { fuori.push("j"); i += 1; continue; }
+      fuori.push(TREB.hasOwnProperty(b) ? maiuscolaCome(c, TREB[b]) : c);
+      i += 1;
+    }
+    return fuori.join("").normalize("NFC");
   }
   function ipaDaBigoni(forma) {
     var f = String(forma || "").toLowerCase().normalize("NFC").replace(/[\[\]]/g, "").trim();

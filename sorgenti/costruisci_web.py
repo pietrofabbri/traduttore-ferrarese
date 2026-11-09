@@ -101,7 +101,7 @@ AVVERTIMENTO_SINTESI = (
 CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
                  "attendibilita", "da_verificare", "fonte", "moderno",
                  "fonte_moderno", "sinonimi", "principale_it", "principale_fe",
-                 "grafia_fonte", "conferme")
+                 "grafia_fonte", "conferme", "alfabeto")
 # I campi che la pagina del traduttore riceve. Dieci, e non undici: `note`
 # e' stato tolto, e la ragione sta nel peso.
 #
@@ -122,7 +122,8 @@ CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
 # glossario: questo e' solo il trasporto della pagina del traduttore.
 CAMPI_MOTORE = ("id", "fe", "it", "varianti", "campo", "varieta",
                 "attendibilita", "da_verificare", "principale_it",
-                "principale_fe", "grafia_fonte", "conferme", "corregge")
+                "principale_fe", "grafia_fonte", "conferme", "corregge",
+                "alfabeto")
 
 # Le pagine del sito. `sezioni` sono i marcatori di `modello.html` che la
 # pagina tiene: tutto il resto viene rimosso. La lista e' qui e non nel
@@ -209,6 +210,8 @@ CAMPI_VOCE = {
     # (0.45): la pagina ordina le voci di una chiave come `glossario.priorita`.
     "conferme": "conferme",
     "corregge": "corregge",
+    # L'alfabeto della forma della fonte, se non e' quello di Bigoni (0.47).
+    "alfabeto": "alfabeto",
 }
 
 

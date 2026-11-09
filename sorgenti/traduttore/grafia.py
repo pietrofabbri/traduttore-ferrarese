@@ -166,6 +166,75 @@ def senza_maiuscola(testo: str) -> str:
     return testo
 
 
+# --- l'alfabeto del Tréb dal Tridèl (0.47) ------------------------------------
+#
+# «Scrìvar e lèźar al fraréś» (S011) e le «Storie dei nostri dialetti» (S025)
+# scrivono all'italiana con cinque segni della dialettologia: `ś` e `ź` (s e z
+# sonore; `s` e `z` semplici sono sorde), `ć` e `ǵ` (c e g dolci in fondo alla
+# parola), `η` (n velare), e `î` per la i finale lunga. E' un alfabeto senza
+# ambiguita', quindi si traduce segno per segno in quello di Bigoni, e da li'
+# vengono la grafia unica del progetto (`da_bigoni`) e la pronuncia
+# (`ipa_da_bigoni`). La forma della fonte resta in `grafia_fonte`.
+
+FONTI_TREB = ("(S011)", "(S025)")
+_TREB = {"ś": "š", "ź": "ž", "ć": "c", "ǵ": "g", "ģ": "g", "η": "ŋ", "ƞ": "ŋ",
+         "î": "i"}
+_FRONTALI = "eiéèìí"
+
+
+def e_del_treb(fonte: str) -> bool:
+    return any(s in (fonte or "") for s in FONTI_TREB)
+
+
+def treb_a_bigoni(forma: str) -> str:
+    """Una forma del Tréb dal Tridèl nell'alfabeto di Bigoni."""
+    s = unicodedata.normalize("NFC", forma or "")
+    fuori, i, n = [], 0, len(s)
+    while i < n:
+        c = s[i]
+        b = c.lower()
+        dopo = s[i + 1].lower() if i + 1 < n else ""
+        dopo2 = s[i + 2].lower() if i + 2 < n else ""
+        if b in ("c", "g") and dopo == "h":
+            fuori.append(_maiuscola_come(c, "k" if b == "c" else "ɣ"))
+            i += 2
+            continue
+        if b == "g" and dopo == "n":
+            fuori.append(_maiuscola_come(c, "ñ"))
+            i += 2
+            continue
+        if b == "g" and dopo == "l" and dopo2 in ("i", "ì"):
+            # «gli» + vocale: la i e' solo grafia
+            dopo3 = s[i + 3].lower() if i + 3 < n else ""
+            fuori.append("ʎ")
+            i += 3 if dopo3 and dopo3 in VOCALI else 2
+            continue
+        if b in ("c", "g"):
+            if dopo and dopo in _FRONTALI:
+                fuori.append(c)                       # dolce: c, g di Bigoni
+                # «cia», «gio»: la i e' solo grafia
+                if dopo == "i" and dopo2 and dopo2 in VOCALI:
+                    i += 1
+            else:
+                fuori.append(_maiuscola_come(c, "k" if b == "c" else "ɣ"))
+            i += 1
+            continue
+        if b in ("ć", "ǵ", "ģ") and dopo == "i" and dopo2 and dopo2 in VOCALI:
+            fuori.append(_TREB[b])                    # «sćiàr»: la i e' grafia
+            i += 2
+            continue
+        # la i senza accento fra una consonante e una vocale e' una
+        # semivocale: `j` di Bigoni («fió» → `fjó`, «biétul» → `bjétul»)
+        if b == "i" and i > 0 and s[i - 1].lower() not in VOCALI + "'’" and \
+                dopo and dopo in VOCALI:
+            fuori.append("j")
+            i += 1
+            continue
+        fuori.append(_maiuscola_come(c, _TREB.get(b, c)) if b in _TREB else c)
+        i += 1
+    return unicodedata.normalize("NFC", "".join(fuori))
+
+
 # --- la giunzione: radice e desinenza ---------------------------------------
 #
 # All'italiana la stessa consonante si scrive in due modi secondo la vocale che

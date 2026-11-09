@@ -214,5 +214,18 @@
     "j fra una consonante e una vocale si scrive i, come il Ferri («abitazjóŋ» → «abitazión»); all'inizio, fra due vocali e in fondo resta j; dopo gli e gn non si scrive",
     "le parti fra parentesi quadre sono facoltative: la forma intera e' la principale, quella senza e' una variante",
     "l'accento tonico dell'IPA va all'inizio della sillaba della vocale accentata; se la fonte non scrive l'accento la trascrizione non lo mette"
-  ]
+  ],
+  "alfabeto_treb": {
+    "fonte": "S011",
+    "codice": "sorgenti/traduttore/grafia.py, treb_a_bigoni",
+    "segni": {
+      "ś": "š (s sonora)",
+      "ź": "ž (z sonora)",
+      "ć": "c di Bigoni (c dolce)",
+      "ǵ": "g di Bigoni (g dolce)",
+      "η": "ŋ (n velare)",
+      "î": "i (i finale lunga)"
+    },
+    "contesto": "c e g davanti a e, i sono dolci (c, g di Bigoni), altrimenti dure (k, ɣ); ch e gh sono dure; gn e' ñ; gli davanti a vocale e' ʎ; la i senza accento fra consonante e vocale e' j"
+  }
 }

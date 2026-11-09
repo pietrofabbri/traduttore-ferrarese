@@ -112,6 +112,9 @@ class Voce:
     # La verifica di un parlante (0.46): «data, chi (fonte, varieta')», e la
     # riga che la registra e' in `dati/verifiche/verifiche.jsonl`.
     verificata: str = ""
+    # L'alfabeto di `grafia_fonte` quando non e' quello di Bigoni: "treb" per
+    # il Tréb dal Tridèl (0.47). Serve alla pagina per la pronuncia.
+    alfabeto: str = ""
 
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
@@ -473,6 +476,18 @@ def _voce_da_dict(grezzo: dict) -> Voce:
             f for f in facoltative if f not in varianti]
         if grafia_fonte == ferrarese:
             grafia_fonte = ""
+    alfabeto = ""
+    if grafia.e_del_treb(fonte) and not grafia_fonte:
+        # L'alfabeto del Tréb dal Tridèl (0.47): si porta in quello di Bigoni
+        # e da li' nella grafia unica; la forma della fonte resta.
+        grafia_fonte = ferrarese
+        alfabeto = "treb"
+        ferrarese = grafia.da_bigoni(grafia.treb_a_bigoni(ferrarese))
+        principale_fe = (grafia.da_bigoni(grafia.treb_a_bigoni(principale_fe))
+                         if principale_fe else "")
+        varianti = [grafia.da_bigoni(grafia.treb_a_bigoni(v)) for v in varianti]
+        if grafia_fonte == ferrarese:
+            grafia_fonte, alfabeto = "", ""
     return Voce(
         id=str(grezzo.get("id", "")).strip(),
         ferrarese=ferrarese,
@@ -493,4 +508,5 @@ def _voce_da_dict(grezzo: dict) -> Voce:
         corregge=str(grezzo.get("corregge", "") or "").strip(),
         grafia_fonte=grafia_fonte,
         verificata=str(grezzo.get("verificata", "") or "").strip(),
+        alfabeto=alfabeto,
     )

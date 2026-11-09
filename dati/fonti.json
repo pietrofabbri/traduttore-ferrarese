@@ -274,16 +274,16 @@
     },
     {
       "id": "S011",
-      "titolo": "«Scrìvar e l'èàr al frarés»",
-      "autore": "non identificato",
+      "titolo": "«Scrìvar e lèźar al fraréś – dó o tré pìlul ad gramàtica»",
+      "autore": "Al Tréb dal Tridèl (chi ha partecipato alla compilazione dei lavori di Baiolini e Guidetti)",
       "anno": 0,
-      "tipo": "opuscolo",
+      "tipo": "premessa di grammatica e di grafia",
       "luogo": "https://files.supersite.aruba.it/media/3538_b165a2bcee0c219fcc85ca29eb23a5c0786b996a.pdf",
-      "stato": "esclusa",
-      "licenza": "nessuna dichiarata",
-      "licenza_verificata": false,
-      "uso": "Esclusa dal glossario.",
-      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra. **Aggiornato il 2026-11-07:** il titolare l'ha segnalata di nuovo con l'indirizzo completo («Scrìvar e lèžar al frarés»). Dalla macchina di lavoro il file non si scarica, e restano i due motivi: e' un'immagine e non si sa di chi sia (probabilmente Al Tréb dal Tridèl, S021, come S025). Rientra quando il file e' allegato e l'autore e' noto. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca solo il file: va allegato, perche' dalla macchina di lavoro non si scarica."
+      "stato": "acquisita",
+      "licenza": "autorizzazione del titolare del progetto, che fa parte dell'associazione (come S021)",
+      "licenza_verificata": true,
+      "uso": "Dalla 0.47: le parole con la traduzione accanto in dati/glossario.jsonl (raccolta/da_treb.py), nel loro alfabeto; la preposizione «di» (ad/d') e «una» davanti a vocale (n') in dati/grammatica.json; l'alfabeto (ś ź ć ǵ η î) in sorgenti/traduttore/grafia.py.",
+      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra. **Aggiornato il 2026-11-07:** il titolare l'ha segnalata di nuovo con l'indirizzo completo («Scrìvar e lèžar al frarés»). Dalla macchina di lavoro il file non si scarica, e restano i due motivi: e' un'immagine e non si sa di chi sia (probabilmente Al Tréb dal Tridèl, S021, come S025). Rientra quando il file e' allegato e l'autore e' noto. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca solo il file: va allegato, perche' dalla macchina di lavoro non si scarica. **2026-11-09:** il titolare ha allegato il testo (copia in raccolta/grezzi/s011, non tracciata) e dichiara di averne controllato il ferrarese. Propone una grafia con cinque segni della dialettologia (ś, ź, ć, ǵ, η), s e z semplici sorde, niente doppie tranne -nn e -ll dei femminili plurali tronchi, l'articolo «le» scritto ill: il progetto la legge segno per segno (grafia.treb_a_bigoni) e la porta nella grafia unica."
     },
     {
       "id": "S017",
@@ -339,16 +339,16 @@
     },
     {
       "id": "S025",
-      "titolo": "«Origini ed evoluzione del dialetto ferrarese» (I)",
-      "autore": "non identificato (file ospitato sul servizio di siti di Aruba)",
+      "titolo": "«Tréb dal tridèl – Storie dei nostri dialetti»",
+      "autore": "Floriana Guidetti (a cura di), Al Tréb dal Tridèl",
       "anno": 0,
-      "tipo": "documento PDF",
+      "tipo": "saggio divulgativo (origini, zone, evoluzione del dialetto)",
       "luogo": "https://files.supersite.aruba.it/media/3538_5139c48950b1b19a46e85fa81c3b245cab5281c9.pdf",
-      "stato": "reperto",
-      "licenza": "nessuna dichiarata",
-      "licenza_verificata": false,
-      "uso": "Non usata.",
-      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il file non si puo' scaricare dalla macchina di lavoro (la rete lo rifiuta), quindi non e' stato aperto. Lo stesso archivio di Aruba ospita S011: e' probabile che siano dell'associazione Al Tréb dal Tridèl (S021), per la quale il titolare ha dichiarato un'autorizzazione, ma e' un sospetto e non un fatto. Entra quando il file e' allegato e chi l'ha scritto e' noto. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca solo il file: va allegato, perche' dalla macchina di lavoro non si scarica."
+      "stato": "acquisita",
+      "licenza": "autorizzazione del titolare del progetto, che fa parte dell'associazione (come S021)",
+      "licenza_verificata": true,
+      "uso": "Dalla 0.47: le parole con la traduzione accanto in dati/glossario.jsonl (raccolta/da_treb.py).",
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il file non si puo' scaricare dalla macchina di lavoro (la rete lo rifiuta), quindi non e' stato aperto. Lo stesso archivio di Aruba ospita S011: e' probabile che siano dell'associazione Al Tréb dal Tridèl (S021), per la quale il titolare ha dichiarato un'autorizzazione, ma e' un sospetto e non un fatto. Entra quando il file e' allegato e chi l'ha scritto e' noto. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca solo il file: va allegato, perche' dalla macchina di lavoro non si scarica. **2026-11-09:** il titolare ha allegato il testo (copia in raccolta/grezzi/s025) e dichiara di averne controllato il ferrarese. Il testo distingue quattro distretti (portuense-marrarese, copparese col basso ferrarese, alto ferrarese, cittadino) e cita parole di zona (alto ferrarese piò, pupla, tròl contro varsùr, papàvar, tragèl; portuense cójar, cùja, quié, spaiardìη): sono un dato per le varieta' ancora vuote, ma senza traduzione per tutte, e per ora entrano solo quelle tradotte."
     },
     {
       "id": "S026",
@@ -357,11 +357,11 @@
       "anno": 2015,
       "tipo": "articolo di giornale online",
       "luogo": "https://www.estense.com/2015/489451/baciosla-sciavga-pulaciar-eccetera/",
-      "stato": "reperto",
+      "stato": "esclusa",
       "licenza": "nessuna dichiarata (non vista)",
       "licenza_verificata": false,
       "uso": "Non usata.",
-      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il sito chiede ai programmi di non leggerlo (robots.txt), e il progetto non lo aggira: la pagina non e' stata letta. Un articolo di giornale e' un testo protetto; le parole che cita, con la loro traduzione, possono entrare se il titolare ne incolla il testo e l'articolo dichiara da dove le prende. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca il testo: va incollato, perche' il sito non si legge con un programma."
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il sito chiede ai programmi di non leggerlo (robots.txt), e il progetto non lo aggira: la pagina non e' stata letta. Un articolo di giornale e' un testo protetto; le parole che cita, con la loro traduzione, possono entrare se il titolare ne incolla il testo e l'articolo dichiara da dove le prende. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca il testo: va incollato, perche' il sito non si legge con un programma. **2026-11-09:** il titolare non trova piu' l'articolo: la fonte e' irreperibile e resta esclusa."
     }
   ]
 }

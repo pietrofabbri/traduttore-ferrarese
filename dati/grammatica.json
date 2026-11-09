@@ -93,14 +93,34 @@
    "dove": "§4 «Articoli»"
   },
   {
+   "italiano": "di",
+   "genere": "",
+   "numero": "",
+   "consonante": "ad",
+   "vocale": "d'",
+   "scritto_dalla_fonte": "la preposizione 'di', in ferrarese d (dal lat. de), che si appoggia alla parola seguente: d'èrba d'erba ... se la parola successiva cominci per consonante ... subentra davanti una a eufonica ... ad Gino di Gino, ad córsa di corsa.",
+   "fonte": "S011",
+   "dove": "«Scrìvar e lèźar al fraréś», Osservazioni"
+  },
+  {
    "italiano": "una",
    "genere": "f",
    "numero": "s",
    "consonante": "na",
-   "vocale": "",
-   "scritto_dalla_fonte": "L'articolo indeterminativo singolare femminile è una spesso ridotto semplicemente a na.",
-   "fonte": "S015",
-   "dove": "§4 «Articoli»"
+   "vocale": "n'",
+   "scritto_dalla_fonte": "il femminile una è praticamente sempre pronunciato na davanti a consonante (na scarpa una scarpa, na vòlta una volta) e davanti a vocale è n' (n'èrba un'erba, n'idèa un'idea).",
+   "fonte": "S011",
+   "dove": "«Scrìvar e lèźar al fraréś», Osservazioni"
+  },
+  {
+   "italiano": "un'",
+   "genere": "f",
+   "numero": "s",
+   "consonante": "na",
+   "vocale": "n'",
+   "scritto_dalla_fonte": "davanti a vocale è n' (n'èrba un'erba, n'idèa un'idea).",
+   "fonte": "S011",
+   "dove": "«Scrìvar e lèźar al fraréś», Osservazioni"
   }
  ],
  "secondo_genere": [

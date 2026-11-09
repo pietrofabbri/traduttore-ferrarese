@@ -105,6 +105,10 @@ class Voce:
     # glossario le legge all'italiana (`grafia.py`). Questa resta, si cerca e
     # da' la pronuncia.
     grafia_fonte: str = ""
+    # Le voci di **altre fonti** che danno la stessa parola con lo stesso
+    # significato (0.45, `_conferme`). Non e' un dato del file: si calcola
+    # quando il glossario si legge, e cambia quando entra una fonte.
+    conferme: list = field(default_factory=list)
 
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
@@ -191,6 +195,7 @@ class Glossario:
     def __init__(self, voci=None):
         self.voci = _prima_le_correzioni(list(voci or []))
         _senza_maiuscole_del_lemma(self.voci)
+        _conferme(self.voci)
         self._per_ferrarese = {}
         self._per_italiano = {}
         self.indizza()
@@ -230,6 +235,13 @@ class Glossario:
             for k in voce.chiavi_italiano():
                 if k:
                     self._per_italiano.setdefault(k, []).append(voce)
+        # Dentro ogni chiave, prima le correzioni dei parlanti e poi le voci
+        # confermate da piu' fonti (0.45). L'ordinamento e' stabile: a parita'
+        # resta l'ordine del file, che e' quello di prima.
+        for indice in (self._per_ferrarese, self._per_italiano):
+            for chiave_indice, gruppo in indice.items():
+                if len(gruppo) > 1:
+                    indice[chiave_indice] = sorted(gruppo, key=priorita)
 
     # --- interrogazioni --------------------------------------------------
 
@@ -330,6 +342,67 @@ def _uniche_per_id(voci: list) -> list:
         visti.add(voce.id)
         uniche.append(voce)
     return uniche
+
+
+# --- la conferma fra fonti (0.45) --------------------------------------------
+#
+# Quando due fonti indipendenti — il Nannini (1805), il Ferri (1889), Bigoni,
+# Musacchi — danno per la stessa parola italiana la stessa forma ferrarese, la
+# voce non e' piu' la lettura di una fonte sola. Non diventa `D`: nessuno l'ha
+# confrontata col libro. Ma fra due voci per «aiutare» quella che tre fonti
+# confermano e' quella da dare, e il motore la mette prima.
+#
+# Il confronto e' severo: la forma deve essere **uguale** dopo la grafia unica
+# (`grafia.py`), a meno degli accenti, delle consonanti doppie e di j/i
+# (`Biànch` e `bianch`, `Ajùt` e `aiut`). Due forme solo simili non si
+# confermano: e' il caso in cui una delle due e' una lettura sbagliata.
+
+def famiglia_della_fonte(fonte: str) -> str:
+    """La fonte di una voce, come identificativo: `S004`, `S006`..."""
+    m = re.search(r"\((S\d{3})\)", fonte or "")
+    if m:
+        return m.group(1)
+    for inizio, codice in (("Luigi Ferri", "S004"), ("Francesco Nannini", "S005"),
+                           ("Roberto Bigoni", "S006"),
+                           ("Maurizio Musacchi", "S020")):
+        if (fonte or "").startswith(inizio):
+            return codice
+    return (fonte or "")[:40]
+
+
+def forma_confrontabile(forma: str) -> str:
+    k = normalizza.chiave(forma or "").replace("j", "i").replace("h", "")
+    return re.sub(r"(.)\1+", r"\1", k)
+
+
+def _conferme(voci: list) -> None:
+    gruppi = {}
+    for v in voci:
+        if v.corregge:
+            continue
+        it = normalizza.chiave(v.principale_italiano or
+                               (v.italiano or "").split(",")[0])
+        fe = forma_confrontabile(v.principale_ferrarese or
+                                 (v.ferrarese or "").split(",")[0])
+        if it and fe:
+            gruppi.setdefault((it, fe), []).append(v)
+    for gruppo in gruppi.values():
+        if len(gruppo) < 2:
+            continue
+        for v in gruppo:
+            mia = famiglia_della_fonte(v.fonte)
+            altre, viste = [], {mia}
+            for w in gruppo:
+                f = famiglia_della_fonte(w.fonte)
+                if f not in viste:
+                    viste.add(f)
+                    altre.append(w.id)
+            v.conferme = altre
+
+
+def priorita(voce) -> tuple:
+    """L'ordine fra voci con la stessa chiave: correzioni, poi conferme."""
+    return (0 if voce.corregge else 1, -len(voce.conferme))
 
 
 def _senza_maiuscole_del_lemma(voci: list) -> None:

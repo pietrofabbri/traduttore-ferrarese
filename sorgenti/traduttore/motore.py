@@ -377,6 +377,8 @@ class Motore:
                 voce.id, voce.attendibilita, voce.fonte or "senza fonte")
             if voce.varieta:
                 dettaglio += " | varieta': %s" % voce.varieta
+            if voce.conferme:
+                dettaglio += " | confermata da: " + ", ".join(voce.conferme)
             if len(voci) > 1:
                 dettaglio += " | altre voci: " + ", ".join(v.id for v in voci[1:4])
             return tradotto, "glossario", ORIGINE["glossario"], dettaglio

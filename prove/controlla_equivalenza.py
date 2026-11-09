@@ -66,6 +66,12 @@ FRASI = [
     ("it-fe", "noi cerchiamo un amico"),
     ("it-fe", "le amiche e i laghi"),
     ("it-fe", "fischiare"),
+    # La conferma fra fonti (0.45): la voce confermata viene prima.
+    ("it-fe", "la ragione del cane bianco"),
+    ("it-fe", "il lago e la casa"),
+    ("it-fe", "niente da cuocere"),
+    ("it-fe", "trebbiare e guastare"),
+    ("fe-it", "biànch"),
     ("fe-it", "kaŋtàr"),
     ("fe-it", "cantàr"),
     ("it-fe", "a braccia aperte"),

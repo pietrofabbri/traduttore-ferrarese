@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.42
+versione: 0.44
 data: 2026-11-05
 ---
 
@@ -23,6 +23,50 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.44 — 2026-11-07 · Il Nannini (1805) nel glossario
+
+**Perché.** Il vocabolario del Nannini (S005) e' il piu' antico del progetto e l'unico
+che dichiara per iscritto di essere il dialetto della citta' di Ferrara, ma era fermo a
+`esaminata` perche' l'OCR incorporato nel PDF e' inservibile. Il titolare ne ha
+allegato la scansione.
+
+- **`raccolta/da_nannini.py`**: rilegge la scansione con tesseract, una colonna alla
+  volta (`--ocr`), e scrive le voci. La pagina citata e' quella stampata, ricavata
+  dallo scarto fra PDF e libro che la maggioranza delle testate dichiara.
+- **1522 voci nuove**, `I` e `da_verificare`, varieta' `cittadino` (dichiarata dal
+  Nannini stesso); **249 concordanze** con voci che il glossario aveva gia', non
+  duplicate.
+- Entra solo una voce il cui reso e' fatto di parole italiane che il progetto conosce
+  gia': 2713 restano fuori perche' l'OCR del reso non e' affidabile. Fuori anche
+  rimandi (277), lemmi illeggibili (110), locuzioni (44) e parole funzionali (12).
+- Il «larga» o «stretta» che il Nannini scrive dopo il lemma (vocale tonica aperta o
+  chiusa) va nella nota della voce.
+- La maiuscola tipografica del lemma si toglie come per il Ferri e Musacchi.
+- `dati/pronominali.jsonl` rigenerato: cinque verbi riflessivi in piu'.
+
+Il glossario conta **2606 locuzioni** e **16286 parole singole**.
+
+**Verifiche.** 414 test (erano 408): una voce con la categoria, il timbro nella nota,
+rimandi, lemmi e resi illeggibili, lo scarto delle pagine, l'unione delle righe, le
+voci scritte con fonte, pagina e minuscola.
+
+## 0.43 — 2026-11-07 · Il blocco dati compresso
+
+**Perché.** Il glossario cresce a ogni fonte e a ogni correzione, e togliere gli spazi
+aveva dato un margine di settimane, non di anni: serviva una soluzione che regga.
+
+- **Il blocco dati di ogni pagina è compresso** con DEFLATE e scritto in base64
+  (`blocco_dati` in `costruisci_web.py`); la pagina lo decomprime all'apertura con
+  `inflate`, scritta nella pagina secondo la RFC 1951, senza librerie e senza rete.
+  `traduttore.html` passa da 1967 a 603 KB, il sito intero da 11,8 a 6,6 MB.
+- `dati_della_pagina` legge il blocco di una pagina, compresso o no: la usano la CI,
+  il confronto delle due copie e i test.
+- Il confronto delle due copie controlla che la pagina decomprima il suo blocco
+  uguale a Python; la pagina è stata aperta in Chromium da file, senza errori.
+
+**Verifiche.** 408 test (erano 406): Python rilegge il blocco che scrive, e la
+pagina decomprime blocchi non compressi, con codici fissi e con codici dinamici.
 
 ## 0.42 — 2026-11-05 · Una grafia sola, la pronuncia di Bigoni, la pagina piu' leggera
 

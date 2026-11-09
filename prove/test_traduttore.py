@@ -4588,6 +4588,109 @@ class TestLeCorrezioni(unittest.TestCase):
             self.c.leggi(PERCORSI["inferenze"])), [])
 
 
+def _testo_dei_dati(pagina: str) -> str:
+    """I dati di una pagina generata come testo JSON: il blocco e' compresso
+    (0.43), e cercare una chiave nell'HTML non la troverebbe piu'."""
+    sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+    from costruisci_web import dati_della_pagina
+    return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
+
+
+class TestIlNannini(unittest.TestCase):
+    """La lettura del vocabolario del Nannini, 1805 (S005, 0.44)."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, os.path.join(RADICE, "raccolta"))
+        import da_nannini
+        cls.n = da_nannini
+        cls.lessico = {"mangiare", "cibarsi", "loglio", "capello", "nuovo",
+                       "fuso", "bollato", "segnato"}
+
+    def test_una_voce_con_la_categoria(self):
+        self.assertEqual(self.n.leggi_voce("Magnàr , verbo , mangiare , cibarsi .",
+                                           self.lessico)[:3],
+                         ("Magnàr", "mangiare, cibarsi", "mangiare"))
+        self.assertEqual(self.n.leggi_voce("Bullà, agg., segnato, marcato",
+                                           self.lessico)[2], "segnato")
+
+    def test_il_timbro_va_nella_nota_e_non_nel_reso(self):
+        esito = self.n.leggi_voce("Loi , stretta , loglio .", self.lessico)
+        self.assertEqual((esito[2], esito[4]), ("loglio", "stretta"))
+        esito = self.n.leggi_voce("Cavell' , capello stretto", self.lessico)
+        self.assertEqual((esito[2], esito[4]), ("capello", "stretto"))
+
+    def test_quello_che_non_entra(self):
+        motivi = {
+            "Blisgar , v. Sblìsgar .": "rimando",
+            "Capplazx , cappellaccio": "lemma illeggibile",
+            "Alvar , le vare , alzare": "reso illeggibile",
+            "Bocch , far dil bocch , sberleffare": "reso illeggibile",
+        }
+        for testo, motivo in motivi.items():
+            self.assertEqual(self.n.leggi_voce(testo, self.lessico)[3], motivo,
+                             testo)
+
+    def test_lo_scarto_delle_pagine_viene_dalla_maggioranza(self):
+        testate = {40: "36 BU BU", 41: "BU 37", 42: "56 BU", 43: "BU"}
+        self.assertEqual(self.n.scarto_delle_pagine(testate), 4)
+
+    def test_le_righe_si_uniscono_in_voci(self):
+        righe = ["Bullar, bollare, suggel-", "lare, sigillare .",
+                 "Bullin , bollino ."]
+        self.assertEqual(self.n.voci_della_pagina(righe),
+                         ["Bullar, bollare, suggellare, sigillare .",
+                          "Bullin , bollino ."])
+
+    def test_le_voci_scritte_hanno_fonte_pagina_e_minuscola(self):
+        from traduttore.cli import carica
+        voci = [v for v in carica().glossario.voci if "(S005)" in v.fonte]
+        self.assertGreater(len(voci), 500)
+        for v in voci:
+            self.assertRegex(v.fonte, r"^Francesco Nannini, .*, 1805, pag\. \d+ \(S005\)$")
+            self.assertEqual((v.attendibilita, v.da_verificare, v.varieta),
+                             ("I", True, "cittadino"))
+        # La maiuscola tipografica del lemma si toglie; restano maiuscoli solo
+        # i nomi propri, i giorni e i mesi che Bigoni scrive maiuscoli.
+        maiuscole = [v.ferrarese for v in voci if v.ferrarese[:1].isupper()]
+        self.assertLess(len(maiuscole), len(voci) // 50, maiuscole[:20])
+
+
+class TestIlBloccoDatiCompresso(_ModelloInNode, unittest.TestCase):
+    """Il blocco dati compresso e il decompressore della pagina (0.43)."""
+
+    def test_python_rilegge_quello_che_scrive(self):
+        sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+        from costruisci_web import blocco_dati, dati_della_pagina
+        dati = {"glossario": None, "parola": "àɣ ŋ «ciao»", "n": list(range(50))}
+        self.assertEqual(dati_della_pagina(blocco_dati(dati)), dati)
+        # e anche un blocco non compresso, come quello del modello
+        self.assertEqual(dati_della_pagina(
+            '<script id="dati" type="application/json">{"a":1}</script>'),
+            {"a": 1})
+
+    def test_la_pagina_decomprime_i_tre_tipi_di_blocco(self):
+        if not self._js():
+            self.skipTest("node non e' installato")
+        import base64
+        import zlib
+
+        def compresso(testo, livello):
+            c = zlib.compressobj(livello, zlib.DEFLATED, -15)
+            return base64.b64encode(c.compress(testo.encode("utf-8"))
+                                    + c.flush()).decode("ascii")
+        lungo = json.dumps([{"fe": "kaŋtàr %d" % i, "it": "cantare"}
+                            for i in range(400)], ensure_ascii=False)
+        casi = [("non compresso", lungo, 0), ("codici fissi", "àɣ ŋ ciao", 9),
+                ("codici dinamici", lungo, 9)]
+        for nome, testo, livello in casi:
+            esito = self._valuta_js(
+                'testoDelBlocco({getAttribute: function () { return '
+                '"application/x-deflate-base64"; }, textContent: %s})'
+                % json.dumps(compresso(testo, livello)))
+            self.assertEqual(esito, testo, nome)
+
+
 class TestLaGrafiaUnica(unittest.TestCase):
     """Le voci di Bigoni lette all'italiana, con la pronuncia in IPA (0.42)."""
 
@@ -5136,7 +5239,7 @@ class TestIVerbiNellaPagina(_ModelloInNode, unittest.TestCase):
         # perche' il codice funziona benissimo su un indice vuoto.
         with io.open(os.path.join(RADICE, "web", "traduttore.html"),
                      encoding="utf-8") as f:
-            pagina = f.read()
+            pagina = _testo_dei_dati(f.read())
         self.assertIn('"per_italiano"', pagina,
                       "i dati dei verbi non sono nella pagina costruita")
         from traduttore import verbi
@@ -5413,7 +5516,8 @@ class TestLeParticelleNonSonoParole(unittest.TestCase):
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
         righe = modulo.trova(modulo.voci())
-        self.assertEqual(len(righe), 109,
+        # 114 dalla 0.44: il Nannini porta cinque verbi riflessivi in -rs.
+        self.assertEqual(len(righe), 114,
                          "il glossario non porta il numero di voci attese: %d"
                          % len(righe))
 
@@ -5523,7 +5627,7 @@ class TestLeParticelleNellaPagina(_ModelloInNode, unittest.TestCase):
     def test_i_dati_arrivano_alla_pagina_costruita(self):
         with io.open(os.path.join(RADICE, "web", "traduttore.html"),
                      encoding="utf-8") as f:
-            pagina = f.read()
+            pagina = _testo_dei_dati(f.read())
         self.assertIn('"particelle"', pagina,
                       "i dati delle particelle non sono nella pagina costruita")
 

@@ -136,11 +136,11 @@
       "anno": 1805,
       "tipo": "vocabolario",
       "luogo": "https://archive.org/details/vocabolarioporta00nannuoft",
-      "stato": "esaminata",
+      "stato": "acquisita",
       "licenza": "public domain",
       "licenza_verificata": true,
-      "uso": "Non ancora usato nel glossario. Serve da confronto con S004.",
-      "nota": "Il frontespizio porta «In Ferrara MDCCCV», cioe' 1805, e la data della scheda di archive.org concorda. Il libro si dichiara esplicitamente cittadino: «Quando dico raccolta di voci ferraresi intendo di parlare di quelle che formano il Dialetto della Citta' di Ferrara». E' la voce piu' antica e la piu' dichiarata, e per questo e' la prova che la scelta `cittadino` di S004 non e' un'assunzione. Non e' ancora `acquisita` perche' l'estrazione non e' finita: il testo e' un OCR del 1805, con il carattere lungo e i corsivi resi in modo irregolare, e le voci non sono separate da un segnale che le distingua dal glossario italiano come in S004."
+      "uso": "Dalla 0.44: 1532 voci nel glossario, `I` e `da_verificare`, ognuna con la pagina stampata del libro; altre 250 coincidono con voci che il glossario aveva gia' (stessa forma e stesso primo significato) e non sono state duplicate. Le scrive raccolta/da_nannini.py, che rilegge la scansione con tesseract (`--ocr`).",
+      "nota": "Il frontespizio porta «In Ferrara MDCCCV», cioe' 1805, e la data della scheda di archive.org concorda. Il libro si dichiara esplicitamente cittadino: «Quando dico raccolta di voci ferraresi intendo di parlare di quelle che formano il Dialetto della Citta' di Ferrara». E' la voce piu' antica e la piu' dichiarata, e per questo e' la prova che la scelta `cittadino` di S004 non e' un'assunzione. Fino alla 0.43 non era `acquisita` perche' l'OCR incorporato nel PDF (2009) e' inservibile. **Aggiornato il 2026-11-07:** la scansione, allegata dal titolare del progetto, e' stata riletta con tesseract colonna per colonna (testo in raccolta/grezzi/s005/ocr, non tracciato, si rifa' con `da_nannini.py --ocr`). Entra solo la voce il cui primo reso e' fatto di parole italiane che il progetto conosce gia': 2713 voci restano fuori perche' l'OCR del reso non e' affidabile, 277 sono rimandi, 110 hanno un lemma illeggibile, 44 sono locuzioni. Il Nannini scrive dopo il lemma «larga» o «stretta» per dire se la vocale tonica e' aperta o chiusa: e' un dato sul suono e va nella nota della voce. Nella sua avvertenza la c finale con l'apostrofo (occh') e' la c dolce, quella senza (rìc) la dura: la grafia del 1805 non e' quella del Ferri, e le voci restano come la fonte le scrive."
     },
     {
       "id": "S006",

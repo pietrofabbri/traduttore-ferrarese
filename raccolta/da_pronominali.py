@@ -13,7 +13,7 @@ violando senza accorgersene, perché non sapeva che `si` fosse una particella.
 **La prova che in ferrarese la particella si attacca al verbo è nel glossario,
 non in una grammatica.** Il Ferri scrive i verbi pronominali con il clitico
 scritto dentro la voce: `Accanirsi → Acanirss`, `Affacciarsi → Afazzars`,
-`sedersi → saŋtàrs` (V14857). Sono **109** voci, tutte con `si`, e tutte con
+`sedersi → saŋtàrs` (V14857). Sono **114** voci (109 fino alla 0.43), tutte con `si`, e tutte con
 il clitico in `-rs` o `-rss`. Nessuna fonte dichiara una regola grammaticale su
 questo, e non serve: il dato c'è, è numerabile e porta l'id della voce che lo
 scrive.

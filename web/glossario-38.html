@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glossario &ndash; Z &ndash; Traduttore italiano &ndash; ferrarese</title>
+<style>
+  :root {
+    --fondo: #fbf8f2;
+    --inchiostro: #1f1c17;
+    --tacchino: #6b6455;
+    --bordo: #ded5c4;
+    --glossario: #1d6b4f;
+    --corpus: #7a5a12;
+    --regola: #4a4a8f;
+    --modello: #8a4a1d;
+    --nessuna: #a02020;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--fondo); color: var(--inchiostro);
+    line-height: 1.55;
+  }
+  main { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  h1 { font-size: 1.6rem; margin: 0 0 .2rem; }
+  h2 { font-size: 1.05rem; margin: 2rem 0 .5rem; border-bottom: 1px solid var(--bordo); padding-bottom: .2rem; }
+  .occhiello { color: var(--tacchino); font-size: .9rem; margin: 0 0 1.5rem; }
+  textarea {
+    width: 100%; min-height: 5.5rem; padding: .6rem;
+    border: 1px solid var(--bordo); border-radius: 4px;
+    font-family: inherit; font-size: 1rem; background: #fff; color: inherit;
+  }
+  .riga { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .6rem 0 1rem; }
+  button, select, input[type="search"] {
+    font-family: inherit; font-size: .95rem; padding: .4rem .7rem;
+    border: 1px solid var(--bordo); border-radius: 4px;
+    background: #fff; color: inherit; cursor: pointer;
+  }
+  button:hover { background: #f0ead9; }
+  button[aria-pressed="true"] { background: var(--inchiostro); color: #fff; border-color: var(--inchiostro); }
+  .risposta {
+    border: 1px solid var(--bordo); border-radius: 4px;
+    padding: .8rem; background: #fff; min-height: 3rem;
+  }
+  .riga-parola { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+  .parola { border-bottom: 3px solid; padding-bottom: 1px; cursor: help; }
+  .parola.glossario { border-color: var(--glossario); }
+  .parola.corpo { border-color: var(--corpus); }
+  .parola.verbo { border-color: var(--corpus); border-bottom-style: double; }
+  .parola.frase { border-color: var(--glossario); border-bottom-style: double; }
+  .parola.grammatica { border-color: var(--glossario); border-bottom-style: dashed; }
+  .parola.plurale { border-color: var(--regola); border-bottom-style: double; }
+  .parola.analogia { border-color: var(--regola); border-bottom-style: dashed; }
+  .parola.regola { border-color: var(--regola); border-bottom-style: dotted; }
+  .parola.modello { border-color: var(--modello); border-bottom-style: dashed; }
+  .parola.nessuna { border-color: var(--nessuna); background: #fdf0f0; }
+  .originale { color: var(--tacchino); font-size: .85rem; }
+  .dettaglio {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: .8rem; color: var(--tacchino);
+    background: #f5f1e6; padding: .4rem .6rem; border-radius: 4px;
+    white-space: pre-wrap; margin-top: .6rem;
+  }
+  .avviso { border-left: 4px solid var(--nessuna); background: #fdf3f3; padding: .5rem .8rem; margin-top: .8rem; font-size: .95rem; }
+  .avviso.ok { border-color: var(--glossario); background: #f1f8f4; }
+  .legenda { display: flex; flex-wrap: wrap; gap: .8rem; margin: .8rem 0; font-size: .85rem; }
+  .legenda span { display: inline-flex; align-items: center; gap: .3rem; }
+  .pastiglia { width: .8rem; height: 0; border-bottom-width: 3px; display: inline-block; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: .35rem .4rem; border-bottom: 1px solid var(--bordo); vertical-align: top; }
+  th { color: var(--tacchino); font-weight: normal; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .85rem; }
+  .vuoto { color: var(--tacchino); font-style: italic; }
+  a.fonte { font-size: .75rem; color: var(--tacchino); white-space: nowrap; }
+  /* La colonna «in italiano di oggi» e' la piu' lunga della tabella: senza un
+     tetto, una definizione di Wiktionary allunga la riga e spinge fuori
+     «varieta'», «campo», «att.» e «fonte», cioe' le colonne che dicono da
+     dove viene la voce. Il tetto e' dichiarato anche nel senso: e' il punto in
+     cui la colonna smette di essere leggibile e va riletta dal file. */
+  td.moderno, th.moderno { max-width: 16rem; }
+  #tabellaGlossario { overflow-x: auto; }
+  #tabellaGlossario table { font-size: .82rem; }
+  #tabellaGlossario th, #tabellaGlossario td { padding: .3rem .3rem; }
+  .pannello { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: .9rem; }
+  .pannello div strong { display: block; font-size: 1.3rem; }
+  /* La trascrizione IPA e' monospaziata e senza maiuscolette ambigue: si
+     guarda, non si decora. */
+  .ipa { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .varieta {
+    display: inline-block; font-size: .72rem; letter-spacing: .03em;
+    text-transform: uppercase; color: var(--tacchino);
+    border: 1px solid var(--bordo); border-radius: 3px;
+    padding: 0 .3rem; white-space: nowrap;
+  }
+  .varieta.vuota { color: var(--nessuna); border-color: #e6c4c4; }
+  .scheda {
+    border: 1px solid var(--bordo); border-radius: 4px; background: #fff;
+    padding: .7rem .8rem; margin-bottom: .6rem;
+  }
+  .scheda h3 { margin: 0 0 .2rem; font-size: 1rem; }
+  .scheda .riga-sotto { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+  audio { width: 100%; margin-top: .4rem; }
+  /* La scheda del suono generato porta un bordo diverso da quella del brano
+     vero: la differenza deve vedersi prima di leggere qualsiasi testo. */
+  .scheda.sintesi { background:#eef1f4; border-left:3px solid #7d8794; }
+  /* Il bottone compatto della riga «come suona». Piu' piccolo del player
+     della pagina dei suoni perche' sta dentro una riga di testo e non puo'
+     spostare gli accapo: e' accanto alla parola, non un blocco. */
+  .ipa audio.suono { width: 7.5rem; height: 1.6rem; vertical-align: middle;
+                     margin: 0 .2rem; }
+  .etichetta-sintesi { font-size:.72rem; letter-spacing:.06em;
+    text-transform:uppercase; color:#4a5158; font-weight:700; }
+  /* La pagina delle regole. La regola e' testo e la fonte e' in fondo: la
+     distanza fra le due cose e' voluta, cosi' la fonte non si legge come
+     una parte della regola ma come quello che la sostiene. */
+  .regole { margin-bottom: 1.2rem; }
+  .scheda.regola { border-left: 3px solid var(--tacchino); }
+  .scheda.regola h4 { margin: 0 0 .25rem; font-size: 1rem; }
+  .scheda.regola p { margin: 0 0 .45rem; }
+  .scheda.regola .fonte { font-size: .78rem; color: #6b6255; margin: .35rem 0 0; }
+  table.esempi, table.alfabeto { border-collapse: collapse; margin: .1rem 0 .2rem;
+    font-size: .92rem; }
+  table.esempi th, table.alfabeto th { text-align: left; font-size: .74rem;
+    text-transform: uppercase; letter-spacing: .05em; color: #6b6255;
+    padding: .15rem .8rem .15rem 0; font-weight: 700; }
+  table.esempi td, table.alfabeto td { padding: .12rem .8rem .12rem 0;
+    vertical-align: top; }
+  table.esempi td.fe { font-size: 1.05rem; font-weight: 600; }
+  table.esempi td.it, table.alfabeto td { color: var(--tacchino); }
+  table.alfabeto td.carattere { font-size: 1.15rem; font-weight: 700; width: 2.4rem; }
+  .vuoto-varieta { border-left: 4px solid var(--tacchino); padding: .5rem .8rem; background: #f5f1e6; margin-bottom: .6rem; }
+  select { font-family: inherit; font-size: .9rem; padding: .35rem; border: 1px solid var(--bordo); border-radius: 4px; background: #fff; }
+  label.scelta { font-size: .85rem; color: var(--tacchino); display: inline-flex; gap: .3rem; align-items: center; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--bordo); font-size: .85rem; color: var(--tacchino); }
+
+  /* La navigazione. Il sito e' ramificato, e su `file://` l'unico modo per
+     passare da una pagina all'altra e' un collegamento: quindi la barra deve
+     dire dove si va, non solo da dove si viene. */
+  nav { margin: .8rem 0 1.4rem; padding: .5rem .7rem; background: #f7f3e8;
+    border: 1px solid var(--bordo); border-radius: 4px; font-size: .9rem; }
+  nav a { color: var(--tacchino); text-decoration: none; margin-right: .9rem;
+    white-space: nowrap; }
+  nav a:hover { text-decoration: underline; }
+  nav a.qui { font-weight: 700; text-decoration: underline; }
+  nav .titolo-nav { color: #6b6255; font-size: .8rem; text-transform: uppercase;
+    letter-spacing: .06em; margin-right: .3rem; }
+
+  /* L'indice delle fette del glossario: una lettera, un collegamento. */
+  .riga .fetta, p .fetta { display: inline-block; min-width: 1.5rem;
+    text-align: center; margin: 0 .25rem .25rem 0; padding: .1rem .3rem;
+    border: 1px solid var(--bordo); border-radius: 3px;
+    color: var(--tacchino); text-decoration: none; font-size: .85rem; }
+  .fetta:hover { background: #f5f1e6; }
+  .fetta.qui { background: var(--tacchino); color: #fff;
+    border-color: var(--tacchino); font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Glossario &ndash; Z</h1>
+  <p class="occhiello">Fetta 38 di 38: 392 voci da zèrt a zzzambruciiir.</p>
+
+  <nav id="navigazione"><span class="titolo-nav">Pagine</span>
+    <a href="index.html">Il progetto</a>
+    <a href="traduttore.html">Traduttore</a>
+    <a href="glossario.html">Glossario</a>
+    <a href="frasi.html">Coppie e proverbi</a>
+    <a href="suoni.html">Varieta' e suoni</a>
+    <a href="regole.html">Le regole</a>
+    <a href="verifica.html">Verifica</a></nav>
+
+
+
+
+  <!-- pagina:glossario -->
+  <h2>Il glossario</h2>
+  <div class="riga">
+    <input type="search" id="cercaGlossario" placeholder="cerca in questa fetta (ferrarese o italiano)" size="40">
+    <select id="filtroVarietaGlossario">
+      <option value="">tutte le varieta'</option>
+    </select>
+  </div>
+  <div id="tabellaGlossario"></div>
+  <!-- /pagina:glossario -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- pagina:fette -->
+  <!-- DIFETTO CORRETTO, e il commento resta perche' la forma e' facilissima da
+     rifare: questo blocco era dentro quello `index`, quindi spariva da tutte
+     le pagini che non prendono `index` — cioe' da tutte le fette del
+     glossario, che sono le pagine che lo usano. Le sezioni non si annidano,
+     e questa la' dentro l'altra e' stato un blocco che nessuna pagina
+     mostrava. -->
+  <div id="fette"></div>
+  <!-- /pagina:fette -->
+
+
+
+
+
+
+
+  <footer>
+    Progetto di &laquo;I cinque duchi&raquo;. Nessun account, nessun server, nessuna richiesta di rete:
+    la pagina funziona anche senza connessione.
+    Il livello &laquo;modello&raquo; non e' in questa pagina: richiede una chiave e gira solo dal terminale.
+  </footer>
+</main>
+
+<script id="dati" type="application/x-deflate-base64">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</script>
+<script>
+(function () {
+  "use strict";
+
+  // Il blocco dei dati e' l'unica cosa che ogni pagina ha davvero, quindi si
+  // legge con `document` e non con `el()`: `el()` e' definito qui sotto e
+  // accetterebbe un elemento mancante, e un glossario che non c'e' diventerebbe
+  // uno `{}` silenzioso invece di un errore che dice che la pagina e' rotta.
+  var DATI = JSON.parse(testoDelBlocco(document.getElementById("dati")));
+
+  // Il blocco dati e' compresso (0.43, `blocco_dati` in `costruisci_web.py`):
+  // DEFLATE in base64. Si decomprime qui, senza librerie e senza rete, perche'
+  // la pagina deve aprirsi anche da un file sul disco. Un blocco senza il tipo
+  // compresso (le prove, che passano il JSON) si legge com'e'.
+  function testoDelBlocco(blocco) {
+    var tipo = blocco.getAttribute ? blocco.getAttribute("type") : "";
+    if (tipo !== "application/x-deflate-base64") return blocco.textContent;
+    var binario = atob(blocco.textContent.trim());
+    var byte = new Uint8Array(binario.length);
+    for (var i = 0; i < binario.length; i++) byte[i] = binario.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(inflate(byte));
+  }
+
+  // DEFLATE (RFC 1951), solo la decompressione. Scritta seguendo la norma:
+  // blocchi non compressi, con codici fissi e con codici dinamici.
+  function inflate(sorgente) {
+    var pos = 0, riserva = 0, nRiserva = 0;
+    var fuori = new Uint8Array(Math.max(1024, sorgente.length * 6)), n = 0;
+    function spazio(quanti) {
+      if (n + quanti <= fuori.length) return;
+      var nuovo = new Uint8Array(Math.max(fuori.length * 2, n + quanti));
+      nuovo.set(fuori.subarray(0, n)); fuori = nuovo;
+    }
+    function bit(quanti) {
+      while (nRiserva < quanti) {
+        if (pos >= sorgente.length) throw new Error("dati compressi troncati");
+        riserva |= sorgente[pos++] << nRiserva; nRiserva += 8;
+      }
+      var valore = riserva & ((1 << quanti) - 1);
+      riserva >>>= quanti; nRiserva -= quanti;
+      return valore;
+    }
+    function codice(lunghezze, quante) {
+      var conta = new Uint16Array(16), simboli = new Uint16Array(quante), inizio = new Uint16Array(16), i;
+      for (i = 0; i < quante; i++) conta[lunghezze[i]]++;
+      conta[0] = 0;
+      for (i = 1; i < 15; i++) inizio[i + 1] = inizio[i] + conta[i];
+      for (i = 0; i < quante; i++) if (lunghezze[i]) simboli[inizio[lunghezze[i]]++] = i;
+      return { conta: conta, simboli: simboli };
+    }
+    function decodifica(c) {
+      var cod = 0, primo = 0, indice = 0;
+      for (var lung = 1; lung < 16; lung++) {
+        cod |= bit(1);
+        var quanti = c.conta[lung];
+        if (cod - quanti < primo) return c.simboli[indice + (cod - primo)];
+        indice += quanti; primo += quanti; primo <<= 1; cod <<= 1;
+      }
+      throw new Error("codice di Huffman non valido");
+    }
+    var LBASE = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+    var LEXT = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+    var DBASE = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+    var DEXT = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+    var ORDINE = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+    var fissiL = null, fissiD = null, ultimo;
+    do {
+      ultimo = bit(1);
+      var tipo = bit(2), lunghezze, i;
+      if (tipo === 0) {
+        riserva = 0; nRiserva = 0;
+        var len = sorgente[pos] | (sorgente[pos + 1] << 8); pos += 4;
+        spazio(len); fuori.set(sorgente.subarray(pos, pos + len), n); n += len; pos += len;
+        continue;
+      }
+      var cl, cd;
+      if (tipo === 1) {
+        if (!fissiL) {
+          lunghezze = new Uint8Array(288);
+          for (i = 0; i < 144; i++) lunghezze[i] = 8;
+          for (; i < 256; i++) lunghezze[i] = 9;
+          for (; i < 280; i++) lunghezze[i] = 7;
+          for (; i < 288; i++) lunghezze[i] = 8;
+          fissiL = codice(lunghezze, 288);
+          lunghezze = new Uint8Array(30);
+          for (i = 0; i < 30; i++) lunghezze[i] = 5;
+          fissiD = codice(lunghezze, 30);
+        }
+        cl = fissiL; cd = fissiD;
+      } else if (tipo === 2) {
+        var nlen = bit(5) + 257, ndist = bit(5) + 1, ncod = bit(4) + 4;
+        lunghezze = new Uint8Array(19);
+        for (i = 0; i < ncod; i++) lunghezze[ORDINE[i]] = bit(3);
+        var cc = codice(lunghezze, 19);
+        lunghezze = new Uint8Array(nlen + ndist);
+        i = 0;
+        while (i < nlen + ndist) {
+          var s = decodifica(cc), ripeti, valore = 0;
+          if (s < 16) { lunghezze[i++] = s; continue; }
+          if (s === 16) { valore = lunghezze[i - 1]; ripeti = 3 + bit(2); }
+          else if (s === 17) ripeti = 3 + bit(3);
+          else ripeti = 11 + bit(7);
+          while (ripeti--) lunghezze[i++] = valore;
+        }
+        cl = codice(lunghezze.subarray(0, nlen), nlen);
+        cd = codice(lunghezze.subarray(nlen), ndist);
+      } else {
+        throw new Error("blocco compresso di tipo sconosciuto");
+      }
+      for (;;) {
+        var simbolo = decodifica(cl);
+        if (simbolo < 256) { spazio(1); fuori[n++] = simbolo; continue; }
+        if (simbolo === 256) break;
+        simbolo -= 257;
+        var quanto = LBASE[simbolo] + bit(LEXT[simbolo]);
+        var d = decodifica(cd), distanza = DBASE[d] + bit(DEXT[d]);
+        spazio(quanto);
+        for (var k = 0; k < quanto; k++) { fuori[n] = fuori[n - distanza]; n++; }
+      }
+    } while (!ultimo);
+    return fuori.subarray(0, n);
+  }
+
+  // Le pagine non hanno tutte gli stessi elementi: la home non ha il campo
+  // per scrivere una frase, la pagina dei suoni non ha la tabella del
+  // glossario. Quindi ogni elemento si cerca una volta e si usa solo se c'e'.
+  //
+  // Serve perche' `el("x").addEventListener` su un
+  // elemento assente **solleva un errore**, e quell'errore ferma tutto il
+  // resto dello script: senza questo, la prima sezione mancante renderebbe
+  // bianca metà della pagina senza dire perche'.
+  // Gli avvertimenti raccolti mentre si disegna la riga dei suoni. Vivono
+  // qui e non dentro `bottoneSuono` perche' la funzione va chiamata una volta
+  // sola per parola: chiamarla due volte — una per il bottone e una per sapere
+  // se c'e' — riempierebbe il registro due volte e la riga mostrerebbe ogni
+  // avvertimento due volte, che e' il modo piu' economico per far scomparire
+  // un avvertimento.
+  var AVVERTIMENTI = [];
+
+  function el(id) {
+    var trovato = document.getElementById(id);
+    return trovato || { addEventListener: function () {},
+                        appendChild: function () {}, style: {},
+                        value: "", checked: false, textContent: "",
+                        innerHTML: "" };
+  }
+
+  // `DATI` non e' uguale su tutte le pagine: la home non porta il glossario,
+  // perche' sono cinque megabyte e la home deve aprirsi subito. Ogni elenco
+  // che si puo' non esserci si legge con `|| []`, e ogni oggetto con `|| {}`.
+  function elenco(nome) { return DATI[nome] || []; }
+
+  // Il glossario viaggia in forma compatta: `intestazione` dice una volta sola
+  // come si chiamano i campi, `voci` e' una fila di valori per voce. In un
+  // JSON di oggetti i nomi dei campi si ripetono 10387 volte e da soli sono
+  // piu' di 150 KB.
+  //
+  // Qui si torna a oggetti, una volta sola, e tutto il resto della pagina
+  // continua a usare `v.fe`, `v.moderno` e cosi' via. Il risparmio e' nei
+  // byte che il browser deve leggere, che e' la cosa che si sente; non e'
+  // nel codice, che non cambia.
+  function espandi(serie) {
+    if (!serie || !serie.intestazione) return [];
+    var nomi = serie.intestazione;
+    return serie.voci.map(function (riga) {
+      var o = {};
+      for (var i = 0; i < nomi.length; i++) o[nomi[i]] = riga[i];
+      return o;
+    });
+  }
+
+  // Il glossario di questa pagina, che su una fetta sono 500 voci e sulla
+  // home non ci sono per niente. Il motore cerca dentro questo elenco, quindi
+  // su una pagina senza glossario non risponde: e' dichiarato nel titolo.
+  var VOCI = espandi(DATI.glossario);
+  var ETICHETTE = {
+    glossario: "dal glossario",
+    corpo: "dal corpus parallelo",
+    // `verbo` e' una forma coniugata che una fonte scrive per iscritto. Vale
+    // meno di una voce di dizionario, perche' copre una persona sola, e vale
+    // piu' di una regola imparata, perche' qualcuno l'ha scritta.
+    verbo: "da una forma verbale attestata",
+    // `frase` e' una regola di frase promossa da correzioni di parlanti.
+    frase: "da una regola di frase",
+    grammatica: "dalla grammatica di S015",
+    plurale: "plurale ricavato con le regole di S015",
+    analogia: "verbo coniugato sul modello della sua coniugazione",
+    regola: "da una regola morfologica",
+    modello: "dal modello",
+    nessuna: "NON LO SO"
+  };
+
+  // La normalizzazione, in JavaScript, e' la stessa di quella del motore in
+  // Python. Le due copie non possono divergere: se divergono, la pagina dice
+  // una cosa e il terminale un'altra, ed e' il difetto peggiore che un
+  // traduttore possa avere. Per questo sono poche righe e sono scritte una
+  // volta sola.
+  //
+  // Difetto vero, di questa sessione, e presente **in entrambe le copie**:
+  // il filtro era l'intervallo `\u00c0-\u024f`, che finisce a U+024F, e
+  // l'alfabeto ferrarese dichiarato in `dati/regole_grammaticali.json` ha
+  // due lettere fuori da quell'intervallo: `\u0273` (gutturale) e `\u028e`
+  // (laterale palatale). Erano trattate come punteggiatura e cancellate, e
+  // una cancellazione silenziosa in una chiave e' la cosa peggiore che possa
+  // fare un indice: `\u00e0\u0273ar` e `\u00e0ar` diventavano la stessa
+  // chiave e la ricerca restituiva la voce sbagliata senza dire niente.
+  //
+  // Il fatto che fosse in entrambe le copie e' la parte che insegnava di
+  // piu': la pagina e il terminale sbagliavano **allo stesso modo**, quindi
+  // `controlla_equivalenza.py` non aveva niente da dire — confronta le
+  // risposte, e due copie che sbagliano insieme rispondono uguale. Le copie
+  // identiche sono la regola, ma non la prova: servono controlli separati
+  // sulle due, e `prove/test_traduttore.py` ora li fa.
+  //
+  // In JavaScript il modo di tenere qualsiasi lettera e' la property escape
+  // `\p{L}`, non `\w`.
+  //
+  // Difetto vero, di questa sessione, e scoperto dal confronto con Python:
+  // la prima correzione aveva messo `/[^\w_]+/gu`, cioe' il complementare di
+  // `\w`, che sembrava la stessa cosa di `\W` in Python. Non lo e':
+  // `\w` in JavaScript riconosce solo [A-Za-z0-9_] e le lettere dei blocchi
+  // che Unicode considera alfabetiche **in modo predefinito**, e `\u0273`
+  // (la gutturale del ferrarese) non c'e' fra quelle. Quindi `\w` la
+  // trattava come punteggiatura esattamente come faceva il difetto
+  // originale: la correzione passava il test sul sorgente — l'intervallo
+  // chiuso era sparito — e non cambiava niente in fase di ricerca.
+  //
+  // `\p{L}` e' quello che si voleva: ogni lettera Unicode. Verificato:
+  // `/^\p{L}$/u.test("\u0273")` e' `true`, `/\w/u.test("\u0273")` e'
+  // `false`.
+  var RE_NON = /[^\p{L}\p{N}]+/gu;
+  function chiave(t) {
+    return String(t).toLowerCase().trim()
+      .replace(/gh'/g, "g").replace(/ch'/g, "c")
+      .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .replace(RE_NON, "");
+  }
+
+  // `normale()` e' l'altra meta' di `chiave()`: tiene l'accento e toglie solo
+  // la punteggiatura. Serve per una domanda che `chiave()` non puo' fare,
+  // cioe' «questa parola e' la particella?»: `chiave("sì")` e `chiave("si")`
+  // sono la stessa stringa, e se la particella dell'affermazione venisse
+  // trattata come particella di un verbo pronominale la pagina direbbe che
+  // «Sì va» non ha traduzione. E' la stessa copia di `normalizza.normale` in
+  // Python, e `TestLeDueCopieDellaNormalizzazione` confronta le due.
+  function normale(t) {
+    return String(t).toLowerCase().trim()
+      .replace(/gh'/g, "g").replace(/ch'/g, "c")
+      .replace(/[\u2018\u02bc\u00b4`]/g, "'")
+      .replace(/\s+/g, " ");
+  }
+
+  function chiaviResi(testo, principale) {
+    // Gli stessi pezzi di `Voce._chiavi_resi` in glossario.py. Le due copie
+    // della logica devono dire la stessa cosa, ed e' quello che controlla
+    // `prove/controlla_equivalenza.py`: se una indicizza i pezzi e l'altra
+    // no, la pagina e il motore dicono cose diverse per la stessa parola.
+    //
+    // Si divide su virgola e punto e virgola, NON sugli spazi: «con calma,
+    // senza fretta» deve trovarsi con «con calma» e non anche con «calma».
+    // Il testo intero resta una chiave: chi incolla dal libro la voce per
+    // come e' scritta deve trovarla.
+    var chiavi = [];
+    var intero = (testo || "").trim();
+    if (intero) {
+      var ki = chiave(intero);
+      if (ki) chiavi.push(ki);
+    }
+    // Un pezzo di una lettera sola non e' un resi: e' la desinenza del Ferri
+    // («Trincato, e») o sporcizia dell'OCR. Copia di `Voce._chiavi_resi`.
+    (testo || "").split(/[,;]/).forEach(function (pezzo) {
+      var k = chiave(pezzo);
+      if (k.length > 1 && chiavi.indexOf(k) === -1) chiavi.push(k);
+    });
+    var kp = chiave(principale || "");
+    if (kp && chiavi.indexOf(kp) === -1) chiavi.push(kp);
+    return chiavi;
+  }
+
+  function indice() {
+    var perIt = {}, perFe = {};
+    VOCI.forEach(function (v) {
+      // La forma della fonte (0.42, `grafia.py`): chi scrive «kaŋtàr» trova
+      // la voce che si legge «cantàr».
+      chiaviResi(v.fe, v.principale_fe).concat(v.grafia_fonte ? chiaviResi(v.grafia_fonte, "") : [])
+        .concat(v.varianti || []).forEach(function (f) {
+        var k = chiave(f); if (!k) return;
+        if ((perFe[k] || []).indexOf(v) === -1) (perFe[k] = perFe[k] || []).push(v);
+      });
+      chiaviResi(v.it, v.principale_it).forEach(function (f) {
+        var k = chiave(f); if (!k) return;
+        if ((perIt[k] || []).indexOf(v) === -1) (perIt[k] = perIt[k] || []).push(v);
+      });
+    });
+    return { perIt: perIt, perFe: perFe };
+  }
+  var IDX = indice();
+  var direzione = "it-fe";
+
+  // L'indice delle forme verbali attestate, dalla parola **italiana** alla
+  // forma ferrarese. La chiave e' quella della pagina, calcolata qui e non
+  // mandata da Python, perche' le due copie della normalizzazione non
+  // possono divergere: se divergono la ricerca fallisce in silenzio.
+  // Le particelle pronominali: parole che **non** sono parole, e che quindi
+  // non vanno cercate nel glossario. Senza questo, «si» diventava «oj» — una
+  // voce vera del glossario e la risposta sbagliata, perche' in italiano la
+  // particella del verbo pronominale e quella dell'affermazione si scrivono
+  // uguale e in ferrarese sono due cose diverse.
+  //
+  // L'indice e' sulla forma **scritta** e non sulla chiave: la particella
+  // dell'affermazione si scrive `sì` e il glossario la conta come voce
+  // (V8171), quindi metterla nello stesso cassetto di `si` farebbe di «Sì va»
+  // un buco dichiarato. `chiave()` toglie l'accento, `normale()` no: qui la
+  // domanda e' proprio sull'accento.
+  IDX.particelle = {};
+  ((DATI.pronominali || {}).particelle || []).forEach(function (p) {
+    var k = normale(p);
+    if (k) IDX.particelle[k] = p;
+  });
+  IDX.pronominali = DATI.pronominali || { verbi: 0, esempi: [] };
+
+  // L'indice dei verbi e' sulla parola italiana **con l'accento**
+  // (`chiaveItaliano`, copia di `verbi.chiave_italiano`): con `chiave()` «è»
+  // e «e» sarebbero la stessa parola. Le righe arrivano con il loro `rango`,
+  // l'ordine calcolato da `verbi.ordina`, e qui si rimettono in quell'ordine.
+  IDX.verbi = {};
+  Object.keys((DATI.verbi || {}).per_italiano || {}).forEach(function (parola) {
+    var k = chiaveItaliano(parola);
+    if (!k) return;
+    IDX.verbi[k] = (IDX.verbi[k] || []).concat(DATI.verbi.per_italiano[parola]);
+  });
+  Object.keys(IDX.verbi).forEach(function (k) {
+    IDX.verbi[k].sort(function (a, b) { return a.rango - b.rango; });
+  });
+
+  // L'indice delle coppie **e dei proverbi** per frase intera, nelle due
+  // direzioni. I proverbi c'erano nei dati e non erano indicizzati: una
+  // dimenticanza, non una scelta, e il costo è che la frase più stabile di
+  // una lingua era l'unica che il traduttore non sapeva restituire per intero.
+  //
+  // **Chi vince quando due righe hanno la stessa chiave.** Vince la coppia,
+  // come in `corpora.py`: la coppia parallela è la prova diretta, il proverbio
+  // è un modo di dire isolato dalla fonte. Quindi i proverbi si mettono **dopo**
+  // e solo dove la chiave è libera — è la stessa regola di `setdefault` scritta
+  // in un altro linguaggio, e le due copie devono dire la stessa cosa.
+  IDX.coppieIt = {}; IDX.coppieFe = {};
+  (DATI.coppie || []).forEach(function (c) {
+    var ki = chiave(c.it), kf = chiave(c.fe);
+    if (ki) IDX.coppieIt[ki] = c;
+    if (kf) IDX.coppieFe[kf] = c;
+  });
+  (DATI.proverbi || []).forEach(function (p) {
+    if (!(p.fonte || "").trim()) return;
+    var ki = chiave(p.it), kf = chiave(p.fe);
+    if (ki && !IDX.coppieIt[ki]) IDX.coppieIt[ki] = p;
+    if (kf && !IDX.coppieFe[kf]) IDX.coppieFe[kf] = p;
+  });
+
+  // Le trascrizioni IPA, per voce e per forma scritta. La stessa logica del
+  // glossario e' quella di `fonetica.py`: si indicizza sulla grafia, non sul
+  // suono, perche' a qualcuno che cerca «magnar» serve la parola che ha
+  // scritto, non quella che suona.
+  IDX.ipaPerForma = {}; IDX.ipaPerVoce = {};
+  (DATI.fonetica || []).forEach(function (t) {
+    var k = chiave(t.forma);
+    if (k) (IDX.ipaPerForma[k] = IDX.ipaPerForma[k] || []).push(t);
+    if (t.riferimento) (IDX.ipaPerVoce[t.riferimento] = IDX.ipaPerVoce[t.riferimento] || []).push(t);
+  });
+
+  function ipaDi(voceId, forma) {
+    if (voceId && IDX.ipaPerVoce[voceId] && IDX.ipaPerVoce[voceId].length) {
+      return IDX.ipaPerVoce[voceId][0];
+    }
+    var trovate = IDX.ipaPerForma[chiave(forma || "")];
+    if (trovate && trovate.length) return trovate[0];
+    // Le voci di Bigoni (0.42): la pronuncia letta dal suo alfabeto, che ha
+    // un segno per suono. E' una lettura, quindi `I` e da verificare, e non
+    // suona: il riproduttore suona solo trascrizioni senza dubbi.
+    var v = voceId ? vocePerId(voceId) : null;
+    if (v && v.grafia_fonte) {
+      return { forma: v.fe, ipa: ipaDaBigoni(v.grafia_fonte), attendibilita: "I",
+        da_verificare: true, riferimento: v.id,
+        nota: "letta dall'alfabeto di Bigoni (S006): «" + v.grafia_fonte +
+          "», con la tabella di dati/conversione_bigoni.json; non e' un ascolto" };
+    }
+    return null;
+  }
+  var PER_ID = null;
+  function vocePerId(id) {
+    if (!PER_ID) { PER_ID = {}; (VOCI || []).forEach(function (v) { PER_ID[v.id] = v; }); }
+    return PER_ID[id] || null;
+  }
+
+  function somiglianza(a, b) {
+    if (a === b) return 1;
+    if (!a || !b) return 0;
+    var m = a.length, n = b.length;
+    if (Math.abs(m - n) > Math.max(1, Math.floor(n / 2))) return 0;
+    var prev = [], i, j;
+    for (j = 0; j <= n; j++) prev[j] = j;
+    for (i = 1; i <= m; i++) {
+      var cur = [i];
+      for (j = 1; j <= n; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur;
+    }
+    return 1 - prev[n] / Math.max(m, n);
+  }
+
+  // L'apostrofo interno resta dentro la parola, come in `normalizza.py`:
+// `d'avril` e' una parola sola, non due. Nel ferrarese l'apostrofo e'
+// grammaticale (`l'a`, `gh'e`, `doman l'a`), e spezzarlo produceva due
+// parole che il glossario non conosce e una locuzione che non combacia.
+function tokenizza(t) {
+    return String(t).toLowerCase().trim()
+      .replace(/[’ʼ´`]/g, "'").replace(/gh'/g, "g").replace(/ch'/g, "c")
+      .match(/[\p{L}\p{N}]+(?:'[\p{L}\p{N}]+)*/gu) || [];
+  }
+
+  // Che cos'e' questa parola in italiano, secondo la fonte che lo dichiara.
+  // `DATI.analisi` porta la classe **e l'indice della fonte**: la pagina che
+  // applica una regola mostra da dove viene il giudizio che gliel'ha fatta
+  // applicare, e una classe senza fonte non e' una classe, e' una supposizione.
+  // Una parola che non c'e' nel blocco dati restituisce "" — ignota — e una
+  // regola classificata non viene applicata a una parola ignota. E' la stessa
+  // regola di `morfologia.applica`, scritta nella pagina.
+  function classeDi(parola) {
+    var a = DATI.analisi;
+    if (!a) return "";
+    var riga = a.classi[chiave(parola)];
+    return riga ? riga[0] : "";
+  }
+
+  function fonteDiClasse(parola) {
+    var a = DATI.analisi;
+    if (!a) return "";
+    var riga = a.classi[chiave(parola)];
+    return riga ? (a.fonti[riga[1]] || "") : "";
+  }
+
+  // Una regola morfologica applicata dal basso: si prova dalla piu' lunga.
+  // Le regole arrivano gia' ordinate dalla piu' specifica alla piu' generica,
+  // quindi la prima che produce una parola e' quella giusta.
+  function perRegola(parola, verso) {
+    var k = chiave(parola);
+    var regole = DATI.regole || [];
+    var classe = classeDi(parola);
+    for (var i = 0; i < regole.length; i++) {
+      var r = regole[i];
+      // Il cancello: una regola imparata per i verbi non si applica a un nome
+      // che per caso finisce come lei, e non si applica a una parola di cui la
+      // pagina non sa che cosa sia.
+      if (r.classe && r.classe !== classe) continue;
+      var sI = r.suffisso_italiano, sF = r.suffisso_ferrarese;
+      var entro = verso === "it-fe" ? sI : sF;
+      var fuori = verso === "it-fe" ? sF : sI;
+      if (!entro || k.length <= entro.length) continue;
+      if (k.slice(-entro.length) !== entro) continue;
+      if (r.prefisso && k.slice(0, r.prefisso.length) !== r.prefisso) continue;
+      var nucleo = k.slice(0, k.length - entro.length);
+      if (r.prefisso && nucleo !== r.prefisso) continue;
+      var prodotto = nucleo + fuori;
+      if (prodotto === k || prodotto.length < 3) continue;
+      return { testo: prodotto, regola: r };
+    }
+    return null;
+  }
+
+  // Le parole italiane coniugate si confrontano **con l'accento**: e' la copia
+  // di `verbi.chiave_italiano`. L'accento scritto con l'apostrofo («e'»,
+  // «puo'») diventa l'accento grave.
+  var ACCENTI_APOSTROFO = { a: "\u00e0", e: "\u00e8", i: "\u00ec", o: "\u00f2", u: "\u00f9" };
+  function chiaveItaliano(t) {
+    var testo = normale(t || "").normalize("NFC").replace(/^[\s.,;:!?\u00ab\u00bb"]+|[\s.,;:!?\u00ab\u00bb"]+$/g, "");
+    if (testo.length > 1 && testo.charAt(testo.length - 1) === "'" &&
+        ACCENTI_APOSTROFO[testo.charAt(testo.length - 2)]) {
+      testo = testo.slice(0, -2) + ACCENTI_APOSTROFO[testo.charAt(testo.length - 2)];
+    }
+    return testo;
+  }
+  function accentata(t) {
+    return /[\u0300-\u036f]/.test(chiaveItaliano(t).normalize("NFD"));
+  }
+  // La persona che il pronome soggetto italiano annuncia: la tabella viene da
+  // `verbi.PRONOMI_SOGGETTO`, nei dati, e non e' scritta una seconda volta qui.
+  function personaDelSoggetto(t) {
+    return ((DATI.verbi || {}).pronomi || {})[chiave(t || "")] || "";
+  }
+  // Copia di `verbi.dall_italiano`: la prima riga nell'ordine dichiarato, o
+  // la prima della persona annunciata dal pronome.
+  function formaVerbale(parola, persona) {
+    var righe = IDX.verbi[chiaveItaliano(parola)] || [];
+    if (!righe.length) return null;
+    var scelta = righe[0];
+    if (persona) {
+      for (var i = 0; i < righe.length; i++) {
+        if (righe[i].persona === persona) { scelta = righe[i]; break; }
+      }
+    }
+    return scelta;
+  }
+  // Copia di `verbi.prima_del_glossario`: i due casi in cui la casella di una
+  // tabella di coniugazione vince sul glossario.
+  function primaDelGlossario(riga, parola, persona) {
+    if (!riga) return false;
+    if (persona && riga.persona === persona) return true;
+    return accentata(parola);
+  }
+  function rispostaVerbo(riga) {
+    return {
+      testo: riga.testo, origine: "verbo", confidenza: DATI.origine.verbo,
+      dettaglio: "forma attestata da " + riga.fonte + ", " + riga.dove +
+        ": " + (riga.scritto ? "la fonte scrive \u00ab" + riga.scritto + "\u00bb"
+                             : (riga.nota || "senza nota"))
+    };
+  }
+
+  // La stessa catena del motore, in quest'ordine: frase gemella, glossario,
+  // frammento del corpus, regola, buco. Ogni riga corrisponde a una riga di
+  // `motore.py`, e se le due copie divergono la pagina mente.
+  function fraseGemella(frase, verso) {
+    var k = chiave(frase);
+    if (!k) return null;
+    var lista = verso === "it-fe" ? IDX.coppieIt : IDX.coppieFe;
+    return lista[k] || null;
+  }
+
+  // Il glossario contiene locuzioni: «a brazz avèrti» e' una voce sola, non
+  // tre. Smembrate, darebbero tre buchi dove c'e' una risposta, cioe' una
+  // traduzione peggiore di non tradurre. Il passaggio e' avido — prova la
+  // frase piu' lunga e, se il glossario non la conosce, accorcia di una
+  // parola. Corrisponde a `_accorpa` di `motore.py`, e se le due copie
+  // divergono la pagina mente.
+  var LUNGHEZZA_MAX_LOCUZIONE = 6;
+
+  function accorpa(token, i, verso) {
+    var indice = verso === "it-fe" ? IDX.perIt : IDX.perFe;
+    for (var quante = Math.min(LUNGHEZZA_MAX_LOCUZIONE, token.length - i); quante > 1; quante--) {
+      var testo = token.slice(i, i + quante).join(" ");
+      if ((indice[chiave(testo)] || []).length) return { testo: testo, quante: quante };
+    }
+    return null;
+  }
+
+  function accorpaTutto(token, verso) {
+    var unita = [], i = 0;
+    while (i < token.length) {
+      var a = accorpa(token, i, verso);
+      if (a) { unita.push(a.testo); i += a.quante; }
+      else { unita.push(token[i]); i += 1; }
+    }
+    return unita;
+  }
+
+  // Il verbo pronominale e' un **accorpamento**, non una parola: «si» non si
+  // cerca nel glossario, si attacca al verbo che segue. Si prendono due token
+  // e non tre, perche' in italiano la particella si attacca al verbo e niente
+  // altro; e se la particella e' ultima non c'e' niente da attaccarle, quindi
+  // qui non si muove niente e la decisione la prende il glossario.
+  function unitaPronominale(token, i) {
+    if (i < 0 || i + 1 >= token.length) return null;
+    if (!IDX.particelle[normale(token[i])]) return null;
+    return { testo: token[i] + " " + token[i + 1], quante: 2 };
+  }
+
+  // Il nome della costruzione arriva **dai dati**, non da una mappa scritta
+  // qui: `dati/tokeni.jsonl` dice che `si` induce un verbo pronominale perché
+  // il glossario la porta attaccata a 109 verbi, e dice anche perché le altre
+  // particelle non sono dichiarate. Una pagina che si scrive da sola le
+  // costruzioni continua a nominarle anche quando nessuna fonte le nomina più.
+  var COSTRUZIONI = IDX.pronominali.costruzioni || {};
+
+  function bucoPronominale(testo) {
+    var p = testo.split(" ")[0];
+    var costruzione = COSTRUZIONI[normale(p)] || "particella pronominale";
+    var esempi = (IDX.pronominali.esempi || []).join(", ");
+    return {
+      testo: testo, origine: "nessuna", confidenza: 0,
+      dettaglio: costruzione + ": " + p +
+        " è una particella pronominale, non una parola, e in ferrarese si attacca al verbo" +
+        " (il glossario ha " + IDX.pronominali.verbi +
+        " verbi con la particella dentro la voce, per esempio " + esempi +
+        "). Il progetto non coniuga, quindi della forma coniugata non c'è niente:" +
+        " qui la particella non viene tradotta e «" +
+        testo.split(" ").slice(1).join(" ") +
+        "» resta com'è. E il progetto non distingue un verbo da un nome: che cosa" +
+        " segue la particella non lo sa, e non lo dichiara."
+    };
+  }
+
+  // Copia di `frase.contesto` e di `frase.cerca`: la parola funzionale
+  // secondo la prima lettera della parola che segue (ferrarese nel secondo
+  // passaggio, italiana se quella ferrarese non c'e').
+  var VOCALI = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fah";
+  function contestoDi(seguente) {
+    var t = normale(seguente || "").trim();
+    if (!t) return "fine";
+    return VOCALI.indexOf(t.charAt(0)) !== -1 ? "vocale" : "consonante";
+  }
+  function regolaDiFrase(parola, seguente) {
+    var regole = DATI.regole_frase || [];
+    var k = normale(parola || ""), c = contestoDi(seguente);
+    for (var i = 0; i < regole.length; i++) {
+      if (normale(regole[i].italiano) === k && regole[i].contesto === c) return regole[i];
+    }
+    return null;
+  }
+
+  // --- la grammatica di S015 e il secondo passaggio (copia di grammatica.py) ---
+  var VOCALI_FE = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa";
+  var PRONOMI_ATONI = ["le", "gli", "lo", "la", "l'"];
+  var GRAMMATICA = { articoli: {}, parole: {}, genere: {} };
+  (function () {
+    var g = DATI.grammatica || {};
+    (g.articoli || []).forEach(function (r) { GRAMMATICA.articoli[r.italiano] = r; });
+    (g.parole || []).forEach(function (r) { GRAMMATICA.parole[r.italiano] = r; });
+    (g.secondo_genere || []).forEach(function (r) { GRAMMATICA.genere[r.italiano] = r; });
+  })();
+  function chiaveGr(t) { return normale(t || "").replace(/\u2019/g, "'"); }
+  function separaElisioni(token) {
+    var fuori = [];
+    token.forEach(function (t) {
+      var m = /^(l|un|quell|quest)['\u2019](.+)$/.exec(t);
+      if (m) { fuori.push(m[1] + "'"); fuori.push(m[2]); } else fuori.push(t);
+    });
+    return fuori;
+  }
+  function contestoGr(parola) {
+    var t = normale(parola || "").trim();
+    if (!t) return "fine";
+    return VOCALI_FE.indexOf(t.charAt(0)) !== -1 ? "vocale" : "consonante";
+  }
+  function eArticolo(parola, seguenteIt) {
+    var k = chiaveGr(parola);
+    if (!GRAMMATICA.articoli[k]) return false;
+    if (PRONOMI_ATONI.indexOf(k) !== -1 && seguenteIt && formaVerbale(seguenteIt, "")) return false;
+    return true;
+  }
+  function contestuale(parola, ctx, seguenteIt) {
+    var regole = DATI.regole_frase || [], k = normale(parola || "");
+    for (var i = 0; i < regole.length; i++) {
+      if (normale(regole[i].italiano) === k && regole[i].contesto === ctx) {
+        return { testo: regole[i].ferrarese, origine: "frase", confidenza: DATI.origine.frase,
+                 dettaglio: "regola di frase, davanti a " + ctx + ": " + regole[i].fonte };
+      }
+    }
+    if (eArticolo(parola, seguenteIt)) {
+      var r = GRAMMATICA.articoli[chiaveGr(parola)];
+      // Copia di `grammatica.articolo`: «l'» davanti a una parola ferrarese
+      // che comincia per consonante prende il genere dalla desinenza italiana.
+      if (chiaveGr(parola) === "l'" && ctx !== "vocale") {
+        var fine = normale(seguenteIt || "").trim().slice(-1);
+        r = GRAMMATICA.articoli[{ a: "la", o: "il" }[fine] || ""];
+        if (!r) return null;
+      }
+      var forma = ctx === "vocale" ? r.vocale : r.consonante;
+      if (forma) {
+        return { testo: forma, origine: "grammatica", confidenza: DATI.origine.grammatica,
+                 dettaglio: "articolo di S015 (" + r.dove + "), davanti a " + ctx + ": \u00ab" + r.scritto_dalla_fonte + "\u00bb" };
+      }
+    }
+    return null;
+  }
+  function parolaFissa(parola, seguenteIt) {
+    var k = chiaveGr(parola), r = GRAMMATICA.parole[k];
+    if (r) return { testo: r.ferrarese, origine: "grammatica", confidenza: DATI.origine.grammatica,
+                    dettaglio: r.categoria + " di S015 (" + r.dove + ")" };
+    r = GRAMMATICA.genere[k];
+    if (r) {
+      var f = /e$/.test(normale(seguenteIt || "").trim());
+      return { testo: f ? r.f : r.m, origine: "grammatica", confidenza: DATI.origine.grammatica,
+               dettaglio: "numero di S015 (" + r.dove + "): " + r.scritto_dalla_fonte + ", " +
+                 (f ? "femminile" : "maschile") };
+    }
+    return null;
+  }
+  function secondoPassaggio(unita) {
+    unita.forEach(function (u, i) {
+      var o = u.risposta.origine;
+      if (o !== "frase" && o !== "grammatica") return;
+      var dopo = unita[i + 1], ctx = "fine", it = "";
+      if (dopo) {
+        ctx = contestoGr(dopo.risposta.origine === "nessuna" ? dopo.testo : dopo.risposta.testo);
+        it = dopo.testo;
+      }
+      var scelta = contestuale(u.testo, ctx, it);
+      if (scelta) u.risposta = scelta;
+    });
+    return unita;
+  }
+  // I plurali: copia di `grammatica.singolari`, `plurale_ferrarese`, `plurale`.
+  function singolari(parola) {
+    var g = DATI.grammatica || {}, w = normale(parola || "").trim();
+    if (w.length < 3 || (g.non_plurali || []).indexOf(w) !== -1 || w.indexOf("'") !== -1) return [];
+    var fuori = [];
+    var irr = (g.singolari_irregolari || {})[w];
+    if (irr) fuori.push(irr);
+    if (/hi$/.test(w)) fuori.push(w.slice(0, -2) + "o");
+    if (/he$/.test(w)) fuori.push(w.slice(0, -2) + "a");
+    if (/i$/.test(w)) { fuori.push(w.slice(0, -1) + "o"); fuori.push(w.slice(0, -1) + "e"); fuori.push(w.slice(0, -1) + "a"); }
+    if (/e$/.test(w)) fuori.push(w.slice(0, -1) + "a");
+    var visti = {}, ordinati = [];
+    fuori.forEach(function (s) { if (!visti[s] && s !== w) { visti[s] = true; ordinati.push(s); } });
+    return ordinati;
+  }
+  // Copie di `grafia.giunta` e di `grafia.ipa_da_bigoni` (0.42).
+  var ANTERIORI = "ei\u00e9\u00e8\u00ec\u00ed\u011b\u00eaj";
+  var POSTERIORI = "aou\u00e0\u00f2\u00f3\u00f9\u00fa\u00e1\u01d2\u00f4";
+  function giunta(radice, seguito, desinenza) {
+    var basso = radice.toLowerCase(), duro = null, nucleo = radice;
+    var dopo = (seguito || "").charAt(0).toLowerCase();
+    if (/(ch|gh)$/.test(basso)) { duro = true; nucleo = radice.slice(0, -1); }
+    else if (/(ci|gi)$/.test(basso) && dopo && POSTERIORI.indexOf(dopo) !== -1) { duro = false; nucleo = radice.slice(0, -1); }
+    else if (/[cg]$/.test(basso)) duro = !!dopo && POSTERIORI.indexOf(dopo) !== -1;
+    if (duro === null) return radice + desinenza;
+    var inizio = desinenza.charAt(0).toLowerCase();
+    if (duro && (!desinenza || ANTERIORI.indexOf(inizio) !== -1)) return nucleo + "h" + desinenza;
+    if (!duro && inizio && POSTERIORI.indexOf(inizio) !== -1) return nucleo + "i" + desinenza;
+    return nucleo + desinenza;
+  }
+  var IPA_B = {"a":"a","\u00e0":"a","\u00e1":"a","\u00e8":"\u025b","\u00e9":"e","\u011b":"\u025b","\u00ea":"e",
+    "e":"e","\u00ec":"i","\u00ed":"i","i":"i","\u00f2":"\u0254","\u00f3":"o","\u01d2":"\u0254","\u00f4":"o","o":"o",
+    "\u00f9":"u","\u00fa":"u","u":"u","b":"b","d":"d","f":"f","l":"l","m":"m","n":"n","p":"p","r":"r","t":"t",
+    "v":"v","k":"k","c":"t\u0283","\u0263":"g","g":"d\u0292","j":"j","\u028e":"\u028e","\u03bb":"\u028e",
+    "\u014b":"\u014b","\u00f1":"\u0272","s":"s","\u0161":"z","z":"ts","\u017e":"dz","q":"k","x":"ks","h":""};
+  var VOCALI_B = "aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa\u00e1\u011b\u00ea\u01d2\u00f4";
+  var TONICHE_B = "\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa\u00e1";
+  var OSTRUENTI_B = "bdfgkptvc\u0263q";
+  function ipaParolaB(parola) {
+    var lettere = Array.from(parola).filter(function (c) { return IPA_B.hasOwnProperty(c); });
+    var segni = [], i = 0;
+    while (i < lettere.length) {
+      var c = lettere[i];
+      if (c === "q" && lettere[i + 1] === "u") { segni.push(["k", false, false], ["w", false, false]); i += 2; continue; }
+      if (c === "u" && segni.length && !segni[segni.length - 1][1] && i + 1 < lettere.length &&
+          VOCALI_B.indexOf(lettere[i + 1]) !== -1) { segni.push(["w", false, false]); i++; continue; }
+      if (IPA_B[c]) segni.push([IPA_B[c], VOCALI_B.indexOf(c) !== -1, TONICHE_B.indexOf(c) !== -1]);
+      i++;
+    }
+    var posizione = -1;
+    segni.forEach(function (x, k) { if (x[2]) posizione = k; });
+    if (posizione < 0) return segni.map(function (x) { return x[0]; }).join("");
+    var inizio = posizione, cons = [], k = posizione - 1;
+    while (k >= 0 && !segni[k][1]) { cons.push(k); k--; }
+    var LIQ = ["r", "l", "j", "w"];
+    if (cons.length) {
+      if (k < 0) inizio = cons[cons.length - 1];
+      else {
+        inizio = cons[0];
+        if (cons.length >= 2) {
+          var ultima = segni[cons[0]][0], penultima = segni[cons[1]][0];
+          if (LIQ.indexOf(ultima) !== -1 && (OSTRUENTI_B.indexOf(penultima.charAt(0)) !== -1 || ultima === "j" || ultima === "w")) {
+            inizio = cons[1];
+            if ((ultima === "j" || ultima === "w") && cons.length >= 3 && (segni[cons[1]][0] === "r" || segni[cons[1]][0] === "l") &&
+                OSTRUENTI_B.indexOf(segni[cons[2]][0].charAt(0)) !== -1) inizio = cons[2];
+          }
+        }
+      }
+    }
+    return segni.map(function (x, k) { return (k === inizio ? "\u02c8" : "") + x[0]; }).join("");
+  }
+  function ipaDaBigoni(forma) {
+    var f = String(forma || "").toLowerCase().normalize("NFC").replace(/[\[\]]/g, "").trim();
+    f = f.split(/\s*[,\/;]\s*/)[0];
+    var parole = f.split(/\s+/).map(function (p) { return p.replace(/['\u2019]/g, ""); }).filter(Boolean);
+    return "/" + parole.map(ipaParolaB).join(" ") + "/";
+  }
+
+  function pluraleFerrarese(singolare) {
+    var g = DATI.grammatica || {}, basso = normale(singolare);
+    var irr = (g.plurali_irregolari || []).filter(function (r) { return r.singolare === basso; })[0];
+    if (irr) {
+      var f = irr.plurale;
+      if (singolare.charAt(0) !== singolare.charAt(0).toLowerCase()) f = f.charAt(0).toUpperCase() + f.slice(1);
+      return { forma: f, regola: irr };
+    }
+    var regole = g.plurali || [];
+    for (var i = 0; i < regole.length; i++) {
+      var fine = regole[i].fine;
+      if (basso.length > fine.length && basso.slice(-fine.length) === fine) {
+        return { forma: giunta(singolare.slice(0, -fine.length), singolare.slice(-fine.length), regole[i].plurale), regola: regole[i] };
+      }
+    }
+    return { forma: singolare, regola: null };
+  }
+  function plurale(parola) {
+    var cand = singolari(parola);
+    for (var i = 0; i < cand.length; i++) {
+      var voci = IDX.perIt[chiave(cand[i])] || [];
+      if (!voci.length) continue;
+      var v = voci[0], forma = (v.principale_fe || v.fe || "").trim();
+      if (!forma || forma.indexOf(" ") !== -1 || forma.indexOf(",") !== -1) continue;
+      var p = pluraleFerrarese(forma);
+      var perche = p.regola ? "S015, " + p.regola.dove + ": \u00ab" + p.regola.scritto_dalla_fonte + "\u00bb"
+                            : "maschile con il plurale uguale al singolare (S015, \u00a74 \u00abSostantivi e aggettivi\u00bb)";
+      return { testo: p.forma, origine: "plurale", confidenza: DATI.origine.plurale,
+               dettaglio: "plurale di \u00ab" + cand[i] + "\u00bb (" + v.id + " " + forma + "), " + perche };
+    }
+    return null;
+  }
+
+  // La coniugazione per analogia: copia di `verbi.per_analogia`. La tabella
+  // dei modelli arriva calcolata nei dati (`DATI.verbi.modelli`).
+  function senzaAccenti(t) { return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  function sillabe(p) { return (String(p).toLowerCase().match(/[aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa]+/g) || []).length; }
+  function accentua(radice, radiceIt) {
+    var basso = radice.toLowerCase(), pos = -1;
+    for (var i = 0; i < basso.length; i++) if ("aeiou".indexOf(basso.charAt(i)) !== -1) pos = i;
+    if (pos < 0) return null;
+    var v = basso.charAt(pos), it = radiceIt.toLowerCase();
+    if (/(ci|gi|sci)$/.test(it)) it = it.slice(0, -1);
+    var vit = "";
+    for (var j = 0; j < it.length; j++) if ("aeiou".indexOf(it.charAt(j)) !== -1) vit = it.charAt(j);
+    if (v === "a" && vit === "e") return { radice: radice.slice(0, pos) + "\u00e9" + radice.slice(pos + 1), alternanza: true };
+    if (v === vit && "aiu".indexOf(v) !== -1) {
+      var n = { a: "\u00e0", i: "\u00ec", u: "\u00f9" }[v];
+      return { radice: radice.slice(0, pos) + n + radice.slice(pos + 1), alternanza: false };
+    }
+    return null;
+  }
+  function perAnalogia(parola, persona) {
+    var w = chiaveItaliano(parola), cand = [];
+    ((DATI.verbi || {}).modelli || []).forEach(function (m) {
+      m.celle.forEach(function (c) {
+        if (w.slice(-c.it.length) !== c.it || w.length <= c.it.length + 1) return;
+        var radiceIt = w.slice(0, -c.it.length), prove = [radiceIt];
+        if ("ie".indexOf(c.it.charAt(0)) !== -1) prove.push(radiceIt + "i");
+        if (/(ch|gh)$/.test(radiceIt)) prove.push(radiceIt.slice(0, -1));
+        for (var k = 0; k < prove.length; k++) {
+          var voci = IDX.perIt[chiave(prove[k] + m.fine_it)] || [];
+          if (!voci.length) continue;
+          var forma = (voci[0].principale_fe || voci[0].fe || "").trim();
+          if (forma.indexOf(" ") !== -1 || forma.indexOf(",") !== -1) continue;
+          if (senzaAccenti(forma.toLowerCase()).slice(-m.fine_fe.length) !== senzaAccenti(m.fine_fe)) continue;
+          if (m.fine_fe === "ar" && /(\u00e0r|\u00e1r)$/.test(forma.toLowerCase())) continue;
+          cand.push({ m: m, c: c, radiceIt: prove[k], forma: forma, voce: voci[0] });
+          break;
+        }
+      });
+    });
+    if (!cand.length) return null;
+    if (persona) {
+      var della = cand.filter(function (x) { return x.c.persona === persona; });
+      if (della.length) cand = della;
+    }
+    for (var i = 0; i < cand.length; i++) {
+      var x = cand[i], radiceFe = x.forma.slice(0, -x.m.fine_fe.length), forma;
+      var seguito = x.forma.slice(radiceFe.length);
+      if (x.c.radice && x.m.fine_fe !== "ar") {
+        var a = accentua(radiceFe, x.radiceIt);
+        if (!a) continue;
+        forma = giunta(a.radice, seguito, x.c.fe);
+        if (sillabe(forma) < 2 && !a.alternanza) forma = giunta(radiceFe, seguito, x.c.fe);
+      } else {
+        forma = giunta(radiceFe, seguito, x.c.fe);
+      }
+      var p = x.c.proclitica || "";
+      var testo = !p ? forma : (p.charAt(p.length - 1) === "'" ? p + forma : p + " " + forma);
+      return { testo: testo, origine: "analogia", confidenza: DATI.origine.analogia,
+               dettaglio: "per analogia con \u00ab" + x.m.lemma_fonte + "\u00bb (" + x.m.infinito + ", " +
+                 x.c.tempo + " " + x.c.persona + ", riga " + x.c.riga + "): infinito " +
+                 x.radiceIt + x.m.fine_it + " \u00ab" + x.forma + "\u00bb (" + x.voce.id + ")" };
+    }
+    return null;
+  }
+
+  function unisci(parole) {
+    var testo = "";
+    parole.forEach(function (p) {
+      if (!p) return;
+      if (testo && testo.charAt(testo.length - 1) !== "'") testo += " ";
+      testo += p;
+    });
+    return testo;
+  }
+
+  function risolvi(parola, verso, frase, persona, seguente) {
+    // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
+    var gemella = fraseGemella(frase, verso);
+    if (gemella) {
+      // La confidenza segue la **stessa regola di `motore.py`**: la frase
+      // intera vale `corpo_frase` solo se la fonte c'è ed è dichiarata
+      // documentata. Prima la pagina dava `corpo_frase` sempre, e con i proverbi
+      // in indice la divergenza diventava visibile: in Python 0.80, qui 0.92,
+      // sulla stessa riga. Due copie che dicono cose diverse è il difetto più
+      // insidioso che ci sia, perché nessun controllo di risposta le vede.
+      var risultato = {
+        testo: verso === "it-fe" ? gemella.fe : gemella.it,
+        origine: "corpo",
+        confidenza: (gemella.fonte && gemella.attendibilita === "D")
+          ? DATI.origine.corpo_frase : DATI.origine.corpo,
+        dettaglio: "frase intera dal corpus, " + gemella.id + ": " + (gemella.fonte || "senza fonte")
+      };
+      // La trascrizione della parola prodotta, cercata **sulla forma scritta**.
+      // Prima non c'era, e quindi la riga «come suona» saltava: scrivendo
+      // `portare` da solo non si vedeva niente, scrivendo `portare il cavallo`
+      // si vedeva. Il corpus sa che la frase e' giusta ma non da quale voce
+      // viene, quindi non si puo' chiedere a lui — ma la forma prodotta puo'
+      // essere cercata fra le trascrizioni dichiarate, che e' quello che la
+      // riga sta facendo in ogni altro caso.
+      //
+      // Non e' una dichiarazione di provenienza: l'origine resta «corpo» e la
+      // confidenza resta quella del corpus. Qui si aggiunge la resa di una
+      // grafia gia' dichiarata, non si cambia da dove viene la risposta.
+      if (verso === "it-fe") {
+        var resa = risultato.testo;
+        var scelta = null;
+        (DATI.fonetica || []).forEach(function (x) {
+          if (!scelta && chiave(x.forma) === chiave(resa)) scelta = x;
+        });
+        risultato.ipa = scelta || null;
+      }
+      return risultato;
+    }
+
+    // Le forme verbali si cercano una volta sola, come in `motore.py`: vincono
+    // sul glossario solo nei due casi di `primaDelGlossario`, e altrimenti
+    // vengono dopo il glossario e prima del frammento.
+    // Livello 0: le parole funzionali, come in `motore.py`. Il primo
+    // passaggio guarda la parola italiana che segue; `secondoPassaggio` rifa'
+    // la scelta con quella ferrarese.
+    if (verso === "it-fe") {
+      var scelta = contestuale(parola, contestoGr(seguente), seguente);
+      if (scelta) return scelta;
+      var fissa = parolaFissa(parola, seguente);
+      if (fissa) return fissa;
+    }
+    var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
+    if (primaDelGlossario(verbale, parola, persona)) return rispostaVerbo(verbale);
+    // Copia di `motore.py`: anche un verbo per analogia vince sul nome del
+    // glossario quando un pronome soggetto della stessa persona lo precede.
+    if (verso === "it-fe" && persona && !verbale) {
+      var anPrima = perAnalogia(parola, persona);
+      if (anPrima && anPrima.dettaglio.indexOf(" " + persona + ", riga") !== -1) return anPrima;
+    }
+
+    // Livello 1: il glossario.
+    var voci = (verso === "it-fe" ? IDX.perIt : IDX.perFe)[chiave(parola)] || [];
+    if (voci.length) {
+      var v = voci[0];
+      // La forma singola, non la glossa: rimettere «niente, nulla» nel testo
+      // tradotto produrrebbe una frase che non e' italiano e non e' ferrarese.
+      var testo = verso === "it-fe" ? (v.principale_fe || v.fe) : (v.principale_it || v.it);
+      var dettaglio = v.id + " (" + v.attendibilita + ") " + (v.fonte || "senza fonte");
+      if (voci.length > 1) dettaglio += " | altre: " + voci.slice(1, 4).map(function (x) { return x.id; }).join(", ");
+      if (v.da_verificare) dettaglio += " | DA VERIFICARE";
+      var risultato = {
+        testo: testo, origine: "glossario", confidenza: DATI.origine.glossario,
+        dettaglio: dettaglio, id: v.id, varieta: v.varieta
+      };
+      // La trascrizione IPA viene dalla voce che ha risposto, non dalla parola
+      // che si e' scritti: se la voce porta tre forme, la trascrizione e'
+      // quella della forma che si sta usando, e non della prima in elenco.
+      if (verso === "it-fe") {
+        var formaUsata = testo;
+        var t = null;
+        (IDX.ipaPerVoce[v.id] || []).forEach(function (x) {
+          if (chiave(x.forma) === chiave(formaUsata)) t = x;
+        });
+        risultato.ipa = t || null;
+      } else {
+        risultato.ipa = ipaDi(v.id, parola);
+      }
+      return risultato;
+    }
+    // Livello 2 bis: le forme verbali attestate, prima del frammento. Una
+    // casella di una tabella di coniugazione scrive esattamente quella parola;
+    // il frammento e' una somiglianza fra stringhe dentro un'altra frase.
+    if (verbale) return rispostaVerbo(verbale);
+    // Livello 2 ter: il plurale di una voce del glossario, come in `motore.py`.
+    if (verso === "it-fe") {
+      var pl = plurale(parola);
+      if (pl) return pl;
+      var an = perAnalogia(parola, persona);
+      if (an) return an;
+    }
+// Livello 2b: il frammento dentro una coppia simile. Non la frase intera:
+// se il frammento non combacia, la coppia resta un esempio e non una
+// traduzione.
+//
+// Il confronto e' in due tempi, e i due tempi guardano **lati opposti**:
+// prima si cerca la parola nel lato da cui si e' partiti, poi si va a
+// prendere il pezzo corrispondente nell'altro lato. Se si confrontassero
+// due parole dello stesso lato, una parola italiana che somiglia a una
+// parola italiana della coppia risponderebbe «dal corpus» senza che il
+// corpus abbia detto niente: la coppia avrebbe tradotto se stessa. E' la
+// stessa cosa che dice `corpora.py` nella docstring di `frammento`.
+    var latoCercato = verso === "it-fe" ? "it" : "fe";
+    var latoRisposto = verso === "it-fe" ? "fe" : "it";
+    var kCercato = chiave(parola);
+    var migliore = null;
+    (DATI.coppie || []).forEach(function (c) {
+      var punteggio = 0;
+      tokenizza(c[latoCercato]).forEach(function (t) {
+        var s = somiglianza(kCercato, chiave(t));
+        if (s > punteggio) punteggio = s;
+      });
+      if (punteggio < 0.62) return;
+      if (!migliore || punteggio > migliore.p ||
+          (punteggio === migliore.p && c.id < migliore.c.id)) {
+        migliore = { p: punteggio, c: c };
+      }
+    });
+    if (migliore) {
+      var pezzo = null, punteggioPezzo = 0;
+      tokenizza(migliore.c[latoRisposto]).forEach(function (t) {
+        // `chiave(t)`, come `normalizza.somiglianza` che riduce a chiave tutte
+        // e due le parole: senza, un frammento accentato («dài») non combaciava
+        // mai nella pagina e combaciava in Python.
+        var s = somiglianza(kCercato, chiave(t));
+        if (s > punteggioPezzo) { punteggioPezzo = s; pezzo = t; }
+      });
+      if (pezzo && punteggioPezzo >= 0.75) {
+        return {
+          testo: pezzo,
+          origine: "corpo",
+          confidenza: DATI.origine.corpo * Math.min(1, punteggioPezzo + 0.15),
+          dettaglio: migliore.c.id + ", frammento \"" + pezzo + "\": " + (migliore.c.fonte || "senza fonte")
+        };
+      }
+    }
+
+    var r = perRegola(parola, verso);
+    if (r) {
+      var conf = DATI.origine.regola * r.regola.accordo;
+      if (conf >= 0.5) {
+        return {
+          testo: r.testo, origine: "regola", confidenza: conf,
+          dettaglio: r.regola.etichetta + " (" + r.regola.supporto + " esempi, accordo " + r.regola.accordo.toFixed(2) + ")"
+        };
+      }
+    }
+
+    return {
+      testo: parola, origine: "nessuna", confidenza: 0,
+      dettaglio: "nessuna fonte nel glossario, nel corpus o fra le regole"
+    };
+  }
+
+  // Il ciclo risolve **unita'**, non parole, e porta con se' l'indice del
+  // token da cui ognuna comincia. Senza quell'indice l'accorpamento del verbo
+  // pronominale stamperebbe sotto ogni parola la risposta di quella che la
+  // segue: «si siede» diventerebbe due righe, e la prima con la risposta della
+  // seconda. E' la copia di `Motore._risolvi_token`, e il confronto con Python
+  // chiama **questa** funzione, non una sua ricostruzione.
+  //
+  // Fino alla 0.36 il ciclo accorpava la locuzione e poi avanzava di una parola
+  // sola, quindi «a braccia aperte» usciva come la locuzione seguita da
+  // «braccia aperte» e da «aperte»; il confronto non lo vedeva perche'
+  // rifaceva il ciclo per conto suo. Ora avanza di quante parole ha accorpato,
+  // come `motore.py`.
+  function risolviUnita(token, direzione, testo) {
+    if (direzione === "it-fe") token = separaElisioni(token);
+    var unita = [], iToken = 0;
+    while (iToken < token.length) {
+      var pronominale = (direzione === "it-fe")
+        ? unitaPronominale(token, iToken) : null;
+      if (pronominale) {
+        unita.push({ testo: pronominale.testo, indice: iToken,
+                     risposta: bucoPronominale(pronominale.testo) });
+        iToken += pronominale.quante;
+        continue;
+      }
+      var a = accorpa(token, iToken, direzione);
+      var pezzo = a ? a.testo : token[iToken];
+      // Il pronome soggetto che precede dice la persona del verbo, come in
+      // `motore.py`: «loro sono» e' la terza plurale.
+      var persona = (direzione === "it-fe" && iToken > 0)
+        ? personaDelSoggetto(token[iToken - 1]) : "";
+      var seguente = a ? "" : (token[iToken + 1] || "");
+      unita.push({ testo: pezzo, indice: iToken,
+                   risposta: risolvi(pezzo, direzione, testo, persona, seguente) });
+      iToken += a ? a.quante : 1;
+    }
+    if (direzione === "it-fe") secondoPassaggio(unita);
+    return unita;
+  }
+
+  // --- la correzione di un parlante ---------------------------------------
+  // La pagina non manda niente: prepara una riga che la persona consegna, come
+  // fa la verifica a campione. La riga la legge `correzioni importa`, e i
+  // controlli qui sono gli stessi di `correzioni.controlla_riga` (X2–X6, X9):
+  // una riga che il repository rifiuterebbe non si prepara.
+  var ULTIMA = null;
+  function ricorda(italiano, direzione, proposta, parole) {
+    ULTIMA = { italiano: italiano, direzione: direzione, proposta: proposta,
+               parole: parole };
+    var campo = el("ferraresCorretto");
+    if (direzione === "it-fe" && campo && !campo.value) campo.value = proposta;
+  }
+  function oggiIso() { return new Date().toISOString().slice(0, 10); }
+  var CHI_PREDEFINITO = "titolare del sito", VARIETA_PREDEFINITA = "cittadino";
+  function rigaCorrezione(campi, ultima, data) {
+    var problemi = [];
+    if (!ultima || ultima.direzione !== "it-fe") {
+      problemi.push("prima traduci una frase dall'italiano al ferrarese");
+    }
+    var ferrarese = (campi.ferrarese || "").trim();
+    if (!ferrarese) problemi.push("scrivi come si dice in ferrarese");
+    if (ultima && ferrarese && ferrarese === ultima.proposta) {
+      problemi.push("la frase e' uguale alla traduzione proposta: che cosa cambia?");
+    }
+    var varieta = campi.varieta || VARIETA_PREDEFINITA;
+    if (!(DATI.nomi_varieta || {})[varieta]) problemi.push("varieta' sconosciuta: " + varieta);
+    var ipa = (campi.ipa || "").trim();
+    if (ipa) {
+      if (ipa.charAt(0) !== "[" || ipa.charAt(ipa.length - 1) !== "]") {
+        problemi.push("la pronuncia va fra parentesi quadre, [cosi']");
+      }
+      var ammessi = ((DATI.correzione || {}).simboli || "") + "/-().[] ";
+      var strani = [];
+      Array.prototype.forEach.call(ipa, function (c) {
+        if (ammessi.indexOf(c) === -1 && strani.indexOf(c) === -1) strani.push(c);
+      });
+      if (strani.length) problemi.push("nella pronuncia ci sono simboli che non sono IPA: " + strani.join(" "));
+    }
+    if (problemi.length) return { riga: "", problemi: problemi };
+    var riga = { tipo: "correzione", data: data,
+                 chi: (campi.chi || "").trim() || CHI_PREDEFINITO,
+                 varieta: varieta, italiano: ultima.italiano,
+                 proposta: ultima.proposta, ferrarese: ferrarese,
+                 parole: ultima.parole,
+                 versione: (DATI.correzione || {}).versione || "" };
+    if ((campi.luogo || "").trim()) riga.luogo = campi.luogo.trim();
+    if (ipa) riga.ipa = ipa;
+    if ((campi.nota || "").trim()) riga.nota = campi.nota.trim();
+    return { riga: JSON.stringify(riga), problemi: [] };
+  }
+  var CHIAVE_IMPOSTAZIONI = "traduttore-ferrarese-invio";
+  function leggiImpostazioni() {
+    try { return JSON.parse(window.localStorage.getItem(CHIAVE_IMPOSTAZIONI) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function salvaImpostazioni() {
+    var i = { token: el("tokenCorrezione").value.trim(), chi: el("chiCorregge").value.trim(),
+              varieta: el("varietaCorregge").value, luogo: el("luogoCorregge").value.trim() };
+    try { window.localStorage.setItem(CHIAVE_IMPOSTAZIONI, JSON.stringify(i)); } catch (e) { /* niente */ }
+    return i;
+  }
+  function preparaCorrezione() {
+    var i = leggiImpostazioni();
+    var esito = rigaCorrezione({
+      ferrarese: el("ferraresCorretto").value, ipa: el("ipaCorretta").value,
+      nota: el("notaCorregge").value, chi: i.chi, varieta: i.varieta, luogo: i.luogo
+    }, ULTIMA, oggiIso());
+    el("rigaCorrezione").value = esito.riga;
+    el("esitoCorrezione").innerHTML = esito.problemi.length
+      ? '<p class="errore">' + esito.problemi.map(scappa).join("<br>") + '</p>' : "";
+    return esito.riga;
+  }
+  // L'UNICA chiamata di rete della pagina (AGENTS.md §2, eccezione decisa il
+  // 2026-11-05): parte solo premendo «Invia», solo con un token salvato in
+  // questo browser, e solo verso l'API di GitHub di questo repository. Il
+  // controllo della CI accetta soltanto le righe marcate RETE-DICHIARATA.
+  function inviaCorrezione() {
+    var riga = preparaCorrezione();
+    if (!riga) return;
+    var i = leggiImpostazioni();
+    var repository = (DATI.correzione || {}).api || "";
+    if (!i.token || !repository) {
+      el("esitoCorrezione").innerHTML = '<p class="errore">Manca il token: aprilo in «Impostazioni di invio». Intanto puoi copiare o scaricare la riga.</p>';
+      return;
+    }
+    el("esitoCorrezione").innerHTML = "<p>Invio&hellip;</p>";
+    var corpo = { title: "Correzione: " + ULTIMA.italiano, labels: ["correzione"],
+                  body: "Correzione inviata dalla pagina del traduttore.\n\n```json\n" + riga + "\n```\n" };
+    window.fetch(repository + "/issues", {  // RETE-DICHIARATA
+      method: "POST",
+      headers: { "Authorization": "Bearer " + i.token, "Accept": "application/vnd.github+json",
+                 "Content-Type": "application/json" },
+      body: JSON.stringify(corpo)
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, stato: r.status, j: j }; });
+    }).then(function (e) {
+      if (!e.ok) throw new Error(e.stato + " " + ((e.j && e.j.message) || ""));
+      el("esitoCorrezione").innerHTML = '<p>Inviata: <a href="' + scappa(e.j.html_url) +
+        '" target="_blank" rel="noopener">segnalazione #' + e.j.number + '</a>. Il workflow la archivia da verificare.</p>';
+      el("ferraresCorretto").value = ""; el("ipaCorretta").value = ""; el("notaCorregge").value = "";
+    }).catch(function (errore) {
+      el("esitoCorrezione").innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) +
+        '). La riga e\' qui sotto: copiala o scaricala.</p>';
+    });
+  }
+
+  function traduci() {
+    var testo = el("testo").value.trim();
+    var box = el("risposta");
+    var avviso = el("avviso");
+    avviso.innerHTML = "";
+    if (!testo) { box.innerHTML = '<span class="vuoto">Scrivi qualcosa.</span>'; return; }
+
+    var token = tokenizza(testo);
+    if (!token.length) { box.innerHTML = '<span class="vuoto">Nessuna parola riconosciuta.</span>'; return; }
+
+    // Una frase che il corpus contiene per intero non viene smembrata: si
+    // restituisce come e' stata trovata. Smembrarla produrrebbe una traduzione
+    // piu' incerta di quella che si aveva gia' in mano.
+    var gemella = fraseGemella(testo, direzione);
+    if (gemella) {
+      var resa = direzione === "it-fe" ? gemella.fe : gemella.it;
+      // La riga «come suona» c'e' anche qui, e ci sta perche' la risposta e'
+      // ferrarese come in ogni altro caso. Prima questa strada restituiva subito
+      // senza disegnarla, quindi la stessa parola suonava o no a seconda di
+      // quante parole aveva la frase intorno: `portare` da solo niente,
+      // `portare il cavallo` il bottone. E' l'incoerenza piu' difficile da
+      // spiegare a chi guarda, perche' la pagina non dice da dove viene.
+      //
+      // La parola e' quella **prodotta**, non quella scritta: e' il ferrarese
+      // che si vuol sentire, ed e' il ferrarese che ha la trascrizione. Su una
+      // frase intera non c'e' accorpamento da fare — e' gia' una resa sola —
+      // quindi la riga si costruisce con un solo risultato.
+      var rigaSuonaCorpus = "";
+      if (direzione === "it-fe") {
+        var ipaCorpus = ipaDi(null, resa);
+        rigaSuonaCorpus = rigaSuona([{
+          testo: resa, origine: "corpo", confidenza: DATI.origine.corpo_frase,
+          dettaglio: "", ipa: ipaCorpus
+        }]);
+      }
+      box.innerHTML = '<div class="riga-parola"><span class="originale">' + scappa(testo) +
+        '</span> &rarr; <span class="parola corpo">' + scappa(resa) + '</span></div>' +
+        '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(resa) + '</div>' +
+        rigaSuonaCorpus +
+        '<div class="dettaglio">frase intera dal corpus, ' + scappa(gemella.id) + ': ' + scappa(gemella.fonte || "senza fonte") +
+        ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div>';
+      avviso.innerHTML = '<div class="avviso ok">La frase era gia\' nel corpus, con la sua fonte. Non e\' stata ricostruita parola per parola.</div>';
+      ricorda(testo, direzione, resa, [{ italiano: testo, proposto: resa,
+                                         origine: "corpo", voce: gemella.id }]);
+      return;
+    }
+
+    var unita = risolviUnita(token, direzione, testo);
+    var risultati = unita.map(function (u) { return u.risposta; });
+    var indici = unita.map(function (u) { return u.indice; });
+    var peso = 0, totale = 0, buchi = 0;
+    risultati.forEach(function (r, i) {
+      var n = Math.max(1, chiave(r.testo).length);
+      totale += r.confidenza * n; peso += n;
+      if (r.origine === "nessuna") buchi++;
+    });
+    var confidenza = peso ? totale / peso : 0;
+
+    var righe = risultati.map(function (r, i) {
+      return '<span class="originale">' + scappa(r.testo) + '</span> &rarr; ' +
+        '<span class="parola ' + r.origine + '" title="' + scappa(ETICHETTE[r.origine] + ": " + r.dettaglio) + '">' +
+        scappa(r.testo) + '</span>';
+    });
+    var traduzione = unisci(risultati.map(function (r) { return r.testo; }));
+    ricorda(testo, direzione, traduzione, unita.map(function (u) {
+      return { italiano: u.testo, proposto: u.risposta.testo,
+               origine: u.risposta.origine, voce: u.risposta.id || "" };
+    }));
+    box.innerHTML =
+      '<div class="riga-parola">' + righe.join(" ") + '</div>' +
+      '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(traduzione) + '</div>' +
+      (direzione === "it-fe" ? rigaSuona(risultati) : '') +
+      '<div class="dettaglio">confidenza ' + confidenza.toFixed(2) +
+      (buchi ? "  -  " + buchi + (buchi > 1 ? " parole" : " parola") + " senza fonte" : "") + '</div>';
+
+    if (buchi) {
+      // Il buco dei verbi e' **uno solo per traduzione** e parla del progetto,
+      // non della parola: i buchi sono anche «il» e «di», e una frase che
+      // accusasse la parola sbaglierebbe per meta' delle volte.
+      var suVerbi = "";
+      if (direzione === "it-fe" && DATI.verbi && DATI.verbi.forme) {
+        suVerbi = " Il progetto coniuga solo quello che le fonti scrivono: " +
+          DATI.verbi.forme + " forme verbali di " + DATI.verbi.verbi +
+          " verbi, e per intero i " + DATI.verbi.paradigmi.length +
+          " verbi modello di S015 (" + DATI.verbi.paradigmi.join(", ") +
+          "). Una forma di un altro verbo resta un buco dichiarato, non una forma indovinata.";
+      }
+      // Il numero concorda con la parola che segue: «1 parole» e' la prima
+      // cosa che si vede in un messaggio che vuol dire «guarda, questo e' un
+      // dato e non un parolone».
+      // I buchi si contano sulle **risposte**, non sui token: con
+      // l'accorpamento una risposta copre due parole e la parola sparisce,
+      // quindi un conto fatto sui token conterebbe cose che non ci sono.
+      var nonSa = risultati.map(function (r) {
+        return r.origine === "nessuna" ? r.testo : null;
+      }).filter(function (x) { return x; });
+      avviso.innerHTML = '<div class="avviso"><strong>La traduzione ha dei buchi.</strong> ' +
+        nonSa.length + (nonSa.length === 1 ? " parola non ha risposta: "
+                                           : " parole non hanno risposta: ") +
+        scappa(nonSa.join(", ")) +
+        '. Restano cosi\' come sono, non sono sbagliate: sono parole che il glossario non conosce.' +
+        scappa(suVerbi) + '</div>';
+    } else if (confidenza >= 0.9) {
+      avviso.innerHTML = '<div class="avviso ok">Ogni parola viene dal glossario o dal corpus. Risultato pubblicabile.</div>';
+    } else {
+      avviso.innerHTML = '<div class="avviso">Nessun buco, ma la confidenza e\' sotto il novanta per cento: ' +
+        'alcune parole vengono da regole apprese, non dal glossario. Da rivedere prima di pubblicarlo.</div>';
+    }
+  }
+
+  // «Come suona»: la trascrizione accanto alla parola, parola per parola, e
+  // accanto alla trascrizione il bottone che la **fa sentire**. Se non c'e',
+  // si dice che non c'e': una riga vuota sembrerebbe un'esortazione a
+  // indovinare, e questa pagina non ne fa.
+  //
+  // Il bottone mancava, e il motivo non era che i suoni mancassero: i dati di
+  // questa pagina li aveva gia' tutti — dodici righe con il percorso del file.
+  // Mancava il codice che li disegna. Il player esisteva, ma solo dentro
+  // `riproduttore()`, che chiama solo la pagina dei suoni: il traduttore
+  // sapeva *scrivere* che una parola si pronuncia e non sapeva farla
+  // pronunciare, che e' il peggiore dei due modi di saperlo.
+  function rigaSuona(risultati) {
+    // Azzerato **prima** del ciclo: e' un registro della riga, non della
+    // pagina, e una riga nuova non deve ripetere gli avvertimenti della
+    // precedente.
+    AVVERTIMENTI = [];
+    var quantiBottoni = 0;
+    var pezzi = risultati.map(function (r) {
+      if (!r.ipa) return null;
+      var bottone = bottoneSuono(r);
+      if (bottone) quantiBottoni++;
+      return '<span class="ipa" title="' + scappa(r.ipa.nota || "") + '">' +
+        scappa(r.testo) + ' ' + scappa(r.ipa.ipa) +
+        (r.ipa.da_verificare ? ' <span class="varieta">da verificare</span>' : '') +
+        bottone +
+        '</span>';
+    }).filter(function (x) { return x; });
+    if (!pezzi.length) {
+      return '<div class="vuoto">come suona: nessuna parola di questa frase ha ancora una trascrizione.</div>';
+    }
+    var quanteVerificate = risultati.filter(function (r) {
+      return r.ipa && !r.ipa.da_verificare;
+    }).length;
+    var avvertenza = quanteVerificate
+      ? ""
+      : ' <span class="vuoto">trascrizioni non ancora verificate da un parlante</span>';
+    // La dichiarazione sulla voce di programma sta **qui**, accanto al bottone,
+    // e non solo nella pagina dei suoni: il bottone e' nel traduttore, quindi
+    // e' li' che chi lo preme deve leggere che quel suono l'ha fatto un
+    // programma e non una persona di Ferrara. Una dichiarazione che sta in
+    // un'altra pagina non dichiara niente per chi non ci va.
+    var sotto = "";
+    if (quantiBottoni) {
+      sotto = '<div class="vuoto">' +
+        scappa(DATI.sintesi_avviso ||
+               "questo suono lo ha fatto un programma, non una persona di Ferrara") +
+        '</div>';
+      AVVERTIMENTI.forEach(function (a) {
+        sotto += '<div class="vuoto">' + scappa(a) + '</div>';
+      });
+    }
+    return '<div><strong>come suona:</strong> ' + pezzi.join(" &middot; ") +
+      avvertenza + '</div>' + sotto;
+  }
+
+  // Il bottone che **fa sentire** la parola ferrarese, accanto alla sua
+  // trascrizione.
+  //
+  // Il suono e' scelto per **voce**, non per identita' di trascrizione: la
+  // stessa parola resa in due modi e' sempre la stessa parola, e la riga che
+  // precede — `/portˈar/` e `/porˈtar/` non differiscono in un suono, ma nel
+  // posto in cui si mette la barra dell'accento. Pretendere l'identita' delle
+  // due scritture nasconderebbe il bottore in undici casi su dodici.
+  //
+  // Su una voce con piu' forme scritte (`frarés` e `frarèz`, che hanno due
+  // suoni distinti) il suono si sceglie confrontando la **forma scritta** con
+  // quella della risposta: suonare `frarés` mentre si cerca `frarèz` e' la
+  // parola sbagliata, e quello non si puo' dichiarare come una differenza di
+  // sillabazione. Il confronto non puo' essere sulla trascrizione, che su
+  //quelle due parole e' diversa per la sillaba dell'accento e quindi non
+  // coinciderebbe mai. Se non c'e' un suono della forma giusta si offre
+  // niente: la differenza che si dichiara e' fra due modi di scrivere e
+  // sillabare la **stessa** parola, e non può coprire il caso in cui sono due
+  // parole diverse.
+  //
+  // E non aggiunge niente per le parole che non hanno un suono generato: sono
+  // la maggior parte del glossario, e il progetto non le fa suonare apposta,
+  // perche' la loro trascrizione ha un dubbio dichiarato e suonarle
+  // insegnerebbe il suono sbagliato. Quel divieto e' scritto in
+  // `raccolta/sintetizza.py` e questo bottone non lo allarga: non e' un posto
+  // dove si riparano i dati, e' un posto dove si mostra cio' che c'e'.
+  function bottoneSuono(r) {
+    if (!r.ipa || !r.ipa.ipa) return "";
+    var dellaVoce = (DATI.sintesi || []).filter(function (x) {
+      if (!x.file_playable) return false;
+      // Con l'id della voce il confronto e' quello di prima. Senza l'id —
+      // cioe' quando la risposta viene dal corpus, che restituisce la frase
+      // intera e non sa da quale voce viene — si cerca sulla **forma scritta**.
+      // E' lo stesso confronto, senza l'ancoraggio che manca, e serve perche'
+      // altrimenti la stessa parola suonava o no a seconda di quante parole
+      // aveva la frase intorno.
+      return r.id ? x.riferimento === r.id : true;
+    });
+    if (!dellaVoce.length) return "";
+    // Il confronto e' sulla **forma scritta**, non sulla trascrizione: e'
+    // l'unica cosa che distingue una parola dall'altra, ed e' la stessa chiave
+    // con cui `risolvi` sceglie la trascrizione, cosi' bottone e trascrizione
+    // non possono guardare due cose diverse. Sulla trascrizione il confronto
+    // non tornerebbe mai — le due sono sillabate in modo diverso — e quindi
+    // ripiegherebbe sempre sul primo suono della voce, che su `V0021` e' quello
+    // di `frarés` mentre si chiedeva `frarèz`: una parola diversa, offerta
+    // dichiarandola la stessa.
+    var dellaForma = dellaVoce.filter(function (x) {
+      return chiave(x.forma) === chiave(r.testo);
+    });
+    // Il ripiego vale solo con la voce: e' il caso in cui la parola prodotta e'
+    // la parola di quella voce, e la differenza di sillabazione si dichiara.
+    // Senza l'id non si puo' fare: `dellaVoce` sarebbe tutte le voci del
+    // glossario e il ripiego prenderebbe il suono di una parola qualunque.
+    var s = dellaForma[0];
+    if (!s && r.id && dellaVoce.length === 1) s = dellaVoce[0];
+    // Con piu' suoni e nessuno della forma cercata non si offre niente: meglio
+    // un bottone che manca che un bottone che suona la parola sbagliata.
+    if (!s) return "";
+    var titolo = scappa(s.avvertimento || DATI.sintesi_avviso ||
+                        "voce di programma");
+    if (s.ipa !== r.ipa.ipa) {
+      titolo += " Il suono e' di " + s.forma + " (" + s.ipa +
+        "), la trascrizione qui accanto e' " + r.ipa.ipa + ".";
+      AVVERTIMENTI.push("Il suono di " + s.forma + " e' " + s.ipa +
+        ", la trascrizione qui accanto e' " + r.ipa.ipa +
+        ": stessa parola, sillabazione diversa.");
+    }
+    // `preload="metadata"` e non `"none"`, come nella pagina dei suoni: un
+    // lettore fermo a `0:00 / 0:00` sembra rotto, e chi crede sia rotto non lo
+    // preme. Il file e' di 45 KB, e qui ce n'e' uno per parola con il suono.
+    return ' <audio class="suono" controls preload="metadata" title="' + titolo +
+      '" src="' + scappa(s.file_playable) + '"></audio>';
+  }
+
+  function etichettaVarieta(codice) {
+    if (!codice) return '<span class="varieta vuota">senza varieta\'</span>';
+    var nome = (DATI.nomi_varieta && DATI.nomi_varieta[codice]) || codice;
+    return '<span class="varieta" title="' + scappa(nome) + '">' + scappa(codice) + '</span>';
+  }
+
+  function scappa(t) {
+    return String(t).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // La colonna «in italiano di oggi». Non e' una colonna decorativa: e' l'unica
+  // che puo' spiegare a uno studente una parola che il Ferri scriveva nel 1889 e
+  // che nessuno usa piu'. Ogni valore che mostra porta con se' il link alla
+  // pagina da cui e' preso, perche' una definizione senza fonte e' una parola
+  // indovinata.
+  //
+  // I sinonimi vengono **tagliati a tre**, e il taglio si dichiara: la fonte ne
+  // dà in media dieci e una colonna con dieci sinonimi non si legge. Il file
+  // li ha tutti; quello che si taglia qui e' quello che si mostra, e si dice
+  // che si e' tagliato perche' una colonna che mostra tre pezzi senza dirlo
+  // sembra mostrarne tre di dieci che ci sono. Meglio così che mentire piano.
+  var SINO_IN_COLONNA = 3;
+
+  function cellulaModerno(v) {
+    if (!v.moderno) return '<span class="vuoto">—</span>';
+    var testo = scappa(v.moderno);
+    var sin = v.sinonimi || [];
+    if (sin.length) {
+      testo += '<br><span class="vuoto">anche: ' + scappa(sin.slice(0, SINO_IN_COLONNA).join(", ")) +
+        (sin.length > SINO_IN_COLONNA ? " (+" + (sin.length - SINO_IN_COLONNA) + " altri)" : "") +
+        "</span>";
+    }
+    // La fonte e' un rimando piccolo e non un link che avvolge la
+    // definizione: un'intera colonna di testo sottolineato e' un muro blu, e
+    // la definizione — che e' la cosa che si viene a leggere — sparisce
+    // dentro il colore. Il link resta cliccabile e resta la prova.
+    if (v.fonte_moderno) {
+      testo += ' <a class="fonte" href="' + scappa(v.fonte_moderno) +
+        '" target="_blank" rel="noopener" title="la fonte di questa definizione">fonte</a>';
+    }
+    return testo;
+  }
+
+  function tabellaGlossario(filtro) {
+    var scelta = el("filtroVarietaGlossario");
+    var varieta = scelta ? scelta.value : "";
+    var voci = VOCI.filter(function (v) {
+      if (varieta && v.varieta !== varieta) return false;
+      if (!filtro) return true;
+      var f = filtro.toLowerCase();
+      return (v.fe + " " + v.it + " " + (v.varianti || []).join(" ") + " " +
+        (v.campo || "") + " " + (v.varieta || "") + " " + (v.moderno || "") + " " +
+        (v.sinonimi || []).join(" ")).indexOf(f) >= 0;
+    });
+    if (!voci.length) {
+      // Il messaggio dice **in questa fetta**, perche' e' quello il limite.
+      // Il glossario e' diviso in pagine e la ricerca guarda solo la pagina
+      // che si sta guardando: dire «nessuna voce corrisponde» senza dire
+      // quale sarebbe una frase falsa, perche' la parola che si cerca c'e'
+      // quasi sempre — in un'altra pagina.
+      //
+      // E la correzione non e' «carica tutto e cerca»: e' esattamente il peso
+      // che questa divisione toglie di mezzo. Il limite si dichiara e si
+      // indica la strada, che e' la lettera nella barra qui sopra.
+      var limite = (DATI.fette || []).length
+        ? "Nessuna voce corrisponde <strong>in questa fetta</strong>. Il " +
+          "glossario è a fette e la ricerca guarda solo la pagina aperta: " +
+          "la parola che cerchi è quasi sempre in un’altra, e la sua " +
+          "lettera è nella barra qui sotto."
+        : "Nessuna voce corrisponde.";
+      el("tabellaGlossario").innerHTML =
+        '<p class="vuoto">' + limite + "</p>";
+      return;
+    }
+    var righe = voci.map(function (v) {
+      var t = ipaDi(v.id, v.fe);
+      return "<tr><td><code>" + scappa(v.id) + "</code></td>" +
+        "<td>" + scappa(v.fe) + (t ? "<br><span class=\"ipa\" title=\"" + scappa(t.nota || "") + "\">" + scappa(t.ipa) + "</span>" : "") +
+        (v.grafia_fonte ? "<br><span class=\"vuoto\" title=\"come la scrive la fonte, nel suo alfabeto\">fonte: " + scappa(v.grafia_fonte) + "</span>" : "") +
+        (v.varianti && v.varianti.length ? "<br><span class=\"vuoto\">" + scappa(v.varianti.join(", ")) + "</span>" : "") + "</td>" +
+        "<td>" + scappa(v.it) + "</td>" +
+        "<td class=\"moderno\">" + cellulaModerno(v) + "</td>" +
+        "<td>" + etichettaVarieta(v.varieta) + "</td>" +
+        "<td>" + scappa(v.campo || "—") + "</td>" +
+        "<td>" + scappa(v.attendibilita) + (v.da_verificare ? " <span class=\"vuoto\">(da verificare)</span>" : "") + "</td>" +
+        "<td>" + scappa(v.fonte || "senza fonte") + "</td></tr>";
+    }).join("");
+    // Il numero di vuoti si dichiara sotto la tabella, non si nasconde. Una
+    // colonna che contiene dati solo per tre quarti delle voci, e che non lo
+    // dice, fa pensare che le altre non esistano: invece esistono e la fonte
+    // non ne parla. Il conteggio e' fatto in Python e arrivato nei dati, non
+    // ricalcolato qui: se la pagina contasse da sola, un giorno i due numeri
+    // direbbero cose diverse e nessuno saprebbe quale dei due e' giusto.
+    // I due numeri vengono calcolati in Python e arrivano qui gia' riferiti a
+    // quello che la pagina contiene. Su una fetta sono i buchi di quella
+    // fetta: scrivere qui il numero del glossario intero direbbe 6324 sotto
+    // una tabella di 500 righe, che e' un numero che non descrive quello che
+    // si vede.
+    var senza = DATI.moderno_buchi || 0;
+    var rigaVuoti = "";
+    if (senza) {
+      rigaVuoti = " <span class=\"vuoto\">Nessun significato moderno in fonte per " +
+        senza + " di queste " + VOCI.length + " voci: è un buco dichiarato, " +
+        "non una parola senza significato. Sinonimi: i primi " + SINO_IN_COLONNA +
+        " di quelli che la fonte dà, gli altri sono nel file.</span>";
+    }
+    el("tabellaGlossario").innerHTML =
+      '<table><thead><tr><th>id</th><th>ferrarese</th><th>italiano</th><th class="moderno">in italiano di oggi</th><th>varieta\'</th><th>campo</th><th>att.</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table><p class=\"vuoto\">" + voci.length + " voci su " + VOCI.length + "." + rigaVuoti + "</p>";
+  }
+
+  // Le cinque varieta' con quello che c'e' dentro. La riga vuota non e' un
+  // dettaglio estetico: e' il numero che dice al lettore che il glossario non
+  // copre la meta' del territorio, e va detto per primo e non per ultimo.
+  function elencoVarieta() {
+    var v = DATI.varieta || { voci: [], conteggi: {}, vuote: [] };
+    var nomi = v.nomi || DATI.nomi_varieta || {};
+    var contenitore = el("elencoVarieta");
+    if (!v.voci.length) {
+      contenitore.innerHTML = '<p class="vuoto">dati/varieta.json non c\'e\' o e\' vuoto.</p>';
+      return;
+    }
+    contenitore.innerHTML = v.voci.map(function (x) {
+      var numeri = (v.conteggi && v.conteggi[x.codice]) || {};
+      var vuota = numeri.totale === 0;
+      var intestazione = '<h3>' + scappa(x.nome || x.codice) + ' ' +
+        etichettaVarieta(x.codice) +
+        (vuota ? ' <span class="varieta vuota">nessuna voce</span>' : '') + '</h3>';
+      var numeriTesto = '<p class="vuoto">' + (vuota
+        ? "Nessuna voce, nessuna frase, nessun brano: questa varieta' e' un buco dichiarato."
+        : numeri.glossario + " voci, " + numeri.coppie + " coppie, " +
+          numeri.audio + " brani audio.") + '</p>';
+      var territorio = x.territori && x.territori.length
+        ? '<p><strong>Dove:</strong> ' + scappa(x.territori.join(", ")) + '</p>' : '';
+      var descrizione = x.descrizione ? '<p>' + scappa(x.descrizione) + '</p>' : '';
+      var confine = x.confine ? '<p class="vuoto">Confina con: ' + scappa(x.confine) + '.</p>' : '';
+      var fonte = '<p class="vuoto">Fonte della variante: ' + scappa(x.fonte || "senza fonte") +
+        ' (attendibilita ' + scappa(x.attendibilita || "?") + ')</p>';
+      return '<div class="' + (vuota ? "vuoto-varieta" : "scheda") + '">' +
+        intestazione + numeriTesto + territorio + descrizione + confine +
+        (x.nota ? '<p class="vuoto">' + scappa(x.nota) + '</p>' : '') + fonte + '</div>';
+    }).join("");
+  }
+
+  // Il riproduttore. Mette accanto alla parola la sua trascrizione, dice da
+  // quale varieta' viene, e suona quello che c'e' **dichiarando di che cosa
+  // si tratta**.
+  //
+  // Prima questo progetto non metteva nessun suono generato, e il commento
+  // diceva perche': «non si puo' fingere che esista». La frase era giusta sul
+  // principio e sbagliata sulla soluzione: un suono generato esiste, esiste
+  // gia' da prima che il progetto se ne accorgesse, e non metterlo non e'
+  // onesto, e' solo piu' muto. La regola vera e' un'altra: il suono generato
+  // si mostra, ma **non puo' passare per una persona**. Non sta nella stessa
+  // cartella di `web/audio/`, non ha il nome di un brano, e porta scritto che
+  // e' un programma. Tolta la parola non resta un falso Ferrara: resta un
+  // suono con la sua etichetta.
+  // Il conto dei suoni sta qui e non nel pannello della home: li' il pannello
+  // dice gia' «suoni generati», e due numeri uguali nella stessa riga fanno
+  // pensare che siano due cose diverse. Qui il numero ha un significato che
+  // solo questa pagina puo' dare: su 28 parole dichiarate, quante suonano.
+  function contoSuoni() {
+    var s = DATI.scontoSuoni;
+    if (!s) return;
+    var mute = s.dichiarate - s.con_suono;
+    el("contoSuoni").innerHTML = scappa(s.con_suono) + " di " +
+      scappa(s.dichiarate) + " parole dichiarate suonano. Le altre " +
+      scappa(mute) + " hanno una trascrizione con un dubbio: non suonano, " +
+      "e la pagina dice perche' accanto a ciascuna.";
+  }
+
+  function riproduttore(filtro) {
+    var scelta = el("filtroVarietaSuono");
+    var varieta = scelta ? scelta.value : "";
+    var mostraIpa = el("mostraIpa").checked;
+    var voci = VOCI.filter(function (v) {
+      if (varieta && v.varieta !== varieta) return false;
+      if (!filtro) return true;
+      var f = filtro.toLowerCase();
+      var t = ipaDi(v.id, v.fe);
+      return (v.fe + " " + v.it + " " + (v.varianti || []).join(" ") + " " +
+        (t ? t.ipa : "")).toLowerCase().indexOf(f) >= 0;
+    });
+    var suoni = (DATI.audio || []).filter(function (b) { return b.file_playable; });
+    var parti = [];
+    voci.slice(0, 60).forEach(function (v) {
+      var t = ipaDi(v.id, v.fe);
+      parti.push('<div class="scheda">' +
+        '<h3>' + scappa(v.fe) + '</h3>' +
+        '<div class="riga-sotto">' +
+        '<span>' + scappa(v.it) + '</span>' + etichettaVarieta(v.varieta) +
+        '<span class="vuoto">' + scappa(v.id) + ' · attendibilita ' + scappa(v.attendibilita) +
+        (v.da_verificare ? ' · da verificare' : '') + '</span>' +
+        '</div>' +
+        (t && mostraIpa
+          ? '<p class="ipa">' + scappa(t.ipa) +
+            (t.da_verificare ? ' <span class="varieta">trascrizione non verificata</span>' : ' <span class="varieta">verificata da un parlante</span>') +
+            (t.nota ? '<br><span class="vuoto">' + scappa(t.nota) + '</span>' : '') + '</p>'
+          : (t ? '' : '<p class="vuoto">trascrizione assente: e\' un buco dichiarato.</p>')) +
+        // Il messaggio di «non c'e' niente» lo dice `suonoDi` restituendo
+        // una stringa vuota, e qui si usa `||` per mostrarlo. Con il ternario
+        // finiva accanto al suono che nega: due righe che si contraddicono
+        // nella stessa scheda, che e' peggio di non dire niente.
+        (branoDi(v.id) ? schedaBrano(branoDi(v.id))
+          : suonoDi(v.id, t) ||
+          '<div class="vuoto">audio: nessuna registrazione di questa parola, e ' +
+          'nessun suono generato. Le due cose mancano per motivi diversi: ' +
+          "l'una aspetta una persona che dica la parola, l'altra aspetta che " +
+          'il progetto sappia pronunciarla senza dubbi.</div>') +
+        '<div class="riga"><button type="button" class="leggiItaliano" data-testo="' +
+        scappa(v.it) + '">leggi l\'italiano</button></div>' +
+        '</div>');
+    });
+    if (suoni.length) {
+      parti.push('<h3>Brani registrati</h3>' + suoni.map(schedaBrano).join(""));
+    }
+    el("riproduttore").innerHTML = parti.join("") ||
+      '<p class="vuoto">Nessuna parola corrisponde.</p>';
+    if (voci.length > 60) {
+      el("riproduttore").innerHTML +=
+        '<p class="vuoto">prime 60 di ' + voci.length + ': restringi la ricerca.</p>';
+    }
+  }
+
+  function branoDi(id) {
+    return (DATI.audio || []).filter(function (b) { return b.riferimento === id; })[0] || null;
+  }
+
+  // Il suono generato che corrisponde a una parola. `null` se non c'e': e'
+  // un caso normale, non un errore, e per meta' delle trascrizioni dichiarate
+  // il progetto sa di non poter pronunciare la parola con sicurezza.
+  //
+  // La tracrizione che la scheda del riproduttore mostra e' quella che `ipaDi`
+  // sceglie fra quelle dichiarate, e non per forza quella che il suono
+  // riproduce: una voce puo' avere piu' forme scritte e ognuna con la sua.
+  // «portàr» e «portar» hanno due trascrizioni diverse, /port\u02c8ar/ e
+  // /por\u02c8tar/, e senza avvisare lo studente ne vede due contraddittorie
+  // sulla stessa riga. Per questo la scheda del suono porta **la sua**, e
+  // quando le due differiscono lo dice.
+  function suonoDi(id, traccia) {
+    // Una voce puo' avere **piu' di un** suono: `V0021` e' dichiarata in due
+    // forme, `frarés` e `frarèz`, e il generatore produce un file per ciascuna.
+    //
+    // Il codice prendeva il primo e buttava via gli altri, quindi il secondo
+    // file esisteva, era dichiarato nel manifesto, costava 49 KB nel
+    // repository — e non compariva in nessuna pagina. Un suono che nessuno puo'
+    // ascoltare e' un suono che il progetto non puo' dichiarare di aver
+    // prodotto: o si mostra, o non si genera.
+    var trovati = (DATI.sintesi || []).filter(function (x) {
+      return x.riferimento === id && x.file_playable;
+    });
+    if (trovati.length) {
+      return trovati.map(function (x) { return schedaSuono(x, traccia); })
+        .join("");
+    }
+    // Se la parola ha una trascrizione dichiarata ma nessun suono, il motivo
+    // e' quasi sempre un dubbio. Dirlo qui vale piu' di lasciare uno spazio
+    // vuoto: lo studente deve capire perche' quella parola non suona.
+    if (traccia && traccia.da_verificare) {
+      return '<div class="vuoto">questa parola non ha un suono generato: la ' +
+        'trascrizione non e\' ancora verificata da un parlante, e un suono ' +
+        'costruito su una trascrizione non verificata insegnerebbe il suono ' +
+        'sbagliato.</div>';
+    }
+    return "";
+  }
+
+  // La scheda del suono generato. La dichiarazione sta **dentro** la scheda e
+  // non in un pie' di pagina: chi clicca il tasto e' li', e li' deve leggerla.
+  function schedaSuono(s, traccia) {
+    var diverso = traccia && traccia.ipa && traccia.ipa !== s.ipa;
+    return '<div class="scheda sintesi">' +
+      '<div class="riga-sotto">' +
+      '<span class="etichetta-sinteti">voce di programma</span>' +
+      '<span class="ipa">' + scappa(s.ipa) + '</span>' +
+      '<span class="vuoto">' + scappa(s.fonte || "") + '</span></div>' +
+      // `preload="metadata"` e non `"none"` come per i brani veri: il file
+      // e' di 45 KB, sta nella stessa cartella e non costa nulla a leggerne
+      // l'intestazione. Con `"none"` il lettore resta su `0:00 / 0:00` e
+      // sembra rotto, e uno studente che crede sia rotto non lo preme.
+      '<audio controls preload="metadata" src="' +
+      scappa(s.file_playable) + '"></audio>' +
+      (diverso
+        ? '<p class="vuoto">Il suono e\' della forma <strong>' +
+          scappa(s.forma) + '</strong> (' + scappa(s.ipa) + '), non della ' +
+          'trascrizione mostrata sopra (' + scappa(traccia.ipa) + '): sono due ' +
+          'forme scritte diverse della stessa voce, e due trascrizioni ' +
+          'diverse.</p>'
+        : '') +
+      '<p class="vuoto">' + scappa(s.avvertimento || DATI.sintesi_avviso || "") +
+      (s.nota ? '<br>' + scappa(s.nota) : '') +
+      // Quale riproduttore ha fatto questo file, e a che velocita'. La
+      // dichiarazione «e' una voce sintetica» dice che non e' una persona; il
+      // nome del riproduttore dice chi ha suonato, e sono due domande diverse.
+      (s.voce ? '<br>Riproduttore: ' + scappa(s.voce) +
+       (s.velocita ? ' a ' + s.velocita + ' parole al minuto' : '') +
+       ', dichiarato in <code>dati/fonetica.jsonl</code>.' : '') +
+      '</p></div>';
+  }
+
+  // La scheda del suono generato. La dichiarazione sta **dentro** la scheda e
+  // non in un pie' di pagina: chi clicca il tasto e' li', e li' deve leggerla.
+  function schedaBrano(b) {
+    return '<div class="scheda" style="background:#f5f1e6">' +
+      '<h3>' + scappa(b.testo || b.id) + '</h3>' +
+      '<div class="riga-sotto"><span class="vuoto">' + scappa(b.italiano || "") + '</span>' +
+      etichettaVarieta(b.varieta) +
+      '<span class="vuoto">' + scappa(b.voce) + ' · ' + scappa(b.luogo) +
+      ' · livello ' + scappa(b.lettibilita) + '</span></div>' +
+      '<audio controls preload="none" src="' + scappa(b.file_playable) + '"></audio>' +
+      '<p class="vuoto">licenza ' + scappa(b.licenza) + ' · consenso: ' +
+      scappa(b.consenso || "nessuno") + '</p></div>';
+  }
+
+  // La voce del browser. Non e' una voce ferrarese, non e' una voce di
+  // Ferrara, e in alcuni browser usa una connessione: per questo sta spenta
+  // di default e lo dice quando la si accende.
+  function parlaItaliano(testo) {
+    var interruttore = el("voceItaliana");
+    if (!interruttore.checked) {
+      interruttore.checked = true;
+      el("notaVoceItaliana").style.display = "";
+    }
+    if (!("speechSynthesis" in window)) {
+      window.alert("Questo browser non ha la sintesi vocale: la parola resta scritta.");
+      return;
+    }
+    try {
+      var d = new SpeechSynthesisUtterance(String(testo || ""));
+      d.lang = "it-IT";
+      d.rate = 0.9;
+      window.speechSynthesis.speak(d);
+    } catch (e) {
+      window.alert("La sintesi vocale non ha funzionato: la parola resta scritta.");
+    }
+  }
+
+  function tabellaCoppie() {
+    if (!(DATI.coppie || []).length) { el("tabellaCoppie").innerHTML = '<p class="vuoto">Nessuna coppia.</p>'; return; }
+    var righe = (DATI.coppie || []).map(function (c) {
+      return "<tr><td><code>" + scappa(c.id) + "</code></td>" +
+        "<td>" + scappa(c.it) + "</td><td>" + scappa(c.fe) + "</td>" +
+        "<td>" + etichettaVarieta(c.varieta) + "</td>" +
+        "<td>" + scappa(c.fonte || "senza fonte") + "</td></tr>";
+    }).join("");
+    el("tabellaCoppie").innerHTML =
+      '<table><thead><tr><th>id</th><th>italiano</th><th>ferrarese</th><th>varieta\'</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table>";
+  }
+
+  function tabellaProverbi(filtro) {
+    var testo = (filtro || "").toLowerCase();
+    var proverbi = (DATI.proverbi || []).filter(function (p) {
+      if (!testo) return true;
+      return [p.id, p.fe, p.it, p.letterario, p.popolare, p.significato]
+        .filter(function (x) { return x; })
+        .some(function (x) { return String(x).toLowerCase().indexOf(testo) >= 0; });
+    });
+    if (!proverbi.length) {
+      el("tabellaProverbi").innerHTML =
+        '<p class="vuoto">Nessun proverbio corrisponde a questa ricerca.</p>';
+      return;
+    }
+    var righe = proverbi.map(function (p) {
+      var popolare = p.popolare
+        ? scappa(p.popolare)
+        : '<span class="varieta vuota">non ancora documentata</span>';
+      return "<tr><td><code>" + scappa(p.id) + "</code></td>" +
+        "<td>" + scappa(p.it || "") + "</td>" +
+        "<td>" + scappa(p.fe || "") + "</td>" +
+        "<td>" + scappa(p.letterario || "") + "</td>" +
+        "<td>" + popolare + "</td>" +
+        "<td>" + scappa(p.significato || "") + "</td>" +
+        "<td>" + scappa(p.fonte || "senza fonte") + "</td></tr>";
+    }).join("");
+    el("tabellaProverbi").innerHTML =
+      '<table><thead><tr><th>id</th><th>italiano</th><th>ferrarese</th>' +
+      '<th>letterario</th><th>popolare</th><th>significato</th><th>fonte</th></tr></thead><tbody>' +
+      righe + "</tbody></table>";
+  }
+
+  // L'indice delle fette: quante sono, quale e' questa, e dove si va prima e
+  // dopo. Il generatore mette in `DATI.fette` l'elenco con l'iniziale che
+  // comincia ogni fetta, cosi' si cerca una parola aprendo la pagina che
+  // comincia dalla lettera giusta invece di leggere tutte.
+  function indiceFette() {
+    // L'indice delle fette: quante sono, quale e' questa, e dove si va prima e
+    // dopo. Il generatore mette in `DATI.fette` l'elenco con l'iniziale che
+    // comincia ogni fetta, cosi' si cerca una parola aprendo la pagina che
+    // comincia dalla lettera giusta invece di leggere tutte.
+    //
+    // Le frasi lunghe sono in apici doppi perche' l'italiano scrive `piu'`
+    // con l'apostrofo, e dentro una stringa JavaScript delimitata da apopi
+    // singoli quello chiude la stringa. Il controllo di sintassi lo segnala
+    // subito, ma solo se qualcuno lo guarda: e' la stessa lezione della
+    // virgola mancante, detta al contrario.
+    var fette = DATI.fette || [];
+    if (!fette.length) return;
+    var qui = DATI.fetta;
+    var voci = DATI.conteggi ? DATI.conteggi.voci : 0;
+    var spiegazione = fette.length + " fette, " + voci + " voci in tutto. " +
+      "Ogni fetta e\u0027 una pagina a se\u0027 stante: il glossario intero " +
+      "sono 5,6 megabyte, e una pagina che si apre subito vale piu\u0027 di " +
+      "una pagina che si carica tutta.";
+    var parti = ['<p class="occhiello" style="margin:.2rem 0 .6rem">',
+      scappa(spiegazione), '</p><p class="riga">'];
+    for (var i = 0; i < fette.length; i++) {
+      parti.push('<a class="fetta' + (fette[i].numero === qui ? " qui" : "") +
+        '" href="' + scappa(fette[i].file) + '">' + scappa(fette[i].lettera) +
+        "</a>");
+    }
+    parti.push("</p>");
+    if (qui && qui > 1) {
+      parti.splice(1, 0, '<p class="riga"><a href="' +
+        scappa(fette[qui - 2].file) + '">&larr; ' +
+        scappa(fette[qui - 2].lettera) + "</a></p>");
+    }
+    if (qui && qui < fette.length) {
+      parti.push('<p class="riga"><a href="' + scappa(fette[qui].file) +
+        '">' + scappa(fette[qui].lettera) + " &rarr;</a></p>");
+    }
+    el("fette").innerHTML = parti.join("");
+  }
+
+  function pannello() {
+    // I numeri arrivano calcolati da Python quando la pagina e' la home, che
+    // e' l'unica che li mostra: su una fetta del glossario il totale non c'e'
+    // e conteggiare meta' glossario darebbe un numero falso.
+    var g = DATI.conteggi;
+    if (!g) return;
+    var troncazioni = (DATI.fonetica || []).length;
+    var verificate = (DATI.fonetica || []).filter(function (t) {
+      return t.attendibilita === "D" && !t.da_verificare;
+    }).length;
+    var brani = (DATI.audio || []).filter(function (b) { return b.file_playable; }).length;
+    var vuote = ((DATI.varieta || {}).vuote || []).length;
+    var voci = [
+      ["voci di glossario", g.voci],
+      ["con fonte", g.con_fonte],
+      ["da verificare", g.da_verificare],
+      ["coppie parallele", g.coppie],
+      ["proverbi", g.proverbi],
+      ["regole apprese", g.regole],
+      ["trascrizioni IPA", troncazioni],
+      ["verificate da un parlante", verificate],
+      ["brani audio pronti", brani],
+      // La virgola dopo questo elemento non e' una formalita': senza, la
+      // riga seguente diventa un'indicizzazione (`["a"] ["b"]`), il codice
+      // resta sintatticamente valido e il difetto compare lontano, nel
+      // conteggio. E' successo, e nessun controllo di sintassi lo aveva visto.
+      ["suoni generati", (DATI.sintesi || []).filter(function (x) {
+        return x.file_playable; }).length],
+      ["varieta' vuote", vuote + " su " + ((DATI.varieta || {}).codici || []).length]
+    ];
+    el("pannello").innerHTML = voci.map(function (p) {
+      return "<div>" + p[1] + "<span>" + p[0] + "</span></div>";
+    }).join("");
+
+    // I buchi, sotto i numeri di quello che il motore sa. Non sono errori e
+    // non hanno una correzione automatica: sono le cose che il progetto sa di
+    // non sapere. Senza il numero accanto sarebbero un'oblazione, e
+    // un'oblazione non si riduce da sola.
+    var buchi = DATI.buchi || [];
+    var elenco = el("buchi");
+    if (!elenco) return;
+    if (!buchi.length) {
+      elenco.innerHTML = '<p class="vuoto">Nessun buco dichiarato.</p>';
+      return;
+    }
+    elenco.innerHTML = "<ul>" + buchi.map(function (b) {
+      var conta = (b.totale !== undefined) ? (b.quanti + " su " + b.totale) : String(b.quanti);
+      return "<li><strong>" + conta + "</strong> — " + scappa(b.nome) +
+        "<br><span class=\"occhiello\">" + scappa(b.nota) + "</span></li>";
+    }).join("") + "</ul>";
+  }
+
+  el("traduci").addEventListener("click", traduci);
+  (function () {
+    var scelta = el("varietaCorregge");
+    if (scelta.appendChild && document.createElement) {
+      Object.keys(DATI.nomi_varieta || {}).forEach(function (codice) {
+        var o = document.createElement("option");
+        o.value = codice; o.textContent = DATI.nomi_varieta[codice];
+        scelta.appendChild(o);
+      });
+    }
+    var imp = leggiImpostazioni();
+    el("tokenCorrezione").value = imp.token || "";
+    el("chiCorregge").value = imp.chi || "";
+    el("luogoCorregge").value = imp.luogo || "";
+    if (imp.varieta) el("varietaCorregge").value = imp.varieta;
+    el("salvaImpostazioni").addEventListener("click", function () {
+      salvaImpostazioni();
+      el("esitoCorrezione").innerHTML = "<p>Impostazioni salvate in questo browser.</p>";
+    });
+    el("inviaCorrezione").addEventListener("click", inviaCorrezione);
+    el("copiaCorrezione").addEventListener("click", function () {
+      var riga = preparaCorrezione();
+      if (riga && navigator.clipboard) navigator.clipboard.writeText(riga).catch(function () {});
+    });
+    el("scaricaCorrezione").addEventListener("click", function () {
+      var riga = preparaCorrezione();
+      if (!riga) return;
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([riga + "\n"], { type: "application/x-ndjson" }));
+      a.download = "correzione-" + oggiIso() + ".jsonl";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+  })();
+  el("testo").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) traduci();
+  });
+  el("direzione").addEventListener("click", function () {
+    direzione = direzione === "it-fe" ? "fe-it" : "it-fe";
+    this.textContent = "Direzione: " + (direzione === "it-fe" ? "italiano → ferrarese" : "ferrarese → italiano");
+    this.setAttribute("aria-pressed", direzione === "fe-it" ? "true" : "false");
+  });
+  el("cercaGlossario").addEventListener("input", function () {
+    tabellaGlossario(this.value.trim());
+  });
+  el("cercaProverbi").addEventListener("input", function () {
+    tabellaProverbi(this.value.trim());
+  });
+
+  // I due filtri per varieta' hanno le stesse opzioni e le stesse parole:
+  // una lista di varieta' che cambia da un menu all'altro e' un modo per non
+  // capire quale delle due hai davanti.
+  [["filtroVarietaGlossario", ""], ["filtroVarietaSuono", ""]].forEach(function (coppia) {
+    var selezione = document.getElementById(coppia[0]);
+    // Il menu c'e' solo sulle pagine che filtrano per varieta'. Sui nomi dei
+    // due elementi c'e' un commento in `modello.html` sul perche' le parole
+    // sono le stesse: e' la cosa che non si deve rompere qui.
+    if (!selezione) return;
+    var vuote = (DATI.varieta || {}).vuote || [];
+    ((DATI.varieta || {}).codici || []).forEach(function (codice) {
+      var opzione = document.createElement("option");
+      opzione.value = codice;
+      opzione.textContent = codice + (vuote.indexOf(codice) >= 0 ? " (vuota)" : "");
+      selezione.appendChild(opzione);
+    });
+  });
+  el("filtroVarietaGlossario").addEventListener("change", function () {
+    tabellaGlossario(el("cercaGlossario").value.trim());
+  });
+  el("cercaSuono").addEventListener("input", function () {
+    riproduttore(this.value.trim());
+  });
+  el("filtroVarietaSuono").addEventListener("change", function () {
+    riproduttore(el("cercaSuono").value.trim());
+  });
+  el("mostraIpa").addEventListener("change", function () {
+    riproduttore(el("cercaSuono").value.trim());
+  });
+  el("voceItaliana").addEventListener("change", function () {
+    el("notaVoceItaliana").style.display = this.checked ? "" : "none";
+  });
+  // Il bottone che legge l'italiano e' generato dentro le schede, quindi
+  // l'ascolto e' delegato: si ascolta il click e si chiama la sintesi.
+  document.addEventListener("click", function (evento) {
+    var bottone = evento.target;
+    if (!bottone || !bottone.classList || !bottone.classList.contains("leggiItaliano")) return;
+    parlaItaliano(bottone.getAttribute("data-testo"));
+  });
+
+  // Si disegna solo quello che la pagina contiene davvero. Ogni funzione
+  // controlla gia' se il proprio contenitore esiste, quindi si puo' chiamare
+  // sempre: e' il modo che non richiede di tenere qui l'elenco delle pagine
+  // accanto a quello delle sezioni, che un giorno divergono.
+  tabellaGlossario("");
+  tabellaCoppie();
+  tabellaProverbi("");
+  elencoVarieta();
+  riproduttore("");
+  pannello();
+  indiceFette();
+  contoSuoni();
+})();
+</script>
+</body>
+</html>

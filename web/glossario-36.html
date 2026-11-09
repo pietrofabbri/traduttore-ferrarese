@@ -1050,6 +1050,12 @@ function tokenizza(t) {
       if (singolare.charAt(0) !== singolare.charAt(0).toLowerCase()) f = f.charAt(0).toUpperCase() + f.slice(1);
       return { forma: f, regola: irr };
     }
+    // Copia della regola di `plurale_ferrarese`: una sillaba sola o tronca,
+    // invariata (0.48).
+    if ((basso.match(/[aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa]+/g) || []).length < 2 ||
+        "\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa".indexOf(basso.slice(-1)) !== -1) {
+      return { forma: singolare, regola: null };
+    }
     var regole = g.plurali || [];
     for (var i = 0; i < regole.length; i++) {
       var fine = regole[i].fine;

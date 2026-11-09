@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.45
+versione: 0.46
 data: 2026-11-05
 ---
 
@@ -23,6 +23,24 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.46 — 2026-11-09 · La prima verifica di un parlante
+
+**Perché.** Il titolare, Pietro Fabbri, parlante del ferrarese cittadino, ha
+dichiarato di aver controllato e trovato corrette le voci nuove di FEdetails e le voci
+confermate da due fonti indipendenti. Una dichiarazione cosi' e' esattamente quello
+che porta una voce da `I` a `D`, e andava registrata in modo che si possa risalire.
+
+- **`dati/verifiche/`**: una riga per voce, con chi, fonte (S022), varieta', data,
+  insieme e la frase della dichiarazione; protocollo in `dati/verifiche/README.md`.
+- **3169 voci passano a `D`** (21 di S024 e 3148 confermate; 3 erano in tutti e due
+  gli insiemi), `da_verificare: false`, con il campo `verificata` che rimanda alla
+  riga. Le scrive `raccolta/registra_verifica.py`, che fissa gli insiemi per id.
+- S011, S025, S026: il titolare dichiara il contenuto corretto; manca solo il file o
+  il testo, che dalla macchina di lavoro non si raggiunge.
+
+**Verifiche.** 421 test (erano 420): ogni voce verificata ha la sua riga e ogni riga
+ha la sua voce `D`, con tutti i campi.
 
 ## 0.45 — 2026-11-09 · La conferma fra fonti, FEdetails, le fonti segnalate
 

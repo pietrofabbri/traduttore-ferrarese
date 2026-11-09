@@ -283,7 +283,7 @@
       "licenza": "nessuna dichiarata",
       "licenza_verificata": false,
       "uso": "Esclusa dal glossario.",
-      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra. **Aggiornato il 2026-11-07:** il titolare l'ha segnalata di nuovo con l'indirizzo completo («Scrìvar e lèžar al frarés»). Dalla macchina di lavoro il file non si scarica, e restano i due motivi: e' un'immagine e non si sa di chi sia (probabilmente Al Tréb dal Tridèl, S021, come S025). Rientra quando il file e' allegato e l'autore e' noto."
+      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra. **Aggiornato il 2026-11-07:** il titolare l'ha segnalata di nuovo con l'indirizzo completo («Scrìvar e lèžar al frarés»). Dalla macchina di lavoro il file non si scarica, e restano i due motivi: e' un'immagine e non si sa di chi sia (probabilmente Al Tréb dal Tridèl, S021, come S025). Rientra quando il file e' allegato e l'autore e' noto. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca solo il file: va allegato, perche' dalla macchina di lavoro non si scarica."
     },
     {
       "id": "S017",
@@ -348,7 +348,7 @@
       "licenza": "nessuna dichiarata",
       "licenza_verificata": false,
       "uso": "Non usata.",
-      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il file non si puo' scaricare dalla macchina di lavoro (la rete lo rifiuta), quindi non e' stato aperto. Lo stesso archivio di Aruba ospita S011: e' probabile che siano dell'associazione Al Tréb dal Tridèl (S021), per la quale il titolare ha dichiarato un'autorizzazione, ma e' un sospetto e non un fatto. Entra quando il file e' allegato e chi l'ha scritto e' noto."
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il file non si puo' scaricare dalla macchina di lavoro (la rete lo rifiuta), quindi non e' stato aperto. Lo stesso archivio di Aruba ospita S011: e' probabile che siano dell'associazione Al Tréb dal Tridèl (S021), per la quale il titolare ha dichiarato un'autorizzazione, ma e' un sospetto e non un fatto. Entra quando il file e' allegato e chi l'ha scritto e' noto. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca solo il file: va allegato, perche' dalla macchina di lavoro non si scarica."
     },
     {
       "id": "S026",
@@ -361,7 +361,7 @@
       "licenza": "nessuna dichiarata (non vista)",
       "licenza_verificata": false,
       "uso": "Non usata.",
-      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il sito chiede ai programmi di non leggerlo (robots.txt), e il progetto non lo aggira: la pagina non e' stata letta. Un articolo di giornale e' un testo protetto; le parole che cita, con la loro traduzione, possono entrare se il titolare ne incolla il testo e l'articolo dichiara da dove le prende."
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il sito chiede ai programmi di non leggerlo (robots.txt), e il progetto non lo aggira: la pagina non e' stata letta. Un articolo di giornale e' un testo protetto; le parole che cita, con la loro traduzione, possono entrare se il titolare ne incolla il testo e l'articolo dichiara da dove le prende. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca il testo: va incollato, perche' il sito non si legge con un programma."
     }
   ]
 }

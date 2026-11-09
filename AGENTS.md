@@ -73,7 +73,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 420 test
+python3 prove/test_traduttore.py           # 421 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -372,7 +372,9 @@ lavorare:
 
     **Costruito il 2026-10-29** (versione 0.35): `dati/campioni/`, il comando
     `campione`, la pagina `web/verifica.html` e i controlli K1–K9; il protocollo
-    e' in `dati/campioni/README.md`. Le prime tre estrazioni sono di 20 voci
+    e' in `dati/campioni/README.md`.
+    **Dalla 0.46** c'e' anche la verifica di un parlante su voci o insiemi
+    dichiarati, che porta la voce a `D`: `dati/verifiche/README.md`. Le prime tre estrazioni sono di 20 voci
     ciascuna per S004, S006 e S020. **Resta aperto**: (a) se un giudizio
     `si_dice` debba promuovere la voce, e a che cosa — oggi non la tocca; (b)
     quanto grande deve essere il campione perche' il tasso di una fonte sia

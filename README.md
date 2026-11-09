@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.44
+versione: 0.45
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -746,6 +746,17 @@ Quello che resta diverso: il Ferri scrive a volte `zz` iniziale (`Zzarcàr`) e l
 fra due vocali o in fondo (`piciadàj`) dove Bigoni scrive lo stesso; sono scelte
 della fonte, non della conversione, e una correzione le sistema voce per voce.
 
+## La conferma fra fonti
+
+Dalla 0.45 il glossario sa quando due fonti indipendenti — il Nannini (1805), il Ferri
+(1889), Bigoni, Musacchi, FEdetails — danno per la stessa parola italiana la stessa
+forma ferrarese (a meno di accenti, consonanti doppie e j/i). Sono 3146 voci. Non
+diventano «documentate», perche' nessuno le ha confrontate col libro, ma fra le voci di
+una stessa parola il traduttore mette prima quella confermata (dopo le correzioni dei
+parlanti), e il dettaglio della risposta dice da quali voci. Il calcolo e' in
+`sorgenti/traduttore/glossario.py` (`_conferme`, `priorita`) e si rifa' ogni volta che
+il glossario si legge: una fonte nuova aggiunge conferme senza toccare il file.
+
 ## Il paradigma, e la conversione che l'ha reso leggibile
 
 Il buco che il progetto dichiarava da più versioni — «nel repository non esiste una
@@ -853,7 +864,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 414 test
+python3 prove/test_traduttore.py     # 420 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

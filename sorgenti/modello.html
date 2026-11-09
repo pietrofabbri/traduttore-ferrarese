@@ -784,6 +784,17 @@
         if ((perIt[k] || []).indexOf(v) === -1) (perIt[k] = perIt[k] || []).push(v);
       });
     });
+    // Dentro ogni chiave: prima le correzioni, poi le voci confermate da piu'
+    // fonti (0.45). Copia di `glossario.priorita`; `sort` e' stabile.
+    [perIt, perFe].forEach(function (indice) {
+      Object.keys(indice).forEach(function (k) {
+        if (indice[k].length > 1) indice[k].sort(function (a, b) {
+          var pa = a.corregge ? 0 : 1, pb = b.corregge ? 0 : 1;
+          if (pa !== pb) return pa - pb;
+          return (b.conferme || []).length - (a.conferme || []).length;
+        });
+      });
+    });
     return { perIt: perIt, perFe: perFe };
   }
   var IDX = indice();
@@ -1435,6 +1446,7 @@ function tokenizza(t) {
       // tradotto produrrebbe una frase che non e' italiano e non e' ferrarese.
       var testo = verso === "it-fe" ? (v.principale_fe || v.fe) : (v.principale_it || v.it);
       var dettaglio = v.id + " (" + v.attendibilita + ") " + (v.fonte || "senza fonte");
+      if (v.conferme && v.conferme.length) dettaglio += " | confermata da: " + v.conferme.join(", ");
       if (voci.length > 1) dettaglio += " | altre: " + voci.slice(1, 4).map(function (x) { return x.id; }).join(", ");
       if (v.da_verificare) dettaglio += " | DA VERIFICARE";
       var risultato = {
@@ -1996,6 +2008,7 @@ function tokenizza(t) {
       return "<tr><td><code>" + scappa(v.id) + "</code></td>" +
         "<td>" + scappa(v.fe) + (t ? "<br><span class=\"ipa\" title=\"" + scappa(t.nota || "") + "\">" + scappa(t.ipa) + "</span>" : "") +
         (v.grafia_fonte ? "<br><span class=\"vuoto\" title=\"come la scrive la fonte, nel suo alfabeto\">fonte: " + scappa(v.grafia_fonte) + "</span>" : "") +
+        (v.conferme && v.conferme.length ? "<br><span class=\"vuoto\" title=\"altre fonti danno la stessa parola con lo stesso significato\">confermata da " + scappa(v.conferme.join(", ")) + "</span>" : "") +
         (v.varianti && v.varianti.length ? "<br><span class=\"vuoto\">" + scappa(v.varianti.join(", ")) + "</span>" : "") + "</td>" +
         "<td>" + scappa(v.it) + "</td>" +
         "<td class=\"moderno\">" + cellulaModerno(v) + "</td>" +

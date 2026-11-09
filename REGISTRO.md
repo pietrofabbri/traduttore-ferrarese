@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.44
+versione: 0.45
 data: 2026-11-05
 ---
 
@@ -23,6 +23,34 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.45 — 2026-11-09 · La conferma fra fonti, FEdetails, le fonti segnalate
+
+**Perché.** Con il Nannini le fonti indipendenti sono quattro (1805, 1889, Bigoni,
+Musacchi), e quando danno la stessa parola la voce vale di piu' della lettura di una
+fonte sola; e le fonti segnalate il 2026-11-07 andavano chiuse, entrate o registrate.
+
+- **La conferma fra fonti** (`glossario._conferme`): una voce e' confermata quando
+  un'altra fonte da' per la stessa parola italiana la stessa forma, a meno di accenti,
+  doppie e j/i. 3146 voci sono confermate (48 da tre fonti). Non diventano `D`; il
+  motore e la pagina, fra le voci di una stessa parola, mettono prima le correzioni e
+  poi le confermate. Cambia la risposta per 203 parole («cartello» → `cartel` e non
+  `arma da mort`, «niente» → `gnént` e non `brisa`), e il dettaglio dice da chi e'
+  confermata; nella pagina del glossario la conferma si vede sotto la voce.
+- **FEdetails.net (S024)**, lettere A e B (Franco Colla, 2014, dal Calendario Frarès,
+  CC BY-NC-SA 3.0): 42 righe, 21 gia' nel glossario, **21 voci nuove**, trascritte in
+  `raccolta/da_fedetails.py`.
+- **Le altre fonti segnalate** sono nel registro: S025 («Origini ed evoluzione del
+  dialetto ferrarese», PDF non scaricabile da qui) e S026 (l'articolo di estense.com,
+  che chiede ai programmi di non leggerlo) come `reperto`; S011 aggiornata. Entrano
+  quando i file sono allegati e l'autore e' noto.
+- `dati/pronominali.jsonl` rigenerato (115).
+
+Il glossario conta **2608 locuzioni** e **16305 parole singole**.
+
+**Verifiche.** 420 test (erano 414): il confronto delle forme, la fonte di una voce,
+le conferme da un'altra fonte, la voce confermata prima, la correzione prima di tutto,
+le voci di FEdetails; il confronto delle due copie su cinque frasi in piu'.
 
 ## 0.44 — 2026-11-07 · Il Nannini (1805) nel glossario
 

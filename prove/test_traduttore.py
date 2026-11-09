@@ -4596,6 +4596,66 @@ def _testo_dei_dati(pagina: str) -> str:
     return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
 
 
+class TestLaConfermaFraFonti(unittest.TestCase):
+    """Le voci che altre fonti confermano vengono prima (0.45)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.cli import carica
+        from traduttore import glossario
+        cls.g = glossario
+        cls.motore = carica()
+
+    def test_la_forma_si_confronta_senza_accenti_doppie_e_j(self):
+        f = self.g.forma_confrontabile
+        self.assertEqual(f("Biànch"), f("bianch"))
+        self.assertEqual(f("ajùt"), f("aiut"))
+        self.assertEqual(f("Zzarcàr"), f("zarcàr"))
+        self.assertNotEqual(f("magnàr"), f("magnèr"))
+
+    def test_la_famiglia_della_fonte(self):
+        f = self.g.famiglia_della_fonte
+        self.assertEqual(f("Luigi Ferri, Vocabolario ferrarese-italiano, 1889, pag. 52"), "S004")
+        self.assertEqual(f("Roberto Bigoni, vocabolario ferrarese-italiano (S006), voce n. 1"), "S006")
+        self.assertEqual(f("Francesco Nannini, Vocabolario portatile ferrarese-italiano, 1805, pag. 9 (S005)"), "S005")
+
+    def test_le_conferme_vengono_da_un_altra_fonte(self):
+        per_id = {v.id: v for v in self.motore.glossario.voci}
+        confermate = [v for v in self.motore.glossario.voci if v.conferme]
+        self.assertGreater(len(confermate), 3000)
+        for v in confermate[:500]:
+            for altra in v.conferme:
+                self.assertNotEqual(self.g.famiglia_della_fonte(per_id[altra].fonte),
+                                    self.g.famiglia_della_fonte(v.fonte))
+
+    def test_la_voce_confermata_viene_prima(self):
+        # Il Ferri da' per «cartello» anche «arma da mort»; Bigoni e il Ferri
+        # concordano su `cartel`.
+        risposta = self.motore.traduci("cartello", IT_FE)
+        self.assertEqual(risposta.testo, "cartel")
+        self.assertIn("confermata da", risposta.per_corrispondenza[0][4])
+
+    def test_una_correzione_resta_prima_di_tutto(self):
+        a = Voce(id="A", ferrarese="x", italiano="y", corregge="B")
+        b = Voce(id="B", ferrarese="x", italiano="y", conferme=["C", "D"])
+        self.assertLess(self.g.priorita(a), self.g.priorita(b))
+
+
+class TestFEdetails(unittest.TestCase):
+    """Le lettere A e B di FEdetails.net (S024, 0.45)."""
+
+    def test_le_voci_e_le_varianti(self):
+        from traduttore.cli import carica
+        voci = [v for v in carica().glossario.voci if "(S024)" in v.fonte]
+        self.assertEqual(len(voci), 21)
+        per_fe = {v.ferrarese: v for v in voci}
+        self.assertEqual(per_fe["barbàgul"].varianti, ["barabàgul"])
+        self.assertEqual(per_fe["alta dal pozz"].italiano, "parapetto del pozzo")
+        for v in voci:
+            self.assertEqual((v.attendibilita, v.da_verificare), ("I", True))
+            self.assertIn("fedetails.net", v.fonte)
+
+
 class TestIlNannini(unittest.TestCase):
     """La lettura del vocabolario del Nannini, 1805 (S005, 0.44)."""
 
@@ -5516,8 +5576,9 @@ class TestLeParticelleNonSonoParole(unittest.TestCase):
         modulo = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(modulo)
         righe = modulo.trova(modulo.voci())
-        # 114 dalla 0.44: il Nannini porta cinque verbi riflessivi in -rs.
-        self.assertEqual(len(righe), 114,
+        # 114 dalla 0.44 (il Nannini porta cinque verbi riflessivi in -rs),
+        # 115 dalla 0.45 («arsurarars», FEdetails).
+        self.assertEqual(len(righe), 115,
                          "il glossario non porta il numero di voci attese: %d"
                          % len(righe))
 

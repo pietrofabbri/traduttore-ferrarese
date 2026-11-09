@@ -283,7 +283,7 @@
       "licenza": "nessuna dichiarata",
       "licenza_verificata": false,
       "uso": "Esclusa dal glossario.",
-      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra."
+      "nota": "Due motivi, ed e' giusto dichiederli entrambi. Il primo e' che il file non e' testo: e' una stampa di schermata di pagina web, quindi dentro c'e' un'immagine e l'estrattore non trova parole. Il secondo e' che non si sa di chi sia: il file e' ospitato su un dominio di Aruba da un utente che non si conosce e l'opera porta solo un titolo. Un testo con due forme di questa, una letteraria e una parlata, e' materiale preziosissimo, ed e' anche il tipo di documento che si copia dal web senza chiedere. Se Pietro conosce l'originale a stampa e chi l'ha fatto, la fonte si dichiara qui e l'opuscolo rientra. **Aggiornato il 2026-11-07:** il titolare l'ha segnalata di nuovo con l'indirizzo completo («Scrìvar e lèžar al frarés»). Dalla macchina di lavoro il file non si scarica, e restano i due motivi: e' un'immagine e non si sa di chi sia (probabilmente Al Tréb dal Tridèl, S021, come S025). Rientra quando il file e' allegato e l'autore e' noto."
     },
     {
       "id": "S017",
@@ -323,6 +323,45 @@
       "licenza_verificata": false,
       "uso": "Non alimenta i dati attivi. I cinque proverbi (P0029–P0033, `attendibilita: \"I\"`) sono in `dati/da_verificare/proverbi.jsonl` dal 2026-10-07: prima stavano in `dati/proverbi.jsonl`, unica eccezione alla regola che una fonte con licenza non verificata non si pubblica. Escono quando la licenza è verificata o si risale all'edizione a stampa.",
       "nota": "È la prima fonte che il progetto trova **scritta nelle due lingue** riga per riga: ogni proverbio ha il ferrarese e la sua traduzione italiana, con le note numerate del testo. Le altre fonti hanno una sola delle due cose, e il progetto ci ha costretto a ricostruire la mancante — che è il lavoro più costoso e più inaffidabile di tutti.\n\n**Che cosa è «Proverbi d'Autun».** È una raccolta di proverbi ferraresi di tradizione manoscritta, nota dagli studi, e questa pagina ne stampa cinque. Il nome viene da **Autun**, località della pianura ferrarese: quindi la varietà non è il ferrarese di città, che è quello che il glossario chiama `cittadino`. **La pagina non dice di che varietà si tratti** e nessuna fonte del repository lo dice, quindi le righe **non dichiarano la varietà** e la loro nota lo dice: un attributo messo a `cittadino` perché è l'unico che conosciamo sarebbe una variante attribuita a un posto solo.\n\n**Perché `attendibilita: I` e non `D`.** La pagina è una trascrizione fatta da qualcuno, non il manoscritto né l'edizione a stampa: il proverbio è stato letto e riscritto, e nessuno in questo repository ha confrontato la trascrizione con l'originale. `I` significa «interpretazione, da confrontare».\n\n**Il testo della pagina** è in `raccolta/grezzi/autun_proverbi.txt`, che è gitignorata come tutti i grezzi: si rilegge con un comando, quindi la dichiarazione basta e non serve tracciarlo. Le righe citano la pagina e la data."
+    },
+    {
+      "id": "S024",
+      "titolo": "«Lezioni di ferrarese-italiano», lettere A e B",
+      "autore": "Franco Colla, sul blog FEdetails.net; le parole dal Calendario Frarès",
+      "anno": 2014,
+      "tipo": "elenco di parole online, trascritto da un calendario a stampa",
+      "luogo": "https://www.fedetails.net/2014/02/lezioni-di-ferrarese-italiano-a.html e https://www.fedetails.net/2014/02/lezioni-ferarese-italiano-dialetto-ferrarese-b-ferrara.html",
+      "stato": "acquisita",
+      "licenza": "CC BY-NC-SA 3.0 (dichiarata dal blog in fondo a ogni pagina)",
+      "licenza_verificata": true,
+      "uso": "Dalla 0.45: le voci delle lettere A e B in dati/glossario.jsonl, `I` e `da_verificare`, scritte da raccolta/da_fedetails.py, che contiene la trascrizione riga per riga.",
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. La licenza e' quella che il blog dichiara, quindi non e' dedotta; ma ogni articolo scrive «Fonte: Calendario Frarès», e il calendario a stampa non e' stato visto: la licenza del blog copre la sua trascrizione, e se il calendario chiedesse altro le voci si tolgono con un comando. Le voci citano quindi il blog e il calendario insieme. Non-commerciale e condividi allo stesso modo: valgono per queste voci, e sono compatibili con un progetto che pubblica gratis e dichiara la licenza per voce. Le altre lettere del blog non sono state segnalate e non sono state cercate."
+    },
+    {
+      "id": "S025",
+      "titolo": "«Origini ed evoluzione del dialetto ferrarese» (I)",
+      "autore": "non identificato (file ospitato sul servizio di siti di Aruba)",
+      "anno": 0,
+      "tipo": "documento PDF",
+      "luogo": "https://files.supersite.aruba.it/media/3538_5139c48950b1b19a46e85fa81c3b245cab5281c9.pdf",
+      "stato": "reperto",
+      "licenza": "nessuna dichiarata",
+      "licenza_verificata": false,
+      "uso": "Non usata.",
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il file non si puo' scaricare dalla macchina di lavoro (la rete lo rifiuta), quindi non e' stato aperto. Lo stesso archivio di Aruba ospita S011: e' probabile che siano dell'associazione Al Tréb dal Tridèl (S021), per la quale il titolare ha dichiarato un'autorizzazione, ma e' un sospetto e non un fatto. Entra quando il file e' allegato e chi l'ha scritto e' noto."
+    },
+    {
+      "id": "S026",
+      "titolo": "«Baciòsla, sciavga, pulaciàr eccetera»",
+      "autore": "estense.com (quotidiano online di Ferrara)",
+      "anno": 2015,
+      "tipo": "articolo di giornale online",
+      "luogo": "https://www.estense.com/2015/489451/baciosla-sciavga-pulaciar-eccetera/",
+      "stato": "reperto",
+      "licenza": "nessuna dichiarata (non vista)",
+      "licenza_verificata": false,
+      "uso": "Non usata.",
+      "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il sito chiede ai programmi di non leggerlo (robots.txt), e il progetto non lo aggira: la pagina non e' stata letta. Un articolo di giornale e' un testo protetto; le parole che cita, con la loro traduzione, possono entrare se il titolare ne incolla il testo e l'articolo dichiara da dove le prende."
     }
   ]
 }

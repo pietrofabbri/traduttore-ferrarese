@@ -73,6 +73,7 @@ FRASI = [
     # Il Tréb dal Tridèl (0.47): «di», «una», «un'», e le conferme che porta.
     ("it-fe", "un'idea e una scarpa di corsa"),
     ("it-fe", "il fuoco della febbre"),
+    ("it-fe", "le case e le porte"),
     ("fe-it", "àśan"),
     ("it-fe", "trebbiare e guastare"),
     ("fe-it", "biànch"),

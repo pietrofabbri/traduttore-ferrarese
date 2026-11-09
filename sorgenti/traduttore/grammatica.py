@@ -231,6 +231,12 @@ def plurale_ferrarese(singolare: str):
         if singolare[:1].isupper():
             forma = forma[:1].upper() + forma[1:]
         return forma, irregolare
+    # Una parola di una sillaba sola («ca», casa) o tronca («cà», «putìη») non
+    # cambia al plurale: gli esempi di S015 sono tutti di due sillabe o piu', e
+    # «le case» non e' `chi` (0.48).
+    if len(re.findall(r"[aeiouàèéìíòóùú]+", basso)) < 2 or \
+            basso[-1:] in "àèéìíòóùú":
+        return singolare, None
     for regola in dati["plurali"]:
         fine = regola["fine"]
         if basso.endswith(fine) and len(basso) > len(fine):

@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.47
+versione: 0.48
 data: 2026-11-05
 ---
 
@@ -23,6 +23,19 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.48 — 2026-11-10 · Il plurale di una parola di una sillaba
+
+**Perché.** «le case» usciva `il chi`: la regola di S015 -a → -i veniva applicata a
+`ca`, che ha una sillaba sola.
+
+- `plurale_ferrarese` (e `pluraleFerrarese` nella pagina) lascia invariata una parola
+  di una sillaba o tronca («ca», «cà», «putìη»): gli esempi di S015 sono tutti di due
+  sillabe o piu'.
+- L'articolo «le» resta `il` davanti a consonante: S011 propone `ill`, e al titolare
+  e' indifferente, quindi non si cambia una grafia che funziona.
+
+**Verifiche.** 426 test (erano 425): una sillaba o una tronca non cambia al plurale.
 
 ## 0.47 — 2026-11-09 · Il Tréb dal Tridèl: l'alfabeto, «di», centosessanta parole
 

@@ -4978,6 +4978,11 @@ class TestIPlurali(unittest.TestCase):
         for singolare, plurale in attesi.items():
             self.assertEqual(self.g.plurale_ferrarese(singolare)[0], plurale)
 
+    def test_una_sillaba_o_una_tronca_non_cambia(self):
+        # «le case» non e' `chi` (0.48)
+        for parola in ("ca", "cà", "putìη", "pan"):
+            self.assertEqual(self.g.plurale_ferrarese(parola), (parola, None))
+
     def test_nel_motore_il_plurale_e_ricavato(self):
         from traduttore.cli import carica
         risposta = carica().traduci("cavalli", IT_FE)

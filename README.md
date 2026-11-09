@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.47
+versione: 0.48
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -885,7 +885,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 425 test
+python3 prove/test_traduttore.py     # 426 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

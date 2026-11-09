@@ -109,6 +109,9 @@ class Voce:
     # significato (0.45, `_conferme`). Non e' un dato del file: si calcola
     # quando il glossario si legge, e cambia quando entra una fonte.
     conferme: list = field(default_factory=list)
+    # La verifica di un parlante (0.46): «data, chi (fonte, varieta')», e la
+    # riga che la registra e' in `dati/verifiche/verifiche.jsonl`.
+    verificata: str = ""
 
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
@@ -435,6 +438,7 @@ def _voce_da_dict(grezzo: dict) -> Voce:
             "fonte", "attendibilita", "registro", "da_verificare",
             "principale_italiano", "principale_ferrarese", "varieta",
             "moderno", "fonte_moderno", "sinonimi", "corregge", "grafia_fonte",
+            "verificata",
             # Il segno lasciato da `correzioni promuovi`: quale elemento e da
             # quali correzioni. Si legge dal file, non serve alla voce.
             "elemento", "da_correzioni"}
@@ -488,4 +492,5 @@ def _voce_da_dict(grezzo: dict) -> Voce:
         sinonimi=[str(s).strip() for s in sinonimi if str(s).strip()],
         corregge=str(grezzo.get("corregge", "") or "").strip(),
         grafia_fonte=grafia_fonte,
+        verificata=str(grezzo.get("verificata", "") or "").strip(),
     )

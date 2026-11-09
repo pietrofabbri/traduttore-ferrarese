@@ -4641,6 +4641,32 @@ class TestLaConfermaFraFonti(unittest.TestCase):
         self.assertLess(self.g.priorita(a), self.g.priorita(b))
 
 
+class TestLeVerificheDeiParlanti(unittest.TestCase):
+    """Le voci verificate da un parlante e le righe che lo registrano (0.46)."""
+
+    def test_ogni_voce_verificata_ha_la_sua_riga_e_viceversa(self):
+        from traduttore.cli import carica
+        voci = {v.id: v for v in carica().glossario.voci}
+        righe = {}
+        with io.open(os.path.join(RADICE, "dati", "verifiche", "verifiche.jsonl"),
+                     encoding="utf-8") as f:
+            for riga in f:
+                if riga.startswith("{"):
+                    r = json.loads(riga)
+                    self.assertNotIn(r["voce"], righe, "verifica doppia")
+                    righe[r["voce"]] = r
+        self.assertGreater(len(righe), 3000)
+        for id_voce, r in righe.items():
+            v = voci[id_voce]
+            self.assertEqual((v.attendibilita, v.da_verificare), ("D", False))
+            self.assertTrue(v.verificata.startswith(r["data"]))
+            for campo in ("chi", "fonte", "varieta", "data", "insieme", "come"):
+                self.assertTrue(r[campo], (id_voce, campo))
+        for v in voci.values():
+            if v.verificata:
+                self.assertIn(v.id, righe)
+
+
 class TestFEdetails(unittest.TestCase):
     """Le lettere A e B di FEdetails.net (S024, 0.45)."""
 
@@ -4652,7 +4678,9 @@ class TestFEdetails(unittest.TestCase):
         self.assertEqual(per_fe["barbàgul"].varianti, ["barabàgul"])
         self.assertEqual(per_fe["alta dal pozz"].italiano, "parapetto del pozzo")
         for v in voci:
-            self.assertEqual((v.attendibilita, v.da_verificare), ("I", True))
+            # Verificate dal titolare il 2026-11-09 (0.46): D, con la firma.
+            self.assertEqual((v.attendibilita, v.da_verificare), ("D", False))
+            self.assertIn("Pietro Fabbri", v.verificata)
             self.assertIn("fedetails.net", v.fonte)
 
 
@@ -4708,8 +4736,10 @@ class TestIlNannini(unittest.TestCase):
         self.assertGreater(len(voci), 500)
         for v in voci:
             self.assertRegex(v.fonte, r"^Francesco Nannini, .*, 1805, pag\. \d+ \(S005\)$")
-            self.assertEqual((v.attendibilita, v.da_verificare, v.varieta),
-                             ("I", True, "cittadino"))
+            # `I` e da verificare, o `D` se un parlante l'ha verificata (0.46).
+            self.assertIn((v.attendibilita, v.da_verificare, bool(v.verificata)),
+                          {("I", True, False), ("D", False, True)})
+            self.assertEqual(v.varieta, "cittadino")
         # La maiuscola tipografica del lemma si toglie; restano maiuscoli solo
         # i nomi propri, i giorni e i mesi che Bigoni scrive maiuscoli.
         maiuscole = [v.ferrarese for v in voci if v.ferrarese[:1].isupper()]

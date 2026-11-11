@@ -136,8 +136,9 @@ def articolo(parola: str, ctx: str, seguente_italiano: str = ""):
     forma = riga["vocale"] if ctx == "vocale" else riga["consonante"]
     if not forma:
         return None
-    return forma, ("articolo di S015 (%s), davanti a %s: «%s»"
-                   % (riga["dove"], ctx, riga["scritto_dalla_fonte"]))
+    return forma, ("articolo di %s (%s), davanti a %s: «%s»"
+                   % (riga.get("fonte", "S015"), riga["dove"], ctx,
+                      riga["scritto_dalla_fonte"]))
 
 
 def parola_fissa(parola: str, seguente_italiano: str):

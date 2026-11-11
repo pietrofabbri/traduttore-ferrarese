@@ -922,7 +922,7 @@ function tokenizza(t) {
       var forma = ctx === "vocale" ? r.vocale : r.consonante;
       if (forma) {
         return { testo: forma, origine: "grammatica", confidenza: DATI.origine.grammatica,
-                 dettaglio: "articolo di S015 (" + r.dove + "), davanti a " + ctx + ": \u00ab" + r.scritto_dalla_fonte + "\u00bb" };
+                 dettaglio: "articolo di " + (r.fonte || "S015") + " (" + r.dove + "), davanti a " + ctx + ": \u00ab" + r.scritto_dalla_fonte + "\u00bb" };
       }
     }
     return null;

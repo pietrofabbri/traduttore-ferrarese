@@ -935,10 +935,14 @@
   },
   {
    "fine": "a",
-   "plurale": "i",
-   "scritto_dalla_fonte": "ùna putìna, dó putìni; ùna kavàla, dó kavàli; ... la i finale risulta spesso molto evanescente e ... viene elisa",
-   "fonte": "S015",
-   "dove": "§4 «Sostantivi e aggettivi»"
+   "plurale": "",
+   "raddoppia_finale": [
+    "n",
+    "l"
+   ],
+   "fonte": "S011",
+   "dove": "«Scrìvar e lèźar al fraréś», Trascrizione dei vocaboli; S025, «Quali altri elementi caratterizzano»",
+   "scritto_dalla_fonte": "si raddoppiano la L e la N finale solo nei femminili plurali con accento sull'ultima sillaba ... balìnn, putìnn, madònn ... ma biétul, fràgul, màśan; (S025) porta-port, fràgula-fràgul, frida-frid, scarpa-scarp, tumpèsta-tumpèst"
   }
  ],
  "plurali_irregolari": [

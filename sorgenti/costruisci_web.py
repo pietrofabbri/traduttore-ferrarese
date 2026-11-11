@@ -123,7 +123,7 @@ CAMPI_TABELLA = ("id", "fe", "it", "varianti", "campo", "varieta",
 CAMPI_MOTORE = ("id", "fe", "it", "varianti", "campo", "varieta",
                 "attendibilita", "da_verificare", "principale_it",
                 "principale_fe", "grafia_fonte", "conferme", "corregge",
-                "alfabeto")
+                "alfabeto", "ocr")
 
 # Le pagine del sito. `sezioni` sono i marcatori di `modello.html` che la
 # pagina tiene: tutto il resto viene rimosso. La lista e' qui e non nel
@@ -212,6 +212,9 @@ CAMPI_VOCE = {
     "corregge": "corregge",
     # L'alfabeto della forma della fonte, se non e' quello di Bigoni (0.47).
     "alfabeto": "alfabeto",
+    # La voce viene da un libro letto con l'OCR e non e' verificata (0.49):
+    # la pagina la mette dopo le altre, come `glossario.priorita`.
+    "ocr": "ocr",
 }
 
 

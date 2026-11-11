@@ -136,8 +136,9 @@ def articolo(parola: str, ctx: str, seguente_italiano: str = ""):
     forma = riga["vocale"] if ctx == "vocale" else riga["consonante"]
     if not forma:
         return None
-    return forma, ("articolo di S015 (%s), davanti a %s: «%s»"
-                   % (riga["dove"], ctx, riga["scritto_dalla_fonte"]))
+    return forma, ("articolo di %s (%s), davanti a %s: «%s»"
+                   % (riga.get("fonte", "S015"), riga["dove"], ctx,
+                      riga["scritto_dalla_fonte"]))
 
 
 def parola_fissa(parola: str, seguente_italiano: str):
@@ -240,10 +241,27 @@ def plurale_ferrarese(singolare: str):
     for regola in dati["plurali"]:
         fine = regola["fine"]
         if basso.endswith(fine) and len(basso) > len(fine):
-            # «amìga» → «amìghi»: la g resta dura (0.42, `grafia.giunta`).
-            return grafia.giunta(singolare[:-len(fine)], singolare[-len(fine):],
+            radice = singolare[:-len(fine)]
+            # «putìna» → «putìnn», «madòna» → «madònn», ma «fràgula» →
+            # «fràgul» (0.49, S011): si raddoppia se l'accento cade sull'ultima
+            # sillaba della radice, scritto o (senza accento scritto) piana.
+            if regola.get("raddoppia_finale") and \
+                    radice[-1:].lower() in regola["raddoppia_finale"] and \
+                    _tonica_in_fondo(radice):
+                radice += radice[-1]
+            # «amìga» → «amìgh»: la g resta dura (0.42, `grafia.giunta`).
+            return grafia.giunta(radice, singolare[-len(fine):],
                                  regola["plurale"]), regola
     return singolare, None
+
+
+def _tonica_in_fondo(radice: str) -> bool:
+    gruppi = re.findall(r"[aeiouàèéìíòóùú]+", radice.lower())
+    if not gruppi:
+        return False
+    if any(c in "àèéìíòóùú" for g in gruppi for c in g):
+        return any(c in "àèéìíòóùú" for c in gruppi[-1])
+    return True
 
 
 def plurale(parola: str, glossario):
@@ -261,7 +279,8 @@ def plurale(parola: str, glossario):
             spiegazione = ("maschile con il plurale uguale al singolare "
                            "(S015, §4 «Sostantivi e aggettivi»)")
         else:
-            spiegazione = "S015, %s: «%s»" % (regola["dove"],
+            spiegazione = "%s, %s: «%s»" % (regola.get("fonte", "S015"),
+                                             regola["dove"],
                                               regola["scritto_dalla_fonte"])
         return resa, ("plurale di «%s» (%s %s), %s" % (
             singolare, voce.id, forma.strip(), spiegazione))

@@ -74,6 +74,11 @@ FRASI = [
     ("it-fe", "un'idea e una scarpa di corsa"),
     ("it-fe", "il fuoco della febbre"),
     ("it-fe", "le case e le porte"),
+    # 0.49: il plurale del Tréb, il significato principale, le parole sola,
+    # l'OCR dopo, le funzionali non verificate che non rispondono.
+    ("it-fe", "le bambine e le scarpe delle amiche"),
+    ("it-fe", "la casa che vedo per strada"),
+    ("it-fe", "andare a dormire e aiutare"),
     ("fe-it", "àśan"),
     ("it-fe", "trebbiare e guastare"),
     ("fe-it", "biànch"),

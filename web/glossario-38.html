@@ -505,6 +505,25 @@
     return chiavi;
   }
 
+  function priorita(v, k, lato) {
+    var principale = lato === "it" ? (v.principale_it || String(v.it || "").split(",")[0])
+                                   : (v.principale_fe || String(v.fe || "").split(",")[0]);
+    var uscita = lato === "it" ? (v.principale_fe || v.fe || "") : (v.principale_it || v.it || "");
+    return [v.corregge ? 0 : 1, chiave(principale) === k ? 0 : 1,
+            String(uscita).trim().indexOf(" ") !== -1 ? 1 : 0,
+            v.attendibilita === "D" ? 0 : 1,
+            -((v.conferme || []).length), v.ocr ? 1 : 0];
+  }
+  var FUNZIONALI_IT = ["che", "per", "di", "a", "da", "in", "con", "su", "tra", "fra",
+    "il", "lo", "la", "i", "gli", "le", "un", "una", "uno", "e", "o", "ma", "se", "non",
+    "ne", "ci", "vi", "si", "mi", "ti", "del", "della", "al", "alla", "nel", "nella",
+    "dal", "dalla"];
+  // Copia di `glossario.chiave_italiana_ammessa` (0.49).
+  function chiaveItalianaAmmessa(v, k) {
+    if (v.attendibilita === "D" || v.corregge) return true;
+    return FUNZIONALI_IT.indexOf(k) === -1;
+  }
+
   function indice() {
     var perIt = {}, perFe = {};
     VOCI.forEach(function (v) {
@@ -516,18 +535,20 @@
         if ((perFe[k] || []).indexOf(v) === -1) (perFe[k] = perFe[k] || []).push(v);
       });
       chiaviResi(v.it, v.principale_it).forEach(function (f) {
-        var k = chiave(f); if (!k) return;
+        var k = chiave(f); if (!k || !chiaveItalianaAmmessa(v, k)) return;
         if ((perIt[k] || []).indexOf(v) === -1) (perIt[k] = perIt[k] || []).push(v);
       });
     });
-    // Dentro ogni chiave: prima le correzioni, poi le voci confermate da piu'
-    // fonti (0.45). Copia di `glossario.priorita`; `sort` e' stabile.
-    [perIt, perFe].forEach(function (indice) {
+    // Dentro ogni chiave: correzioni, significato principale, conferme, una
+    // parola sola prima di un modo di dire (0.45, 0.49). Copia di
+    // `glossario.priorita`; `sort` e' stabile.
+    [[perIt, "it"], [perFe, "fe"]].forEach(function (coppia) {
+      var indice = coppia[0], lato = coppia[1];
       Object.keys(indice).forEach(function (k) {
         if (indice[k].length > 1) indice[k].sort(function (a, b) {
-          var pa = a.corregge ? 0 : 1, pb = b.corregge ? 0 : 1;
-          if (pa !== pb) return pa - pb;
-          return (b.conferme || []).length - (a.conferme || []).length;
+          var x = priorita(a, k, lato), y = priorita(b, k, lato);
+          for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i];
+          return 0;
         });
       });
     });
@@ -1042,6 +1063,14 @@ function tokenizza(t) {
     return "/" + parole.map(ipaParolaB).join(" ") + "/";
   }
 
+  // Copia di `grammatica._tonica_in_fondo` (0.49).
+  function tonicaInFondo(radice) {
+    var gruppi = radice.toLowerCase().match(/[aeiou\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa]+/g) || [];
+    if (!gruppi.length) return false;
+    var acc = /[\u00e0\u00e8\u00e9\u00ec\u00ed\u00f2\u00f3\u00f9\u00fa]/;
+    if (gruppi.some(function (g) { return acc.test(g); })) return acc.test(gruppi[gruppi.length - 1]);
+    return true;
+  }
   function pluraleFerrarese(singolare) {
     var g = DATI.grammatica || {}, basso = normale(singolare);
     var irr = (g.plurali_irregolari || []).filter(function (r) { return r.singolare === basso; })[0];
@@ -1060,7 +1089,10 @@ function tokenizza(t) {
     for (var i = 0; i < regole.length; i++) {
       var fine = regole[i].fine;
       if (basso.length > fine.length && basso.slice(-fine.length) === fine) {
-        return { forma: giunta(singolare.slice(0, -fine.length), singolare.slice(-fine.length), regole[i].plurale), regola: regole[i] };
+        var radice = singolare.slice(0, -fine.length);
+        if (regole[i].raddoppia_finale && regole[i].raddoppia_finale.indexOf(radice.slice(-1).toLowerCase()) !== -1 &&
+            tonicaInFondo(radice)) radice += radice.slice(-1);
+        return { forma: giunta(radice, singolare.slice(-fine.length), regole[i].plurale), regola: regole[i] };
       }
     }
     return { forma: singolare, regola: null };
@@ -1106,8 +1138,9 @@ function tokenizza(t) {
       m.celle.forEach(function (c) {
         if (w.slice(-c.it.length) !== c.it || w.length <= c.it.length + 1) return;
         var radiceIt = w.slice(0, -c.it.length), prove = [radiceIt];
-        if ("ie".indexOf(c.it.charAt(0)) !== -1) prove.push(radiceIt + "i");
+        // «cerchiamo»: prima «cercare» (la h dell'italiano), poi «cerchiare» (0.49)
         if (/(ch|gh)$/.test(radiceIt)) prove.push(radiceIt.slice(0, -1));
+        if ("ie".indexOf(c.it.charAt(0)) !== -1) prove.push(radiceIt + "i");
         for (var k = 0; k < prove.length; k++) {
           var voci = IDX.perIt[chiave(prove[k] + m.fine_it)] || [];
           if (!voci.length) continue;

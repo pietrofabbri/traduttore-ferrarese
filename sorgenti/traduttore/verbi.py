@@ -469,10 +469,12 @@ def per_analogia(parola: str, glossario, persona: str = "",
             # «mangi», «mangerò»: l'italiano toglie la i di -giare/-ciare
             # davanti a i ed e; «cerchi»: aggiunge la h di -care/-gare.
             prove = [radice_it]
-            if cella["it"][:1] in "ie":
-                prove.append(radice_it + "i")
+            # «cerchiamo»: prima «cercare» (la h e' grafia dell'italiano), poi
+            # «cerchiare», che e' un altro verbo (0.49).
             if radice_it.endswith(("ch", "gh")):
                 prove.append(radice_it[:-1])
+            if cella["it"][:1] in "ie":
+                prove.append(radice_it + "i")
             for radice in prove:
                 infinito = radice + modello["fine_it"]
                 voci = glossario.cerca_italiano(infinito)

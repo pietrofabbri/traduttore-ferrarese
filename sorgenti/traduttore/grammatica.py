@@ -240,10 +240,27 @@ def plurale_ferrarese(singolare: str):
     for regola in dati["plurali"]:
         fine = regola["fine"]
         if basso.endswith(fine) and len(basso) > len(fine):
-            # «amìga» → «amìghi»: la g resta dura (0.42, `grafia.giunta`).
-            return grafia.giunta(singolare[:-len(fine)], singolare[-len(fine):],
+            radice = singolare[:-len(fine)]
+            # «putìna» → «putìnn», «madòna» → «madònn», ma «fràgula» →
+            # «fràgul» (0.49, S011): si raddoppia se l'accento cade sull'ultima
+            # sillaba della radice, scritto o (senza accento scritto) piana.
+            if regola.get("raddoppia_finale") and \
+                    radice[-1:].lower() in regola["raddoppia_finale"] and \
+                    _tonica_in_fondo(radice):
+                radice += radice[-1]
+            # «amìga» → «amìgh»: la g resta dura (0.42, `grafia.giunta`).
+            return grafia.giunta(radice, singolare[-len(fine):],
                                  regola["plurale"]), regola
     return singolare, None
+
+
+def _tonica_in_fondo(radice: str) -> bool:
+    gruppi = re.findall(r"[aeiouàèéìíòóùú]+", radice.lower())
+    if not gruppi:
+        return False
+    if any(c in "àèéìíòóùú" for g in gruppi for c in g):
+        return any(c in "àèéìíòóùú" for c in gruppi[-1])
+    return True
 
 
 def plurale(parola: str, glossario):

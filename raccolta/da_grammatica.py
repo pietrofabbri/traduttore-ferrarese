@@ -230,9 +230,20 @@ PLURALI = [
      "un kavàl, du kavàj; un grumbiàl, du grumbiàj"},
     {"fine": "èl", "plurale": "jé", "scritto_dalla_fonte":
      "un fradèl, du fradjé; un ušèl, du ušjé"},
-    {"fine": "a", "plurale": "i", "scritto_dalla_fonte":
-     "ùna putìna, dó putìni; ùna kavàla, dó kavàli; ... la i finale risulta "
-     "spesso molto evanescente e ... viene elisa"},
+    # Il femminile in -a: S015 scrive -i («dó putìni») ma aggiunge che «la i
+    # finale risulta spesso molto evanescente e ... viene elisa». Dalla 0.49 la
+    # regola e' quella del Tréb dal Tridèl (S011, S025, verificata dal titolare):
+    # la -a cade, e la n o la l finale si raddoppia se l'accento cade
+    # sull'ultima sillaba che resta. E' in PLURALI_S011, qui sotto.
+]
+PLURALI_S011 = [
+    {"fine": "a", "plurale": "", "raddoppia_finale": ["n", "l"],
+     "fonte": "S011", "dove": "«Scrìvar e lèźar al fraréś», Trascrizione dei "
+     "vocaboli; S025, «Quali altri elementi caratterizzano»",
+     "scritto_dalla_fonte": "si raddoppiano la L e la N finale solo nei "
+     "femminili plurali con accento sull'ultima sillaba ... balìnn, putìnn, "
+     "madònn ... ma biétul, fràgul, màśan; (S025) porta-port, fràgula-fràgul, "
+     "frida-frid, scarpa-scarp, tumpèsta-tumpèst"},
 ]
 # I plurali che la fonte scrive e che nessuna regola da'.
 PLURALI_IRREGOLARI = [
@@ -301,7 +312,7 @@ def costruisci() -> dict:
         "secondo_genere": genere,
         "parole": [dict(p, fonte=FONTE) for p in parole],
         "plurali": [dict(p, fonte=FONTE, dove="§4 «Sostantivi e aggettivi»")
-                    for p in PLURALI],
+                    for p in PLURALI] + PLURALI_S011,
         "plurali_irregolari": [dict(p, fonte=FONTE,
                                     dove="§4 «Sostantivi e aggettivi»")
                                for p in PLURALI_IRREGOLARI],

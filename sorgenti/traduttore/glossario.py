@@ -116,6 +116,11 @@ class Voce:
     # il Tréb dal Tridèl (0.47). Serve alla pagina per la pronuncia.
     alfabeto: str = ""
 
+    @property
+    def ocr(self) -> int:
+        """1 se la voce e' letta con l'OCR e non verificata (per la pagina)."""
+        return 1 if letta_con_ocr(self) else 0
+
     def _chiavi_resi(self, testo: str, principale: str) -> list:
         """Le chiavi con cui una voce si trova cercando una delle sue forme.
 
@@ -239,15 +244,18 @@ class Glossario:
                 if k:
                     self._per_ferrarese.setdefault(k, []).append(voce)
             for k in voce.chiavi_italiano():
-                if k:
+                if k and chiave_italiana_ammessa(voce, k):
                     self._per_italiano.setdefault(k, []).append(voce)
         # Dentro ogni chiave, prima le correzioni dei parlanti e poi le voci
         # confermate da piu' fonti (0.45). L'ordinamento e' stabile: a parita'
         # resta l'ordine del file, che e' quello di prima.
-        for indice in (self._per_ferrarese, self._per_italiano):
+        for indice, lato in ((self._per_ferrarese, "fe"),
+                             (self._per_italiano, "it")):
             for chiave_indice, gruppo in indice.items():
                 if len(gruppo) > 1:
-                    indice[chiave_indice] = sorted(gruppo, key=priorita)
+                    indice[chiave_indice] = sorted(
+                        gruppo, key=lambda v, k=chiave_indice, l=lato:
+                        priorita(v, k, l))
 
     # --- interrogazioni --------------------------------------------------
 
@@ -406,9 +414,62 @@ def _conferme(voci: list) -> None:
             v.conferme = altre
 
 
-def priorita(voce) -> tuple:
-    """L'ordine fra voci con la stessa chiave: correzioni, poi conferme."""
-    return (0 if voce.corregge else 1, -len(voce.conferme))
+def priorita(voce, chiave_indice: str = None, lato: str = "it") -> tuple:
+    """L'ordine fra voci con la stessa chiave (0.45, 0.49).
+
+    1. le correzioni dei parlanti;
+    2. le voci in cui la parola cercata e' il **significato principale**, e non
+       uno dei secondari: «andare» e' il terzo significato di `sguazzar`
+       (guazzare, guadare, andare) e il primo di `andàr`;
+    3. una parola sola prima di un modo di dire: per «dormire» `durmìr` e non
+       `coionàr j orb`, per «aiutare» `ajutàr` e non `dar man`;
+    4. le voci documentate (`D`: verificate da un parlante o sul libro);
+    5. le voci confermate da piu' fonti;
+    6. una voce trascritta a mano prima di una letta con l'OCR (`letta_con_ocr`):
+       per «strada» `stràda` di Bigoni e non `striida`, che e' il Ferri letto
+       male.
+
+    A parita' resta l'ordine del file.
+    """
+    if lato == "it":
+        principale = voce.principale_italiano or (voce.italiano or "").split(",")[0]
+        uscita = voce.principale_ferrarese or voce.ferrarese or ""
+    else:
+        principale = voce.principale_ferrarese or (voce.ferrarese or "").split(",")[0]
+        uscita = voce.principale_italiano or voce.italiano or ""
+    primaria = 0 if (chiave_indice is None or
+                     normalizza.chiave(principale) == chiave_indice) else 1
+    return (0 if voce.corregge else 1, primaria,
+            1 if " " in uscita.strip() else 0,
+            0 if voce.attendibilita == "D" else 1, -len(voce.conferme),
+            1 if letta_con_ocr(voce) else 0)
+
+
+def letta_con_ocr(voce) -> bool:
+    """La voce viene da un libro letto con l'OCR e nessuno l'ha controllata:
+    il Ferri (S004) e il Nannini (S005), tranne le voci `D`."""
+    return voce.attendibilita != "D" and \
+        famiglia_della_fonte(voce.fonte) in ("S004", "S005")
+
+
+# Le parole funzionali dell'italiano: una voce **non verificata** che le da' come
+# significato principale non risponde dall'italiano. Sono quasi tutte letture
+# sbagliate dell'OCR del Ferri («che» → `brancài`, «per» → `bàia`), e una
+# parola funzionale tradotta male rovina ogni frase in cui compare (0.49). La voce resta
+# nel file e si trova dal ferrarese; se un parlante la verifica, risponde.
+FUNZIONALI_IT = {"che", "per", "di", "a", "da", "in", "con", "su", "tra", "fra",
+                 "il", "lo", "la", "i", "gli", "le", "un", "una", "uno", "e",
+                 "o", "ma", "se", "non", "ne", "ci", "vi", "si", "mi", "ti",
+                 "del", "della", "al", "alla", "nel", "nella", "dal", "dalla"}
+
+
+def chiave_italiana_ammessa(voce, chiave_indice: str) -> bool:
+    """Una voce non verificata non risponde per una parola funzionale, ne'
+    come significato principale ne' come uno dei secondari («sicura» non e'
+    «per» solo perche' la glossa del Ferri contiene «per»)."""
+    if voce.attendibilita == "D" or voce.corregge:
+        return True
+    return chiave_indice not in FUNZIONALI_IT
 
 
 def _senza_maiuscole_del_lemma(voci: list) -> None:

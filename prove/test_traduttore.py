@@ -3035,6 +3035,12 @@ class TestResiMultipli(unittest.TestCase):
                                      "%s si trova ancora cercando %r"
                                      % (voce.id, cercato))
                     continue
+                # Una parola funzionale non porta a una voce non verificata
+                # (0.49, `glossario.chiave_italiana_ammessa`).
+                from traduttore import glossario as glossario_modulo
+                if not glossario_modulo.chiave_italiana_ammessa(
+                        voce, normalizza.chiave(cercato)):
+                    continue
                 self.assertTrue(glossario.cerca_italiano(cercato),
                                 "%s non si trova cercando %r" % (voce.id, cercato))
 
@@ -4598,6 +4604,34 @@ def _testo_dei_dati(pagina: str) -> str:
     return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
 
 
+class TestLaSceltaFraLeVoci(unittest.TestCase):
+    """Quale voce risponde quando ce n'e' piu' d'una (0.49)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.cli import carica
+        cls.motore = carica()
+
+    def _t(self, parola):
+        return self.motore.traduci(parola, IT_FE).testo
+
+    def test_il_significato_principale_prima_di_un_secondario(self):
+        self.assertEqual(self._t("andare"), "andàr")      # non «sguazzar»
+
+    def test_una_parola_sola_prima_di_un_modo_di_dire(self):
+        self.assertEqual(self._t("dormire"), "durmìr")    # non «coionàr j orb»
+        self.assertEqual(self._t("aiutare"), "ajutàr")    # non «dar man»
+
+    def test_una_trascrizione_prima_dell_ocr(self):
+        self.assertEqual(self._t("strada"), "stràda")     # non «striida»
+
+    def test_una_funzionale_non_verificata_non_risponde(self):
+        self.assertEqual(self._t("che"), "che")           # non «brancài»
+        self.assertEqual(self._t("per"), "per")           # non «bàia»
+        # la voce resta, e dal ferrarese si trova
+        self.assertTrue(self.motore.glossario.cerca_ferrarese("brancài"))
+
+
 class TestLaConfermaFraFonti(unittest.TestCase):
     """Le voci che altre fonti confermano vengono prima (0.45)."""
 
@@ -4973,10 +5007,20 @@ class TestIPlurali(unittest.TestCase):
 
     def test_le_regole_della_fonte(self):
         attesi = {"kavàl": "kavàj", "padrón": "padrùn", "fradèl": "fradjé",
-                  "putìna": "putìni", "òm": "òman", "can": "can",
+                  "putìna": "putìnn", "òm": "òman", "can": "can",
                   "fraréš": "frarìš"}
         for singolare, plurale in attesi.items():
             self.assertEqual(self.g.plurale_ferrarese(singolare)[0], plurale)
+
+    def test_il_femminile_del_treb(self):
+        # S011 e S025 (0.49): la -a cade; n e l finali raddoppiano se l'accento
+        # cade sull'ultima sillaba che resta.
+        attesi = {"pòrta": "pòrt", "scarpa": "scarp", "fràgula": "fràgul",
+                  "madòna": "madònn", "balìna": "balìnn", "amìga": "amìgh",
+                  "piégura": "piégur"}
+        for singolare, plurale in attesi.items():
+            self.assertEqual(self.g.plurale_ferrarese(singolare)[0], plurale,
+                             singolare)
 
     def test_una_sillaba_o_una_tronca_non_cambia(self):
         # «le case» non e' `chi` (0.48)
@@ -5349,7 +5393,10 @@ class TestIParadigmiDiS015(unittest.TestCase):
         # da solo resta il nome, con «io» davanti e' il verbo.
         from traduttore.cli import carica
         motore = carica()
-        self.assertEqual(motore.traduci("canto", IT_FE).testo, "cantòn")
+        # «canto» da solo resta un nome del glossario: dalla 0.49 `cant`
+        # (Bigoni, «canto» come significato principale) e non `cantòn`
+        # (il Ferri, «cantone, canto»).
+        self.assertEqual(motore.traduci("canto", IT_FE).testo, "cant")
         # «io» e' `mi` dalla grammatica di S015 (0.41).
         self.assertEqual(motore.traduci("io canto", IT_FE).testo, "mi a cant")
 

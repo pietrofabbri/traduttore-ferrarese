@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.48
+versione: 0.49
 data: 2026-11-05
 ---
 
@@ -23,6 +23,29 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.49 — 2026-11-11 · Il plurale del Tréb, e quale voce risponde
+
+**Perché.** Per molte parole comuni il traduttore sceglieva la voce sbagliata fra
+quelle che aveva: un significato secondario («andare» → `sguazzar`), un modo di dire
+(«dormire» → `coionàr j orb`), una lettura sbagliata dell'OCR («strada» →
+`striida», «che» → `brancài`). E il plurale femminile seguiva S015 (-i) mentre i
+testi del Tréb, verificati dal titolare, dicono che la -a cade.
+
+- **L'ordine fra le voci** di una stessa parola (`glossario.priorita`, copia nella
+  pagina): correzioni; la parola come **significato principale**; una parola sola
+  prima di un modo di dire; le voci `D`; le conferme; le voci non lette con l'OCR
+  (campo `ocr` nella pagina) prima di quelle del Ferri e del Nannini non verificate.
+- **Le parole funzionali** («che», «per», «di»...) non rispondono da una voce non
+  verificata (`chiave_italiana_ammessa`): restano un buco dichiarato invece di una
+  traduzione sbagliata in ogni frase. Le voci restano e si trovano dal ferrarese.
+- **Il femminile plurale** (S011, S025): la -a cade, e n e l finali raddoppiano se
+  l'accento cade sull'ultima sillaba che resta: `pòrt`, `scarp`, `fràgul`, `putìnn`,
+  `madònn`, `amìgh`.
+- Nell'analogia «cerchiamo» si cerca prima «cercare» e poi «cerchiare».
+
+**Verifiche.** 431 test (erano 426): il significato principale, la parola sola, la
+trascrizione prima dell'OCR, le funzionali non verificate, il femminile del Tréb.
 
 ## 0.48 — 2026-11-10 · Il plurale di una parola di una sillaba
 

@@ -279,7 +279,8 @@ def plurale(parola: str, glossario):
             spiegazione = ("maschile con il plurale uguale al singolare "
                            "(S015, §4 «Sostantivi e aggettivi»)")
         else:
-            spiegazione = "S015, %s: «%s»" % (regola["dove"],
+            spiegazione = "%s, %s: «%s»" % (regola.get("fonte", "S015"),
+                                             regola["dove"],
                                               regola["scritto_dalla_fonte"])
         return resa, ("plurale di «%s» (%s %s), %s" % (
             singolare, voce.id, forma.strip(), spiegazione))

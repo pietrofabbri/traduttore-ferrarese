@@ -1143,7 +1143,7 @@ function tokenizza(t) {
       var v = voci[0], forma = (v.principale_fe || v.fe || "").trim();
       if (!forma || forma.indexOf(" ") !== -1 || forma.indexOf(",") !== -1) continue;
       var p = pluraleFerrarese(forma);
-      var perche = p.regola ? "S015, " + p.regola.dove + ": \u00ab" + p.regola.scritto_dalla_fonte + "\u00bb"
+      var perche = p.regola ? (p.regola.fonte || "S015") + ", " + p.regola.dove + ": \u00ab" + p.regola.scritto_dalla_fonte + "\u00bb"
                             : "maschile con il plurale uguale al singolare (S015, \u00a74 \u00abSostantivi e aggettivi\u00bb)";
       return { testo: p.forma, origine: "plurale", confidenza: DATI.origine.plurale,
                dettaglio: "plurale di \u00ab" + cand[i] + "\u00bb (" + v.id + " " + forma + "), " + perche };

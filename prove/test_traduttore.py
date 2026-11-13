@@ -4604,6 +4604,46 @@ def _testo_dei_dati(pagina: str) -> str:
     return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
 
 
+class TestParticipiFuturiENomi(unittest.TestCase):
+    """Participi e futuri per analogia, nomi propri (0.50)."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.cli import carica
+        cls.motore = carica()
+
+    def _t(self, frase):
+        return self.motore.traduci(frase, IT_FE).testo
+
+    def test_il_participio_regolare(self):
+        self.assertEqual(self._t("ho mangiato"), "aj ò magnà")
+        self.assertEqual(self._t("ho dormito"), "aj ò durmì")
+        # il maschile plurale e' uguale al singolare
+        self.assertTrue(self._t("abbiamo mangiati").endswith("magnà"))
+
+    def test_il_participio_della_terza_resta_un_buco(self):
+        # «lèt» per «letto» e' irregolare: per «creduto» la fonte non dice
+        self.assertTrue(self._t("ho creduto").endswith("creduto"))
+
+    def test_il_futuro_sincopato(self):
+        self.assertEqual(self._t("io andrò"), "mi a andarò")
+        self.assertEqual(self._t("noi andremo"), "nu a andarén")
+
+    def test_le_celle_derivate_sono_dichiarate(self):
+        from traduttore import verbi
+        derivate = [c for m in verbi.modelli() for c in m["celle"]
+                    if c.get("derivata")]
+        self.assertTrue(derivate)
+        self.assertIn("rò", [c["it"] for c in derivate])
+
+    def test_un_nome_proprio_resta(self):
+        self.assertEqual(self._t("mi chiamo Luca"), "mi a ciam Luca")
+        self.assertTrue(self._t("vado a Ferrara").endswith("Ferrara"))
+        from traduttore import grammatica
+        self.assertEqual(grammatica.nomi_propri("Ferrara. Poi Luca"),
+                         {"luca": "Luca"})
+
+
 class TestLaSceltaFraLeVoci(unittest.TestCase):
     """Quale voce risponde quando ce n'e' piu' d'una (0.49)."""
 

@@ -79,6 +79,10 @@ FRASI = [
     ("it-fe", "le bambine e le scarpe delle amiche"),
     ("it-fe", "la casa che vedo per strada"),
     ("it-fe", "andare a dormire e aiutare"),
+    # 0.50: participi, futuri sincopati, nomi propri.
+    ("it-fe", "ho mangiato e sono andato"),
+    ("it-fe", "io andrò da Luca a Ferrara"),
+    ("it-fe", "noi abbiamo parlato, voi avete capito"),
     ("fe-it", "àśan"),
     ("it-fe", "trebbiare e guastare"),
     ("fe-it", "biànch"),

@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.49
+versione: 0.50
 data: 2026-11-05
 ---
 
@@ -23,6 +23,26 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.50 — 2026-11-12 · Participi, futuri e nomi propri
+
+**Perché.** «ho mangiato», «io andrò», «mi chiamo Luca» uscivano con un buco o con
+il nome tradotto: il participio e il futuro sincopato non avevano celle nei
+modelli, e il motore non sapeva che una parola con la maiuscola a metà frase è un
+nome.
+
+- **Il participio** entra nei modelli di `verbi.py` (riga «participio» dei
+  paradigmi); le **celle derivate** (`derivata: true`, mai `D`) aggiungono il
+  futuro e il condizionale sincopati (`andarò`, non `anderò`), la variante in -u
+  del participio e il maschile plurale uguale al singolare: `aj ò magnà`,
+  `mi a andarò`.
+- **I nomi propri** (`grammatica.nomi_propri`, copia nella pagina): una parola con
+  la maiuscola che non apre la frase resta com'è, origine `nome`.
+- **La negazione** (`an … brisa`) **non** entra: le fonti non dicono come si fonde
+  con il proclitico, e la risposta viene dal foglio di revisione.
+
+**Verifiche.** 436 test (erano 431): participio, futuro sincopato, celle derivate,
+nomi propri.
 
 ## 0.49 — 2026-11-11 · Il plurale del Tréb, e quale voce risponde
 

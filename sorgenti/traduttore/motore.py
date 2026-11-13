@@ -57,6 +57,8 @@ ORIGINE = {
     # `grammatica` e' una parola funzionale delle tabelle di S015: articoli,
     # pronomi, possessivi, dimostrativi, numeri, giorni e mesi (0.41).
     "grammatica": 0.90,
+    # `nome` e' un nome proprio, che resta com'e' (0.50).
+    "nome": 0.95,
     # `plurale` e' il plurale di una voce del glossario, fatto con le regole di
     # S015: e' ricavato, non attestato, e vale come una regola imparata.
     "plurale": 0.60,
@@ -184,7 +186,7 @@ class Motore:
             corrispondenze = [(testo, tradotto, "corpo", confidenza, dettaglio)]
             return Risposta(testo, tradotto, direzione, corrispondenze, [])
 
-        corrispondenze = self._risolvi_token(token, direzione)
+        corrispondenze = self._risolvi_token(token, direzione, testo)
         tradotto = grammatica.unisci([t for _, t, _, _, _ in corrispondenze])
         # Il buco e' la parola che resta senza risposta: o il motore non ha
         # trovato nulla, o il modello ha risposto sotto soglia. Una risposta
@@ -205,7 +207,7 @@ class Motore:
 
     # --- i quattro livelli ------------------------------------------------
 
-    def _risolvi_token(self, token: list, direzione: str) -> list:
+    def _risolvi_token(self, token: list, direzione: str, testo: str = "") -> list:
         """Risolve ogni token, nell'ordine dei quattro livelli.
 
         L'ordine e' quello che conta: si parte dalla fonte piu' forte e si
@@ -228,8 +230,17 @@ class Motore:
         # non il token, e per questo si calcola una volta sola.
         frase = " ".join(token)
         contesto = self._contesto_modello(frase, direzione)
+        propri = grammatica.nomi_propri(testo) if direzione == IT_FE else {}
         i = 0
         while i < len(token):
+            # Un nome proprio resta com'e' (0.50): «Luca», «Ferrara».
+            if token[i] in propri:
+                risultati.append((token[i], propri[token[i]], "nome",
+                                  ORIGINE["nome"],
+                                  "nome proprio: nella frase italiana ha la "
+                                  "maiuscola e non e' all'inizio, resta com'e'"))
+                i += 1
+                continue
             # Prima di ogni accorpamento c'e' quello dei **verbi pronominali**,
             # perche' e' l'unico accorpamento che il motore fa e che il
             # glossario non contiene: «si» non e' una parola e quindi cercarla

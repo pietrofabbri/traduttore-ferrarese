@@ -390,9 +390,11 @@ def modelli(percorso: str = PERCORSO) -> list:
     sistema = dati["sistema"]
     risultato = []
     for lemma_fonte, inf_it, fine_it, fine_fe in CLASSI:
+        # Dalla 0.50 anche il participio (persona vuota): «kaŋtà», «tašù», «kapì».
         righe = [r for r in dati["righe"] if r.get("lemma_fonte") == lemma_fonte
-                 and r.get("persona") in ("1sing", "2sing", "3sing", "1plur",
-                                          "2plur", "3plur")
+                 and (r.get("persona") in ("1sing", "2sing", "3sing", "1plur",
+                                           "2plur", "3plur")
+                      or (r.get("tempo") == "participio" and not r.get("persona")))
                  and not r.get("variante_di") and not r.get("clitico")]
         if not righe:
             continue
@@ -416,15 +418,44 @@ def modelli(percorso: str = PERCORSO) -> list:
                 continue
             desinenza_fe = forma[len(radice_fe):]
             sulla_radice = not any(c in "àèéìíòóùú" for c in desinenza_fe)
-            celle.append({"tempo": r["tempo"], "persona": r["persona"],
-                          "it": desinenza_it, "fe": desinenza_fe,
-                          "radice": sulla_radice,
-                          "proclitica": r.get("proclitica", ""),
-                          "riga": r["id"]})
+            cella = {"tempo": r["tempo"], "persona": r["persona"],
+                     "it": desinenza_it, "fe": desinenza_fe,
+                     "radice": sulla_radice,
+                     "proclitica": r.get("proclitica", ""),
+                     "riga": r["id"]}
+            celle.append(cella)
+            celle.extend(_celle_derivate(cella))
         risultato.append({"lemma_fonte": lemma_fonte, "infinito": inf_it,
                           "fine_it": fine_it, "fine_fe": fine_fe,
                           "celle": celle})
     return risultato
+
+
+def _celle_derivate(cella: dict) -> list:
+    """Le altre desinenze italiane che portano alla stessa forma ferrarese (0.50).
+
+    Non sono forme nuove del ferrarese: sono altri modi in cui l'**italiano**
+    scrive la stessa casella, perche' il motore la riconosca.
+
+    - il futuro e il condizionale sincopati: «andrò», «vedrò», «potrei» hanno la
+      stessa casella di «canterò», «tacerò», senza la e;
+    - il participio di «taciuto» si riconosce anche come -uto («creduto»), che e'
+      la grafia dell'italiano e non un'altra desinenza;
+    - il participio maschile plurale («cantati») ha la forma del singolare: in
+      S015 nessuna regola del plurale tocca le parole tronche in -à, -ù, -ì, e
+      «maschile con il plurale uguale al singolare» e' la sua regola generale.
+    """
+    it, tempo = cella["it"], cella["tempo"]
+    altre = []
+    if tempo in ("futuro", "condizionale") and it.startswith("er") and len(it) > 2:
+        altre.append("r" + it[2:])
+    if tempo == "participio":
+        if it.startswith("iu"):
+            altre.append(it[1:])
+        for forma in [it] + list(altre):
+            if forma.endswith("o"):
+                altre.append(forma[:-1] + "i")
+    return [dict(cella, it=a, derivata=True) for a in altre]
 
 
 def _accentua(radice: str, radice_it: str):

@@ -285,3 +285,27 @@ def plurale(parola: str, glossario):
         return resa, ("plurale di «%s» (%s %s), %s" % (
             singolare, voce.id, forma.strip(), spiegazione))
     return None
+
+
+# --- i nomi propri (0.50) -----------------------------------------------------
+#
+# «mi chiamo Luca» usciva `a lùsa`, «vado a Ferrara» `a ferrara`: il motore
+# riduce tutto in minuscolo e cerca nel glossario anche i nomi. Una parola che
+# nella frase italiana comincia con la maiuscola e **non** e' la prima di una
+# frase e' un nome proprio: resta com'e', con la sua maiuscola.
+
+_PAROLA = re.compile(r"[^\W\d_]+(?:['’][^\W\d_]+)*")
+
+
+def nomi_propri(testo: str) -> dict:
+    """{parola in minuscolo: parola come e' scritta} dei nomi propri."""
+    propri = {}
+    for m in _PAROLA.finditer(testo or ""):
+        parola = m.group(0)
+        if not parola[:1].isupper():
+            continue
+        prima = testo[:m.start()].rstrip()
+        if not prima or prima[-1] in ".!?":
+            continue
+        propri[parola.lower()] = parola
+    return propri

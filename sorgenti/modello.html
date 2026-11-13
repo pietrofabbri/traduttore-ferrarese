@@ -675,6 +675,7 @@
     // `frase` e' una regola di frase promossa da correzioni di parlanti.
     frase: "da una regola di frase",
     grammatica: "dalla grammatica di S015",
+    nome: "nome proprio, resta com'e'",
     plurale: "plurale ricavato con le regole di S015",
     analogia: "verbo coniugato sul modello della sua coniugazione",
     regola: "da una regola morfologica",
@@ -1629,10 +1630,33 @@ function tokenizza(t) {
   // «braccia aperte» e da «aperte»; il confronto non lo vedeva perche'
   // rifaceva il ciclo per conto suo. Ora avanza di quante parole ha accorpato,
   // come `motore.py`.
+  // Copia di `grammatica.nomi_propri` (0.50).
+  function nomiPropri(testo) {
+    var propri = {}, re = /[^\W\d_]+(?:['\u2019][^\W\d_]+)*/gu, m;
+    testo = String(testo || "");
+    while ((m = re.exec(testo)) !== null) {
+      var parola = m[0];
+      if (parola.charAt(0) === parola.charAt(0).toLowerCase()) continue;
+      var prima = testo.slice(0, m.index).replace(/\s+$/, "");
+      if (!prima || ".!?".indexOf(prima.charAt(prima.length - 1)) !== -1) continue;
+      propri[parola.toLowerCase()] = parola;
+    }
+    return propri;
+  }
+
   function risolviUnita(token, direzione, testo) {
     if (direzione === "it-fe") token = separaElisioni(token);
+    var propri = direzione === "it-fe" ? nomiPropri(testo) : {};
     var unita = [], iToken = 0;
     while (iToken < token.length) {
+      if (propri.hasOwnProperty(token[iToken])) {
+        unita.push({ testo: token[iToken], indice: iToken,
+                     risposta: { testo: propri[token[iToken]], origine: "nome",
+                                 confidenza: DATI.origine.nome,
+                                 dettaglio: "nome proprio: nella frase italiana ha la maiuscola e non e' all'inizio, resta com'e'" } });
+        iToken += 1;
+        continue;
+      }
       var pronominale = (direzione === "it-fe")
         ? unitaPronominale(token, iToken) : null;
       if (pronominale) {

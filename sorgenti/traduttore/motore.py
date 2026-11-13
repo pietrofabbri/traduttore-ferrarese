@@ -226,10 +226,14 @@ class Motore:
         if direzione == IT_FE:
             token = grammatica.separa_elisioni(token)
         risultati = []
-        # Il contesto di frase serve al livello 2 e al 4: e' la frase intera,
-        # non il token, e per questo si calcola una volta sola.
+        # Il contesto di frase serve solo al livello 4, il modello: e' la frase
+        # intera, non il token, e per questo si calcola una volta sola. Senza
+        # modello non si calcola (0.51): cercava le voci vicine confrontando la
+        # frase con tutte le chiavi del glossario, il 99% del tempo di una
+        # traduzione, per un contesto che nessuno leggeva.
         frase = " ".join(token)
-        contesto = self._contesto_modello(frase, direzione)
+        contesto = (self._contesto_modello(frase, direzione)
+                    if self.modello is not None else None)
         propri = grammatica.nomi_propri(testo) if direzione == IT_FE else {}
         i = 0
         while i < len(token):

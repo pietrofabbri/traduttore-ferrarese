@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.50
+versione: 0.51
 data: 2026-11-05
 ---
 
@@ -23,6 +23,28 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.51 — 2026-11-13 · La revisione, una carta alla volta
+
+**Perché.** Il foglio di revisione funziona, ma è un foglio: 1159 righe da scorrere.
+Chi parla ferrarese deve poter rispondere dal telefono, una frase alla volta, e le
+risposte devono arrivare nel repository senza passare da nessuno.
+
+- **La pagina `revisione.html`**: carte con l'italiano e la proposta del motore,
+  tasti 1/2/3, punti, serie e avanzamento per gruppo. Le risposte partono come
+  **correzioni** (stessa forma, stesso workflow, stesso token del traduttore): «sì»
+  è una conferma, «no» porta la forma giusta, le altre forme vanno nella nota.
+- **Le domande** sono in `dati/revisione/domande.json`, solo italiano; la proposta
+  la calcola il motore quando si genera la pagina (`traduttore/revisione.py`).
+- **La riga di rete resta una**: `apriSegnalazione` nel modello, usata dal
+  traduttore e dalla revisione.
+- **Il motore è cento volte più veloce senza il modello**: il contesto per il
+  livello 4 (le voci vicine, cercate confrontando la frase con tutte le chiavi del
+  glossario) si calcolava a ogni traduzione anche senza modello, ed era il 99% del
+  tempo. Le risposte non cambiano.
+
+**Verifiche.** 441 test (erano 436): le domande, la proposta e i buchi, i dati
+della pagina, una riga della revisione che si importa, il contesto non calcolato.
 
 ## 0.50 — 2026-11-12 · Participi, futuri e nomi propri
 

@@ -163,6 +163,13 @@ PAGINE = (
      "titolo": "Verifica a campione",
      "occhiello": "Poche voci estratte a caso: dire se si dicono basta a stimare quanto sbaglia una fonte.",
      "sezioni": ("verifica",)},
+    # La revisione (0.51): una carta alla volta, «si dice cosi'?», e le
+    # risposte partono come correzioni. Non ha glossario nel blocco dati: le
+    # proposte le calcola il motore qui, quando si genera la pagina.
+    {"file": "revisione.html", "chiave": "revisione",
+     "titolo": "Revisione",
+     "occhiello": "Il traduttore dice cosi': si dice? Una carta alla volta, con un tasto.",
+     "sezioni": ("revisione",)},
 )
 
 # La barra di navigazione: l'ordine in cui le pagine si presentano, e la
@@ -175,6 +182,7 @@ NAVIGAZIONE = (
     ("suoni.html", "Varieta' e suoni"),
     ("regole.html", "Le regole"),
     ("verifica.html", "Verifica"),
+    ("revisione.html", "Revisione"),
 )
 
 
@@ -928,6 +936,19 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
             dati["glossario"] = con_trascrizione
             dati["fonetica"] = [t.come_dict() for t in fonetica.trascrizioni]
             dati["conteggi"]["voci"] = len(con_trascrizione["voci"])
+        elif chiave_p == "revisione":
+            from traduttore import revisione as revisione_modulo
+            from traduttore.motore import Motore
+            motore = Motore(glossario, corpus, regole, None,
+                            italiano_analisi=analizzatore)
+            dati["revisione"] = revisione_modulo.per_la_pagina(
+                motore, revisione_modulo.leggi(
+                    os.path.join(radice, "dati", "revisione", "domande.json")))
+            dati["correzione"] = {
+                "repository": REPOSITORY,
+                "api": REPOSITORY.replace("https://github.com/",
+                                          "https://api.github.com/repos/"),
+                "versione": __version__}
         elif chiave_p == "index":
             dati["fonetica"] = [t.come_dict() for t in fonetica.trascrizioni]
         marcatori = None

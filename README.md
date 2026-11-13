@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.50
+versione: 0.51
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -81,7 +81,7 @@ python3 -m traduttore.cli cerca "lupo non mangia di lupo"
 python3 -m traduttore.cli traduci "a braccia aperte"   # a brazz avèrti
 ```
 
-## Il sito: quarantasei pagine invece di una da sei megabyte
+## Il sito: quarantasette pagine invece di una da sei megabyte
 
 La pagina era **una sola** e pesava **6,2 megabyte**. Di quelli, il 99,2% era il
 blocco dei dati e l'87,5% era il glossario: la pagina che serve solo a leggere
@@ -109,8 +109,9 @@ esattamente come Python.
 | `suoni.html` | le cinque varietà e i suoni | 143 KB |
 | `regole.html` | le regole del ferrarese, con la fonte su ognuna | 130 KB |
 | `verifica.html` | la verifica a campione: le voci estratte da giudicare | 166 KB |
+| `revisione.html` | la revisione: una carta alla volta, «si dice così?» | 168 KB |
 
-In tutto 46 pagine e 7,4 MB; `python3 -m traduttore.cli web` stampa i pesi
+In tutto 47 pagine e 8,1 MB; `python3 -m traduttore.cli web` stampa i pesi
 veri ogni volta, e quelli valgono piu' di questa tabella.
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
@@ -158,6 +159,23 @@ Quando tutti i pezzi sono entrati entra anche la frase intera, con la pronuncia.
 soglie sono in `dati/correzioni/soglie.json`, e una correzione si può confermare a
 mano (`correzioni conferma X0001`). Il protocollo è in
 [dati/correzioni/README.md](dati/correzioni/README.md).
+
+## La revisione: una carta alla volta
+
+La pagina **Revisione** (`web/revisione.html`) serve a chi parla ferrarese per dire,
+una frase alla volta, se il traduttore ha ragione. Ogni carta ha l'italiano e la
+risposta del traduttore di oggi; si risponde con un tasto: **1** sì, **2** no (si
+scrive come la si dice, e gli altri modi di dirla in città), **3** non so. Ci sono
+punti, la serie di risposte di fila e l'avanzamento di ogni gruppo: frasi, le 300
+parole più usate, plurali, preposizioni, pronomi, venti verbi in tutti i tempi.
+
+Le risposte restano nel browser finché non si preme **Invia**: partono insieme come
+**correzioni** firmate con il nome di chi risponde, con lo stesso token e lo stesso
+workflow del pulsante del traduttore, e da lì seguono la strada di ogni correzione
+(archiviate da verificare, promosse quando hanno il loro margine). Le domande sono in
+[dati/revisione/](dati/revisione/README.md); la pagina chiama la rete solo dalla
+stessa riga `RETE-DICHIARATA` del traduttore, che ora è una funzione sola per tutte e
+due le pagine.
 
 ## La verifica a campione: quanto sbaglia ogni fonte
 
@@ -885,7 +903,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 436 test
+python3 prove/test_traduttore.py     # 441 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

@@ -12,6 +12,10 @@ Questa cartella risponde a tre domande:
 
 ## Il flusso
 
+Le correzioni arrivano da due pagine: il traduttore (una frase, «Correggila») e la
+**revisione** (`web/revisione.html`, molte risposte insieme, una riga per risposta:
+vedi `dati/revisione/README.md`). La forma della riga e il percorso sono gli stessi.
+
 ```
 pagina «Invia» ──► segnalazione GitHub ──► workflow «Correzioni»
                      (etichetta correzione)     │

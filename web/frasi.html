@@ -169,7 +169,8 @@
     <a href="frasi.html" class="qui">Coppie e proverbi</a>
     <a href="suoni.html">Varieta' e suoni</a>
     <a href="regole.html">Le regole</a>
-    <a href="verifica.html">Verifica</a></nav>
+    <a href="verifica.html">Verifica</a>
+    <a href="revisione.html">Revisione</a></nav>
 
 
 
@@ -197,6 +198,8 @@
   </div>
   <div id="tabellaProverbi"></div>
   <!-- /pagina:frasi -->
+
+
 
 
 
@@ -1491,6 +1494,23 @@ function tokenizza(t) {
   // 2026-11-05): parte solo premendo «Invia», solo con un token salvato in
   // questo browser, e solo verso l'API di GitHub di questo repository. Il
   // controllo della CI accetta soltanto le righe marcate RETE-DICHIARATA.
+  // Le due pagine che inviano (il traduttore e la revisione) passano tutte da
+  // qui: la riga di rete resta una sola. Restituisce la segnalazione aperta.
+  function apriSegnalazione(token, titolo, testo) {
+    var repository = (DATI.correzione || {}).api || "";
+    var corpo = { title: titolo, labels: ["correzione"], body: testo };
+    return window.fetch(repository + "/issues", {  // RETE-DICHIARATA
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json",
+                 "Content-Type": "application/json" },
+      body: JSON.stringify(corpo)
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, stato: r.status, j: j }; });
+    }).then(function (e) {
+      if (!e.ok) throw new Error(e.stato + " " + ((e.j && e.j.message) || ""));
+      return e.j;
+    });
+  }
   function inviaCorrezione() {
     var riga = preparaCorrezione();
     if (!riga) return;
@@ -1501,17 +1521,10 @@ function tokenizza(t) {
       return;
     }
     el("esitoCorrezione").innerHTML = "<p>Invio&hellip;</p>";
-    var corpo = { title: "Correzione: " + ULTIMA.italiano, labels: ["correzione"],
-                  body: "Correzione inviata dalla pagina del traduttore.\n\n```json\n" + riga + "\n```\n" };
-    window.fetch(repository + "/issues", {  // RETE-DICHIARATA
-      method: "POST",
-      headers: { "Authorization": "Bearer " + i.token, "Accept": "application/vnd.github+json",
-                 "Content-Type": "application/json" },
-      body: JSON.stringify(corpo)
-    }).then(function (r) {
-      return r.json().then(function (j) { return { ok: r.ok, stato: r.status, j: j }; });
-    }).then(function (e) {
-      if (!e.ok) throw new Error(e.stato + " " + ((e.j && e.j.message) || ""));
+    apriSegnalazione(i.token, "Correzione: " + ULTIMA.italiano,
+      "Correzione inviata dalla pagina del traduttore.\n\n```json\n" + riga + "\n```\n"
+    ).then(function (j) {
+      var e = { j: j };
       el("esitoCorrezione").innerHTML = '<p>Inviata: <a href="' + scappa(e.j.html_url) +
         '" target="_blank" rel="noopener">segnalazione #' + e.j.number + '</a>. Il workflow la archivia da verificare.</p>';
       el("ferraresCorretto").value = ""; el("ipaCorretta").value = ""; el("notaCorregge").value = "";
@@ -2328,6 +2341,291 @@ function tokenizza(t) {
     parlaItaliano(bottone.getAttribute("data-testo"));
   });
 
+  // --- La revisione (0.51) ---------------------------------------------------
+  // Una carta alla volta: l'italiano, la proposta del motore (calcolata quando
+  // si genera la pagina), e tre risposte. Le risposte restano in questo browser
+  // finche' non si inviano; partono come righe di correzione, le stesse del
+  // traduttore: «si'» e' una correzione uguale alla proposta, «no» porta la
+  // forma giusta, «non so» non manda niente. Le altre forme vanno nella nota.
+  var CHIAVE_REVISIONE = "traduttore-ferrarese-revisione";
+  var RIGHE_PER_SEGNALAZIONE = 80;
+  function statoRevisione() {
+    var vuoto = { risposte: {}, punti: 0, serie: 0, migliore: 0, gruppo: "" };
+    try {
+      var letto = JSON.parse(window.localStorage.getItem(CHIAVE_REVISIONE) || "null");
+      if (letto && letto.risposte) return letto;
+    } catch (e) { /* niente */ }
+    return vuoto;
+  }
+  function salvaRevisione(stato) {
+    try { window.localStorage.setItem(CHIAVE_REVISIONE, JSON.stringify(stato)); } catch (e) { /* niente */ }
+  }
+  // La riga di una risposta: la stessa forma di `rigaCorrezione`, che
+  // `correzioni importa` legge. Una risposta «non so» non ha riga.
+  function rigaRevisione(domanda, risposta, imp, versione) {
+    if (!risposta || risposta.esito === "nonso") return null;
+    var ferrarese = risposta.esito === "si" ? domanda.p : (risposta.ferrarese || "").trim();
+    if (!ferrarese) return null;
+    var nota = ["revisione " + domanda.id];
+    if ((risposta.altre || "").trim()) nota.push("altre forme in " + (imp.varieta || VARIETA_PREDEFINITA) + ": " + risposta.altre.trim());
+    if ((risposta.nota || "").trim()) nota.push(risposta.nota.trim());
+    var riga = { tipo: "correzione", data: risposta.data || oggiIso(),
+                 chi: (imp.chi || "").trim() || CHI_PREDEFINITO,
+                 varieta: imp.varieta || VARIETA_PREDEFINITA,
+                 italiano: domanda.it, proposta: risposta.proposta || domanda.p,
+                 ferrarese: ferrarese, nota: nota.join("; "), versione: versione || "" };
+    if ((imp.luogo || "").trim()) riga.luogo = imp.luogo.trim();
+    return riga;
+  }
+  function revisione() {
+    // La revisione parte solo dove c'e' la sua sezione e le sue domande: sulle
+    // altre pagine (e nel confronto di `controlla_equivalenza.py`, che simula
+    // il documento) non fa niente.
+    var radice = document.getElementById("revisione");
+    if (!radice || !DATI.revisione) return;
+    var gruppi = ((DATI.revisione || {}).gruppi) || [];
+    var perId = {};
+    gruppi.forEach(function (g) { g.domande.forEach(function (d) { perId[d.id] = d; }); });
+    var stato = statoRevisione();
+    var corrente = null, modo = "scegli", indietro = [];
+
+    function gruppoScelto() {
+      for (var i = 0; i < gruppi.length; i++) if (gruppi[i].chiave === stato.gruppo) return gruppi[i];
+      return null;
+    }
+    function fatte(g) { return g.domande.filter(function (d) { return stato.risposte[d.id]; }).length; }
+    function inCoda() {
+      return Object.keys(stato.risposte).filter(function (id) {
+        var r = stato.risposte[id]; return perId[id] && !r.inviata && r.esito !== "nonso";
+      });
+    }
+    function righe() {
+      var imp = leggiImpostazioni(), versione = (DATI.correzione || {}).versione || "";
+      return inCoda().map(function (id) {
+        return rigaRevisione(perId[id], stato.risposte[id], imp, versione);
+      }).filter(Boolean);
+    }
+    function conti() {
+      el("revPunti").textContent = String(stato.punti);
+      el("revSerie").textContent = String(stato.serie) + (stato.migliore ? " (record " + stato.migliore + ")" : "");
+      el("revRisposte").textContent = String(Object.keys(stato.risposte).length);
+      var coda = inCoda().length;
+      el("revCoda").textContent = String(coda);
+      el("revInvia").disabled = !coda;
+      var imp = leggiImpostazioni();
+      el("revChi").innerHTML = imp.chi
+        ? "Firmi come <b>" + scappa(imp.chi) + "</b> (" + scappa((DATI.nomi_varieta || {})[imp.varieta || VARIETA_PREDEFINITA] || imp.varieta || "") + ")"
+        : '<span class="errore">Scrivi il tuo nome qui sotto, in «Chi sei»: le risposte si firmano.</span>';
+      el("righeRevisione").value = righe().map(function (r) { return JSON.stringify(r); }).join("\n");
+    }
+    function disegnaGruppi() {
+      var contenitore = el("revGruppi");
+      contenitore.innerHTML = "";
+      gruppi.forEach(function (g) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "gruppo";
+        b.setAttribute("aria-pressed", g.chiave === stato.gruppo ? "true" : "false");
+        var n = fatte(g);
+        b.innerHTML = scappa(g.titolo) + (n === g.domande.length ? " &#10003;" : "") +
+          "<small>" + n + " su " + g.domande.length + "</small>";
+        b.addEventListener("click", function () {
+          stato.gruppo = g.chiave; salvaRevisione(stato); indietro = []; prossima();
+        });
+        contenitore.appendChild(b);
+      });
+      var g = gruppoScelto();
+      el("revAvanzamento").style.width = g ? (100 * fatte(g) / g.domande.length) + "%" : "0";
+    }
+    function propostaHtml(d) {
+      var buchi = (d.b || []).map(function (x) { return x.toLowerCase(); });
+      return d.p.split(/(\s+)/).map(function (pezzo) {
+        var pulito = pezzo.replace(/[.,;:!?«»"]/g, "").toLowerCase();
+        return buchi.indexOf(pulito) >= 0 ? '<span class="buco" title="il traduttore non la sa">' + scappa(pezzo) + "</span>" : scappa(pezzo);
+      }).join("");
+    }
+    function carta(d) {
+      var c = el("revCarta");
+      c.classList.remove("entra"); void c.offsetWidth; c.classList.add("entra");
+      var g = gruppoScelto();
+      var testa = '<div class="tema">' + scappa(g ? g.titolo : "") + (d.t ? " &middot; " + scappa(d.t) : "") + "</div>" +
+        '<div class="domanda">' + scappa(d.it) + "</div>" +
+        '<div class="piccolo">Il traduttore dice:</div><div class="proposta">' + propostaHtml(d) + "</div>";
+      if (modo === "scrivi") {
+        var r = stato.risposte[d.id] || {};
+        c.innerHTML = testa + '<div class="scrivi">' +
+          (d.b ? '<p class="chiede">Le parole in rosso il traduttore non le sa. <b>Come lo dici tu?</b></p>' : '<p class="chiede"><b>Come lo dici tu?</b></p>') +
+          '<label>In ferrarese<input type="text" id="revForma" autocomplete="off"></label>' +
+          '<label>Altri modi di dirlo in citt&agrave; (facoltativo, separati da virgola)<input type="text" id="revAltre" autocomplete="off"></label>' +
+          '<label>Nota (facoltativa)<input type="text" id="revNota" autocomplete="off" placeholder="es. in campagna si dice..."></label>' +
+          '<div class="scelte"><button type="button" class="si" id="revSalva">Salva<kbd>Invio</kbd></button>' +
+          '<button type="button" id="revAnnulla">Indietro<kbd>Esc</kbd></button>' +
+          '<button type="button" id="revNonSo">Non so<kbd>3</kbd></button></div></div>';
+        document.getElementById("revForma").value = r.ferrarese || (d.b ? "" : d.p);
+        document.getElementById("revAltre").value = r.altre || "";
+        document.getElementById("revNota").value = r.nota || "";
+        document.getElementById("revSalva").addEventListener("click", salvaScritta);
+        document.getElementById("revAnnulla").addEventListener("click", function () { modo = "scegli"; carta(d); });
+        document.getElementById("revNonSo").addEventListener("click", function () { rispondi("nonso"); });
+        var campo = document.getElementById("revForma");
+        campo.focus(); campo.select();
+        return;
+      }
+      c.innerHTML = testa + '<p class="chiede"><b>In ferrarese si dice cos&igrave;?</b></p>' +
+        '<div class="scelte">' +
+        (d.b ? "" : '<button type="button" class="si" id="revSi">S&igrave;<kbd>1</kbd></button>') +
+        '<button type="button" class="no" id="revNo">' + (d.b ? "Lo scrivo io" : "No, si dice&hellip;") + '<kbd>2</kbd></button>' +
+        '<button type="button" id="revNonSo">Non so<kbd>3</kbd></button></div>' +
+        '<p class="piccolo">' + (d.b ? "" : '<a href="#" id="revSiAltre">S&igrave;, ma si dice anche in altri modi</a> &middot; ') +
+        (indietro.length ? '<a href="#" id="revIndietro">torna alla carta di prima</a>' : "") + "</p>";
+      if (!d.b) {
+        document.getElementById("revSi").addEventListener("click", function () { rispondi("si"); });
+        document.getElementById("revSiAltre").addEventListener("click", function (e) {
+          e.preventDefault(); stato.risposte[d.id] = { esito: "si", proposta: d.p }; modo = "scrivi"; carta(d);
+        });
+      }
+      document.getElementById("revNo").addEventListener("click", function () { modo = "scrivi"; carta(d); });
+      document.getElementById("revNonSo").addEventListener("click", function () { rispondi("nonso"); });
+      var torna = document.getElementById("revIndietro");
+      if (torna) torna.addEventListener("click", function (e) { e.preventDefault(); tornaIndietro(); });
+    }
+    function festa(testo) {
+      el("revFesta").innerHTML = '<div class="festa">' + testo + "</div>";
+      window.setTimeout(function () { el("revFesta").innerHTML = ""; }, 3500);
+    }
+    function registra(d, risposta, punti) {
+      var prima = stato.risposte[d.id];
+      risposta.data = oggiIso();
+      if (!risposta.proposta) risposta.proposta = d.p;
+      stato.risposte[d.id] = risposta;
+      if (!prima || prima.esito === undefined) {
+        stato.punti += punti;
+        stato.serie += 1;
+        if (stato.serie > stato.migliore) stato.migliore = stato.serie;
+      }
+      salvaRevisione(stato);
+      indietro.push(d.id);
+      var totale = Object.keys(stato.risposte).length;
+      var g = gruppoScelto();
+      if (g && fatte(g) === g.domande.length) festa("Hai finito «" + scappa(g.titolo) + "»: grazie! Ricordati di premere <b>Invia</b>.");
+      else if (totale % 25 === 0) festa(totale + " risposte! Ogni risposta &egrave; una parola in pi&ugrave; che il traduttore sa davvero.");
+      else if (stato.serie && stato.serie % 10 === 0) festa(stato.serie + " di fila!");
+    }
+    function rispondi(esito) {
+      if (!corrente) return;
+      if (esito === "nonso") {
+        stato.serie = 0;
+        stato.risposte[corrente.id] = { esito: "nonso", data: oggiIso() };
+        salvaRevisione(stato); indietro.push(corrente.id);
+      } else {
+        registra(corrente, { esito: "si", proposta: corrente.p }, 10);
+      }
+      prossima();
+    }
+    function salvaScritta() {
+      var forma = (document.getElementById("revForma").value || "").trim();
+      var altre = (document.getElementById("revAltre").value || "").trim();
+      var nota = (document.getElementById("revNota").value || "").trim();
+      if (!forma) { el("revEsito").innerHTML = '<p class="errore">Scrivi come si dice, oppure premi «Non so».</p>'; return; }
+      el("revEsito").innerHTML = "";
+      var uguale = forma === corrente.p;
+      registra(corrente, { esito: uguale ? "si" : "no", ferrarese: uguale ? "" : forma,
+                           altre: altre, nota: nota, proposta: corrente.p },
+               uguale ? 10 + (altre ? 5 : 0) : 15);
+      prossima();
+    }
+    function tornaIndietro() {
+      var id = indietro.pop();
+      if (!id || !perId[id]) return;
+      corrente = perId[id]; modo = stato.risposte[id] && stato.risposte[id].esito === "no" ? "scrivi" : "scegli";
+      disegnaGruppi(); conti(); carta(corrente);
+    }
+    function prossima() {
+      modo = "scegli";
+      disegnaGruppi(); conti();
+      var g = gruppoScelto();
+      if (!g) { corrente = null; el("revCarta").innerHTML = '<span class="vuoto">Scegli un gruppo qui sopra: si comincia da dove si vuole.</span>'; return; }
+      corrente = null;
+      for (var i = 0; i < g.domande.length; i++) {
+        if (!stato.risposte[g.domande[i].id]) { corrente = g.domande[i]; break; }
+      }
+      if (!corrente) {
+        el("revCarta").innerHTML = "<p><b>Gruppo finito.</b> Scegline un altro, oppure premi <b>Invia</b> per mandare le risposte.</p>";
+        return;
+      }
+      carta(corrente);
+    }
+    function invia() {
+      var imp = leggiImpostazioni();
+      var tutte = inCoda();
+      if (!tutte.length) return;
+      if (!(imp.chi || "").trim()) {
+        el("revImpostazioni").open = true;
+        el("revEsito").innerHTML = '<p class="errore">Prima scrivi il tuo nome in «Chi sei» e premi Salva: le risposte si firmano.</p>';
+        return;
+      }
+      if (!imp.token || !(DATI.correzione || {}).api) {
+        el("revImpostazioni").open = true;
+        el("revEsito").innerHTML = '<p class="errore">Manca il token: mettilo in «Chi sei» e premi Salva. Intanto puoi copiare o scaricare le righe.</p>';
+        return;
+      }
+      var lotto = tutte.slice(0, RIGHE_PER_SEGNALAZIONE);
+      var versione = (DATI.correzione || {}).versione || "";
+      var testo = lotto.map(function (id) { return JSON.stringify(rigaRevisione(perId[id], stato.risposte[id], imp, versione)); }).join("\n");
+      el("revEsito").innerHTML = "<p>Invio di " + lotto.length + " risposte&hellip;</p>";
+      el("revInvia").disabled = true;
+      apriSegnalazione(imp.token, "Revisione: " + lotto.length + " risposte di " + imp.chi.trim(),
+        "Risposte inviate dalla pagina della revisione.\n\n```json\n" + testo + "\n```\n"
+      ).then(function (j) {
+        lotto.forEach(function (id) { stato.risposte[id].inviata = j.number; });
+        salvaRevisione(stato); conti();
+        var resto = inCoda().length;
+        el("revEsito").innerHTML = '<p>Inviate: <a href="' + scappa(j.html_url) + '" target="_blank" rel="noopener">segnalazione #' + j.number +
+          "</a>. Il workflow le archivia da verificare." + (resto ? " Ne restano " + resto + ": premi di nuovo Invia." : "") + "</p>";
+        festa("Inviate! Grazie, " + scappa(imp.chi.trim()) + ".");
+      }).catch(function (errore) {
+        conti();
+        el("revEsito").innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) +
+          "). Le risposte restano qui: riprova, oppure copia o scarica le righe.</p>";
+      });
+    }
+
+    el("revInvia").addEventListener("click", invia);
+    el("salvaImpostazioni").addEventListener("click", function () { window.setTimeout(conti, 0); });
+    el("revCopia").addEventListener("click", function () {
+      conti();
+      if (navigator.clipboard) navigator.clipboard.writeText(el("righeRevisione").value).catch(function () {});
+    });
+    el("revScarica").addEventListener("click", function () {
+      conti();
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([el("righeRevisione").value + "\n"], { type: "application/x-ndjson" }));
+      a.download = "revisione-" + oggiIso() + ".jsonl";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    });
+    el("revAzzera").addEventListener("click", function () {
+      if (!window.confirm || !window.confirm("Cancellare da questo browser tutte le risposte e i punti? Quelle gia' inviate restano su GitHub.")) return;
+      stato = { risposte: {}, punti: 0, serie: 0, migliore: 0, gruppo: stato.gruppo };
+      salvaRevisione(stato); indietro = []; prossima();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!corrente || e.metaKey || e.ctrlKey || e.altKey) return;
+      var nelCampo = e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+      if (modo === "scrivi") {
+        if (e.key === "Enter" && nelCampo && e.target.id && e.target.id.indexOf("rev") === 0) { e.preventDefault(); salvaScritta(); }
+        else if (e.key === "Escape") { modo = "scegli"; carta(corrente); }
+        return;
+      }
+      if (nelCampo) return;
+      if ((e.key === "1" || e.key === "s") && !corrente.b) rispondi("si");
+      else if (e.key === "2" || e.key === "n") { modo = "scrivi"; carta(corrente); e.preventDefault(); }
+      else if (e.key === "3" || e.key === "?") rispondi("nonso");
+      else if (e.key === "Backspace" || e.key === "ArrowLeft") { e.preventDefault(); tornaIndietro(); }
+    });
+    if (!gruppoScelto() && gruppi.length) stato.gruppo = gruppi[0].chiave;
+    if (!leggiImpostazioni().chi) el("revImpostazioni").open = true;
+    prossima();
+  }
+
   // Si disegna solo quello che la pagina contiene davvero. Ogni funzione
   // controlla gia' se il proprio contenitore esiste, quindi si puo' chiamare
   // sempre: e' il modo che non richiede di tenere qui l'elenco delle pagine
@@ -2340,6 +2638,7 @@ function tokenizza(t) {
   pannello();
   indiceFette();
   contoSuoni();
+  revisione();
 })();
 </script>
 </body>

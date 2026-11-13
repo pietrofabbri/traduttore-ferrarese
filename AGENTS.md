@@ -73,7 +73,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 436 test
+python3 prove/test_traduttore.py           # 441 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -93,9 +93,9 @@ python3 -m traduttore.cli web        # rigenera TUTTE le pagine in web/
 python3 -m traduttore.cli buchi      # i numeri di quello che manca
 ```
 
-`web` non genera una pagina ma **quarantasei**: la home, il traduttore, l'indice
-del glossario, trentanove fette, le frasi, i suoni, le regole e la verifica
-a campione. Il comando stampa il peso di
+`web` non genera una pagina ma **quarantasette**: la home, il traduttore, l'indice
+del glossario, trentanove fette, le frasi, i suoni, le regole, la verifica
+a campione e la revisione. Il comando stampa il peso di
 ognuna, e quel peso e' un numero che va guardato: una pagina che torna a
 diversi megabyte e' la divisione annullata da qualche parte. Le pagine si
 aggiungono in `PAGINE` dentro `sorgenti/costruisci_web.py`, mai a mano.

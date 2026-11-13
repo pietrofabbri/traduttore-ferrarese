@@ -1,0 +1,5842 @@
+{
+ "_nota": "Le domande della revisione (0.51): solo l'italiano. La traduzione proposta non e' qui: la calcola il motore quando si genera la pagina, quindi e' sempre quella di oggi. Le risposte arrivano come correzioni (dati/correzioni/), firmate da chi risponde. Le 300 parole vengono da FrequencyWords di Hermit Dave (it_50k, sottotitoli OpenSubtitles), licenza CC-BY-SA 4.0: https://github.com/hermitdave/FrequencyWords",
+ "gruppi": [
+  {
+   "chiave": "frasi",
+   "titolo": "Frasi di tutti i giorni",
+   "spiegazione": "Saluti, negazione, domande, articoli, il passato: le frasi che insegnano le regole.",
+   "domande": [
+    {
+     "id": "F001",
+     "it": "buongiorno",
+     "tema": "saluti"
+    },
+    {
+     "id": "F002",
+     "it": "buonasera",
+     "tema": "saluti"
+    },
+    {
+     "id": "F003",
+     "it": "ciao, come stai?",
+     "tema": "saluti"
+    },
+    {
+     "id": "F004",
+     "it": "sto bene, grazie",
+     "tema": "saluti"
+    },
+    {
+     "id": "F005",
+     "it": "arrivederci, a domani",
+     "tema": "saluti"
+    },
+    {
+     "id": "F006",
+     "it": "scusa, non ho capito",
+     "tema": "saluti"
+    },
+    {
+     "id": "F007",
+     "it": "per favore",
+     "tema": "saluti"
+    },
+    {
+     "id": "F008",
+     "it": "come ti chiami?",
+     "tema": "saluti"
+    },
+    {
+     "id": "F009",
+     "it": "mi chiamo Luca",
+     "tema": "saluti"
+    },
+    {
+     "id": "F010",
+     "it": "non lo so",
+     "tema": "negazione"
+    },
+    {
+     "id": "F011",
+     "it": "non c'è pane",
+     "tema": "negazione"
+    },
+    {
+     "id": "F012",
+     "it": "non ho fame",
+     "tema": "negazione"
+    },
+    {
+     "id": "F013",
+     "it": "non voglio niente",
+     "tema": "negazione"
+    },
+    {
+     "id": "F014",
+     "it": "non è vero",
+     "tema": "negazione"
+    },
+    {
+     "id": "F015",
+     "it": "non viene mai",
+     "tema": "negazione"
+    },
+    {
+     "id": "F016",
+     "it": "nessuno lo sa",
+     "tema": "negazione"
+    },
+    {
+     "id": "F017",
+     "it": "dove vai?",
+     "tema": "domande"
+    },
+    {
+     "id": "F018",
+     "it": "che cosa fai?",
+     "tema": "domande"
+    },
+    {
+     "id": "F019",
+     "it": "quanto costa?",
+     "tema": "domande"
+    },
+    {
+     "id": "F020",
+     "it": "che ore sono?",
+     "tema": "domande"
+    },
+    {
+     "id": "F021",
+     "it": "hai visto mio fratello?",
+     "tema": "domande"
+    },
+    {
+     "id": "F022",
+     "it": "vieni con me?",
+     "tema": "domande"
+    },
+    {
+     "id": "F023",
+     "it": "perché piangi?",
+     "tema": "domande"
+    },
+    {
+     "id": "F024",
+     "it": "chi è?",
+     "tema": "domande"
+    },
+    {
+     "id": "F025",
+     "it": "io vado a casa",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F026",
+     "it": "tu sei stanco",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F027",
+     "it": "lei è mia sorella",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F028",
+     "it": "noi andiamo al mercato",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F029",
+     "it": "voi venite domani",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F030",
+     "it": "loro mangiano tardi",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F031",
+     "it": "piove",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F032",
+     "it": "c'è il sole",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F033",
+     "it": "fa freddo",
+     "tema": "soggetto"
+    },
+    {
+     "id": "F034",
+     "it": "il cane e il gatto",
+     "tema": "articoli"
+    },
+    {
+     "id": "F035",
+     "it": "l'uomo e la donna",
+     "tema": "articoli"
+    },
+    {
+     "id": "F036",
+     "it": "gli amici e le amiche",
+     "tema": "articoli"
+    },
+    {
+     "id": "F037",
+     "it": "un uomo e una donna",
+     "tema": "articoli"
+    },
+    {
+     "id": "F038",
+     "it": "un'amica e un amico",
+     "tema": "articoli"
+    },
+    {
+     "id": "F039",
+     "it": "lo zio e la zia",
+     "tema": "articoli"
+    },
+    {
+     "id": "F040",
+     "it": "la casa del nonno",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F041",
+     "it": "vado alla stazione",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F042",
+     "it": "il libro è sul tavolo",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F043",
+     "it": "il gatto è nella scatola",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F044",
+     "it": "vengo dal medico",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F045",
+     "it": "parlo con la mamma",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F046",
+     "it": "un bicchiere d'acqua",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F047",
+     "it": "vado in piazza",
+     "tema": "preposizioni"
+    },
+    {
+     "id": "F048",
+     "it": "mio padre lavora in campagna",
+     "tema": "casa e famiglia"
+    },
+    {
+     "id": "F049",
+     "it": "mia madre fa da mangiare",
+     "tema": "casa e famiglia"
+    },
+    {
+     "id": "F050",
+     "it": "i bambini giocano in cortile",
+     "tema": "casa e famiglia"
+    },
+    {
+     "id": "F051",
+     "it": "chiudi la porta",
+     "tema": "casa e famiglia"
+    },
+    {
+     "id": "F052",
+     "it": "apri la finestra",
+     "tema": "casa e famiglia"
+    },
+    {
+     "id": "F053",
+     "it": "la nonna racconta una storia",
+     "tema": "casa e famiglia"
+    },
+    {
+     "id": "F054",
+     "it": "ho fame",
+     "tema": "cibo"
+    },
+    {
+     "id": "F055",
+     "it": "mangiamo i cappellacci di zucca",
+     "tema": "cibo"
+    },
+    {
+     "id": "F056",
+     "it": "un bicchiere di vino rosso",
+     "tema": "cibo"
+    },
+    {
+     "id": "F057",
+     "it": "il pane è buono",
+     "tema": "cibo"
+    },
+    {
+     "id": "F058",
+     "it": "la minestra è calda",
+     "tema": "cibo"
+    },
+    {
+     "id": "F059",
+     "it": "oggi piove",
+     "tema": "tempo"
+    },
+    {
+     "id": "F060",
+     "it": "ieri c'era la nebbia",
+     "tema": "tempo"
+    },
+    {
+     "id": "F061",
+     "it": "domani andremo al mare",
+     "tema": "tempo"
+    },
+    {
+     "id": "F062",
+     "it": "d'inverno fa freddo",
+     "tema": "tempo"
+    },
+    {
+     "id": "F063",
+     "it": "lunedì vado a Ferrara",
+     "tema": "tempo"
+    },
+    {
+     "id": "F064",
+     "it": "sono andato a Ferrara",
+     "tema": "passato"
+    },
+    {
+     "id": "F065",
+     "it": "ho mangiato troppo",
+     "tema": "passato"
+    },
+    {
+     "id": "F066",
+     "it": "siamo arrivati tardi",
+     "tema": "passato"
+    },
+    {
+     "id": "F067",
+     "it": "hanno detto di no",
+     "tema": "passato"
+    },
+    {
+     "id": "F068",
+     "it": "è venuta ieri sera",
+     "tema": "passato"
+    },
+    {
+     "id": "F069",
+     "it": "è più alto di me",
+     "tema": "comparativi"
+    },
+    {
+     "id": "F070",
+     "it": "è bello come il sole",
+     "tema": "comparativi"
+    },
+    {
+     "id": "F071",
+     "it": "è il più bravo di tutti",
+     "tema": "comparativi"
+    },
+    {
+     "id": "F072",
+     "it": "il ragazzo che ho visto",
+     "tema": "relative"
+    },
+    {
+     "id": "F073",
+     "it": "la casa dove abito",
+     "tema": "relative"
+    },
+    {
+     "id": "F074",
+     "it": "chi dorme non piglia pesci",
+     "tema": "relative"
+    },
+    {
+     "id": "F075",
+     "it": "non vedo l'ora",
+     "tema": "modi di dire"
+    },
+    {
+     "id": "F076",
+     "it": "lascia perdere",
+     "tema": "modi di dire"
+    },
+    {
+     "id": "F077",
+     "it": "va bene",
+     "tema": "modi di dire"
+    },
+    {
+     "id": "F078",
+     "it": "che cosa vuoi?",
+     "tema": "modi di dire"
+    },
+    {
+     "id": "F079",
+     "it": "stai zitto",
+     "tema": "modi di dire"
+    }
+   ]
+  },
+  {
+   "chiave": "parole",
+   "titolo": "Le 300 parole piu' usate",
+   "spiegazione": "Le parole italiane piu' frequenti nei sottotitoli (FrequencyWords, CC-BY-SA 4.0).",
+   "domande": [
+    {
+     "id": "P001",
+     "it": "non",
+     "tema": "n. 1 per frequenza"
+    },
+    {
+     "id": "P002",
+     "it": "che",
+     "tema": "n. 2 per frequenza"
+    },
+    {
+     "id": "P003",
+     "it": "di",
+     "tema": "n. 3 per frequenza"
+    },
+    {
+     "id": "P004",
+     "it": "la",
+     "tema": "n. 4 per frequenza"
+    },
+    {
+     "id": "P005",
+     "it": "il",
+     "tema": "n. 5 per frequenza"
+    },
+    {
+     "id": "P006",
+     "it": "un",
+     "tema": "n. 6 per frequenza"
+    },
+    {
+     "id": "P007",
+     "it": "per",
+     "tema": "n. 7 per frequenza"
+    },
+    {
+     "id": "P008",
+     "it": "in",
+     "tema": "n. 8 per frequenza"
+    },
+    {
+     "id": "P009",
+     "it": "una",
+     "tema": "n. 9 per frequenza"
+    },
+    {
+     "id": "P010",
+     "it": "mi",
+     "tema": "n. 10 per frequenza"
+    },
+    {
+     "id": "P011",
+     "it": "sono",
+     "tema": "n. 11 per frequenza"
+    },
+    {
+     "id": "P012",
+     "it": "ho",
+     "tema": "n. 12 per frequenza"
+    },
+    {
+     "id": "P013",
+     "it": "si",
+     "tema": "n. 13 per frequenza"
+    },
+    {
+     "id": "P014",
+     "it": "ha",
+     "tema": "n. 14 per frequenza"
+    },
+    {
+     "id": "P015",
+     "it": "ma",
+     "tema": "n. 15 per frequenza"
+    },
+    {
+     "id": "P016",
+     "it": "lo",
+     "tema": "n. 16 per frequenza"
+    },
+    {
+     "id": "P017",
+     "it": "cosa",
+     "tema": "n. 17 per frequenza"
+    },
+    {
+     "id": "P018",
+     "it": "con",
+     "tema": "n. 18 per frequenza"
+    },
+    {
+     "id": "P019",
+     "it": "no",
+     "tema": "n. 19 per frequenza"
+    },
+    {
+     "id": "P020",
+     "it": "le",
+     "tema": "n. 20 per frequenza"
+    },
+    {
+     "id": "P021",
+     "it": "ti",
+     "tema": "n. 21 per frequenza"
+    },
+    {
+     "id": "P022",
+     "it": "se",
+     "tema": "n. 22 per frequenza"
+    },
+    {
+     "id": "P023",
+     "it": "da",
+     "tema": "n. 23 per frequenza"
+    },
+    {
+     "id": "P024",
+     "it": "come",
+     "tema": "n. 24 per frequenza"
+    },
+    {
+     "id": "P025",
+     "it": "io",
+     "tema": "n. 25 per frequenza"
+    },
+    {
+     "id": "P026",
+     "it": "ci",
+     "tema": "n. 26 per frequenza"
+    },
+    {
+     "id": "P027",
+     "it": "hai",
+     "tema": "n. 27 per frequenza"
+    },
+    {
+     "id": "P028",
+     "it": "questo",
+     "tema": "n. 28 per frequenza"
+    },
+    {
+     "id": "P029",
+     "it": "bene",
+     "tema": "n. 29 per frequenza"
+    },
+    {
+     "id": "P030",
+     "it": "qui",
+     "tema": "n. 30 per frequenza"
+    },
+    {
+     "id": "P031",
+     "it": "sei",
+     "tema": "n. 31 per frequenza"
+    },
+    {
+     "id": "P032",
+     "it": "del",
+     "tema": "n. 32 per frequenza"
+    },
+    {
+     "id": "P033",
+     "it": "tu",
+     "tema": "n. 33 per frequenza"
+    },
+    {
+     "id": "P034",
+     "it": "solo",
+     "tema": "n. 34 per frequenza"
+    },
+    {
+     "id": "P035",
+     "it": "mio",
+     "tema": "n. 35 per frequenza"
+    },
+    {
+     "id": "P036",
+     "it": "al",
+     "tema": "n. 36 per frequenza"
+    },
+    {
+     "id": "P037",
+     "it": "me",
+     "tema": "n. 37 per frequenza"
+    },
+    {
+     "id": "P038",
+     "it": "tutto",
+     "tema": "n. 38 per frequenza"
+    },
+    {
+     "id": "P039",
+     "it": "te",
+     "tema": "n. 39 per frequenza"
+    },
+    {
+     "id": "P040",
+     "it": "era",
+     "tema": "n. 40 per frequenza"
+    },
+    {
+     "id": "P041",
+     "it": "della",
+     "tema": "n. 41 per frequenza"
+    },
+    {
+     "id": "P042",
+     "it": "mia",
+     "tema": "n. 42 per frequenza"
+    },
+    {
+     "id": "P043",
+     "it": "fatto",
+     "tema": "n. 43 per frequenza"
+    },
+    {
+     "id": "P044",
+     "it": "fare",
+     "tema": "n. 44 per frequenza"
+    },
+    {
+     "id": "P045",
+     "it": "essere",
+     "tema": "n. 45 per frequenza"
+    },
+    {
+     "id": "P046",
+     "it": "so",
+     "tema": "n. 46 per frequenza"
+    },
+    {
+     "id": "P047",
+     "it": "quando",
+     "tema": "n. 47 per frequenza"
+    },
+    {
+     "id": "P048",
+     "it": "sì",
+     "tema": "n. 48 per frequenza"
+    },
+    {
+     "id": "P049",
+     "it": "ora",
+     "tema": "n. 49 per frequenza"
+    },
+    {
+     "id": "P050",
+     "it": "lei",
+     "tema": "n. 50 per frequenza"
+    },
+    {
+     "id": "P051",
+     "it": "gli",
+     "tema": "n. 51 per frequenza"
+    },
+    {
+     "id": "P052",
+     "it": "ne",
+     "tema": "n. 52 per frequenza"
+    },
+    {
+     "id": "P053",
+     "it": "oh",
+     "tema": "n. 53 per frequenza"
+    },
+    {
+     "id": "P054",
+     "it": "questa",
+     "tema": "n. 54 per frequenza"
+    },
+    {
+     "id": "P055",
+     "it": "detto",
+     "tema": "n. 55 per frequenza"
+    },
+    {
+     "id": "P056",
+     "it": "ok",
+     "tema": "n. 56 per frequenza"
+    },
+    {
+     "id": "P057",
+     "it": "va",
+     "tema": "n. 57 per frequenza"
+    },
+    {
+     "id": "P058",
+     "it": "perche",
+     "tema": "n. 58 per frequenza"
+    },
+    {
+     "id": "P059",
+     "it": "quello",
+     "tema": "n. 59 per frequenza"
+    },
+    {
+     "id": "P060",
+     "it": "mai",
+     "tema": "n. 60 per frequenza"
+    },
+    {
+     "id": "P061",
+     "it": "alla",
+     "tema": "n. 61 per frequenza"
+    },
+    {
+     "id": "P062",
+     "it": "anche",
+     "tema": "n. 62 per frequenza"
+    },
+    {
+     "id": "P063",
+     "it": "stato",
+     "tema": "n. 63 per frequenza"
+    },
+    {
+     "id": "P064",
+     "it": "abbiamo",
+     "tema": "n. 64 per frequenza"
+    },
+    {
+     "id": "P065",
+     "it": "tutti",
+     "tema": "n. 65 per frequenza"
+    },
+    {
+     "id": "P066",
+     "it": "dei",
+     "tema": "n. 66 per frequenza"
+    },
+    {
+     "id": "P067",
+     "it": "grazie",
+     "tema": "n. 67 per frequenza"
+    },
+    {
+     "id": "P068",
+     "it": "chi",
+     "tema": "n. 68 per frequenza"
+    },
+    {
+     "id": "P069",
+     "it": "sta",
+     "tema": "n. 69 per frequenza"
+    },
+    {
+     "id": "P070",
+     "it": "molto",
+     "tema": "n. 70 per frequenza"
+    },
+    {
+     "id": "P071",
+     "it": "più",
+     "tema": "n. 71 per frequenza"
+    },
+    {
+     "id": "P072",
+     "it": "voglio",
+     "tema": "n. 72 per frequenza"
+    },
+    {
+     "id": "P073",
+     "it": "perché",
+     "tema": "n. 73 per frequenza"
+    },
+    {
+     "id": "P074",
+     "it": "tuo",
+     "tema": "n. 74 per frequenza"
+    },
+    {
+     "id": "P075",
+     "it": "beh",
+     "tema": "n. 75 per frequenza"
+    },
+    {
+     "id": "P076",
+     "it": "sia",
+     "tema": "n. 76 per frequenza"
+    },
+    {
+     "id": "P077",
+     "it": "nel",
+     "tema": "n. 77 per frequenza"
+    },
+    {
+     "id": "P078",
+     "it": "lui",
+     "tema": "n. 78 per frequenza"
+    },
+    {
+     "id": "P079",
+     "it": "allora",
+     "tema": "n. 79 per frequenza"
+    },
+    {
+     "id": "P080",
+     "it": "posso",
+     "tema": "n. 80 per frequenza"
+    },
+    {
+     "id": "P081",
+     "it": "piu",
+     "tema": "n. 81 per frequenza"
+    },
+    {
+     "id": "P082",
+     "it": "ehi",
+     "tema": "n. 82 per frequenza"
+    },
+    {
+     "id": "P083",
+     "it": "prima",
+     "tema": "n. 83 per frequenza"
+    },
+    {
+     "id": "P084",
+     "it": "tua",
+     "tema": "n. 84 per frequenza"
+    },
+    {
+     "id": "P085",
+     "it": "suo",
+     "tema": "n. 85 per frequenza"
+    },
+    {
+     "id": "P086",
+     "it": "niente",
+     "tema": "n. 86 per frequenza"
+    },
+    {
+     "id": "P087",
+     "it": "qualcosa",
+     "tema": "n. 87 per frequenza"
+    },
+    {
+     "id": "P088",
+     "it": "sai",
+     "tema": "n. 88 per frequenza"
+    },
+    {
+     "id": "P089",
+     "it": "siamo",
+     "tema": "n. 89 per frequenza"
+    },
+    {
+     "id": "P090",
+     "it": "cosi",
+     "tema": "n. 90 per frequenza"
+    },
+    {
+     "id": "P091",
+     "it": "davvero",
+     "tema": "n. 91 per frequenza"
+    },
+    {
+     "id": "P092",
+     "it": "ancora",
+     "tema": "n. 92 per frequenza"
+    },
+    {
+     "id": "P093",
+     "it": "hanno",
+     "tema": "n. 93 per frequenza"
+    },
+    {
+     "id": "P094",
+     "it": "stai",
+     "tema": "n. 94 per frequenza"
+    },
+    {
+     "id": "P095",
+     "it": "fa",
+     "tema": "n. 95 per frequenza"
+    },
+    {
+     "id": "P096",
+     "it": "sua",
+     "tema": "n. 96 per frequenza"
+    },
+    {
+     "id": "P097",
+     "it": "così",
+     "tema": "n. 97 per frequenza"
+    },
+    {
+     "id": "P098",
+     "it": "casa",
+     "tema": "n. 98 per frequenza"
+    },
+    {
+     "id": "P099",
+     "it": "uno",
+     "tema": "n. 99 per frequenza"
+    },
+    {
+     "id": "P100",
+     "it": "dove",
+     "tema": "n. 100 per frequenza"
+    },
+    {
+     "id": "P101",
+     "it": "su",
+     "tema": "n. 101 per frequenza"
+    },
+    {
+     "id": "P102",
+     "it": "vero",
+     "tema": "n. 102 per frequenza"
+    },
+    {
+     "id": "P103",
+     "it": "vuoi",
+     "tema": "n. 103 per frequenza"
+    },
+    {
+     "id": "P104",
+     "it": "noi",
+     "tema": "n. 104 per frequenza"
+    },
+    {
+     "id": "P105",
+     "it": "due",
+     "tema": "n. 105 per frequenza"
+    },
+    {
+     "id": "P106",
+     "it": "quindi",
+     "tema": "n. 106 per frequenza"
+    },
+    {
+     "id": "P107",
+     "it": "dire",
+     "tema": "n. 107 per frequenza"
+    },
+    {
+     "id": "P108",
+     "it": "delle",
+     "tema": "n. 108 per frequenza"
+    },
+    {
+     "id": "P109",
+     "it": "quella",
+     "tema": "n. 109 per frequenza"
+    },
+    {
+     "id": "P110",
+     "it": "sempre",
+     "tema": "n. 110 per frequenza"
+    },
+    {
+     "id": "P111",
+     "it": "altro",
+     "tema": "n. 111 per frequenza"
+    },
+    {
+     "id": "P112",
+     "it": "sto",
+     "tema": "n. 112 per frequenza"
+    },
+    {
+     "id": "P113",
+     "it": "andare",
+     "tema": "n. 113 per frequenza"
+    },
+    {
+     "id": "P114",
+     "it": "ad",
+     "tema": "n. 114 per frequenza"
+    },
+    {
+     "id": "P115",
+     "it": "po",
+     "tema": "n. 115 per frequenza"
+    },
+    {
+     "id": "P116",
+     "it": "loro",
+     "tema": "n. 116 per frequenza"
+    },
+    {
+     "id": "P117",
+     "it": "devo",
+     "tema": "n. 117 per frequenza"
+    },
+    {
+     "id": "P118",
+     "it": "quel",
+     "tema": "n. 118 per frequenza"
+    },
+    {
+     "id": "P119",
+     "it": "forse",
+     "tema": "n. 119 per frequenza"
+    },
+    {
+     "id": "P120",
+     "it": "li",
+     "tema": "n. 120 per frequenza"
+    },
+    {
+     "id": "P121",
+     "it": "proprio",
+     "tema": "n. 121 per frequenza"
+    },
+    {
+     "id": "P122",
+     "it": "certo",
+     "tema": "n. 122 per frequenza"
+    },
+    {
+     "id": "P123",
+     "it": "tempo",
+     "tema": "n. 123 per frequenza"
+    },
+    {
+     "id": "P124",
+     "it": "nella",
+     "tema": "n. 124 per frequenza"
+    },
+    {
+     "id": "P125",
+     "it": "poi",
+     "tema": "n. 125 per frequenza"
+    },
+    {
+     "id": "P126",
+     "it": "vi",
+     "tema": "n. 126 per frequenza"
+    },
+    {
+     "id": "P127",
+     "it": "credo",
+     "tema": "n. 127 per frequenza"
+    },
+    {
+     "id": "P128",
+     "it": "vita",
+     "tema": "n. 128 per frequenza"
+    },
+    {
+     "id": "P129",
+     "it": "cose",
+     "tema": "n. 129 per frequenza"
+    },
+    {
+     "id": "P130",
+     "it": "sul",
+     "tema": "n. 130 per frequenza"
+    },
+    {
+     "id": "P131",
+     "it": "quanto",
+     "tema": "n. 131 per frequenza"
+    },
+    {
+     "id": "P132",
+     "it": "puoi",
+     "tema": "n. 132 per frequenza"
+    },
+    {
+     "id": "P133",
+     "it": "fuori",
+     "tema": "n. 133 per frequenza"
+    },
+    {
+     "id": "P134",
+     "it": "anni",
+     "tema": "n. 134 per frequenza"
+    },
+    {
+     "id": "P135",
+     "it": "cui",
+     "tema": "n. 135 per frequenza"
+    },
+    {
+     "id": "P136",
+     "it": "andiamo",
+     "tema": "n. 136 per frequenza"
+    },
+    {
+     "id": "P137",
+     "it": "parte",
+     "tema": "n. 137 per frequenza"
+    },
+    {
+     "id": "P138",
+     "it": "visto",
+     "tema": "n. 138 per frequenza"
+    },
+    {
+     "id": "P139",
+     "it": "qualcuno",
+     "tema": "n. 139 per frequenza"
+    },
+    {
+     "id": "P140",
+     "it": "lavoro",
+     "tema": "n. 140 per frequenza"
+    },
+    {
+     "id": "P141",
+     "it": "voi",
+     "tema": "n. 141 per frequenza"
+    },
+    {
+     "id": "P142",
+     "it": "ciao",
+     "tema": "n. 142 per frequenza"
+    },
+    {
+     "id": "P143",
+     "it": "dio",
+     "tema": "n. 143 per frequenza"
+    },
+    {
+     "id": "P144",
+     "it": "volta",
+     "tema": "n. 144 per frequenza"
+    },
+    {
+     "id": "P145",
+     "it": "dopo",
+     "tema": "n. 145 per frequenza"
+    },
+    {
+     "id": "P146",
+     "it": "adesso",
+     "tema": "n. 146 per frequenza"
+    },
+    {
+     "id": "P147",
+     "it": "stata",
+     "tema": "n. 147 per frequenza"
+    },
+    {
+     "id": "P148",
+     "it": "uomo",
+     "tema": "n. 148 per frequenza"
+    },
+    {
+     "id": "P149",
+     "it": "padre",
+     "tema": "n. 149 per frequenza"
+    },
+    {
+     "id": "P150",
+     "it": "devi",
+     "tema": "n. 150 per frequenza"
+    },
+    {
+     "id": "P151",
+     "it": "bisogno",
+     "tema": "n. 151 per frequenza"
+    },
+    {
+     "id": "P152",
+     "it": "gia",
+     "tema": "n. 152 per frequenza"
+    },
+    {
+     "id": "P153",
+     "it": "amico",
+     "tema": "n. 153 per frequenza"
+    },
+    {
+     "id": "P154",
+     "it": "ed",
+     "tema": "n. 154 per frequenza"
+    },
+    {
+     "id": "P155",
+     "it": "posto",
+     "tema": "n. 155 per frequenza"
+    },
+    {
+     "id": "P156",
+     "it": "nessuno",
+     "tema": "n. 156 per frequenza"
+    },
+    {
+     "id": "P157",
+     "it": "via",
+     "tema": "n. 157 per frequenza"
+    },
+    {
+     "id": "P158",
+     "it": "fai",
+     "tema": "n. 158 per frequenza"
+    },
+    {
+     "id": "P159",
+     "it": "signore",
+     "tema": "n. 159 per frequenza"
+    },
+    {
+     "id": "P160",
+     "it": "meglio",
+     "tema": "n. 160 per frequenza"
+    },
+    {
+     "id": "P161",
+     "it": "cazzo",
+     "tema": "n. 161 per frequenza"
+    },
+    {
+     "id": "P162",
+     "it": "dai",
+     "tema": "n. 162 per frequenza"
+    },
+    {
+     "id": "P163",
+     "it": "dal",
+     "tema": "n. 163 per frequenza"
+    },
+    {
+     "id": "P164",
+     "it": "vuole",
+     "tema": "n. 164 per frequenza"
+    },
+    {
+     "id": "P165",
+     "it": "sembra",
+     "tema": "n. 165 per frequenza"
+    },
+    {
+     "id": "P166",
+     "it": "giorno",
+     "tema": "n. 166 per frequenza"
+    },
+    {
+     "id": "P167",
+     "it": "ogni",
+     "tema": "n. 167 per frequenza"
+    },
+    {
+     "id": "P168",
+     "it": "modo",
+     "tema": "n. 168 per frequenza"
+    },
+    {
+     "id": "P169",
+     "it": "senza",
+     "tema": "n. 169 per frequenza"
+    },
+    {
+     "id": "P170",
+     "it": "vedere",
+     "tema": "n. 170 per frequenza"
+    },
+    {
+     "id": "P171",
+     "it": "dobbiamo",
+     "tema": "n. 171 per frequenza"
+    },
+    {
+     "id": "P172",
+     "it": "signor",
+     "tema": "n. 172 per frequenza"
+    },
+    {
+     "id": "P173",
+     "it": "qualche",
+     "tema": "n. 173 per frequenza"
+    },
+    {
+     "id": "P174",
+     "it": "dispiace",
+     "tema": "n. 174 per frequenza"
+    },
+    {
+     "id": "P175",
+     "it": "penso",
+     "tema": "n. 175 per frequenza"
+    },
+    {
+     "id": "P176",
+     "it": "ecco",
+     "tema": "n. 176 per frequenza"
+    },
+    {
+     "id": "P177",
+     "it": "parlare",
+     "tema": "n. 177 per frequenza"
+    },
+    {
+     "id": "P178",
+     "it": "tra",
+     "tema": "n. 178 per frequenza"
+    },
+    {
+     "id": "P179",
+     "it": "mamma",
+     "tema": "n. 179 per frequenza"
+    },
+    {
+     "id": "P180",
+     "it": "già",
+     "tema": "n. 180 per frequenza"
+    },
+    {
+     "id": "P181",
+     "it": "sarebbe",
+     "tema": "n. 181 per frequenza"
+    },
+    {
+     "id": "P182",
+     "it": "dalla",
+     "tema": "n. 182 per frequenza"
+    },
+    {
+     "id": "P183",
+     "it": "troppo",
+     "tema": "n. 183 per frequenza"
+    },
+    {
+     "id": "P184",
+     "it": "fosse",
+     "tema": "n. 184 per frequenza"
+    },
+    {
+     "id": "P185",
+     "it": "possiamo",
+     "tema": "n. 185 per frequenza"
+    },
+    {
+     "id": "P186",
+     "it": "ce",
+     "tema": "n. 186 per frequenza"
+    },
+    {
+     "id": "P187",
+     "it": "nuovo",
+     "tema": "n. 187 per frequenza"
+    },
+    {
+     "id": "P188",
+     "it": "male",
+     "tema": "n. 188 per frequenza"
+    },
+    {
+     "id": "P189",
+     "it": "madre",
+     "tema": "n. 189 per frequenza"
+    },
+    {
+     "id": "P190",
+     "it": "avete",
+     "tema": "n. 190 per frequenza"
+    },
+    {
+     "id": "P191",
+     "it": "tanto",
+     "tema": "n. 191 per frequenza"
+    },
+    {
+     "id": "P192",
+     "it": "favore",
+     "tema": "n. 192 per frequenza"
+    },
+    {
+     "id": "P193",
+     "it": "successo",
+     "tema": "n. 193 per frequenza"
+    },
+    {
+     "id": "P194",
+     "it": "vai",
+     "tema": "n. 194 per frequenza"
+    },
+    {
+     "id": "P195",
+     "it": "sulla",
+     "tema": "n. 195 per frequenza"
+    },
+    {
+     "id": "P196",
+     "it": "giusto",
+     "tema": "n. 196 per frequenza"
+    },
+    {
+     "id": "P197",
+     "it": "sa",
+     "tema": "n. 197 per frequenza"
+    },
+    {
+     "id": "P198",
+     "it": "miei",
+     "tema": "n. 198 per frequenza"
+    },
+    {
+     "id": "P199",
+     "it": "aspetta",
+     "tema": "n. 199 per frequenza"
+    },
+    {
+     "id": "P200",
+     "it": "avere",
+     "tema": "n. 200 per frequenza"
+    },
+    {
+     "id": "P201",
+     "it": "altra",
+     "tema": "n. 201 per frequenza"
+    },
+    {
+     "id": "P202",
+     "it": "farlo",
+     "tema": "n. 202 per frequenza"
+    },
+    {
+     "id": "P203",
+     "it": "alle",
+     "tema": "n. 203 per frequenza"
+    },
+    {
+     "id": "P204",
+     "it": "facendo",
+     "tema": "n. 204 per frequenza"
+    },
+    {
+     "id": "P205",
+     "it": "abbia",
+     "tema": "n. 205 per frequenza"
+    },
+    {
+     "id": "P206",
+     "it": "momento",
+     "tema": "n. 206 per frequenza"
+    },
+    {
+     "id": "P207",
+     "it": "ero",
+     "tema": "n. 207 per frequenza"
+    },
+    {
+     "id": "P208",
+     "it": "aveva",
+     "tema": "n. 208 per frequenza"
+    },
+    {
+     "id": "P209",
+     "it": "ragazzi",
+     "tema": "n. 209 per frequenza"
+    },
+    {
+     "id": "P210",
+     "it": "deve",
+     "tema": "n. 210 per frequenza"
+    },
+    {
+     "id": "P211",
+     "it": "persone",
+     "tema": "n. 211 per frequenza"
+    },
+    {
+     "id": "P212",
+     "it": "nostro",
+     "tema": "n. 212 per frequenza"
+    },
+    {
+     "id": "P213",
+     "it": "tipo",
+     "tema": "n. 213 per frequenza"
+    },
+    {
+     "id": "P214",
+     "it": "prego",
+     "tema": "n. 214 per frequenza"
+    },
+    {
+     "id": "P215",
+     "it": "grande",
+     "tema": "n. 215 per frequenza"
+    },
+    {
+     "id": "P216",
+     "it": "può",
+     "tema": "n. 216 per frequenza"
+    },
+    {
+     "id": "P217",
+     "it": "senti",
+     "tema": "n. 217 per frequenza"
+    },
+    {
+     "id": "P218",
+     "it": "appena",
+     "tema": "n. 218 per frequenza"
+    },
+    {
+     "id": "P219",
+     "it": "potrebbe",
+     "tema": "n. 219 per frequenza"
+    },
+    {
+     "id": "P220",
+     "it": "soldi",
+     "tema": "n. 220 per frequenza"
+    },
+    {
+     "id": "P221",
+     "it": "dice",
+     "tema": "n. 221 per frequenza"
+    },
+    {
+     "id": "P222",
+     "it": "sapere",
+     "tema": "n. 222 per frequenza"
+    },
+    {
+     "id": "P223",
+     "it": "tre",
+     "tema": "n. 223 per frequenza"
+    },
+    {
+     "id": "P224",
+     "it": "oggi",
+     "tema": "n. 224 per frequenza"
+    },
+    {
+     "id": "P225",
+     "it": "questi",
+     "tema": "n. 225 per frequenza"
+    },
+    {
+     "id": "P226",
+     "it": "piace",
+     "tema": "n. 226 per frequenza"
+    },
+    {
+     "id": "P227",
+     "it": "idea",
+     "tema": "n. 227 per frequenza"
+    },
+    {
+     "id": "P228",
+     "it": "siete",
+     "tema": "n. 228 per frequenza"
+    },
+    {
+     "id": "P229",
+     "it": "ai",
+     "tema": "n. 229 per frequenza"
+    },
+    {
+     "id": "P230",
+     "it": "avevo",
+     "tema": "n. 230 per frequenza"
+    },
+    {
+     "id": "P231",
+     "it": "figlio",
+     "tema": "n. 231 per frequenza"
+    },
+    {
+     "id": "P232",
+     "it": "accordo",
+     "tema": "n. 232 per frequenza"
+    },
+    {
+     "id": "P233",
+     "it": "gente",
+     "tema": "n. 233 per frequenza"
+    },
+    {
+     "id": "P234",
+     "it": "sicuro",
+     "tema": "n. 234 per frequenza"
+    },
+    {
+     "id": "P235",
+     "it": "vieni",
+     "tema": "n. 235 per frequenza"
+    },
+    {
+     "id": "P236",
+     "it": "degli",
+     "tema": "n. 236 per frequenza"
+    },
+    {
+     "id": "P237",
+     "it": "guarda",
+     "tema": "n. 237 per frequenza"
+    },
+    {
+     "id": "P238",
+     "it": "dentro",
+     "tema": "n. 238 per frequenza"
+    },
+    {
+     "id": "P239",
+     "it": "trovato",
+     "tema": "n. 239 per frequenza"
+    },
+    {
+     "id": "P240",
+     "it": "queste",
+     "tema": "n. 240 per frequenza"
+    },
+    {
+     "id": "P241",
+     "it": "caso",
+     "tema": "n. 241 per frequenza"
+    },
+    {
+     "id": "P242",
+     "it": "forza",
+     "tema": "n. 242 per frequenza"
+    },
+    {
+     "id": "P243",
+     "it": "tutte",
+     "tema": "n. 243 per frequenza"
+    },
+    {
+     "id": "P244",
+     "it": "pensi",
+     "tema": "n. 244 per frequenza"
+    },
+    {
+     "id": "P245",
+     "it": "signora",
+     "tema": "n. 245 per frequenza"
+    },
+    {
+     "id": "P246",
+     "it": "faccio",
+     "tema": "n. 246 per frequenza"
+    },
+    {
+     "id": "P247",
+     "it": "nome",
+     "tema": "n. 247 per frequenza"
+    },
+    {
+     "id": "P248",
+     "it": "avuto",
+     "tema": "n. 248 per frequenza"
+    },
+    {
+     "id": "P249",
+     "it": "problema",
+     "tema": "n. 249 per frequenza"
+    },
+    {
+     "id": "P250",
+     "it": "altri",
+     "tema": "n. 250 per frequenza"
+    },
+    {
+     "id": "P251",
+     "it": "puo",
+     "tema": "n. 251 per frequenza"
+    },
+    {
+     "id": "P252",
+     "it": "aver",
+     "tema": "n. 252 per frequenza"
+    },
+    {
+     "id": "P253",
+     "it": "mondo",
+     "tema": "n. 253 per frequenza"
+    },
+    {
+     "id": "P254",
+     "it": "tutta",
+     "tema": "n. 254 per frequenza"
+    },
+    {
+     "id": "P255",
+     "it": "preso",
+     "tema": "n. 255 per frequenza"
+    },
+    {
+     "id": "P256",
+     "it": "nulla",
+     "tema": "n. 256 per frequenza"
+    },
+    {
+     "id": "P257",
+     "it": "nostra",
+     "tema": "n. 257 per frequenza"
+    },
+    {
+     "id": "P258",
+     "it": "donna",
+     "tema": "n. 258 per frequenza"
+    },
+    {
+     "id": "P259",
+     "it": "stare",
+     "tema": "n. 259 per frequenza"
+    },
+    {
+     "id": "P260",
+     "it": "basta",
+     "tema": "n. 260 per frequenza"
+    },
+    {
+     "id": "P261",
+     "it": "insieme",
+     "tema": "n. 261 per frequenza"
+    },
+    {
+     "id": "P262",
+     "it": "faccia",
+     "tema": "n. 262 per frequenza"
+    },
+    {
+     "id": "P263",
+     "it": "ragazza",
+     "tema": "n. 263 per frequenza"
+    },
+    {
+     "id": "P264",
+     "it": "subito",
+     "tema": "n. 264 per frequenza"
+    },
+    {
+     "id": "P265",
+     "it": "famiglia",
+     "tema": "n. 265 per frequenza"
+    },
+    {
+     "id": "P266",
+     "it": "ragazzo",
+     "tema": "n. 266 per frequenza"
+    },
+    {
+     "id": "P267",
+     "it": "volevo",
+     "tema": "n. 267 per frequenza"
+    },
+    {
+     "id": "P268",
+     "it": "okay",
+     "tema": "n. 268 per frequenza"
+    },
+    {
+     "id": "P269",
+     "it": "sentito",
+     "tema": "n. 269 per frequenza"
+    },
+    {
+     "id": "P270",
+     "it": "ah",
+     "tema": "n. 270 per frequenza"
+    },
+    {
+     "id": "P271",
+     "it": "stesso",
+     "tema": "n. 271 per frequenza"
+    },
+    {
+     "id": "P272",
+     "it": "ragione",
+     "tema": "n. 272 per frequenza"
+    },
+    {
+     "id": "P273",
+     "it": "sarà",
+     "tema": "n. 273 per frequenza"
+    },
+    {
+     "id": "P274",
+     "it": "tuoi",
+     "tema": "n. 274 per frequenza"
+    },
+    {
+     "id": "P275",
+     "it": "capito",
+     "tema": "n. 275 per frequenza"
+    },
+    {
+     "id": "P276",
+     "it": "notte",
+     "tema": "n. 276 per frequenza"
+    },
+    {
+     "id": "P277",
+     "it": "volte",
+     "tema": "n. 277 per frequenza"
+    },
+    {
+     "id": "P278",
+     "it": "testa",
+     "tema": "n. 278 per frequenza"
+    },
+    {
+     "id": "P279",
+     "it": "serve",
+     "tema": "n. 279 per frequenza"
+    },
+    {
+     "id": "P280",
+     "it": "tesoro",
+     "tema": "n. 280 per frequenza"
+    },
+    {
+     "id": "P281",
+     "it": "sotto",
+     "tema": "n. 281 per frequenza"
+    },
+    {
+     "id": "P282",
+     "it": "eh",
+     "tema": "n. 282 per frequenza"
+    },
+    {
+     "id": "P283",
+     "it": "suoi",
+     "tema": "n. 283 per frequenza"
+    },
+    {
+     "id": "P284",
+     "it": "vado",
+     "tema": "n. 284 per frequenza"
+    },
+    {
+     "id": "P285",
+     "it": "sara",
+     "tema": "n. 285 per frequenza"
+    },
+    {
+     "id": "P286",
+     "it": "dato",
+     "tema": "n. 286 per frequenza"
+    },
+    {
+     "id": "P287",
+     "it": "stiamo",
+     "tema": "n. 287 per frequenza"
+    },
+    {
+     "id": "P288",
+     "it": "bella",
+     "tema": "n. 288 per frequenza"
+    },
+    {
+     "id": "P289",
+     "it": "scusa",
+     "tema": "n. 289 per frequenza"
+    },
+    {
+     "id": "P290",
+     "it": "erano",
+     "tema": "n. 290 per frequenza"
+    },
+    {
+     "id": "P291",
+     "it": "pensavo",
+     "tema": "n. 291 per frequenza"
+    },
+    {
+     "id": "P292",
+     "it": "avrei",
+     "tema": "n. 292 per frequenza"
+    },
+    {
+     "id": "P293",
+     "it": "prendere",
+     "tema": "n. 293 per frequenza"
+    },
+    {
+     "id": "P294",
+     "it": "buona",
+     "tema": "n. 294 per frequenza"
+    },
+    {
+     "id": "P295",
+     "it": "porta",
+     "tema": "n. 295 per frequenza"
+    },
+    {
+     "id": "P296",
+     "it": "bello",
+     "tema": "n. 296 per frequenza"
+    },
+    {
+     "id": "P297",
+     "it": "moglie",
+     "tema": "n. 297 per frequenza"
+    },
+    {
+     "id": "P298",
+     "it": "vorrei",
+     "tema": "n. 298 per frequenza"
+    },
+    {
+     "id": "P299",
+     "it": "storia",
+     "tema": "n. 299 per frequenza"
+    },
+    {
+     "id": "P300",
+     "it": "succede",
+     "tema": "n. 300 per frequenza"
+    }
+   ]
+  },
+  {
+   "chiave": "plurali",
+   "titolo": "Singolare e plurale",
+   "spiegazione": "Maschile e femminile, una e piu' cose: da qui escono le regole del plurale.",
+   "domande": [
+    {
+     "id": "L001",
+     "it": "cane",
+     "tema": "singolare"
+    },
+    {
+     "id": "L002",
+     "it": "cani",
+     "tema": "plurale"
+    },
+    {
+     "id": "L003",
+     "it": "gatto",
+     "tema": "singolare"
+    },
+    {
+     "id": "L004",
+     "it": "gatti",
+     "tema": "plurale"
+    },
+    {
+     "id": "L005",
+     "it": "cavallo",
+     "tema": "singolare"
+    },
+    {
+     "id": "L006",
+     "it": "cavalli",
+     "tema": "plurale"
+    },
+    {
+     "id": "L007",
+     "it": "fratello",
+     "tema": "singolare"
+    },
+    {
+     "id": "L008",
+     "it": "fratelli",
+     "tema": "plurale"
+    },
+    {
+     "id": "L009",
+     "it": "uccello",
+     "tema": "singolare"
+    },
+    {
+     "id": "L010",
+     "it": "uccelli",
+     "tema": "plurale"
+    },
+    {
+     "id": "L011",
+     "it": "signore",
+     "tema": "singolare"
+    },
+    {
+     "id": "L012",
+     "it": "signori",
+     "tema": "plurale"
+    },
+    {
+     "id": "L013",
+     "it": "padrone",
+     "tema": "singolare"
+    },
+    {
+     "id": "L014",
+     "it": "padroni",
+     "tema": "plurale"
+    },
+    {
+     "id": "L015",
+     "it": "bambino",
+     "tema": "singolare"
+    },
+    {
+     "id": "L016",
+     "it": "bambini",
+     "tema": "plurale"
+    },
+    {
+     "id": "L017",
+     "it": "ragazzo",
+     "tema": "singolare"
+    },
+    {
+     "id": "L018",
+     "it": "ragazzi",
+     "tema": "plurale"
+    },
+    {
+     "id": "L019",
+     "it": "amico",
+     "tema": "singolare"
+    },
+    {
+     "id": "L020",
+     "it": "amici",
+     "tema": "plurale"
+    },
+    {
+     "id": "L021",
+     "it": "uomo",
+     "tema": "singolare"
+    },
+    {
+     "id": "L022",
+     "it": "uomini",
+     "tema": "plurale"
+    },
+    {
+     "id": "L023",
+     "it": "occhio",
+     "tema": "singolare"
+    },
+    {
+     "id": "L024",
+     "it": "occhi",
+     "tema": "plurale"
+    },
+    {
+     "id": "L025",
+     "it": "dente",
+     "tema": "singolare"
+    },
+    {
+     "id": "L026",
+     "it": "denti",
+     "tema": "plurale"
+    },
+    {
+     "id": "L027",
+     "it": "piede",
+     "tema": "singolare"
+    },
+    {
+     "id": "L028",
+     "it": "piedi",
+     "tema": "plurale"
+    },
+    {
+     "id": "L029",
+     "it": "mano",
+     "tema": "singolare"
+    },
+    {
+     "id": "L030",
+     "it": "mani",
+     "tema": "plurale"
+    },
+    {
+     "id": "L031",
+     "it": "uovo",
+     "tema": "singolare"
+    },
+    {
+     "id": "L032",
+     "it": "uova",
+     "tema": "plurale"
+    },
+    {
+     "id": "L033",
+     "it": "casa",
+     "tema": "singolare"
+    },
+    {
+     "id": "L034",
+     "it": "case",
+     "tema": "plurale"
+    },
+    {
+     "id": "L035",
+     "it": "porta",
+     "tema": "singolare"
+    },
+    {
+     "id": "L036",
+     "it": "porte",
+     "tema": "plurale"
+    },
+    {
+     "id": "L037",
+     "it": "donna",
+     "tema": "singolare"
+    },
+    {
+     "id": "L038",
+     "it": "donne",
+     "tema": "plurale"
+    },
+    {
+     "id": "L039",
+     "it": "bambina",
+     "tema": "singolare"
+    },
+    {
+     "id": "L040",
+     "it": "bambine",
+     "tema": "plurale"
+    },
+    {
+     "id": "L041",
+     "it": "ragazza",
+     "tema": "singolare"
+    },
+    {
+     "id": "L042",
+     "it": "ragazze",
+     "tema": "plurale"
+    },
+    {
+     "id": "L043",
+     "it": "amica",
+     "tema": "singolare"
+    },
+    {
+     "id": "L044",
+     "it": "amiche",
+     "tema": "plurale"
+    },
+    {
+     "id": "L045",
+     "it": "sorella",
+     "tema": "singolare"
+    },
+    {
+     "id": "L046",
+     "it": "sorelle",
+     "tema": "plurale"
+    },
+    {
+     "id": "L047",
+     "it": "scarpa",
+     "tema": "singolare"
+    },
+    {
+     "id": "L048",
+     "it": "scarpe",
+     "tema": "plurale"
+    },
+    {
+     "id": "L049",
+     "it": "finestra",
+     "tema": "singolare"
+    },
+    {
+     "id": "L050",
+     "it": "finestre",
+     "tema": "plurale"
+    },
+    {
+     "id": "L051",
+     "it": "gallina",
+     "tema": "singolare"
+    },
+    {
+     "id": "L052",
+     "it": "galline",
+     "tema": "plurale"
+    },
+    {
+     "id": "L053",
+     "it": "mela",
+     "tema": "singolare"
+    },
+    {
+     "id": "L054",
+     "it": "mele",
+     "tema": "plurale"
+    },
+    {
+     "id": "L055",
+     "it": "pera",
+     "tema": "singolare"
+    },
+    {
+     "id": "L056",
+     "it": "pere",
+     "tema": "plurale"
+    },
+    {
+     "id": "L057",
+     "it": "strada",
+     "tema": "singolare"
+    },
+    {
+     "id": "L058",
+     "it": "strade",
+     "tema": "plurale"
+    },
+    {
+     "id": "L059",
+     "it": "chiesa",
+     "tema": "singolare"
+    },
+    {
+     "id": "L060",
+     "it": "chiese",
+     "tema": "plurale"
+    },
+    {
+     "id": "L061",
+     "it": "notte",
+     "tema": "singolare"
+    },
+    {
+     "id": "L062",
+     "it": "notti",
+     "tema": "plurale"
+    },
+    {
+     "id": "L063",
+     "it": "chiave",
+     "tema": "singolare"
+    },
+    {
+     "id": "L064",
+     "it": "chiavi",
+     "tema": "plurale"
+    },
+    {
+     "id": "L065",
+     "it": "buono",
+     "tema": "singolare"
+    },
+    {
+     "id": "L066",
+     "it": "buoni",
+     "tema": "plurale"
+    },
+    {
+     "id": "L067",
+     "it": "buona",
+     "tema": "singolare"
+    },
+    {
+     "id": "L068",
+     "it": "buone",
+     "tema": "plurale"
+    },
+    {
+     "id": "L069",
+     "it": "bello",
+     "tema": "singolare"
+    },
+    {
+     "id": "L070",
+     "it": "belli",
+     "tema": "plurale"
+    },
+    {
+     "id": "L071",
+     "it": "bella",
+     "tema": "singolare"
+    },
+    {
+     "id": "L072",
+     "it": "belle",
+     "tema": "plurale"
+    },
+    {
+     "id": "L073",
+     "it": "piccolo",
+     "tema": "singolare"
+    },
+    {
+     "id": "L074",
+     "it": "piccoli",
+     "tema": "plurale"
+    },
+    {
+     "id": "L075",
+     "it": "grande",
+     "tema": "singolare"
+    },
+    {
+     "id": "L076",
+     "it": "grandi",
+     "tema": "plurale"
+    },
+    {
+     "id": "L077",
+     "it": "vecchio",
+     "tema": "singolare"
+    },
+    {
+     "id": "L078",
+     "it": "vecchi",
+     "tema": "plurale"
+    },
+    {
+     "id": "L079",
+     "it": "nuovo",
+     "tema": "singolare"
+    },
+    {
+     "id": "L080",
+     "it": "nuovi",
+     "tema": "plurale"
+    }
+   ]
+  },
+  {
+   "chiave": "preposizioni",
+   "titolo": "Preposizioni",
+   "spiegazione": "di, a, da, in, con, su, per, tra: semplici e con l'articolo.",
+   "domande": [
+    {
+     "id": "R001",
+     "it": "di Ferrara",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R002",
+     "it": "a casa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R003",
+     "it": "da mio fratello",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R004",
+     "it": "in cucina",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R005",
+     "it": "con te",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R006",
+     "it": "per te",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R007",
+     "it": "tra noi",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R008",
+     "it": "fra un'ora",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R009",
+     "it": "del pane",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R010",
+     "it": "della casa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R011",
+     "it": "dei bambini",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R012",
+     "it": "al mare",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R013",
+     "it": "alla festa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R014",
+     "it": "ai bambini",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R015",
+     "it": "dal dottore",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R016",
+     "it": "dalla nonna",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R017",
+     "it": "nel cassetto",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R018",
+     "it": "nella borsa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R019",
+     "it": "sul tetto",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R020",
+     "it": "sulla sedia",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R021",
+     "it": "senza sale",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R022",
+     "it": "sopra il letto",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R023",
+     "it": "sotto il letto",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R024",
+     "it": "dentro casa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R025",
+     "it": "fuori casa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R026",
+     "it": "vicino al fiume",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R027",
+     "it": "davanti alla chiesa",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R028",
+     "it": "dietro la porta",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R029",
+     "it": "dopo cena",
+     "tema": "preposizione"
+    },
+    {
+     "id": "R030",
+     "it": "fino a domani",
+     "tema": "preposizione"
+    }
+   ]
+  },
+  {
+   "chiave": "pronomi",
+   "titolo": "Pronomi e particelle",
+   "spiegazione": "lo, la, gli, ci, ne, mi, ti, si: dove vanno e come si fondono.",
+   "domande": [
+    {
+     "id": "N001",
+     "it": "lo vedo",
+     "tema": "lo / la / li / le (complemento oggetto)"
+    },
+    {
+     "id": "N002",
+     "it": "la vedo",
+     "tema": "lo / la / li / le (complemento oggetto)"
+    },
+    {
+     "id": "N003",
+     "it": "li vedo",
+     "tema": "lo / la / li / le (complemento oggetto)"
+    },
+    {
+     "id": "N004",
+     "it": "le vedo",
+     "tema": "lo / la / li / le (complemento oggetto)"
+    },
+    {
+     "id": "N005",
+     "it": "l'ho visto",
+     "tema": "lo / la / li / le (complemento oggetto)"
+    },
+    {
+     "id": "N006",
+     "it": "mi vedi?",
+     "tema": "mi / ti / ci / vi (oggetto)"
+    },
+    {
+     "id": "N007",
+     "it": "ti chiamo domani",
+     "tema": "mi / ti / ci / vi (oggetto)"
+    },
+    {
+     "id": "N008",
+     "it": "ci vediamo",
+     "tema": "mi / ti / ci / vi (oggetto)"
+    },
+    {
+     "id": "N009",
+     "it": "vi aspetto",
+     "tema": "mi / ti / ci / vi (oggetto)"
+    },
+    {
+     "id": "N010",
+     "it": "gli dico",
+     "tema": "gli / le (a lui, a lei)"
+    },
+    {
+     "id": "N011",
+     "it": "le dico",
+     "tema": "gli / le (a lui, a lei)"
+    },
+    {
+     "id": "N012",
+     "it": "gli ho scritto",
+     "tema": "gli / le (a lui, a lei)"
+    },
+    {
+     "id": "N013",
+     "it": "me lo dai?",
+     "tema": "pronomi doppi"
+    },
+    {
+     "id": "N014",
+     "it": "te lo dico",
+     "tema": "pronomi doppi"
+    },
+    {
+     "id": "N015",
+     "it": "glielo porto",
+     "tema": "pronomi doppi"
+    },
+    {
+     "id": "N016",
+     "it": "ce l'ho",
+     "tema": "pronomi doppi"
+    },
+    {
+     "id": "N017",
+     "it": "ci vado",
+     "tema": "ci (luogo) e ne"
+    },
+    {
+     "id": "N018",
+     "it": "non ci sono",
+     "tema": "ci (luogo) e ne"
+    },
+    {
+     "id": "N019",
+     "it": "ne voglio due",
+     "tema": "ci (luogo) e ne"
+    },
+    {
+     "id": "N020",
+     "it": "ce ne sono tanti",
+     "tema": "ci (luogo) e ne"
+    },
+    {
+     "id": "N021",
+     "it": "me ne vado",
+     "tema": "ci (luogo) e ne"
+    },
+    {
+     "id": "N022",
+     "it": "mi lavo",
+     "tema": "riflessivi"
+    },
+    {
+     "id": "N023",
+     "it": "ti alzi presto",
+     "tema": "riflessivi"
+    },
+    {
+     "id": "N024",
+     "it": "si siede",
+     "tema": "riflessivi"
+    },
+    {
+     "id": "N025",
+     "it": "ci sposiamo",
+     "tema": "riflessivi"
+    },
+    {
+     "id": "N026",
+     "it": "si dice così",
+     "tema": "riflessivi"
+    },
+    {
+     "id": "N027",
+     "it": "dammi",
+     "tema": "imperativo con il pronome"
+    },
+    {
+     "id": "N028",
+     "it": "dimmi tutto",
+     "tema": "imperativo con il pronome"
+    },
+    {
+     "id": "N029",
+     "it": "portalo qui",
+     "tema": "imperativo con il pronome"
+    },
+    {
+     "id": "N030",
+     "it": "lasciami stare",
+     "tema": "imperativo con il pronome"
+    }
+   ]
+  },
+  {
+   "chiave": "verbi",
+   "titolo": "Venti verbi, tutti i tempi",
+   "spiegazione": "Presente, imperfetto, futuro, condizionale, passato prossimo e participio.",
+   "domande": [
+    {
+     "id": "V001",
+     "it": "essere",
+     "tema": "essere — infinito"
+    },
+    {
+     "id": "V002",
+     "it": "stato",
+     "tema": "essere — participio"
+    },
+    {
+     "id": "V003",
+     "it": "io sono",
+     "tema": "essere — presente — io"
+    },
+    {
+     "id": "V004",
+     "it": "tu sei",
+     "tema": "essere — presente — tu"
+    },
+    {
+     "id": "V005",
+     "it": "lui è",
+     "tema": "essere — presente — lui"
+    },
+    {
+     "id": "V006",
+     "it": "noi siamo",
+     "tema": "essere — presente — noi"
+    },
+    {
+     "id": "V007",
+     "it": "voi siete",
+     "tema": "essere — presente — voi"
+    },
+    {
+     "id": "V008",
+     "it": "loro sono",
+     "tema": "essere — presente — loro"
+    },
+    {
+     "id": "V009",
+     "it": "io ero",
+     "tema": "essere — imperfetto — io"
+    },
+    {
+     "id": "V010",
+     "it": "tu eri",
+     "tema": "essere — imperfetto — tu"
+    },
+    {
+     "id": "V011",
+     "it": "lui era",
+     "tema": "essere — imperfetto — lui"
+    },
+    {
+     "id": "V012",
+     "it": "noi eravamo",
+     "tema": "essere — imperfetto — noi"
+    },
+    {
+     "id": "V013",
+     "it": "voi eravate",
+     "tema": "essere — imperfetto — voi"
+    },
+    {
+     "id": "V014",
+     "it": "loro erano",
+     "tema": "essere — imperfetto — loro"
+    },
+    {
+     "id": "V015",
+     "it": "io sarò",
+     "tema": "essere — futuro — io"
+    },
+    {
+     "id": "V016",
+     "it": "tu sarai",
+     "tema": "essere — futuro — tu"
+    },
+    {
+     "id": "V017",
+     "it": "lui sarà",
+     "tema": "essere — futuro — lui"
+    },
+    {
+     "id": "V018",
+     "it": "noi saremo",
+     "tema": "essere — futuro — noi"
+    },
+    {
+     "id": "V019",
+     "it": "voi sarete",
+     "tema": "essere — futuro — voi"
+    },
+    {
+     "id": "V020",
+     "it": "loro saranno",
+     "tema": "essere — futuro — loro"
+    },
+    {
+     "id": "V021",
+     "it": "io sarei",
+     "tema": "essere — condizionale — io"
+    },
+    {
+     "id": "V022",
+     "it": "tu saresti",
+     "tema": "essere — condizionale — tu"
+    },
+    {
+     "id": "V023",
+     "it": "lui sarebbe",
+     "tema": "essere — condizionale — lui"
+    },
+    {
+     "id": "V024",
+     "it": "noi saremmo",
+     "tema": "essere — condizionale — noi"
+    },
+    {
+     "id": "V025",
+     "it": "voi sareste",
+     "tema": "essere — condizionale — voi"
+    },
+    {
+     "id": "V026",
+     "it": "loro sarebbero",
+     "tema": "essere — condizionale — loro"
+    },
+    {
+     "id": "V027",
+     "it": "io sono stato",
+     "tema": "essere — passato prossimo — io"
+    },
+    {
+     "id": "V028",
+     "it": "tu sei stato",
+     "tema": "essere — passato prossimo — tu"
+    },
+    {
+     "id": "V029",
+     "it": "lui è stato",
+     "tema": "essere — passato prossimo — lui"
+    },
+    {
+     "id": "V030",
+     "it": "noi siamo stati",
+     "tema": "essere — passato prossimo — noi"
+    },
+    {
+     "id": "V031",
+     "it": "voi siete stati",
+     "tema": "essere — passato prossimo — voi"
+    },
+    {
+     "id": "V032",
+     "it": "loro sono stati",
+     "tema": "essere — passato prossimo — loro"
+    },
+    {
+     "id": "V033",
+     "it": "avere",
+     "tema": "avere — infinito"
+    },
+    {
+     "id": "V034",
+     "it": "avuto",
+     "tema": "avere — participio"
+    },
+    {
+     "id": "V035",
+     "it": "io ho",
+     "tema": "avere — presente — io"
+    },
+    {
+     "id": "V036",
+     "it": "tu hai",
+     "tema": "avere — presente — tu"
+    },
+    {
+     "id": "V037",
+     "it": "lui ha",
+     "tema": "avere — presente — lui"
+    },
+    {
+     "id": "V038",
+     "it": "noi abbiamo",
+     "tema": "avere — presente — noi"
+    },
+    {
+     "id": "V039",
+     "it": "voi avete",
+     "tema": "avere — presente — voi"
+    },
+    {
+     "id": "V040",
+     "it": "loro hanno",
+     "tema": "avere — presente — loro"
+    },
+    {
+     "id": "V041",
+     "it": "io avevo",
+     "tema": "avere — imperfetto — io"
+    },
+    {
+     "id": "V042",
+     "it": "tu avevi",
+     "tema": "avere — imperfetto — tu"
+    },
+    {
+     "id": "V043",
+     "it": "lui aveva",
+     "tema": "avere — imperfetto — lui"
+    },
+    {
+     "id": "V044",
+     "it": "noi avevamo",
+     "tema": "avere — imperfetto — noi"
+    },
+    {
+     "id": "V045",
+     "it": "voi avevate",
+     "tema": "avere — imperfetto — voi"
+    },
+    {
+     "id": "V046",
+     "it": "loro avevano",
+     "tema": "avere — imperfetto — loro"
+    },
+    {
+     "id": "V047",
+     "it": "io avrò",
+     "tema": "avere — futuro — io"
+    },
+    {
+     "id": "V048",
+     "it": "tu avrai",
+     "tema": "avere — futuro — tu"
+    },
+    {
+     "id": "V049",
+     "it": "lui avrà",
+     "tema": "avere — futuro — lui"
+    },
+    {
+     "id": "V050",
+     "it": "noi avremo",
+     "tema": "avere — futuro — noi"
+    },
+    {
+     "id": "V051",
+     "it": "voi avrete",
+     "tema": "avere — futuro — voi"
+    },
+    {
+     "id": "V052",
+     "it": "loro avranno",
+     "tema": "avere — futuro — loro"
+    },
+    {
+     "id": "V053",
+     "it": "io avrei",
+     "tema": "avere — condizionale — io"
+    },
+    {
+     "id": "V054",
+     "it": "tu avresti",
+     "tema": "avere — condizionale — tu"
+    },
+    {
+     "id": "V055",
+     "it": "lui avrebbe",
+     "tema": "avere — condizionale — lui"
+    },
+    {
+     "id": "V056",
+     "it": "noi avremmo",
+     "tema": "avere — condizionale — noi"
+    },
+    {
+     "id": "V057",
+     "it": "voi avreste",
+     "tema": "avere — condizionale — voi"
+    },
+    {
+     "id": "V058",
+     "it": "loro avrebbero",
+     "tema": "avere — condizionale — loro"
+    },
+    {
+     "id": "V059",
+     "it": "io ho avuto",
+     "tema": "avere — passato prossimo — io"
+    },
+    {
+     "id": "V060",
+     "it": "tu hai avuto",
+     "tema": "avere — passato prossimo — tu"
+    },
+    {
+     "id": "V061",
+     "it": "lui ha avuto",
+     "tema": "avere — passato prossimo — lui"
+    },
+    {
+     "id": "V062",
+     "it": "noi abbiamo avuto",
+     "tema": "avere — passato prossimo — noi"
+    },
+    {
+     "id": "V063",
+     "it": "voi avete avuto",
+     "tema": "avere — passato prossimo — voi"
+    },
+    {
+     "id": "V064",
+     "it": "loro hanno avuto",
+     "tema": "avere — passato prossimo — loro"
+    },
+    {
+     "id": "V065",
+     "it": "fare",
+     "tema": "fare — infinito"
+    },
+    {
+     "id": "V066",
+     "it": "fatto",
+     "tema": "fare — participio"
+    },
+    {
+     "id": "V067",
+     "it": "io faccio",
+     "tema": "fare — presente — io"
+    },
+    {
+     "id": "V068",
+     "it": "tu fai",
+     "tema": "fare — presente — tu"
+    },
+    {
+     "id": "V069",
+     "it": "lui fa",
+     "tema": "fare — presente — lui"
+    },
+    {
+     "id": "V070",
+     "it": "noi facciamo",
+     "tema": "fare — presente — noi"
+    },
+    {
+     "id": "V071",
+     "it": "voi fate",
+     "tema": "fare — presente — voi"
+    },
+    {
+     "id": "V072",
+     "it": "loro fanno",
+     "tema": "fare — presente — loro"
+    },
+    {
+     "id": "V073",
+     "it": "io facevo",
+     "tema": "fare — imperfetto — io"
+    },
+    {
+     "id": "V074",
+     "it": "tu facevi",
+     "tema": "fare — imperfetto — tu"
+    },
+    {
+     "id": "V075",
+     "it": "lui faceva",
+     "tema": "fare — imperfetto — lui"
+    },
+    {
+     "id": "V076",
+     "it": "noi facevamo",
+     "tema": "fare — imperfetto — noi"
+    },
+    {
+     "id": "V077",
+     "it": "voi facevate",
+     "tema": "fare — imperfetto — voi"
+    },
+    {
+     "id": "V078",
+     "it": "loro facevano",
+     "tema": "fare — imperfetto — loro"
+    },
+    {
+     "id": "V079",
+     "it": "io farò",
+     "tema": "fare — futuro — io"
+    },
+    {
+     "id": "V080",
+     "it": "tu farai",
+     "tema": "fare — futuro — tu"
+    },
+    {
+     "id": "V081",
+     "it": "lui farà",
+     "tema": "fare — futuro — lui"
+    },
+    {
+     "id": "V082",
+     "it": "noi faremo",
+     "tema": "fare — futuro — noi"
+    },
+    {
+     "id": "V083",
+     "it": "voi farete",
+     "tema": "fare — futuro — voi"
+    },
+    {
+     "id": "V084",
+     "it": "loro faranno",
+     "tema": "fare — futuro — loro"
+    },
+    {
+     "id": "V085",
+     "it": "io farei",
+     "tema": "fare — condizionale — io"
+    },
+    {
+     "id": "V086",
+     "it": "tu faresti",
+     "tema": "fare — condizionale — tu"
+    },
+    {
+     "id": "V087",
+     "it": "lui farebbe",
+     "tema": "fare — condizionale — lui"
+    },
+    {
+     "id": "V088",
+     "it": "noi faremmo",
+     "tema": "fare — condizionale — noi"
+    },
+    {
+     "id": "V089",
+     "it": "voi fareste",
+     "tema": "fare — condizionale — voi"
+    },
+    {
+     "id": "V090",
+     "it": "loro farebbero",
+     "tema": "fare — condizionale — loro"
+    },
+    {
+     "id": "V091",
+     "it": "io ho fatto",
+     "tema": "fare — passato prossimo — io"
+    },
+    {
+     "id": "V092",
+     "it": "tu hai fatto",
+     "tema": "fare — passato prossimo — tu"
+    },
+    {
+     "id": "V093",
+     "it": "lui ha fatto",
+     "tema": "fare — passato prossimo — lui"
+    },
+    {
+     "id": "V094",
+     "it": "noi abbiamo fatto",
+     "tema": "fare — passato prossimo — noi"
+    },
+    {
+     "id": "V095",
+     "it": "voi avete fatto",
+     "tema": "fare — passato prossimo — voi"
+    },
+    {
+     "id": "V096",
+     "it": "loro hanno fatto",
+     "tema": "fare — passato prossimo — loro"
+    },
+    {
+     "id": "V097",
+     "it": "dire",
+     "tema": "dire — infinito"
+    },
+    {
+     "id": "V098",
+     "it": "detto",
+     "tema": "dire — participio"
+    },
+    {
+     "id": "V099",
+     "it": "io dico",
+     "tema": "dire — presente — io"
+    },
+    {
+     "id": "V100",
+     "it": "tu dici",
+     "tema": "dire — presente — tu"
+    },
+    {
+     "id": "V101",
+     "it": "lui dice",
+     "tema": "dire — presente — lui"
+    },
+    {
+     "id": "V102",
+     "it": "noi diciamo",
+     "tema": "dire — presente — noi"
+    },
+    {
+     "id": "V103",
+     "it": "voi dite",
+     "tema": "dire — presente — voi"
+    },
+    {
+     "id": "V104",
+     "it": "loro dicono",
+     "tema": "dire — presente — loro"
+    },
+    {
+     "id": "V105",
+     "it": "io dicevo",
+     "tema": "dire — imperfetto — io"
+    },
+    {
+     "id": "V106",
+     "it": "tu dicevi",
+     "tema": "dire — imperfetto — tu"
+    },
+    {
+     "id": "V107",
+     "it": "lui diceva",
+     "tema": "dire — imperfetto — lui"
+    },
+    {
+     "id": "V108",
+     "it": "noi dicevamo",
+     "tema": "dire — imperfetto — noi"
+    },
+    {
+     "id": "V109",
+     "it": "voi dicevate",
+     "tema": "dire — imperfetto — voi"
+    },
+    {
+     "id": "V110",
+     "it": "loro dicevano",
+     "tema": "dire — imperfetto — loro"
+    },
+    {
+     "id": "V111",
+     "it": "io dirò",
+     "tema": "dire — futuro — io"
+    },
+    {
+     "id": "V112",
+     "it": "tu dirai",
+     "tema": "dire — futuro — tu"
+    },
+    {
+     "id": "V113",
+     "it": "lui dirà",
+     "tema": "dire — futuro — lui"
+    },
+    {
+     "id": "V114",
+     "it": "noi diremo",
+     "tema": "dire — futuro — noi"
+    },
+    {
+     "id": "V115",
+     "it": "voi direte",
+     "tema": "dire — futuro — voi"
+    },
+    {
+     "id": "V116",
+     "it": "loro diranno",
+     "tema": "dire — futuro — loro"
+    },
+    {
+     "id": "V117",
+     "it": "io direi",
+     "tema": "dire — condizionale — io"
+    },
+    {
+     "id": "V118",
+     "it": "tu diresti",
+     "tema": "dire — condizionale — tu"
+    },
+    {
+     "id": "V119",
+     "it": "lui direbbe",
+     "tema": "dire — condizionale — lui"
+    },
+    {
+     "id": "V120",
+     "it": "noi diremmo",
+     "tema": "dire — condizionale — noi"
+    },
+    {
+     "id": "V121",
+     "it": "voi direste",
+     "tema": "dire — condizionale — voi"
+    },
+    {
+     "id": "V122",
+     "it": "loro direbbero",
+     "tema": "dire — condizionale — loro"
+    },
+    {
+     "id": "V123",
+     "it": "io ho detto",
+     "tema": "dire — passato prossimo — io"
+    },
+    {
+     "id": "V124",
+     "it": "tu hai detto",
+     "tema": "dire — passato prossimo — tu"
+    },
+    {
+     "id": "V125",
+     "it": "lui ha detto",
+     "tema": "dire — passato prossimo — lui"
+    },
+    {
+     "id": "V126",
+     "it": "noi abbiamo detto",
+     "tema": "dire — passato prossimo — noi"
+    },
+    {
+     "id": "V127",
+     "it": "voi avete detto",
+     "tema": "dire — passato prossimo — voi"
+    },
+    {
+     "id": "V128",
+     "it": "loro hanno detto",
+     "tema": "dire — passato prossimo — loro"
+    },
+    {
+     "id": "V129",
+     "it": "andare",
+     "tema": "andare — infinito"
+    },
+    {
+     "id": "V130",
+     "it": "andato",
+     "tema": "andare — participio"
+    },
+    {
+     "id": "V131",
+     "it": "io vado",
+     "tema": "andare — presente — io"
+    },
+    {
+     "id": "V132",
+     "it": "tu vai",
+     "tema": "andare — presente — tu"
+    },
+    {
+     "id": "V133",
+     "it": "lui va",
+     "tema": "andare — presente — lui"
+    },
+    {
+     "id": "V134",
+     "it": "noi andiamo",
+     "tema": "andare — presente — noi"
+    },
+    {
+     "id": "V135",
+     "it": "voi andate",
+     "tema": "andare — presente — voi"
+    },
+    {
+     "id": "V136",
+     "it": "loro vanno",
+     "tema": "andare — presente — loro"
+    },
+    {
+     "id": "V137",
+     "it": "io andavo",
+     "tema": "andare — imperfetto — io"
+    },
+    {
+     "id": "V138",
+     "it": "tu andavi",
+     "tema": "andare — imperfetto — tu"
+    },
+    {
+     "id": "V139",
+     "it": "lui andava",
+     "tema": "andare — imperfetto — lui"
+    },
+    {
+     "id": "V140",
+     "it": "noi andavamo",
+     "tema": "andare — imperfetto — noi"
+    },
+    {
+     "id": "V141",
+     "it": "voi andavate",
+     "tema": "andare — imperfetto — voi"
+    },
+    {
+     "id": "V142",
+     "it": "loro andavano",
+     "tema": "andare — imperfetto — loro"
+    },
+    {
+     "id": "V143",
+     "it": "io andrò",
+     "tema": "andare — futuro — io"
+    },
+    {
+     "id": "V144",
+     "it": "tu andrai",
+     "tema": "andare — futuro — tu"
+    },
+    {
+     "id": "V145",
+     "it": "lui andrà",
+     "tema": "andare — futuro — lui"
+    },
+    {
+     "id": "V146",
+     "it": "noi andremo",
+     "tema": "andare — futuro — noi"
+    },
+    {
+     "id": "V147",
+     "it": "voi andrete",
+     "tema": "andare — futuro — voi"
+    },
+    {
+     "id": "V148",
+     "it": "loro andranno",
+     "tema": "andare — futuro — loro"
+    },
+    {
+     "id": "V149",
+     "it": "io andrei",
+     "tema": "andare — condizionale — io"
+    },
+    {
+     "id": "V150",
+     "it": "tu andresti",
+     "tema": "andare — condizionale — tu"
+    },
+    {
+     "id": "V151",
+     "it": "lui andrebbe",
+     "tema": "andare — condizionale — lui"
+    },
+    {
+     "id": "V152",
+     "it": "noi andremmo",
+     "tema": "andare — condizionale — noi"
+    },
+    {
+     "id": "V153",
+     "it": "voi andreste",
+     "tema": "andare — condizionale — voi"
+    },
+    {
+     "id": "V154",
+     "it": "loro andrebbero",
+     "tema": "andare — condizionale — loro"
+    },
+    {
+     "id": "V155",
+     "it": "io sono andato",
+     "tema": "andare — passato prossimo — io"
+    },
+    {
+     "id": "V156",
+     "it": "tu sei andato",
+     "tema": "andare — passato prossimo — tu"
+    },
+    {
+     "id": "V157",
+     "it": "lui è andato",
+     "tema": "andare — passato prossimo — lui"
+    },
+    {
+     "id": "V158",
+     "it": "noi siamo andati",
+     "tema": "andare — passato prossimo — noi"
+    },
+    {
+     "id": "V159",
+     "it": "voi siete andati",
+     "tema": "andare — passato prossimo — voi"
+    },
+    {
+     "id": "V160",
+     "it": "loro sono andati",
+     "tema": "andare — passato prossimo — loro"
+    },
+    {
+     "id": "V161",
+     "it": "venire",
+     "tema": "venire — infinito"
+    },
+    {
+     "id": "V162",
+     "it": "venuto",
+     "tema": "venire — participio"
+    },
+    {
+     "id": "V163",
+     "it": "io vengo",
+     "tema": "venire — presente — io"
+    },
+    {
+     "id": "V164",
+     "it": "tu vieni",
+     "tema": "venire — presente — tu"
+    },
+    {
+     "id": "V165",
+     "it": "lui viene",
+     "tema": "venire — presente — lui"
+    },
+    {
+     "id": "V166",
+     "it": "noi veniamo",
+     "tema": "venire — presente — noi"
+    },
+    {
+     "id": "V167",
+     "it": "voi venite",
+     "tema": "venire — presente — voi"
+    },
+    {
+     "id": "V168",
+     "it": "loro vengono",
+     "tema": "venire — presente — loro"
+    },
+    {
+     "id": "V169",
+     "it": "io venivo",
+     "tema": "venire — imperfetto — io"
+    },
+    {
+     "id": "V170",
+     "it": "tu venivi",
+     "tema": "venire — imperfetto — tu"
+    },
+    {
+     "id": "V171",
+     "it": "lui veniva",
+     "tema": "venire — imperfetto — lui"
+    },
+    {
+     "id": "V172",
+     "it": "noi venivamo",
+     "tema": "venire — imperfetto — noi"
+    },
+    {
+     "id": "V173",
+     "it": "voi venivate",
+     "tema": "venire — imperfetto — voi"
+    },
+    {
+     "id": "V174",
+     "it": "loro venivano",
+     "tema": "venire — imperfetto — loro"
+    },
+    {
+     "id": "V175",
+     "it": "io verrò",
+     "tema": "venire — futuro — io"
+    },
+    {
+     "id": "V176",
+     "it": "tu verrai",
+     "tema": "venire — futuro — tu"
+    },
+    {
+     "id": "V177",
+     "it": "lui verrà",
+     "tema": "venire — futuro — lui"
+    },
+    {
+     "id": "V178",
+     "it": "noi verremo",
+     "tema": "venire — futuro — noi"
+    },
+    {
+     "id": "V179",
+     "it": "voi verrete",
+     "tema": "venire — futuro — voi"
+    },
+    {
+     "id": "V180",
+     "it": "loro verranno",
+     "tema": "venire — futuro — loro"
+    },
+    {
+     "id": "V181",
+     "it": "io verrei",
+     "tema": "venire — condizionale — io"
+    },
+    {
+     "id": "V182",
+     "it": "tu verresti",
+     "tema": "venire — condizionale — tu"
+    },
+    {
+     "id": "V183",
+     "it": "lui verrebbe",
+     "tema": "venire — condizionale — lui"
+    },
+    {
+     "id": "V184",
+     "it": "noi verremmo",
+     "tema": "venire — condizionale — noi"
+    },
+    {
+     "id": "V185",
+     "it": "voi verreste",
+     "tema": "venire — condizionale — voi"
+    },
+    {
+     "id": "V186",
+     "it": "loro verrebbero",
+     "tema": "venire — condizionale — loro"
+    },
+    {
+     "id": "V187",
+     "it": "io sono venuto",
+     "tema": "venire — passato prossimo — io"
+    },
+    {
+     "id": "V188",
+     "it": "tu sei venuto",
+     "tema": "venire — passato prossimo — tu"
+    },
+    {
+     "id": "V189",
+     "it": "lui è venuto",
+     "tema": "venire — passato prossimo — lui"
+    },
+    {
+     "id": "V190",
+     "it": "noi siamo venuti",
+     "tema": "venire — passato prossimo — noi"
+    },
+    {
+     "id": "V191",
+     "it": "voi siete venuti",
+     "tema": "venire — passato prossimo — voi"
+    },
+    {
+     "id": "V192",
+     "it": "loro sono venuti",
+     "tema": "venire — passato prossimo — loro"
+    },
+    {
+     "id": "V193",
+     "it": "potere",
+     "tema": "potere — infinito"
+    },
+    {
+     "id": "V194",
+     "it": "potuto",
+     "tema": "potere — participio"
+    },
+    {
+     "id": "V195",
+     "it": "io posso",
+     "tema": "potere — presente — io"
+    },
+    {
+     "id": "V196",
+     "it": "tu puoi",
+     "tema": "potere — presente — tu"
+    },
+    {
+     "id": "V197",
+     "it": "lui può",
+     "tema": "potere — presente — lui"
+    },
+    {
+     "id": "V198",
+     "it": "noi possiamo",
+     "tema": "potere — presente — noi"
+    },
+    {
+     "id": "V199",
+     "it": "voi potete",
+     "tema": "potere — presente — voi"
+    },
+    {
+     "id": "V200",
+     "it": "loro possono",
+     "tema": "potere — presente — loro"
+    },
+    {
+     "id": "V201",
+     "it": "io potevo",
+     "tema": "potere — imperfetto — io"
+    },
+    {
+     "id": "V202",
+     "it": "tu potevi",
+     "tema": "potere — imperfetto — tu"
+    },
+    {
+     "id": "V203",
+     "it": "lui poteva",
+     "tema": "potere — imperfetto — lui"
+    },
+    {
+     "id": "V204",
+     "it": "noi potevamo",
+     "tema": "potere — imperfetto — noi"
+    },
+    {
+     "id": "V205",
+     "it": "voi potevate",
+     "tema": "potere — imperfetto — voi"
+    },
+    {
+     "id": "V206",
+     "it": "loro potevano",
+     "tema": "potere — imperfetto — loro"
+    },
+    {
+     "id": "V207",
+     "it": "io potrò",
+     "tema": "potere — futuro — io"
+    },
+    {
+     "id": "V208",
+     "it": "tu potrai",
+     "tema": "potere — futuro — tu"
+    },
+    {
+     "id": "V209",
+     "it": "lui potrà",
+     "tema": "potere — futuro — lui"
+    },
+    {
+     "id": "V210",
+     "it": "noi potremo",
+     "tema": "potere — futuro — noi"
+    },
+    {
+     "id": "V211",
+     "it": "voi potrete",
+     "tema": "potere — futuro — voi"
+    },
+    {
+     "id": "V212",
+     "it": "loro potranno",
+     "tema": "potere — futuro — loro"
+    },
+    {
+     "id": "V213",
+     "it": "io potrei",
+     "tema": "potere — condizionale — io"
+    },
+    {
+     "id": "V214",
+     "it": "tu potresti",
+     "tema": "potere — condizionale — tu"
+    },
+    {
+     "id": "V215",
+     "it": "lui potrebbe",
+     "tema": "potere — condizionale — lui"
+    },
+    {
+     "id": "V216",
+     "it": "noi potremmo",
+     "tema": "potere — condizionale — noi"
+    },
+    {
+     "id": "V217",
+     "it": "voi potreste",
+     "tema": "potere — condizionale — voi"
+    },
+    {
+     "id": "V218",
+     "it": "loro potrebbero",
+     "tema": "potere — condizionale — loro"
+    },
+    {
+     "id": "V219",
+     "it": "io ho potuto",
+     "tema": "potere — passato prossimo — io"
+    },
+    {
+     "id": "V220",
+     "it": "tu hai potuto",
+     "tema": "potere — passato prossimo — tu"
+    },
+    {
+     "id": "V221",
+     "it": "lui ha potuto",
+     "tema": "potere — passato prossimo — lui"
+    },
+    {
+     "id": "V222",
+     "it": "noi abbiamo potuto",
+     "tema": "potere — passato prossimo — noi"
+    },
+    {
+     "id": "V223",
+     "it": "voi avete potuto",
+     "tema": "potere — passato prossimo — voi"
+    },
+    {
+     "id": "V224",
+     "it": "loro hanno potuto",
+     "tema": "potere — passato prossimo — loro"
+    },
+    {
+     "id": "V225",
+     "it": "volere",
+     "tema": "volere — infinito"
+    },
+    {
+     "id": "V226",
+     "it": "voluto",
+     "tema": "volere — participio"
+    },
+    {
+     "id": "V227",
+     "it": "io voglio",
+     "tema": "volere — presente — io"
+    },
+    {
+     "id": "V228",
+     "it": "tu vuoi",
+     "tema": "volere — presente — tu"
+    },
+    {
+     "id": "V229",
+     "it": "lui vuole",
+     "tema": "volere — presente — lui"
+    },
+    {
+     "id": "V230",
+     "it": "noi vogliamo",
+     "tema": "volere — presente — noi"
+    },
+    {
+     "id": "V231",
+     "it": "voi volete",
+     "tema": "volere — presente — voi"
+    },
+    {
+     "id": "V232",
+     "it": "loro vogliono",
+     "tema": "volere — presente — loro"
+    },
+    {
+     "id": "V233",
+     "it": "io volevo",
+     "tema": "volere — imperfetto — io"
+    },
+    {
+     "id": "V234",
+     "it": "tu volevi",
+     "tema": "volere — imperfetto — tu"
+    },
+    {
+     "id": "V235",
+     "it": "lui voleva",
+     "tema": "volere — imperfetto — lui"
+    },
+    {
+     "id": "V236",
+     "it": "noi volevamo",
+     "tema": "volere — imperfetto — noi"
+    },
+    {
+     "id": "V237",
+     "it": "voi volevate",
+     "tema": "volere — imperfetto — voi"
+    },
+    {
+     "id": "V238",
+     "it": "loro volevano",
+     "tema": "volere — imperfetto — loro"
+    },
+    {
+     "id": "V239",
+     "it": "io vorrò",
+     "tema": "volere — futuro — io"
+    },
+    {
+     "id": "V240",
+     "it": "tu vorrai",
+     "tema": "volere — futuro — tu"
+    },
+    {
+     "id": "V241",
+     "it": "lui vorrà",
+     "tema": "volere — futuro — lui"
+    },
+    {
+     "id": "V242",
+     "it": "noi vorremo",
+     "tema": "volere — futuro — noi"
+    },
+    {
+     "id": "V243",
+     "it": "voi vorrete",
+     "tema": "volere — futuro — voi"
+    },
+    {
+     "id": "V244",
+     "it": "loro vorranno",
+     "tema": "volere — futuro — loro"
+    },
+    {
+     "id": "V245",
+     "it": "io vorrei",
+     "tema": "volere — condizionale — io"
+    },
+    {
+     "id": "V246",
+     "it": "tu vorresti",
+     "tema": "volere — condizionale — tu"
+    },
+    {
+     "id": "V247",
+     "it": "lui vorrebbe",
+     "tema": "volere — condizionale — lui"
+    },
+    {
+     "id": "V248",
+     "it": "noi vorremmo",
+     "tema": "volere — condizionale — noi"
+    },
+    {
+     "id": "V249",
+     "it": "voi vorreste",
+     "tema": "volere — condizionale — voi"
+    },
+    {
+     "id": "V250",
+     "it": "loro vorrebbero",
+     "tema": "volere — condizionale — loro"
+    },
+    {
+     "id": "V251",
+     "it": "io ho voluto",
+     "tema": "volere — passato prossimo — io"
+    },
+    {
+     "id": "V252",
+     "it": "tu hai voluto",
+     "tema": "volere — passato prossimo — tu"
+    },
+    {
+     "id": "V253",
+     "it": "lui ha voluto",
+     "tema": "volere — passato prossimo — lui"
+    },
+    {
+     "id": "V254",
+     "it": "noi abbiamo voluto",
+     "tema": "volere — passato prossimo — noi"
+    },
+    {
+     "id": "V255",
+     "it": "voi avete voluto",
+     "tema": "volere — passato prossimo — voi"
+    },
+    {
+     "id": "V256",
+     "it": "loro hanno voluto",
+     "tema": "volere — passato prossimo — loro"
+    },
+    {
+     "id": "V257",
+     "it": "dovere",
+     "tema": "dovere — infinito"
+    },
+    {
+     "id": "V258",
+     "it": "dovuto",
+     "tema": "dovere — participio"
+    },
+    {
+     "id": "V259",
+     "it": "io devo",
+     "tema": "dovere — presente — io"
+    },
+    {
+     "id": "V260",
+     "it": "tu devi",
+     "tema": "dovere — presente — tu"
+    },
+    {
+     "id": "V261",
+     "it": "lui deve",
+     "tema": "dovere — presente — lui"
+    },
+    {
+     "id": "V262",
+     "it": "noi dobbiamo",
+     "tema": "dovere — presente — noi"
+    },
+    {
+     "id": "V263",
+     "it": "voi dovete",
+     "tema": "dovere — presente — voi"
+    },
+    {
+     "id": "V264",
+     "it": "loro devono",
+     "tema": "dovere — presente — loro"
+    },
+    {
+     "id": "V265",
+     "it": "io dovevo",
+     "tema": "dovere — imperfetto — io"
+    },
+    {
+     "id": "V266",
+     "it": "tu dovevi",
+     "tema": "dovere — imperfetto — tu"
+    },
+    {
+     "id": "V267",
+     "it": "lui doveva",
+     "tema": "dovere — imperfetto — lui"
+    },
+    {
+     "id": "V268",
+     "it": "noi dovevamo",
+     "tema": "dovere — imperfetto — noi"
+    },
+    {
+     "id": "V269",
+     "it": "voi dovevate",
+     "tema": "dovere — imperfetto — voi"
+    },
+    {
+     "id": "V270",
+     "it": "loro dovevano",
+     "tema": "dovere — imperfetto — loro"
+    },
+    {
+     "id": "V271",
+     "it": "io dovrò",
+     "tema": "dovere — futuro — io"
+    },
+    {
+     "id": "V272",
+     "it": "tu dovrai",
+     "tema": "dovere — futuro — tu"
+    },
+    {
+     "id": "V273",
+     "it": "lui dovrà",
+     "tema": "dovere — futuro — lui"
+    },
+    {
+     "id": "V274",
+     "it": "noi dovremo",
+     "tema": "dovere — futuro — noi"
+    },
+    {
+     "id": "V275",
+     "it": "voi dovrete",
+     "tema": "dovere — futuro — voi"
+    },
+    {
+     "id": "V276",
+     "it": "loro dovranno",
+     "tema": "dovere — futuro — loro"
+    },
+    {
+     "id": "V277",
+     "it": "io dovrei",
+     "tema": "dovere — condizionale — io"
+    },
+    {
+     "id": "V278",
+     "it": "tu dovresti",
+     "tema": "dovere — condizionale — tu"
+    },
+    {
+     "id": "V279",
+     "it": "lui dovrebbe",
+     "tema": "dovere — condizionale — lui"
+    },
+    {
+     "id": "V280",
+     "it": "noi dovremmo",
+     "tema": "dovere — condizionale — noi"
+    },
+    {
+     "id": "V281",
+     "it": "voi dovreste",
+     "tema": "dovere — condizionale — voi"
+    },
+    {
+     "id": "V282",
+     "it": "loro dovrebbero",
+     "tema": "dovere — condizionale — loro"
+    },
+    {
+     "id": "V283",
+     "it": "io ho dovuto",
+     "tema": "dovere — passato prossimo — io"
+    },
+    {
+     "id": "V284",
+     "it": "tu hai dovuto",
+     "tema": "dovere — passato prossimo — tu"
+    },
+    {
+     "id": "V285",
+     "it": "lui ha dovuto",
+     "tema": "dovere — passato prossimo — lui"
+    },
+    {
+     "id": "V286",
+     "it": "noi abbiamo dovuto",
+     "tema": "dovere — passato prossimo — noi"
+    },
+    {
+     "id": "V287",
+     "it": "voi avete dovuto",
+     "tema": "dovere — passato prossimo — voi"
+    },
+    {
+     "id": "V288",
+     "it": "loro hanno dovuto",
+     "tema": "dovere — passato prossimo — loro"
+    },
+    {
+     "id": "V289",
+     "it": "sapere",
+     "tema": "sapere — infinito"
+    },
+    {
+     "id": "V290",
+     "it": "saputo",
+     "tema": "sapere — participio"
+    },
+    {
+     "id": "V291",
+     "it": "io so",
+     "tema": "sapere — presente — io"
+    },
+    {
+     "id": "V292",
+     "it": "tu sai",
+     "tema": "sapere — presente — tu"
+    },
+    {
+     "id": "V293",
+     "it": "lui sa",
+     "tema": "sapere — presente — lui"
+    },
+    {
+     "id": "V294",
+     "it": "noi sappiamo",
+     "tema": "sapere — presente — noi"
+    },
+    {
+     "id": "V295",
+     "it": "voi sapete",
+     "tema": "sapere — presente — voi"
+    },
+    {
+     "id": "V296",
+     "it": "loro sanno",
+     "tema": "sapere — presente — loro"
+    },
+    {
+     "id": "V297",
+     "it": "io sapevo",
+     "tema": "sapere — imperfetto — io"
+    },
+    {
+     "id": "V298",
+     "it": "tu sapevi",
+     "tema": "sapere — imperfetto — tu"
+    },
+    {
+     "id": "V299",
+     "it": "lui sapeva",
+     "tema": "sapere — imperfetto — lui"
+    },
+    {
+     "id": "V300",
+     "it": "noi sapevamo",
+     "tema": "sapere — imperfetto — noi"
+    },
+    {
+     "id": "V301",
+     "it": "voi sapevate",
+     "tema": "sapere — imperfetto — voi"
+    },
+    {
+     "id": "V302",
+     "it": "loro sapevano",
+     "tema": "sapere — imperfetto — loro"
+    },
+    {
+     "id": "V303",
+     "it": "io saprò",
+     "tema": "sapere — futuro — io"
+    },
+    {
+     "id": "V304",
+     "it": "tu saprai",
+     "tema": "sapere — futuro — tu"
+    },
+    {
+     "id": "V305",
+     "it": "lui saprà",
+     "tema": "sapere — futuro — lui"
+    },
+    {
+     "id": "V306",
+     "it": "noi sapremo",
+     "tema": "sapere — futuro — noi"
+    },
+    {
+     "id": "V307",
+     "it": "voi saprete",
+     "tema": "sapere — futuro — voi"
+    },
+    {
+     "id": "V308",
+     "it": "loro sapranno",
+     "tema": "sapere — futuro — loro"
+    },
+    {
+     "id": "V309",
+     "it": "io saprei",
+     "tema": "sapere — condizionale — io"
+    },
+    {
+     "id": "V310",
+     "it": "tu sapresti",
+     "tema": "sapere — condizionale — tu"
+    },
+    {
+     "id": "V311",
+     "it": "lui saprebbe",
+     "tema": "sapere — condizionale — lui"
+    },
+    {
+     "id": "V312",
+     "it": "noi sapremmo",
+     "tema": "sapere — condizionale — noi"
+    },
+    {
+     "id": "V313",
+     "it": "voi sapreste",
+     "tema": "sapere — condizionale — voi"
+    },
+    {
+     "id": "V314",
+     "it": "loro saprebbero",
+     "tema": "sapere — condizionale — loro"
+    },
+    {
+     "id": "V315",
+     "it": "io ho saputo",
+     "tema": "sapere — passato prossimo — io"
+    },
+    {
+     "id": "V316",
+     "it": "tu hai saputo",
+     "tema": "sapere — passato prossimo — tu"
+    },
+    {
+     "id": "V317",
+     "it": "lui ha saputo",
+     "tema": "sapere — passato prossimo — lui"
+    },
+    {
+     "id": "V318",
+     "it": "noi abbiamo saputo",
+     "tema": "sapere — passato prossimo — noi"
+    },
+    {
+     "id": "V319",
+     "it": "voi avete saputo",
+     "tema": "sapere — passato prossimo — voi"
+    },
+    {
+     "id": "V320",
+     "it": "loro hanno saputo",
+     "tema": "sapere — passato prossimo — loro"
+    },
+    {
+     "id": "V321",
+     "it": "stare",
+     "tema": "stare — infinito"
+    },
+    {
+     "id": "V322",
+     "it": "stato",
+     "tema": "stare — participio"
+    },
+    {
+     "id": "V323",
+     "it": "io sto",
+     "tema": "stare — presente — io"
+    },
+    {
+     "id": "V324",
+     "it": "tu stai",
+     "tema": "stare — presente — tu"
+    },
+    {
+     "id": "V325",
+     "it": "lui sta",
+     "tema": "stare — presente — lui"
+    },
+    {
+     "id": "V326",
+     "it": "noi stiamo",
+     "tema": "stare — presente — noi"
+    },
+    {
+     "id": "V327",
+     "it": "voi state",
+     "tema": "stare — presente — voi"
+    },
+    {
+     "id": "V328",
+     "it": "loro stanno",
+     "tema": "stare — presente — loro"
+    },
+    {
+     "id": "V329",
+     "it": "io stavo",
+     "tema": "stare — imperfetto — io"
+    },
+    {
+     "id": "V330",
+     "it": "tu stavi",
+     "tema": "stare — imperfetto — tu"
+    },
+    {
+     "id": "V331",
+     "it": "lui stava",
+     "tema": "stare — imperfetto — lui"
+    },
+    {
+     "id": "V332",
+     "it": "noi stavamo",
+     "tema": "stare — imperfetto — noi"
+    },
+    {
+     "id": "V333",
+     "it": "voi stavate",
+     "tema": "stare — imperfetto — voi"
+    },
+    {
+     "id": "V334",
+     "it": "loro stavano",
+     "tema": "stare — imperfetto — loro"
+    },
+    {
+     "id": "V335",
+     "it": "io starò",
+     "tema": "stare — futuro — io"
+    },
+    {
+     "id": "V336",
+     "it": "tu starai",
+     "tema": "stare — futuro — tu"
+    },
+    {
+     "id": "V337",
+     "it": "lui starà",
+     "tema": "stare — futuro — lui"
+    },
+    {
+     "id": "V338",
+     "it": "noi staremo",
+     "tema": "stare — futuro — noi"
+    },
+    {
+     "id": "V339",
+     "it": "voi starete",
+     "tema": "stare — futuro — voi"
+    },
+    {
+     "id": "V340",
+     "it": "loro staranno",
+     "tema": "stare — futuro — loro"
+    },
+    {
+     "id": "V341",
+     "it": "io starei",
+     "tema": "stare — condizionale — io"
+    },
+    {
+     "id": "V342",
+     "it": "tu staresti",
+     "tema": "stare — condizionale — tu"
+    },
+    {
+     "id": "V343",
+     "it": "lui starebbe",
+     "tema": "stare — condizionale — lui"
+    },
+    {
+     "id": "V344",
+     "it": "noi staremmo",
+     "tema": "stare — condizionale — noi"
+    },
+    {
+     "id": "V345",
+     "it": "voi stareste",
+     "tema": "stare — condizionale — voi"
+    },
+    {
+     "id": "V346",
+     "it": "loro starebbero",
+     "tema": "stare — condizionale — loro"
+    },
+    {
+     "id": "V347",
+     "it": "io sono stato",
+     "tema": "stare — passato prossimo — io"
+    },
+    {
+     "id": "V348",
+     "it": "tu sei stato",
+     "tema": "stare — passato prossimo — tu"
+    },
+    {
+     "id": "V349",
+     "it": "lui è stato",
+     "tema": "stare — passato prossimo — lui"
+    },
+    {
+     "id": "V350",
+     "it": "noi siamo stati",
+     "tema": "stare — passato prossimo — noi"
+    },
+    {
+     "id": "V351",
+     "it": "voi siete stati",
+     "tema": "stare — passato prossimo — voi"
+    },
+    {
+     "id": "V352",
+     "it": "loro sono stati",
+     "tema": "stare — passato prossimo — loro"
+    },
+    {
+     "id": "V353",
+     "it": "dare",
+     "tema": "dare — infinito"
+    },
+    {
+     "id": "V354",
+     "it": "dato",
+     "tema": "dare — participio"
+    },
+    {
+     "id": "V355",
+     "it": "io do",
+     "tema": "dare — presente — io"
+    },
+    {
+     "id": "V356",
+     "it": "tu dai",
+     "tema": "dare — presente — tu"
+    },
+    {
+     "id": "V357",
+     "it": "lui dà",
+     "tema": "dare — presente — lui"
+    },
+    {
+     "id": "V358",
+     "it": "noi diamo",
+     "tema": "dare — presente — noi"
+    },
+    {
+     "id": "V359",
+     "it": "voi date",
+     "tema": "dare — presente — voi"
+    },
+    {
+     "id": "V360",
+     "it": "loro danno",
+     "tema": "dare — presente — loro"
+    },
+    {
+     "id": "V361",
+     "it": "io davo",
+     "tema": "dare — imperfetto — io"
+    },
+    {
+     "id": "V362",
+     "it": "tu davi",
+     "tema": "dare — imperfetto — tu"
+    },
+    {
+     "id": "V363",
+     "it": "lui dava",
+     "tema": "dare — imperfetto — lui"
+    },
+    {
+     "id": "V364",
+     "it": "noi davamo",
+     "tema": "dare — imperfetto — noi"
+    },
+    {
+     "id": "V365",
+     "it": "voi davate",
+     "tema": "dare — imperfetto — voi"
+    },
+    {
+     "id": "V366",
+     "it": "loro davano",
+     "tema": "dare — imperfetto — loro"
+    },
+    {
+     "id": "V367",
+     "it": "io darò",
+     "tema": "dare — futuro — io"
+    },
+    {
+     "id": "V368",
+     "it": "tu darai",
+     "tema": "dare — futuro — tu"
+    },
+    {
+     "id": "V369",
+     "it": "lui darà",
+     "tema": "dare — futuro — lui"
+    },
+    {
+     "id": "V370",
+     "it": "noi daremo",
+     "tema": "dare — futuro — noi"
+    },
+    {
+     "id": "V371",
+     "it": "voi darete",
+     "tema": "dare — futuro — voi"
+    },
+    {
+     "id": "V372",
+     "it": "loro daranno",
+     "tema": "dare — futuro — loro"
+    },
+    {
+     "id": "V373",
+     "it": "io darei",
+     "tema": "dare — condizionale — io"
+    },
+    {
+     "id": "V374",
+     "it": "tu daresti",
+     "tema": "dare — condizionale — tu"
+    },
+    {
+     "id": "V375",
+     "it": "lui darebbe",
+     "tema": "dare — condizionale — lui"
+    },
+    {
+     "id": "V376",
+     "it": "noi daremmo",
+     "tema": "dare — condizionale — noi"
+    },
+    {
+     "id": "V377",
+     "it": "voi dareste",
+     "tema": "dare — condizionale — voi"
+    },
+    {
+     "id": "V378",
+     "it": "loro darebbero",
+     "tema": "dare — condizionale — loro"
+    },
+    {
+     "id": "V379",
+     "it": "io ho dato",
+     "tema": "dare — passato prossimo — io"
+    },
+    {
+     "id": "V380",
+     "it": "tu hai dato",
+     "tema": "dare — passato prossimo — tu"
+    },
+    {
+     "id": "V381",
+     "it": "lui ha dato",
+     "tema": "dare — passato prossimo — lui"
+    },
+    {
+     "id": "V382",
+     "it": "noi abbiamo dato",
+     "tema": "dare — passato prossimo — noi"
+    },
+    {
+     "id": "V383",
+     "it": "voi avete dato",
+     "tema": "dare — passato prossimo — voi"
+    },
+    {
+     "id": "V384",
+     "it": "loro hanno dato",
+     "tema": "dare — passato prossimo — loro"
+    },
+    {
+     "id": "V385",
+     "it": "vedere",
+     "tema": "vedere — infinito"
+    },
+    {
+     "id": "V386",
+     "it": "visto",
+     "tema": "vedere — participio"
+    },
+    {
+     "id": "V387",
+     "it": "io vedo",
+     "tema": "vedere — presente — io"
+    },
+    {
+     "id": "V388",
+     "it": "tu vedi",
+     "tema": "vedere — presente — tu"
+    },
+    {
+     "id": "V389",
+     "it": "lui vede",
+     "tema": "vedere — presente — lui"
+    },
+    {
+     "id": "V390",
+     "it": "noi vediamo",
+     "tema": "vedere — presente — noi"
+    },
+    {
+     "id": "V391",
+     "it": "voi vedete",
+     "tema": "vedere — presente — voi"
+    },
+    {
+     "id": "V392",
+     "it": "loro vedono",
+     "tema": "vedere — presente — loro"
+    },
+    {
+     "id": "V393",
+     "it": "io vedevo",
+     "tema": "vedere — imperfetto — io"
+    },
+    {
+     "id": "V394",
+     "it": "tu vedevi",
+     "tema": "vedere — imperfetto — tu"
+    },
+    {
+     "id": "V395",
+     "it": "lui vedeva",
+     "tema": "vedere — imperfetto — lui"
+    },
+    {
+     "id": "V396",
+     "it": "noi vedevamo",
+     "tema": "vedere — imperfetto — noi"
+    },
+    {
+     "id": "V397",
+     "it": "voi vedevate",
+     "tema": "vedere — imperfetto — voi"
+    },
+    {
+     "id": "V398",
+     "it": "loro vedevano",
+     "tema": "vedere — imperfetto — loro"
+    },
+    {
+     "id": "V399",
+     "it": "io vedrò",
+     "tema": "vedere — futuro — io"
+    },
+    {
+     "id": "V400",
+     "it": "tu vedrai",
+     "tema": "vedere — futuro — tu"
+    },
+    {
+     "id": "V401",
+     "it": "lui vedrà",
+     "tema": "vedere — futuro — lui"
+    },
+    {
+     "id": "V402",
+     "it": "noi vedremo",
+     "tema": "vedere — futuro — noi"
+    },
+    {
+     "id": "V403",
+     "it": "voi vedrete",
+     "tema": "vedere — futuro — voi"
+    },
+    {
+     "id": "V404",
+     "it": "loro vedranno",
+     "tema": "vedere — futuro — loro"
+    },
+    {
+     "id": "V405",
+     "it": "io vedrei",
+     "tema": "vedere — condizionale — io"
+    },
+    {
+     "id": "V406",
+     "it": "tu vedresti",
+     "tema": "vedere — condizionale — tu"
+    },
+    {
+     "id": "V407",
+     "it": "lui vedrebbe",
+     "tema": "vedere — condizionale — lui"
+    },
+    {
+     "id": "V408",
+     "it": "noi vedremmo",
+     "tema": "vedere — condizionale — noi"
+    },
+    {
+     "id": "V409",
+     "it": "voi vedreste",
+     "tema": "vedere — condizionale — voi"
+    },
+    {
+     "id": "V410",
+     "it": "loro vedrebbero",
+     "tema": "vedere — condizionale — loro"
+    },
+    {
+     "id": "V411",
+     "it": "io ho visto",
+     "tema": "vedere — passato prossimo — io"
+    },
+    {
+     "id": "V412",
+     "it": "tu hai visto",
+     "tema": "vedere — passato prossimo — tu"
+    },
+    {
+     "id": "V413",
+     "it": "lui ha visto",
+     "tema": "vedere — passato prossimo — lui"
+    },
+    {
+     "id": "V414",
+     "it": "noi abbiamo visto",
+     "tema": "vedere — passato prossimo — noi"
+    },
+    {
+     "id": "V415",
+     "it": "voi avete visto",
+     "tema": "vedere — passato prossimo — voi"
+    },
+    {
+     "id": "V416",
+     "it": "loro hanno visto",
+     "tema": "vedere — passato prossimo — loro"
+    },
+    {
+     "id": "V417",
+     "it": "prendere",
+     "tema": "prendere — infinito"
+    },
+    {
+     "id": "V418",
+     "it": "preso",
+     "tema": "prendere — participio"
+    },
+    {
+     "id": "V419",
+     "it": "io prendo",
+     "tema": "prendere — presente — io"
+    },
+    {
+     "id": "V420",
+     "it": "tu prendi",
+     "tema": "prendere — presente — tu"
+    },
+    {
+     "id": "V421",
+     "it": "lui prende",
+     "tema": "prendere — presente — lui"
+    },
+    {
+     "id": "V422",
+     "it": "noi prendiamo",
+     "tema": "prendere — presente — noi"
+    },
+    {
+     "id": "V423",
+     "it": "voi prendete",
+     "tema": "prendere — presente — voi"
+    },
+    {
+     "id": "V424",
+     "it": "loro prendono",
+     "tema": "prendere — presente — loro"
+    },
+    {
+     "id": "V425",
+     "it": "io prendevo",
+     "tema": "prendere — imperfetto — io"
+    },
+    {
+     "id": "V426",
+     "it": "tu prendevi",
+     "tema": "prendere — imperfetto — tu"
+    },
+    {
+     "id": "V427",
+     "it": "lui prendeva",
+     "tema": "prendere — imperfetto — lui"
+    },
+    {
+     "id": "V428",
+     "it": "noi prendevamo",
+     "tema": "prendere — imperfetto — noi"
+    },
+    {
+     "id": "V429",
+     "it": "voi prendevate",
+     "tema": "prendere — imperfetto — voi"
+    },
+    {
+     "id": "V430",
+     "it": "loro prendevano",
+     "tema": "prendere — imperfetto — loro"
+    },
+    {
+     "id": "V431",
+     "it": "io prenderò",
+     "tema": "prendere — futuro — io"
+    },
+    {
+     "id": "V432",
+     "it": "tu prenderai",
+     "tema": "prendere — futuro — tu"
+    },
+    {
+     "id": "V433",
+     "it": "lui prenderà",
+     "tema": "prendere — futuro — lui"
+    },
+    {
+     "id": "V434",
+     "it": "noi prenderemo",
+     "tema": "prendere — futuro — noi"
+    },
+    {
+     "id": "V435",
+     "it": "voi prenderete",
+     "tema": "prendere — futuro — voi"
+    },
+    {
+     "id": "V436",
+     "it": "loro prenderanno",
+     "tema": "prendere — futuro — loro"
+    },
+    {
+     "id": "V437",
+     "it": "io prenderei",
+     "tema": "prendere — condizionale — io"
+    },
+    {
+     "id": "V438",
+     "it": "tu prenderesti",
+     "tema": "prendere — condizionale — tu"
+    },
+    {
+     "id": "V439",
+     "it": "lui prenderebbe",
+     "tema": "prendere — condizionale — lui"
+    },
+    {
+     "id": "V440",
+     "it": "noi prenderemmo",
+     "tema": "prendere — condizionale — noi"
+    },
+    {
+     "id": "V441",
+     "it": "voi prendereste",
+     "tema": "prendere — condizionale — voi"
+    },
+    {
+     "id": "V442",
+     "it": "loro prenderebbero",
+     "tema": "prendere — condizionale — loro"
+    },
+    {
+     "id": "V443",
+     "it": "io ho preso",
+     "tema": "prendere — passato prossimo — io"
+    },
+    {
+     "id": "V444",
+     "it": "tu hai preso",
+     "tema": "prendere — passato prossimo — tu"
+    },
+    {
+     "id": "V445",
+     "it": "lui ha preso",
+     "tema": "prendere — passato prossimo — lui"
+    },
+    {
+     "id": "V446",
+     "it": "noi abbiamo preso",
+     "tema": "prendere — passato prossimo — noi"
+    },
+    {
+     "id": "V447",
+     "it": "voi avete preso",
+     "tema": "prendere — passato prossimo — voi"
+    },
+    {
+     "id": "V448",
+     "it": "loro hanno preso",
+     "tema": "prendere — passato prossimo — loro"
+    },
+    {
+     "id": "V449",
+     "it": "uscire",
+     "tema": "uscire — infinito"
+    },
+    {
+     "id": "V450",
+     "it": "uscito",
+     "tema": "uscire — participio"
+    },
+    {
+     "id": "V451",
+     "it": "io esco",
+     "tema": "uscire — presente — io"
+    },
+    {
+     "id": "V452",
+     "it": "tu esci",
+     "tema": "uscire — presente — tu"
+    },
+    {
+     "id": "V453",
+     "it": "lui esce",
+     "tema": "uscire — presente — lui"
+    },
+    {
+     "id": "V454",
+     "it": "noi usciamo",
+     "tema": "uscire — presente — noi"
+    },
+    {
+     "id": "V455",
+     "it": "voi uscite",
+     "tema": "uscire — presente — voi"
+    },
+    {
+     "id": "V456",
+     "it": "loro escono",
+     "tema": "uscire — presente — loro"
+    },
+    {
+     "id": "V457",
+     "it": "io uscivo",
+     "tema": "uscire — imperfetto — io"
+    },
+    {
+     "id": "V458",
+     "it": "tu uscivi",
+     "tema": "uscire — imperfetto — tu"
+    },
+    {
+     "id": "V459",
+     "it": "lui usciva",
+     "tema": "uscire — imperfetto — lui"
+    },
+    {
+     "id": "V460",
+     "it": "noi uscivamo",
+     "tema": "uscire — imperfetto — noi"
+    },
+    {
+     "id": "V461",
+     "it": "voi uscivate",
+     "tema": "uscire — imperfetto — voi"
+    },
+    {
+     "id": "V462",
+     "it": "loro uscivano",
+     "tema": "uscire — imperfetto — loro"
+    },
+    {
+     "id": "V463",
+     "it": "io uscirò",
+     "tema": "uscire — futuro — io"
+    },
+    {
+     "id": "V464",
+     "it": "tu uscirai",
+     "tema": "uscire — futuro — tu"
+    },
+    {
+     "id": "V465",
+     "it": "lui uscirà",
+     "tema": "uscire — futuro — lui"
+    },
+    {
+     "id": "V466",
+     "it": "noi usciremo",
+     "tema": "uscire — futuro — noi"
+    },
+    {
+     "id": "V467",
+     "it": "voi uscirete",
+     "tema": "uscire — futuro — voi"
+    },
+    {
+     "id": "V468",
+     "it": "loro usciranno",
+     "tema": "uscire — futuro — loro"
+    },
+    {
+     "id": "V469",
+     "it": "io uscirei",
+     "tema": "uscire — condizionale — io"
+    },
+    {
+     "id": "V470",
+     "it": "tu usciresti",
+     "tema": "uscire — condizionale — tu"
+    },
+    {
+     "id": "V471",
+     "it": "lui uscirebbe",
+     "tema": "uscire — condizionale — lui"
+    },
+    {
+     "id": "V472",
+     "it": "noi usciremmo",
+     "tema": "uscire — condizionale — noi"
+    },
+    {
+     "id": "V473",
+     "it": "voi uscireste",
+     "tema": "uscire — condizionale — voi"
+    },
+    {
+     "id": "V474",
+     "it": "loro uscirebbero",
+     "tema": "uscire — condizionale — loro"
+    },
+    {
+     "id": "V475",
+     "it": "io sono uscito",
+     "tema": "uscire — passato prossimo — io"
+    },
+    {
+     "id": "V476",
+     "it": "tu sei uscito",
+     "tema": "uscire — passato prossimo — tu"
+    },
+    {
+     "id": "V477",
+     "it": "lui è uscito",
+     "tema": "uscire — passato prossimo — lui"
+    },
+    {
+     "id": "V478",
+     "it": "noi siamo usciti",
+     "tema": "uscire — passato prossimo — noi"
+    },
+    {
+     "id": "V479",
+     "it": "voi siete usciti",
+     "tema": "uscire — passato prossimo — voi"
+    },
+    {
+     "id": "V480",
+     "it": "loro sono usciti",
+     "tema": "uscire — passato prossimo — loro"
+    },
+    {
+     "id": "V481",
+     "it": "parlare",
+     "tema": "parlare — infinito"
+    },
+    {
+     "id": "V482",
+     "it": "parlato",
+     "tema": "parlare — participio"
+    },
+    {
+     "id": "V483",
+     "it": "io parlo",
+     "tema": "parlare — presente — io"
+    },
+    {
+     "id": "V484",
+     "it": "tu parli",
+     "tema": "parlare — presente — tu"
+    },
+    {
+     "id": "V485",
+     "it": "lui parla",
+     "tema": "parlare — presente — lui"
+    },
+    {
+     "id": "V486",
+     "it": "noi parliamo",
+     "tema": "parlare — presente — noi"
+    },
+    {
+     "id": "V487",
+     "it": "voi parlate",
+     "tema": "parlare — presente — voi"
+    },
+    {
+     "id": "V488",
+     "it": "loro parlano",
+     "tema": "parlare — presente — loro"
+    },
+    {
+     "id": "V489",
+     "it": "io parlavo",
+     "tema": "parlare — imperfetto — io"
+    },
+    {
+     "id": "V490",
+     "it": "tu parlavi",
+     "tema": "parlare — imperfetto — tu"
+    },
+    {
+     "id": "V491",
+     "it": "lui parlava",
+     "tema": "parlare — imperfetto — lui"
+    },
+    {
+     "id": "V492",
+     "it": "noi parlavamo",
+     "tema": "parlare — imperfetto — noi"
+    },
+    {
+     "id": "V493",
+     "it": "voi parlavate",
+     "tema": "parlare — imperfetto — voi"
+    },
+    {
+     "id": "V494",
+     "it": "loro parlavano",
+     "tema": "parlare — imperfetto — loro"
+    },
+    {
+     "id": "V495",
+     "it": "io parlerò",
+     "tema": "parlare — futuro — io"
+    },
+    {
+     "id": "V496",
+     "it": "tu parlerai",
+     "tema": "parlare — futuro — tu"
+    },
+    {
+     "id": "V497",
+     "it": "lui parlerà",
+     "tema": "parlare — futuro — lui"
+    },
+    {
+     "id": "V498",
+     "it": "noi parleremo",
+     "tema": "parlare — futuro — noi"
+    },
+    {
+     "id": "V499",
+     "it": "voi parlerete",
+     "tema": "parlare — futuro — voi"
+    },
+    {
+     "id": "V500",
+     "it": "loro parleranno",
+     "tema": "parlare — futuro — loro"
+    },
+    {
+     "id": "V501",
+     "it": "io parlerei",
+     "tema": "parlare — condizionale — io"
+    },
+    {
+     "id": "V502",
+     "it": "tu parleresti",
+     "tema": "parlare — condizionale — tu"
+    },
+    {
+     "id": "V503",
+     "it": "lui parlerebbe",
+     "tema": "parlare — condizionale — lui"
+    },
+    {
+     "id": "V504",
+     "it": "noi parleremmo",
+     "tema": "parlare — condizionale — noi"
+    },
+    {
+     "id": "V505",
+     "it": "voi parlereste",
+     "tema": "parlare — condizionale — voi"
+    },
+    {
+     "id": "V506",
+     "it": "loro parlerebbero",
+     "tema": "parlare — condizionale — loro"
+    },
+    {
+     "id": "V507",
+     "it": "io ho parlato",
+     "tema": "parlare — passato prossimo — io"
+    },
+    {
+     "id": "V508",
+     "it": "tu hai parlato",
+     "tema": "parlare — passato prossimo — tu"
+    },
+    {
+     "id": "V509",
+     "it": "lui ha parlato",
+     "tema": "parlare — passato prossimo — lui"
+    },
+    {
+     "id": "V510",
+     "it": "noi abbiamo parlato",
+     "tema": "parlare — passato prossimo — noi"
+    },
+    {
+     "id": "V511",
+     "it": "voi avete parlato",
+     "tema": "parlare — passato prossimo — voi"
+    },
+    {
+     "id": "V512",
+     "it": "loro hanno parlato",
+     "tema": "parlare — passato prossimo — loro"
+    },
+    {
+     "id": "V513",
+     "it": "mangiare",
+     "tema": "mangiare — infinito"
+    },
+    {
+     "id": "V514",
+     "it": "mangiato",
+     "tema": "mangiare — participio"
+    },
+    {
+     "id": "V515",
+     "it": "io mangio",
+     "tema": "mangiare — presente — io"
+    },
+    {
+     "id": "V516",
+     "it": "tu mangi",
+     "tema": "mangiare — presente — tu"
+    },
+    {
+     "id": "V517",
+     "it": "lui mangia",
+     "tema": "mangiare — presente — lui"
+    },
+    {
+     "id": "V518",
+     "it": "noi mangiamo",
+     "tema": "mangiare — presente — noi"
+    },
+    {
+     "id": "V519",
+     "it": "voi mangiate",
+     "tema": "mangiare — presente — voi"
+    },
+    {
+     "id": "V520",
+     "it": "loro mangiano",
+     "tema": "mangiare — presente — loro"
+    },
+    {
+     "id": "V521",
+     "it": "io mangiavo",
+     "tema": "mangiare — imperfetto — io"
+    },
+    {
+     "id": "V522",
+     "it": "tu mangiavi",
+     "tema": "mangiare — imperfetto — tu"
+    },
+    {
+     "id": "V523",
+     "it": "lui mangiava",
+     "tema": "mangiare — imperfetto — lui"
+    },
+    {
+     "id": "V524",
+     "it": "noi mangiavamo",
+     "tema": "mangiare — imperfetto — noi"
+    },
+    {
+     "id": "V525",
+     "it": "voi mangiavate",
+     "tema": "mangiare — imperfetto — voi"
+    },
+    {
+     "id": "V526",
+     "it": "loro mangiavano",
+     "tema": "mangiare — imperfetto — loro"
+    },
+    {
+     "id": "V527",
+     "it": "io mangerò",
+     "tema": "mangiare — futuro — io"
+    },
+    {
+     "id": "V528",
+     "it": "tu mangerai",
+     "tema": "mangiare — futuro — tu"
+    },
+    {
+     "id": "V529",
+     "it": "lui mangerà",
+     "tema": "mangiare — futuro — lui"
+    },
+    {
+     "id": "V530",
+     "it": "noi mangeremo",
+     "tema": "mangiare — futuro — noi"
+    },
+    {
+     "id": "V531",
+     "it": "voi mangerete",
+     "tema": "mangiare — futuro — voi"
+    },
+    {
+     "id": "V532",
+     "it": "loro mangeranno",
+     "tema": "mangiare — futuro — loro"
+    },
+    {
+     "id": "V533",
+     "it": "io mangerei",
+     "tema": "mangiare — condizionale — io"
+    },
+    {
+     "id": "V534",
+     "it": "tu mangeresti",
+     "tema": "mangiare — condizionale — tu"
+    },
+    {
+     "id": "V535",
+     "it": "lui mangerebbe",
+     "tema": "mangiare — condizionale — lui"
+    },
+    {
+     "id": "V536",
+     "it": "noi mangeremmo",
+     "tema": "mangiare — condizionale — noi"
+    },
+    {
+     "id": "V537",
+     "it": "voi mangereste",
+     "tema": "mangiare — condizionale — voi"
+    },
+    {
+     "id": "V538",
+     "it": "loro mangerebbero",
+     "tema": "mangiare — condizionale — loro"
+    },
+    {
+     "id": "V539",
+     "it": "io ho mangiato",
+     "tema": "mangiare — passato prossimo — io"
+    },
+    {
+     "id": "V540",
+     "it": "tu hai mangiato",
+     "tema": "mangiare — passato prossimo — tu"
+    },
+    {
+     "id": "V541",
+     "it": "lui ha mangiato",
+     "tema": "mangiare — passato prossimo — lui"
+    },
+    {
+     "id": "V542",
+     "it": "noi abbiamo mangiato",
+     "tema": "mangiare — passato prossimo — noi"
+    },
+    {
+     "id": "V543",
+     "it": "voi avete mangiato",
+     "tema": "mangiare — passato prossimo — voi"
+    },
+    {
+     "id": "V544",
+     "it": "loro hanno mangiato",
+     "tema": "mangiare — passato prossimo — loro"
+    },
+    {
+     "id": "V545",
+     "it": "credere",
+     "tema": "credere — infinito"
+    },
+    {
+     "id": "V546",
+     "it": "creduto",
+     "tema": "credere — participio"
+    },
+    {
+     "id": "V547",
+     "it": "io credo",
+     "tema": "credere — presente — io"
+    },
+    {
+     "id": "V548",
+     "it": "tu credi",
+     "tema": "credere — presente — tu"
+    },
+    {
+     "id": "V549",
+     "it": "lui crede",
+     "tema": "credere — presente — lui"
+    },
+    {
+     "id": "V550",
+     "it": "noi crediamo",
+     "tema": "credere — presente — noi"
+    },
+    {
+     "id": "V551",
+     "it": "voi credete",
+     "tema": "credere — presente — voi"
+    },
+    {
+     "id": "V552",
+     "it": "loro credono",
+     "tema": "credere — presente — loro"
+    },
+    {
+     "id": "V553",
+     "it": "io credevo",
+     "tema": "credere — imperfetto — io"
+    },
+    {
+     "id": "V554",
+     "it": "tu credevi",
+     "tema": "credere — imperfetto — tu"
+    },
+    {
+     "id": "V555",
+     "it": "lui credeva",
+     "tema": "credere — imperfetto — lui"
+    },
+    {
+     "id": "V556",
+     "it": "noi credevamo",
+     "tema": "credere — imperfetto — noi"
+    },
+    {
+     "id": "V557",
+     "it": "voi credevate",
+     "tema": "credere — imperfetto — voi"
+    },
+    {
+     "id": "V558",
+     "it": "loro credevano",
+     "tema": "credere — imperfetto — loro"
+    },
+    {
+     "id": "V559",
+     "it": "io crederò",
+     "tema": "credere — futuro — io"
+    },
+    {
+     "id": "V560",
+     "it": "tu crederai",
+     "tema": "credere — futuro — tu"
+    },
+    {
+     "id": "V561",
+     "it": "lui crederà",
+     "tema": "credere — futuro — lui"
+    },
+    {
+     "id": "V562",
+     "it": "noi crederemo",
+     "tema": "credere — futuro — noi"
+    },
+    {
+     "id": "V563",
+     "it": "voi crederete",
+     "tema": "credere — futuro — voi"
+    },
+    {
+     "id": "V564",
+     "it": "loro crederanno",
+     "tema": "credere — futuro — loro"
+    },
+    {
+     "id": "V565",
+     "it": "io crederei",
+     "tema": "credere — condizionale — io"
+    },
+    {
+     "id": "V566",
+     "it": "tu crederesti",
+     "tema": "credere — condizionale — tu"
+    },
+    {
+     "id": "V567",
+     "it": "lui crederebbe",
+     "tema": "credere — condizionale — lui"
+    },
+    {
+     "id": "V568",
+     "it": "noi crederemmo",
+     "tema": "credere — condizionale — noi"
+    },
+    {
+     "id": "V569",
+     "it": "voi credereste",
+     "tema": "credere — condizionale — voi"
+    },
+    {
+     "id": "V570",
+     "it": "loro crederebbero",
+     "tema": "credere — condizionale — loro"
+    },
+    {
+     "id": "V571",
+     "it": "io ho creduto",
+     "tema": "credere — passato prossimo — io"
+    },
+    {
+     "id": "V572",
+     "it": "tu hai creduto",
+     "tema": "credere — passato prossimo — tu"
+    },
+    {
+     "id": "V573",
+     "it": "lui ha creduto",
+     "tema": "credere — passato prossimo — lui"
+    },
+    {
+     "id": "V574",
+     "it": "noi abbiamo creduto",
+     "tema": "credere — passato prossimo — noi"
+    },
+    {
+     "id": "V575",
+     "it": "voi avete creduto",
+     "tema": "credere — passato prossimo — voi"
+    },
+    {
+     "id": "V576",
+     "it": "loro hanno creduto",
+     "tema": "credere — passato prossimo — loro"
+    },
+    {
+     "id": "V577",
+     "it": "dormire",
+     "tema": "dormire — infinito"
+    },
+    {
+     "id": "V578",
+     "it": "dormito",
+     "tema": "dormire — participio"
+    },
+    {
+     "id": "V579",
+     "it": "io dormo",
+     "tema": "dormire — presente — io"
+    },
+    {
+     "id": "V580",
+     "it": "tu dormi",
+     "tema": "dormire — presente — tu"
+    },
+    {
+     "id": "V581",
+     "it": "lui dorme",
+     "tema": "dormire — presente — lui"
+    },
+    {
+     "id": "V582",
+     "it": "noi dormiamo",
+     "tema": "dormire — presente — noi"
+    },
+    {
+     "id": "V583",
+     "it": "voi dormite",
+     "tema": "dormire — presente — voi"
+    },
+    {
+     "id": "V584",
+     "it": "loro dormono",
+     "tema": "dormire — presente — loro"
+    },
+    {
+     "id": "V585",
+     "it": "io dormivo",
+     "tema": "dormire — imperfetto — io"
+    },
+    {
+     "id": "V586",
+     "it": "tu dormivi",
+     "tema": "dormire — imperfetto — tu"
+    },
+    {
+     "id": "V587",
+     "it": "lui dormiva",
+     "tema": "dormire — imperfetto — lui"
+    },
+    {
+     "id": "V588",
+     "it": "noi dormivamo",
+     "tema": "dormire — imperfetto — noi"
+    },
+    {
+     "id": "V589",
+     "it": "voi dormivate",
+     "tema": "dormire — imperfetto — voi"
+    },
+    {
+     "id": "V590",
+     "it": "loro dormivano",
+     "tema": "dormire — imperfetto — loro"
+    },
+    {
+     "id": "V591",
+     "it": "io dormirò",
+     "tema": "dormire — futuro — io"
+    },
+    {
+     "id": "V592",
+     "it": "tu dormirai",
+     "tema": "dormire — futuro — tu"
+    },
+    {
+     "id": "V593",
+     "it": "lui dormirà",
+     "tema": "dormire — futuro — lui"
+    },
+    {
+     "id": "V594",
+     "it": "noi dormiremo",
+     "tema": "dormire — futuro — noi"
+    },
+    {
+     "id": "V595",
+     "it": "voi dormirete",
+     "tema": "dormire — futuro — voi"
+    },
+    {
+     "id": "V596",
+     "it": "loro dormiranno",
+     "tema": "dormire — futuro — loro"
+    },
+    {
+     "id": "V597",
+     "it": "io dormirei",
+     "tema": "dormire — condizionale — io"
+    },
+    {
+     "id": "V598",
+     "it": "tu dormiresti",
+     "tema": "dormire — condizionale — tu"
+    },
+    {
+     "id": "V599",
+     "it": "lui dormirebbe",
+     "tema": "dormire — condizionale — lui"
+    },
+    {
+     "id": "V600",
+     "it": "noi dormiremmo",
+     "tema": "dormire — condizionale — noi"
+    },
+    {
+     "id": "V601",
+     "it": "voi dormireste",
+     "tema": "dormire — condizionale — voi"
+    },
+    {
+     "id": "V602",
+     "it": "loro dormirebbero",
+     "tema": "dormire — condizionale — loro"
+    },
+    {
+     "id": "V603",
+     "it": "io ho dormito",
+     "tema": "dormire — passato prossimo — io"
+    },
+    {
+     "id": "V604",
+     "it": "tu hai dormito",
+     "tema": "dormire — passato prossimo — tu"
+    },
+    {
+     "id": "V605",
+     "it": "lui ha dormito",
+     "tema": "dormire — passato prossimo — lui"
+    },
+    {
+     "id": "V606",
+     "it": "noi abbiamo dormito",
+     "tema": "dormire — passato prossimo — noi"
+    },
+    {
+     "id": "V607",
+     "it": "voi avete dormito",
+     "tema": "dormire — passato prossimo — voi"
+    },
+    {
+     "id": "V608",
+     "it": "loro hanno dormito",
+     "tema": "dormire — passato prossimo — loro"
+    },
+    {
+     "id": "V609",
+     "it": "capire",
+     "tema": "capire — infinito"
+    },
+    {
+     "id": "V610",
+     "it": "capito",
+     "tema": "capire — participio"
+    },
+    {
+     "id": "V611",
+     "it": "io capisco",
+     "tema": "capire — presente — io"
+    },
+    {
+     "id": "V612",
+     "it": "tu capisci",
+     "tema": "capire — presente — tu"
+    },
+    {
+     "id": "V613",
+     "it": "lui capisce",
+     "tema": "capire — presente — lui"
+    },
+    {
+     "id": "V614",
+     "it": "noi capiamo",
+     "tema": "capire — presente — noi"
+    },
+    {
+     "id": "V615",
+     "it": "voi capite",
+     "tema": "capire — presente — voi"
+    },
+    {
+     "id": "V616",
+     "it": "loro capiscono",
+     "tema": "capire — presente — loro"
+    },
+    {
+     "id": "V617",
+     "it": "io capivo",
+     "tema": "capire — imperfetto — io"
+    },
+    {
+     "id": "V618",
+     "it": "tu capivi",
+     "tema": "capire — imperfetto — tu"
+    },
+    {
+     "id": "V619",
+     "it": "lui capiva",
+     "tema": "capire — imperfetto — lui"
+    },
+    {
+     "id": "V620",
+     "it": "noi capivamo",
+     "tema": "capire — imperfetto — noi"
+    },
+    {
+     "id": "V621",
+     "it": "voi capivate",
+     "tema": "capire — imperfetto — voi"
+    },
+    {
+     "id": "V622",
+     "it": "loro capivano",
+     "tema": "capire — imperfetto — loro"
+    },
+    {
+     "id": "V623",
+     "it": "io capirò",
+     "tema": "capire — futuro — io"
+    },
+    {
+     "id": "V624",
+     "it": "tu capirai",
+     "tema": "capire — futuro — tu"
+    },
+    {
+     "id": "V625",
+     "it": "lui capirà",
+     "tema": "capire — futuro — lui"
+    },
+    {
+     "id": "V626",
+     "it": "noi capiremo",
+     "tema": "capire — futuro — noi"
+    },
+    {
+     "id": "V627",
+     "it": "voi capirete",
+     "tema": "capire — futuro — voi"
+    },
+    {
+     "id": "V628",
+     "it": "loro capiranno",
+     "tema": "capire — futuro — loro"
+    },
+    {
+     "id": "V629",
+     "it": "io capirei",
+     "tema": "capire — condizionale — io"
+    },
+    {
+     "id": "V630",
+     "it": "tu capiresti",
+     "tema": "capire — condizionale — tu"
+    },
+    {
+     "id": "V631",
+     "it": "lui capirebbe",
+     "tema": "capire — condizionale — lui"
+    },
+    {
+     "id": "V632",
+     "it": "noi capiremmo",
+     "tema": "capire — condizionale — noi"
+    },
+    {
+     "id": "V633",
+     "it": "voi capireste",
+     "tema": "capire — condizionale — voi"
+    },
+    {
+     "id": "V634",
+     "it": "loro capirebbero",
+     "tema": "capire — condizionale — loro"
+    },
+    {
+     "id": "V635",
+     "it": "io ho capito",
+     "tema": "capire — passato prossimo — io"
+    },
+    {
+     "id": "V636",
+     "it": "tu hai capito",
+     "tema": "capire — passato prossimo — tu"
+    },
+    {
+     "id": "V637",
+     "it": "lui ha capito",
+     "tema": "capire — passato prossimo — lui"
+    },
+    {
+     "id": "V638",
+     "it": "noi abbiamo capito",
+     "tema": "capire — passato prossimo — noi"
+    },
+    {
+     "id": "V639",
+     "it": "voi avete capito",
+     "tema": "capire — passato prossimo — voi"
+    },
+    {
+     "id": "V640",
+     "it": "loro hanno capito",
+     "tema": "capire — passato prossimo — loro"
+    }
+   ]
+  }
+ ]
+}

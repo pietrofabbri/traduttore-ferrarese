@@ -4604,6 +4604,80 @@ def _testo_dei_dati(pagina: str) -> str:
     return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
 
 
+class TestRevisione(unittest.TestCase):
+    """La pagina della revisione (0.51): domande, proposte, righe."""
+
+    def test_le_domande_hanno_id_unici_e_solo_italiano(self):
+        from traduttore import revisione
+        dati = revisione.leggi()
+        ids = [d["id"] for g in dati["gruppi"] for d in g["domande"]]
+        self.assertGreater(len(ids), 1000)
+        self.assertEqual(len(ids), len(set(ids)))
+        # le domande non portano una traduzione: la calcola il motore oggi
+        for g in dati["gruppi"]:
+            for d in g["domande"]:
+                self.assertEqual(set(d) - {"id", "it", "tema"}, set(), d)
+
+    def test_la_proposta_e_quella_del_motore_e_dice_i_buchi(self):
+        from traduttore import revisione
+        from traduttore.cli import carica
+        motore = carica()
+        p = revisione.per_la_pagina(motore, {"gruppi": [{
+            "chiave": "x", "titolo": "x", "domande": [
+                {"id": "A1", "it": "ho mangiato"},
+                {"id": "A2", "it": "buongiorno"}]}]})
+        d1, d2 = p["gruppi"][0]["domande"]
+        self.assertEqual(d1["p"], motore.traduci("ho mangiato", IT_FE).testo)
+        self.assertNotIn("b", d1)
+        self.assertEqual(d2["b"], ["buongiorno"])
+
+    def test_la_pagina_porta_le_proposte_e_l_indirizzo(self):
+        sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+        from costruisci_web import dati_della_pagina, PAGINE
+        self.assertIn("revisione.html", [p["file"] for p in PAGINE])
+        percorso = os.path.join(RADICE, "web", "revisione.html")
+        dati = dati_della_pagina(open(percorso, encoding="utf-8").read())
+        self.assertTrue(dati["revisione"]["gruppi"])
+        self.assertTrue(dati["correzione"]["api"].startswith("https://api.github.com/repos/"))
+        self.assertNotIn("glossario", dati)
+
+    def test_una_riga_della_revisione_si_importa(self):
+        # La stessa forma che scrive `rigaRevisione` nella pagina: un «si'» e'
+        # una correzione uguale alla proposta, le altre forme stanno nella nota.
+        import tempfile
+        from traduttore import correzioni
+        righe = [
+            {"tipo": "correzione", "data": "2026-11-13", "chi": "Prova",
+             "varieta": "cittadino", "italiano": "non c'è pane",
+             "proposta": "an ghè brisa pan", "ferrarese": "an ghè brisa pan",
+             "nota": "revisione F011", "versione": "0.51.0"},
+            {"tipo": "correzione", "data": "2026-11-13", "chi": "Prova",
+             "varieta": "cittadino", "italiano": "buongiorno",
+             "proposta": "buongiorno", "ferrarese": "bongiórno",
+             "nota": "revisione F001; altre forme in cittadino: bondì",
+             "versione": "0.51.0"}]
+        corpo = ("Risposte inviate dalla pagina della revisione.\n\n```json\n" +
+                 "\n".join(json.dumps(r, ensure_ascii=False) for r in righe) +
+                 "\n```\n")
+        with tempfile.TemporaryDirectory() as d:
+            percorso = os.path.join(d, "c.jsonl")
+            esito = correzioni.importa(corpo, percorso, origine="segnalazione #1")
+        self.assertEqual(len(esito["nuove"]), 2)
+        self.assertEqual(esito["scartate"], [])
+        self.assertTrue(all(r["da_verificare"] for r in esito["nuove"]))
+
+    def test_senza_modello_il_contesto_non_si_calcola(self):
+        # 0.51: il contesto del modello era il 99% del tempo di una traduzione
+        from traduttore.cli import carica
+        motore = carica()
+        self.assertIsNone(motore.modello)
+
+        def vietato(*a, **k):
+            raise AssertionError("contesto calcolato senza modello")
+        motore._contesto_modello = vietato
+        self.assertEqual(motore.traduci("ho mangiato", IT_FE).testo, "aj ò magnà")
+
+
 class TestParticipiFuturiENomi(unittest.TestCase):
     """Participi e futuri per analogia, nomi propri (0.50)."""
 

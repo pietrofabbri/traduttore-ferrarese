@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.51
+versione: 0.52
 data: 2026-11-05
 ---
 
@@ -23,6 +23,28 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.52 — 2026-11-15 · La revisione aperta a tutti, e «Traduci tu»
+
+**Perché.** Chi può insegnare di più al traduttore — chi ha parlato ferrarese tutta
+la vita — di solito non ha un account GitHub né un token. La revisione deve essere
+aperta a chiunque, con una condizione sola: dire chi si è.
+
+- **Chi sei**: prima di cominciare la pagina chiede nome e cognome, paese, varietà e
+  il consenso (18 anni, nome e paese pubblicati con le risposte). Senza, non si gioca.
+- **Mandare senza account**: «Manda le risposte» apre il menu del telefono
+  (WhatsApp, posta) o copia il messaggio; chi cura il progetto lo incolla in «Per chi
+  cura il progetto» e lo invia con il suo token. Le righe restano firmate da chi ha
+  risposto; il workflow resta chiuso a chi ha accesso al repository, che fa da
+  garante. Nessun server e nessuna chiamata di rete nuova.
+- **Traduci tu**: il secondo modo, solo l'italiano; la proposta del traduttore si
+  vede dopo, per non suggerire la risposta.
+- **Nuove domande**: 115 frasi di ogni giorno in otto situazioni e altre 700 parole
+  frequenti (dalla 301esima di FrequencyWords, solo quelle che il glossario conosce
+  in italiano): 1974 domande in tutto.
+
+**Verifiche.** 444 test (erano 441): un messaggio condiviso si importa con la firma
+di chi ha risposto, la pagina chiede chi sei e il consenso, i nuovi gruppi.
 
 ## 0.51 — 2026-11-13 · La revisione, una carta alla volta
 

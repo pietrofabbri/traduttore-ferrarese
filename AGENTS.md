@@ -73,7 +73,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 441 test
+python3 prove/test_traduttore.py           # 444 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -187,6 +187,13 @@ nessuna contraria (soglie in `dati/correzioni/soglie.json`), oppure una
 conferma a mano. Lo fa `correzioni promuovi`, che il workflow lancia a ogni
 invio. Il procedimento e' in `dati/correzioni/README.md`, ed e' lo stesso per
 una persona e per Claude.
+
+**Chi non ha un account** (0.52) risponde dalla pagina `revisione.html` dopo aver
+detto chi e' (nome, paese, varieta', consenso; 18 anni) e manda le risposte a chi
+cura il progetto con il menu del telefono; chi cura il progetto le incolla nella
+pagina e le invia con il suo token. Le righe restano firmate da chi ha risposto:
+non si riscrive mai il `chi` di una riga ricevuta, e non si accettano righe senza
+nome. Il workflow resta chiuso a chi ha accesso al repository, che fa da garante.
 
 Due cose non si fanno: scrivere a mano in `dati/regole_frase.json` (una regola
 di frase viene solo da correzioni promosse) e dichiarare `D` una voce che viene

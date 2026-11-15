@@ -168,7 +168,7 @@ PAGINE = (
     # proposte le calcola il motore qui, quando si genera la pagina.
     {"file": "revisione.html", "chiave": "revisione",
      "titolo": "Revisione",
-     "occhiello": "Il traduttore dice cosi': si dice? Una carta alla volta, con un tasto.",
+     "occhiello": "Chiunque parli ferrarese puo' insegnarlo al traduttore: una carta alla volta, senza account.",
      "sezioni": ("revisione",)},
 )
 

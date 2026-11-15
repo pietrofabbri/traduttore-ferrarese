@@ -4666,6 +4666,42 @@ class TestRevisione(unittest.TestCase):
         self.assertEqual(esito["scartate"], [])
         self.assertTrue(all(r["da_verificare"] for r in esito["nuove"]))
 
+    def test_un_messaggio_condiviso_si_importa_con_la_firma_di_chi_risponde(self):
+        # 0.52: chi non ha un account manda le risposte con il menu del
+        # telefono; chi cura il progetto incolla il messaggio intero. Le righe
+        # di intestazione si saltano, e ogni riga resta firmata da chi ha
+        # risposto, non da chi la incolla.
+        import tempfile
+        from traduttore import correzioni
+        riga = {"tipo": "correzione", "data": "2026-11-15", "chi": "Maria Rossi",
+                "varieta": "cittadino", "luogo": "Copparo",
+                "italiano": "dov'è il telefono?", "proposta": "indóv al telèfon",
+                "ferrarese": "indó l'è al telèfon?",
+                "nota": "traduci T001; altre forme in cittadino: indóv è al telèfan",
+                "versione": "0.52.0"}
+        messaggio = ("Risposte per il traduttore ferrarese, da Maria Rossi "
+                     "(Copparo): 1 risposte.\nChi cura il progetto le incolla "
+                     "nella pagina Revisione.\n\n" + json.dumps(riga, ensure_ascii=False) + "\n")
+        with tempfile.TemporaryDirectory() as d:
+            percorso = os.path.join(d, "c.jsonl")
+            esito = correzioni.importa(messaggio, percorso, origine="segnalazione #2")
+        self.assertEqual(len(esito["nuove"]), 1)
+        self.assertEqual(esito["nuove"][0]["chi"], "Maria Rossi")
+        self.assertEqual(esito["nuove"][0]["luogo"], "Copparo")
+
+    def test_la_pagina_chiede_chi_sei_e_il_consenso(self):
+        testo = open(os.path.join(RADICE, "web", "revisione.html"),
+                     encoding="utf-8").read()
+        for parte in ('id="revChiSei"', 'id="revConsenso"', "Ho almeno 18 anni",
+                      'id="revModoTraduci"', 'id="revRicevute"'):
+            self.assertIn(parte, testo)
+
+    def test_i_gruppi_per_tradurre_ci_sono(self):
+        from traduttore import revisione
+        chiavi = [g["chiave"] for g in revisione.leggi()["gruppi"]]
+        self.assertIn("situazioni", chiavi)
+        self.assertIn("parole700", chiavi)
+
     def test_senza_modello_il_contesto_non_si_calcola(self):
         # 0.51: il contesto del modello era il 99% del tempo di una traduzione
         from traduttore.cli import carica

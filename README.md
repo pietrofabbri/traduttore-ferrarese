@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.51
+versione: 0.52
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -109,9 +109,9 @@ esattamente come Python.
 | `suoni.html` | le cinque varietà e i suoni | 143 KB |
 | `regole.html` | le regole del ferrarese, con la fonte su ognuna | 130 KB |
 | `verifica.html` | la verifica a campione: le voci estratte da giudicare | 166 KB |
-| `revisione.html` | la revisione: una carta alla volta, «si dice così?» | 168 KB |
+| `revisione.html` | la revisione, aperta a tutti: «si dice così?» e «traduci tu» | 200 KB |
 
-In tutto 47 pagine e 8,1 MB; `python3 -m traduttore.cli web` stampa i pesi
+In tutto 47 pagine e 8,6 MB; `python3 -m traduttore.cli web` stampa i pesi
 veri ogni volta, e quelli valgono piu' di questa tabella.
 
 **Perché il glossario è a fette.** Potare i campi aiuta ma non basta: la misura
@@ -162,16 +162,26 @@ mano (`correzioni conferma X0001`). Il protocollo è in
 
 ## La revisione: una carta alla volta
 
-La pagina **Revisione** (`web/revisione.html`) serve a chi parla ferrarese per dire,
-una frase alla volta, se il traduttore ha ragione. Ogni carta ha l'italiano e la
-risposta del traduttore di oggi; si risponde con un tasto: **1** sì, **2** no (si
-scrive come la si dice, e gli altri modi di dirla in città), **3** non so. Ci sono
-punti, la serie di risposte di fila e l'avanzamento di ogni gruppo: frasi, le 300
+La pagina **Revisione** (`web/revisione.html`) è per **chiunque parli ferrarese**,
+senza account: si scrive chi si è (nome, paese, varietà, e il consenso a pubblicarli
+con le risposte; servono 18 anni) e si gioca in due modi:
+
+- **Controlla la traduzione**: l'italiano e la risposta del traduttore di oggi; **1**
+  sì, **2** no (si scrive come la si dice, e gli altri modi di dirla in città), **3**
+  non so;
+- **Traduci tu**: solo l'italiano, e si scrive come lo si dice, senza vedere la
+  risposta del traduttore (che compare dopo).
+
+Ci sono punti, la serie di risposte di fila e l'avanzamento di ogni gruppo: frasi che
+insegnano le regole, frasi di ogni giorno (a casa, a tavola, in giro...), le 1000
 parole più usate, plurali, preposizioni, pronomi, venti verbi in tutti i tempi.
 
-Le risposte restano nel browser finché non si preme **Invia**: partono insieme come
-**correzioni** firmate con il nome di chi risponde, con lo stesso token e lo stesso
-workflow del pulsante del traduttore, e da lì seguono la strada di ogni correzione
+Le risposte restano nel browser finché non si preme **Manda le risposte**. Chi non
+ha un token le manda con il menu del telefono (WhatsApp, posta, «Copia») a chi cura il
+progetto, che incolla il messaggio in «Per chi cura il progetto» e le invia con il
+suo token: **restano firmate da chi ha risposto**. Chi ha un token le invia
+direttamente. In tutti e due i casi diventano **correzioni**, con lo stesso workflow
+del pulsante del traduttore, e da lì seguono la strada di ogni correzione
 (archiviate da verificare, promosse quando hanno il loro margine). Le domande sono in
 [dati/revisione/](dati/revisione/README.md); la pagina chiama la rete solo dalla
 stessa riga `RETE-DICHIARATA` del traduttore, che ora è una funzione sola per tutte e
@@ -903,7 +913,7 @@ plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 441 test
+python3 prove/test_traduttore.py     # 444 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

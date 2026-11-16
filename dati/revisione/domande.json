@@ -1,9 +1,9 @@
 {
- "_nota": "Le domande della revisione (0.51): solo l'italiano. La traduzione proposta non e' qui: la calcola il motore quando si genera la pagina, quindi e' sempre quella di oggi. Le risposte arrivano come correzioni (dati/correzioni/), firmate da chi risponde. Le 300 parole vengono da FrequencyWords di Hermit Dave (it_50k, sottotitoli OpenSubtitles), licenza CC-BY-SA 4.0: https://github.com/hermitdave/FrequencyWords",
+ "_nota": "Le domande della revisione (0.51; frasi di ogni giorno e altre 700 parole dalla 0.52): solo l'italiano. La traduzione proposta non e' qui: la calcola il motore quando si genera la pagina, quindi e' sempre quella di oggi. Le risposte arrivano come correzioni (dati/correzioni/), firmate da chi risponde. Le 300 parole vengono da FrequencyWords di Hermit Dave (it_50k, sottotitoli OpenSubtitles), licenza CC-BY-SA 4.0: https://github.com/hermitdave/FrequencyWords",
  "gruppi": [
   {
    "chiave": "frasi",
-   "titolo": "Frasi di tutti i giorni",
+   "titolo": "Frasi che insegnano le regole",
    "spiegazione": "Saluti, negazione, domande, articoli, il passato: le frasi che insegnano le regole.",
    "domande": [
     {
@@ -400,6 +400,588 @@
      "id": "F079",
      "it": "stai zitto",
      "tema": "modi di dire"
+    }
+   ]
+  },
+  {
+   "chiave": "situazioni",
+   "titolo": "A casa, a tavola, in giro",
+   "spiegazione": "A casa, a tavola, in famiglia, in giro, il tempo, il lavoro: frasi brevi che si dicono tutti i giorni.",
+   "domande": [
+    {
+     "id": "T001",
+     "it": "dov'è il telefono?",
+     "tema": "a casa"
+    },
+    {
+     "id": "T002",
+     "it": "spegni la luce",
+     "tema": "a casa"
+    },
+    {
+     "id": "T003",
+     "it": "accendi la televisione",
+     "tema": "a casa"
+    },
+    {
+     "id": "T004",
+     "it": "apri la porta, c'è qualcuno",
+     "tema": "a casa"
+    },
+    {
+     "id": "T005",
+     "it": "metti a posto la tua roba",
+     "tema": "a casa"
+    },
+    {
+     "id": "T006",
+     "it": "ho lasciato le chiavi in macchina",
+     "tema": "a casa"
+    },
+    {
+     "id": "T007",
+     "it": "vado a letto",
+     "tema": "a casa"
+    },
+    {
+     "id": "T008",
+     "it": "sono stanco morto",
+     "tema": "a casa"
+    },
+    {
+     "id": "T009",
+     "it": "alzati, è tardi",
+     "tema": "a casa"
+    },
+    {
+     "id": "T010",
+     "it": "lavati le mani",
+     "tema": "a casa"
+    },
+    {
+     "id": "T011",
+     "it": "c'è da fare la spesa",
+     "tema": "a casa"
+    },
+    {
+     "id": "T012",
+     "it": "la casa è in disordine",
+     "tema": "a casa"
+    },
+    {
+     "id": "T013",
+     "it": "chi ha lasciato la finestra aperta?",
+     "tema": "a casa"
+    },
+    {
+     "id": "T014",
+     "it": "fa caldo qui dentro",
+     "tema": "a casa"
+    },
+    {
+     "id": "T015",
+     "it": "stasera restiamo a casa",
+     "tema": "a casa"
+    },
+    {
+     "id": "T016",
+     "it": "è pronto in tavola",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T017",
+     "it": "vieni a mangiare",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T018",
+     "it": "passami il sale",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T019",
+     "it": "ne vuoi ancora?",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T020",
+     "it": "non ho più fame",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T021",
+     "it": "che buono!",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T022",
+     "it": "è troppo salato",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T023",
+     "it": "beviamo un bicchiere di vino",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T024",
+     "it": "mangia che si fredda",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T025",
+     "it": "cosa c'è per cena?",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T026",
+     "it": "ho fatto i cappelletti",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T027",
+     "it": "il brodo è caldo",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T028",
+     "it": "un po' di pane",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T029",
+     "it": "finisci il piatto",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T030",
+     "it": "alla salute!",
+     "tema": "a tavola"
+    },
+    {
+     "id": "T031",
+     "it": "come sta tua madre?",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T032",
+     "it": "salutami tuo padre",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T033",
+     "it": "i bambini dormono",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T034",
+     "it": "mio nonno era contadino",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T035",
+     "it": "mia sorella si sposa",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T036",
+     "it": "tuo fratello è a casa?",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T037",
+     "it": "vieni qui, piccolo",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T038",
+     "it": "fai il bravo",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T039",
+     "it": "ascolta la mamma",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T040",
+     "it": "la zia viene domenica",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T041",
+     "it": "mio marito è al lavoro",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T042",
+     "it": "mia moglie è in cucina",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T043",
+     "it": "siamo tutti qui",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T044",
+     "it": "ti voglio bene",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T045",
+     "it": "che bambino bello",
+     "tema": "in famiglia"
+    },
+    {
+     "id": "T046",
+     "it": "dove vai così di corsa?",
+     "tema": "in giro"
+    },
+    {
+     "id": "T047",
+     "it": "vado in centro",
+     "tema": "in giro"
+    },
+    {
+     "id": "T048",
+     "it": "andiamo a fare un giro",
+     "tema": "in giro"
+    },
+    {
+     "id": "T049",
+     "it": "ci vediamo in piazza",
+     "tema": "in giro"
+    },
+    {
+     "id": "T050",
+     "it": "prendo la bicicletta",
+     "tema": "in giro"
+    },
+    {
+     "id": "T051",
+     "it": "il negozio è chiuso",
+     "tema": "in giro"
+    },
+    {
+     "id": "T052",
+     "it": "quanto costa questo?",
+     "tema": "in giro"
+    },
+    {
+     "id": "T053",
+     "it": "è troppo caro",
+     "tema": "in giro"
+    },
+    {
+     "id": "T054",
+     "it": "c'è il mercato oggi",
+     "tema": "in giro"
+    },
+    {
+     "id": "T055",
+     "it": "aspettami qui",
+     "tema": "in giro"
+    },
+    {
+     "id": "T056",
+     "it": "torno subito",
+     "tema": "in giro"
+    },
+    {
+     "id": "T057",
+     "it": "è lontano?",
+     "tema": "in giro"
+    },
+    {
+     "id": "T058",
+     "it": "gira a destra",
+     "tema": "in giro"
+    },
+    {
+     "id": "T059",
+     "it": "sempre dritto",
+     "tema": "in giro"
+    },
+    {
+     "id": "T060",
+     "it": "siamo arrivati",
+     "tema": "in giro"
+    },
+    {
+     "id": "T061",
+     "it": "che tempo fa?",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T062",
+     "it": "sta per piovere",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T063",
+     "it": "c'è un gran caldo",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T064",
+     "it": "che freddo stamattina",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T065",
+     "it": "c'è la nebbia in campagna",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T066",
+     "it": "ha nevicato tutta la notte",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T067",
+     "it": "tira vento",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T068",
+     "it": "oggi c'è il sole",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T069",
+     "it": "domani pioverà",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T070",
+     "it": "è una bella giornata",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T071",
+     "it": "si fa buio presto",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T072",
+     "it": "è primavera",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T073",
+     "it": "d'estate si va al mare",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T074",
+     "it": "che afa",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T075",
+     "it": "prendi l'ombrello",
+     "tema": "il tempo"
+    },
+    {
+     "id": "T076",
+     "it": "non ho capito niente",
+     "tema": "parlare"
+    },
+    {
+     "id": "T077",
+     "it": "ripeti, per favore",
+     "tema": "parlare"
+    },
+    {
+     "id": "T078",
+     "it": "parla più piano",
+     "tema": "parlare"
+    },
+    {
+     "id": "T079",
+     "it": "cosa hai detto?",
+     "tema": "parlare"
+    },
+    {
+     "id": "T080",
+     "it": "lascia stare",
+     "tema": "parlare"
+    },
+    {
+     "id": "T081",
+     "it": "hai ragione",
+     "tema": "parlare"
+    },
+    {
+     "id": "T082",
+     "it": "non è vero niente",
+     "tema": "parlare"
+    },
+    {
+     "id": "T083",
+     "it": "sta' zitto",
+     "tema": "parlare"
+    },
+    {
+     "id": "T084",
+     "it": "dimmi tutto",
+     "tema": "parlare"
+    },
+    {
+     "id": "T085",
+     "it": "chi te l'ha detto?",
+     "tema": "parlare"
+    },
+    {
+     "id": "T086",
+     "it": "non lo dire a nessuno",
+     "tema": "parlare"
+    },
+    {
+     "id": "T087",
+     "it": "lo sapevo",
+     "tema": "parlare"
+    },
+    {
+     "id": "T088",
+     "it": "che cosa vuol dire?",
+     "tema": "parlare"
+    },
+    {
+     "id": "T089",
+     "it": "non c'entra niente",
+     "tema": "parlare"
+    },
+    {
+     "id": "T090",
+     "it": "stai scherzando?",
+     "tema": "parlare"
+    },
+    {
+     "id": "T091",
+     "it": "sono contento",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T092",
+     "it": "che rabbia!",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T093",
+     "it": "mi fa paura",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T094",
+     "it": "non ne posso più",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T095",
+     "it": "che noia",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T096",
+     "it": "sono preoccupato",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T097",
+     "it": "che bello rivederti",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T098",
+     "it": "mi dispiace tanto",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T099",
+     "it": "mi sono spaventato",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T100",
+     "it": "che vergogna",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T101",
+     "it": "sono stufo",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T102",
+     "it": "che fortuna!",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T103",
+     "it": "pazienza",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T104",
+     "it": "non importa",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T105",
+     "it": "meno male",
+     "tema": "stati d'animo"
+    },
+    {
+     "id": "T106",
+     "it": "vado a lavorare",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T107",
+     "it": "ho tanto da fare",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T108",
+     "it": "oggi non lavoro",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T109",
+     "it": "il lavoro è finito",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T110",
+     "it": "bisogna andare nei campi",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T111",
+     "it": "ho mal di schiena",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T112",
+     "it": "è ora di smettere",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T113",
+     "it": "domani si comincia presto",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T114",
+     "it": "quanto ti pagano?",
+     "tema": "il lavoro"
+    },
+    {
+     "id": "T115",
+     "it": "ci vuole pazienza",
+     "tema": "il lavoro"
     }
    ]
   },
@@ -1907,6 +2489,3513 @@
      "id": "P300",
      "it": "succede",
      "tema": "n. 300 per frequenza"
+    }
+   ]
+  },
+  {
+   "chiave": "parole700",
+   "titolo": "Altre 700 parole frequenti",
+   "spiegazione": "Dalla 301esima in giu' nella lista di FrequencyWords, solo le parole che il glossario conosce in italiano.",
+   "domande": [
+    {
+     "id": "Q0314",
+     "it": "morto",
+     "tema": "n. 314 per frequenza"
+    },
+    {
+     "id": "Q0316",
+     "it": "dici",
+     "tema": "n. 316 per frequenza"
+    },
+    {
+     "id": "Q0317",
+     "it": "persona",
+     "tema": "n. 317 per frequenza"
+    },
+    {
+     "id": "Q0318",
+     "it": "pronto",
+     "tema": "n. 318 per frequenza"
+    },
+    {
+     "id": "Q0319",
+     "it": "meno",
+     "tema": "n. 319 per frequenza"
+    },
+    {
+     "id": "Q0321",
+     "it": "avanti",
+     "tema": "n. 321 per frequenza"
+    },
+    {
+     "id": "Q0322",
+     "it": "capisco",
+     "tema": "n. 322 per frequenza"
+    },
+    {
+     "id": "Q0323",
+     "it": "secondo",
+     "tema": "n. 323 per frequenza"
+    },
+    {
+     "id": "Q0325",
+     "it": "polizia",
+     "tema": "n. 325 per frequenza"
+    },
+    {
+     "id": "Q0326",
+     "it": "lì",
+     "tema": "n. 326 per frequenza"
+    },
+    {
+     "id": "Q0327",
+     "it": "avrebbe",
+     "tema": "n. 327 per frequenza"
+    },
+    {
+     "id": "Q0330",
+     "it": "letto",
+     "tema": "n. 330 per frequenza"
+    },
+    {
+     "id": "Q0331",
+     "it": "fino",
+     "tema": "n. 331 per frequenza"
+    },
+    {
+     "id": "Q0332",
+     "it": "dico",
+     "tema": "n. 332 per frequenza"
+    },
+    {
+     "id": "Q0334",
+     "it": "fine",
+     "tema": "n. 334 per frequenza"
+    },
+    {
+     "id": "Q0335",
+     "it": "aiuto",
+     "tema": "n. 335 per frequenza"
+    },
+    {
+     "id": "Q0336",
+     "it": "paura",
+     "tema": "n. 336 per frequenza"
+    },
+    {
+     "id": "Q0341",
+     "it": "domani",
+     "tema": "n. 341 per frequenza"
+    },
+    {
+     "id": "Q0342",
+     "it": "facciamo",
+     "tema": "n. 342 per frequenza"
+    },
+    {
+     "id": "Q0343",
+     "it": "abbastanza",
+     "tema": "n. 343 per frequenza"
+    },
+    {
+     "id": "Q0344",
+     "it": "capo",
+     "tema": "n. 344 per frequenza"
+    },
+    {
+     "id": "Q0345",
+     "it": "amore",
+     "tema": "n. 345 per frequenza"
+    },
+    {
+     "id": "Q0349",
+     "it": "piano",
+     "tema": "n. 349 per frequenza"
+    },
+    {
+     "id": "Q0350",
+     "it": "macchina",
+     "tema": "n. 350 per frequenza"
+    },
+    {
+     "id": "Q0351",
+     "it": "trovare",
+     "tema": "n. 351 per frequenza"
+    },
+    {
+     "id": "Q0358",
+     "it": "presto",
+     "tema": "n. 358 per frequenza"
+    },
+    {
+     "id": "Q0361",
+     "it": "far",
+     "tema": "n. 361 per frequenza"
+    },
+    {
+     "id": "Q0365",
+     "it": "tornare",
+     "tema": "n. 365 per frequenza"
+    },
+    {
+     "id": "Q0366",
+     "it": "quelle",
+     "tema": "n. 366 per frequenza"
+    },
+    {
+     "id": "Q0368",
+     "it": "primo",
+     "tema": "n. 368 per frequenza"
+    },
+    {
+     "id": "Q0369",
+     "it": "vostro",
+     "tema": "n. 369 per frequenza"
+    },
+    {
+     "id": "Q0370",
+     "it": "neanche",
+     "tema": "n. 370 per frequenza"
+    },
+    {
+     "id": "Q0371",
+     "it": "sera",
+     "tema": "n. 371 per frequenza"
+    },
+    {
+     "id": "Q0372",
+     "it": "giro",
+     "tema": "n. 372 per frequenza"
+    },
+    {
+     "id": "Q0373",
+     "it": "morte",
+     "tema": "n. 373 per frequenza"
+    },
+    {
+     "id": "Q0375",
+     "it": "qua",
+     "tema": "n. 375 per frequenza"
+    },
+    {
+     "id": "Q0377",
+     "it": "buon",
+     "tema": "n. 377 per frequenza"
+    },
+    {
+     "id": "Q0378",
+     "it": "anno",
+     "tema": "n. 378 per frequenza"
+    },
+    {
+     "id": "Q0379",
+     "it": "mie",
+     "tema": "n. 379 per frequenza"
+    },
+    {
+     "id": "Q0380",
+     "it": "diavolo",
+     "tema": "n. 380 per frequenza"
+    },
+    {
+     "id": "Q0381",
+     "it": "quasi",
+     "tema": "n. 381 per frequenza"
+    },
+    {
+     "id": "Q0382",
+     "it": "piacere",
+     "tema": "n. 382 per frequenza"
+    },
+    {
+     "id": "Q0383",
+     "it": "bel",
+     "tema": "n. 383 per frequenza"
+    },
+    {
+     "id": "Q0388",
+     "it": "felice",
+     "tema": "n. 388 per frequenza"
+    },
+    {
+     "id": "Q0389",
+     "it": "colpa",
+     "tema": "n. 389 per frequenza"
+    },
+    {
+     "id": "Q0390",
+     "it": "punto",
+     "tema": "n. 390 per frequenza"
+    },
+    {
+     "id": "Q0393",
+     "it": "vedi",
+     "tema": "n. 393 per frequenza"
+    },
+    {
+     "id": "Q0394",
+     "it": "quale",
+     "tema": "n. 394 per frequenza"
+    },
+    {
+     "id": "Q0397",
+     "it": "perchè",
+     "tema": "n. 397 per frequenza"
+    },
+    {
+     "id": "Q0398",
+     "it": "migliore",
+     "tema": "n. 398 per frequenza"
+    },
+    {
+     "id": "Q0400",
+     "it": "finito",
+     "tema": "n. 400 per frequenza"
+    },
+    {
+     "id": "Q0401",
+     "it": "figlia",
+     "tema": "n. 401 per frequenza"
+    },
+    {
+     "id": "Q0404",
+     "it": "almeno",
+     "tema": "n. 404 per frequenza"
+    },
+    {
+     "id": "Q0407",
+     "it": "col",
+     "tema": "n. 407 per frequenza"
+    },
+    {
+     "id": "Q0408",
+     "it": "ore",
+     "tema": "n. 408 per frequenza"
+    },
+    {
+     "id": "Q0409",
+     "it": "passato",
+     "tema": "n. 409 per frequenza"
+    },
+    {
+     "id": "Q0412",
+     "it": "terra",
+     "tema": "n. 412 per frequenza"
+    },
+    {
+     "id": "Q0417",
+     "it": "importante",
+     "tema": "n. 417 per frequenza"
+    },
+    {
+     "id": "Q0420",
+     "it": "settimana",
+     "tema": "n. 420 per frequenza"
+    },
+    {
+     "id": "Q0421",
+     "it": "perso",
+     "tema": "n. 421 per frequenza"
+    },
+    {
+     "id": "Q0431",
+     "it": "possibile",
+     "tema": "n. 431 per frequenza"
+    },
+    {
+     "id": "Q0432",
+     "it": "scuola",
+     "tema": "n. 432 per frequenza"
+    },
+    {
+     "id": "Q0435",
+     "it": "nelle",
+     "tema": "n. 435 per frequenza"
+    },
+    {
+     "id": "Q0436",
+     "it": "potrei",
+     "tema": "n. 436 per frequenza"
+    },
+    {
+     "id": "Q0439",
+     "it": "eri",
+     "tema": "n. 439 per frequenza"
+    },
+    {
+     "id": "Q0441",
+     "it": "indietro",
+     "tema": "n. 441 per frequenza"
+    },
+    {
+     "id": "Q0443",
+     "it": "sangue",
+     "tema": "n. 443 per frequenza"
+    },
+    {
+     "id": "Q0444",
+     "it": "chiama",
+     "tema": "n. 444 per frequenza"
+    },
+    {
+     "id": "Q0445",
+     "it": "messo",
+     "tema": "n. 445 per frequenza"
+    },
+    {
+     "id": "Q0447",
+     "it": "traduzione",
+     "tema": "n. 447 per frequenza"
+    },
+    {
+     "id": "Q0448",
+     "it": "tardi",
+     "tema": "n. 448 per frequenza"
+    },
+    {
+     "id": "Q0449",
+     "it": "cuore",
+     "tema": "n. 449 per frequenza"
+    },
+    {
+     "id": "Q0450",
+     "it": "marito",
+     "tema": "n. 450 per frequenza"
+    },
+    {
+     "id": "Q0453",
+     "it": "ieri",
+     "tema": "n. 453 per frequenza"
+    },
+    {
+     "id": "Q0460",
+     "it": "difficile",
+     "tema": "n. 460 per frequenza"
+    },
+    {
+     "id": "Q0462",
+     "it": "auto",
+     "tema": "n. 462 per frequenza"
+    },
+    {
+     "id": "Q0464",
+     "it": "ciò",
+     "tema": "n. 464 per frequenza"
+    },
+    {
+     "id": "Q0465",
+     "it": "altre",
+     "tema": "n. 465 per frequenza"
+    },
+    {
+     "id": "Q0467",
+     "it": "pensare",
+     "tema": "n. 467 per frequenza"
+    },
+    {
+     "id": "Q0468",
+     "it": "fantastico",
+     "tema": "n. 468 per frequenza"
+    },
+    {
+     "id": "Q0469",
+     "it": "fatta",
+     "tema": "n. 469 per frequenza"
+    },
+    {
+     "id": "Q0470",
+     "it": "numero",
+     "tema": "n. 470 per frequenza"
+    },
+    {
+     "id": "Q0471",
+     "it": "veramente",
+     "tema": "n. 471 per frequenza"
+    },
+    {
+     "id": "Q0472",
+     "it": "fanno",
+     "tema": "n. 472 per frequenza"
+    },
+    {
+     "id": "Q0474",
+     "it": "serio",
+     "tema": "n. 474 per frequenza"
+    },
+    {
+     "id": "Q0475",
+     "it": "possa",
+     "tema": "n. 475 per frequenza"
+    },
+    {
+     "id": "Q0476",
+     "it": "fossi",
+     "tema": "n. 476 per frequenza"
+    },
+    {
+     "id": "Q0477",
+     "it": "entrare",
+     "tema": "n. 477 per frequenza"
+    },
+    {
+     "id": "Q0481",
+     "it": "dicendo",
+     "tema": "n. 481 per frequenza"
+    },
+    {
+     "id": "Q0482",
+     "it": "acqua",
+     "tema": "n. 482 per frequenza"
+    },
+    {
+     "id": "Q0484",
+     "it": "stanza",
+     "tema": "n. 484 per frequenza"
+    },
+    {
+     "id": "Q0486",
+     "it": "forte",
+     "tema": "n. 486 per frequenza"
+    },
+    {
+     "id": "Q0489",
+     "it": "amo",
+     "tema": "n. 489 per frequenza"
+    },
+    {
+     "id": "Q0490",
+     "it": "roba",
+     "tema": "n. 490 per frequenza"
+    },
+    {
+     "id": "Q0492",
+     "it": "dietro",
+     "tema": "n. 492 per frequenza"
+    },
+    {
+     "id": "Q0493",
+     "it": "corpo",
+     "tema": "n. 493 per frequenza"
+    },
+    {
+     "id": "Q0494",
+     "it": "pare",
+     "tema": "n. 494 per frequenza"
+    },
+    {
+     "id": "Q0495",
+     "it": "sentire",
+     "tema": "n. 495 per frequenza"
+    },
+    {
+     "id": "Q0497",
+     "it": "telefono",
+     "tema": "n. 497 per frequenza"
+    },
+    {
+     "id": "Q0498",
+     "it": "voleva",
+     "tema": "n. 498 per frequenza"
+    },
+    {
+     "id": "Q0499",
+     "it": "poco",
+     "tema": "n. 499 per frequenza"
+    },
+    {
+     "id": "Q0500",
+     "it": "prendi",
+     "tema": "n. 500 per frequenza"
+    },
+    {
+     "id": "Q0501",
+     "it": "piccola",
+     "tema": "n. 501 per frequenza"
+    },
+    {
+     "id": "Q0502",
+     "it": "vicino",
+     "tema": "n. 502 per frequenza"
+    },
+    {
+     "id": "Q0504",
+     "it": "sacco",
+     "tema": "n. 504 per frequenza"
+    },
+    {
+     "id": "Q0505",
+     "it": "stia",
+     "tema": "n. 505 per frequenza"
+    },
+    {
+     "id": "Q0508",
+     "it": "cinque",
+     "tema": "n. 508 per frequenza"
+    },
+    {
+     "id": "Q0509",
+     "it": "strano",
+     "tema": "n. 509 per frequenza"
+    },
+    {
+     "id": "Q0514",
+     "it": "bravo",
+     "tema": "n. 514 per frequenza"
+    },
+    {
+     "id": "Q0516",
+     "it": "festa",
+     "tema": "n. 516 per frequenza"
+    },
+    {
+     "id": "Q0517",
+     "it": "senso",
+     "tema": "n. 517 per frequenza"
+    },
+    {
+     "id": "Q0518",
+     "it": "genere",
+     "tema": "n. 518 per frequenza"
+    },
+    {
+     "id": "Q0519",
+     "it": "quattro",
+     "tema": "n. 519 per frequenza"
+    },
+    {
+     "id": "Q0521",
+     "it": "attimo",
+     "tema": "n. 521 per frequenza"
+    },
+    {
+     "id": "Q0523",
+     "it": "pure",
+     "tema": "n. 523 per frequenza"
+    },
+    {
+     "id": "Q0526",
+     "it": "parla",
+     "tema": "n. 526 per frequenza"
+    },
+    {
+     "id": "Q0528",
+     "it": "verso",
+     "tema": "n. 528 per frequenza"
+    },
+    {
+     "id": "Q0532",
+     "it": "morire",
+     "tema": "n. 532 per frequenza"
+    },
+    {
+     "id": "Q0533",
+     "it": "signorina",
+     "tema": "n. 533 per frequenza"
+    },
+    {
+     "id": "Q0535",
+     "it": "domanda",
+     "tema": "n. 535 per frequenza"
+    },
+    {
+     "id": "Q0536",
+     "it": "ben",
+     "tema": "n. 536 per frequenza"
+    },
+    {
+     "id": "Q0537",
+     "it": "guerra",
+     "tema": "n. 537 per frequenza"
+    },
+    {
+     "id": "Q0538",
+     "it": "dottore",
+     "tema": "n. 538 per frequenza"
+    },
+    {
+     "id": "Q0540",
+     "it": "qual",
+     "tema": "n. 540 per frequenza"
+    },
+    {
+     "id": "Q0541",
+     "it": "vivere",
+     "tema": "n. 541 per frequenza"
+    },
+    {
+     "id": "Q0542",
+     "it": "vista",
+     "tema": "n. 542 per frequenza"
+    },
+    {
+     "id": "Q0543",
+     "it": "prova",
+     "tema": "n. 543 per frequenza"
+    },
+    {
+     "id": "Q0545",
+     "it": "ricordo",
+     "tema": "n. 545 per frequenza"
+    },
+    {
+     "id": "Q0547",
+     "it": "avessi",
+     "tema": "n. 547 per frequenza"
+    },
+    {
+     "id": "Q0548",
+     "it": "sicura",
+     "tema": "n. 548 per frequenza"
+    },
+    {
+     "id": "Q0550",
+     "it": "conto",
+     "tema": "n. 550 per frequenza"
+    },
+    {
+     "id": "Q0551",
+     "it": "perdere",
+     "tema": "n. 551 per frequenza"
+    },
+    {
+     "id": "Q0554",
+     "it": "figli",
+     "tema": "n. 554 per frequenza"
+    },
+    {
+     "id": "Q0555",
+     "it": "mezzo",
+     "tema": "n. 555 per frequenza"
+    },
+    {
+     "id": "Q0556",
+     "it": "lavorare",
+     "tema": "n. 556 per frequenza"
+    },
+    {
+     "id": "Q0557",
+     "it": "unico",
+     "tema": "n. 557 per frequenza"
+    },
+    {
+     "id": "Q0558",
+     "it": "esattamente",
+     "tema": "n. 558 per frequenza"
+    },
+    {
+     "id": "Q0559",
+     "it": "squadra",
+     "tema": "n. 559 per frequenza"
+    },
+    {
+     "id": "Q0560",
+     "it": "esatto",
+     "tema": "n. 560 per frequenza"
+    },
+    {
+     "id": "Q0561",
+     "it": "possono",
+     "tema": "n. 561 per frequenza"
+    },
+    {
+     "id": "Q0562",
+     "it": "fate",
+     "tema": "n. 562 per frequenza"
+    },
+    {
+     "id": "Q0566",
+     "it": "parola",
+     "tema": "n. 566 per frequenza"
+    },
+    {
+     "id": "Q0568",
+     "it": "sopra",
+     "tema": "n. 568 per frequenza"
+    },
+    {
+     "id": "Q0569",
+     "it": "motivo",
+     "tema": "n. 569 per frequenza"
+    },
+    {
+     "id": "Q0570",
+     "it": "avevi",
+     "tema": "n. 570 per frequenza"
+    },
+    {
+     "id": "Q0571",
+     "it": "cavolo",
+     "tema": "n. 571 per frequenza"
+    },
+    {
+     "id": "Q0572",
+     "it": "capitano",
+     "tema": "n. 572 per frequenza"
+    },
+    {
+     "id": "Q0574",
+     "it": "volete",
+     "tema": "n. 574 per frequenza"
+    },
+    {
+     "id": "Q0575",
+     "it": "siano",
+     "tema": "n. 575 per frequenza"
+    },
+    {
+     "id": "Q0576",
+     "it": "potresti",
+     "tema": "n. 576 per frequenza"
+    },
+    {
+     "id": "Q0577",
+     "it": "gioco",
+     "tema": "n. 577 per frequenza"
+    },
+    {
+     "id": "Q0578",
+     "it": "perfetto",
+     "tema": "n. 578 per frequenza"
+    },
+    {
+     "id": "Q0579",
+     "it": "be",
+     "tema": "n. 579 per frequenza"
+    },
+    {
+     "id": "Q0580",
+     "it": "mente",
+     "tema": "n. 580 per frequenza"
+    },
+    {
+     "id": "Q0588",
+     "it": "là",
+     "tema": "n. 588 per frequenza"
+    },
+    {
+     "id": "Q0589",
+     "it": "entrambi",
+     "tema": "n. 589 per frequenza"
+    },
+    {
+     "id": "Q0590",
+     "it": "avresti",
+     "tema": "n. 590 per frequenza"
+    },
+    {
+     "id": "Q0591",
+     "it": "passare",
+     "tema": "n. 591 per frequenza"
+    },
+    {
+     "id": "Q0592",
+     "it": "cena",
+     "tema": "n. 592 per frequenza"
+    },
+    {
+     "id": "Q0594",
+     "it": "sarei",
+     "tema": "n. 594 per frequenza"
+    },
+    {
+     "id": "Q0595",
+     "it": "controllo",
+     "tema": "n. 595 per frequenza"
+    },
+    {
+     "id": "Q0596",
+     "it": "affari",
+     "tema": "n. 596 per frequenza"
+    },
+    {
+     "id": "Q0598",
+     "it": "ultimo",
+     "tema": "n. 598 per frequenza"
+    },
+    {
+     "id": "Q0599",
+     "it": "facile",
+     "tema": "n. 599 per frequenza"
+    },
+    {
+     "id": "Q0600",
+     "it": "farò",
+     "tema": "n. 600 per frequenza"
+    },
+    {
+     "id": "Q0602",
+     "it": "davanti",
+     "tema": "n. 602 per frequenza"
+    },
+    {
+     "id": "Q0605",
+     "it": "sicurezza",
+     "tema": "n. 605 per frequenza"
+    },
+    {
+     "id": "Q0606",
+     "it": "dalle",
+     "tema": "n. 606 per frequenza"
+    },
+    {
+     "id": "Q0608",
+     "it": "dica",
+     "tema": "n. 608 per frequenza"
+    },
+    {
+     "id": "Q0609",
+     "it": "matrimonio",
+     "tema": "n. 609 per frequenza"
+    },
+    {
+     "id": "Q0611",
+     "it": "vogliono",
+     "tema": "n. 611 per frequenza"
+    },
+    {
+     "id": "Q0612",
+     "it": "molti",
+     "tema": "n. 612 per frequenza"
+    },
+    {
+     "id": "Q0613",
+     "it": "culo",
+     "tema": "n. 613 per frequenza"
+    },
+    {
+     "id": "Q0614",
+     "it": "fuoco",
+     "tema": "n. 614 per frequenza"
+    },
+    {
+     "id": "Q0615",
+     "it": "cercare",
+     "tema": "n. 615 per frequenza"
+    },
+    {
+     "id": "Q0616",
+     "it": "pistola",
+     "tema": "n. 616 per frequenza"
+    },
+    {
+     "id": "Q0617",
+     "it": "potremmo",
+     "tema": "n. 617 per frequenza"
+    },
+    {
+     "id": "Q0618",
+     "it": "re",
+     "tema": "n. 618 per frequenza"
+    },
+    {
+     "id": "Q0620",
+     "it": "puttana",
+     "tema": "n. 620 per frequenza"
+    },
+    {
+     "id": "Q0623",
+     "it": "inizio",
+     "tema": "n. 623 per frequenza"
+    },
+    {
+     "id": "Q0624",
+     "it": "saranno",
+     "tema": "n. 624 per frequenza"
+    },
+    {
+     "id": "Q0625",
+     "it": "causa",
+     "tema": "n. 625 per frequenza"
+    },
+    {
+     "id": "Q0626",
+     "it": "voglia",
+     "tema": "n. 626 per frequenza"
+    },
+    {
+     "id": "Q0627",
+     "it": "mettere",
+     "tema": "n. 627 per frequenza"
+    },
+    {
+     "id": "Q0628",
+     "it": "fammi",
+     "tema": "n. 628 per frequenza"
+    },
+    {
+     "id": "Q0629",
+     "it": "uccidere",
+     "tema": "n. 629 per frequenza"
+    },
+    {
+     "id": "Q0630",
+     "it": "vogliamo",
+     "tema": "n. 630 per frequenza"
+    },
+    {
+     "id": "Q0631",
+     "it": "faremo",
+     "tema": "n. 631 per frequenza"
+    },
+    {
+     "id": "Q0633",
+     "it": "genitori",
+     "tema": "n. 633 per frequenza"
+    },
+    {
+     "id": "Q0635",
+     "it": "potete",
+     "tema": "n. 635 per frequenza"
+    },
+    {
+     "id": "Q0636",
+     "it": "ricevuto",
+     "tema": "n. 636 per frequenza"
+    },
+    {
+     "id": "Q0637",
+     "it": "vivo",
+     "tema": "n. 637 per frequenza"
+    },
+    {
+     "id": "Q0639",
+     "it": "città",
+     "tema": "n. 639 per frequenza"
+    },
+    {
+     "id": "Q0642",
+     "it": "ospedale",
+     "tema": "n. 642 per frequenza"
+    },
+    {
+     "id": "Q0644",
+     "it": "agli",
+     "tema": "n. 644 per frequenza"
+    },
+    {
+     "id": "Q0648",
+     "it": "attenzione",
+     "tema": "n. 648 per frequenza"
+    },
+    {
+     "id": "Q0649",
+     "it": "sulle",
+     "tema": "n. 649 per frequenza"
+    },
+    {
+     "id": "Q0650",
+     "it": "bere",
+     "tema": "n. 650 per frequenza"
+    },
+    {
+     "id": "Q0651",
+     "it": "situazione",
+     "tema": "n. 651 per frequenza"
+    },
+    {
+     "id": "Q0652",
+     "it": "omicidio",
+     "tema": "n. 652 per frequenza"
+    },
+    {
+     "id": "Q0653",
+     "it": "revisione",
+     "tema": "n. 653 per frequenza"
+    },
+    {
+     "id": "Q0654",
+     "it": "avesse",
+     "tema": "n. 654 per frequenza"
+    },
+    {
+     "id": "Q0656",
+     "it": "cura",
+     "tema": "n. 656 per frequenza"
+    },
+    {
+     "id": "Q0659",
+     "it": "parole",
+     "tema": "n. 659 per frequenza"
+    },
+    {
+     "id": "Q0660",
+     "it": "lasciare",
+     "tema": "n. 660 per frequenza"
+    },
+    {
+     "id": "Q0661",
+     "it": "dicono",
+     "tema": "n. 661 per frequenza"
+    },
+    {
+     "id": "Q0666",
+     "it": "paese",
+     "tema": "n. 666 per frequenza"
+    },
+    {
+     "id": "Q0668",
+     "it": "andate",
+     "tema": "n. 668 per frequenza"
+    },
+    {
+     "id": "Q0670",
+     "it": "capisci",
+     "tema": "n. 670 per frequenza"
+    },
+    {
+     "id": "Q0671",
+     "it": "pace",
+     "tema": "n. 671 per frequenza"
+    },
+    {
+     "id": "Q0673",
+     "it": "musica",
+     "tema": "n. 673 per frequenza"
+    },
+    {
+     "id": "Q0677",
+     "it": "libro",
+     "tema": "n. 677 per frequenza"
+    },
+    {
+     "id": "Q0678",
+     "it": "eravamo",
+     "tema": "n. 678 per frequenza"
+    },
+    {
+     "id": "Q0680",
+     "it": "diventare",
+     "tema": "n. 680 per frequenza"
+    },
+    {
+     "id": "Q0682",
+     "it": "sbagliato",
+     "tema": "n. 682 per frequenza"
+    },
+    {
+     "id": "Q0685",
+     "it": "farai",
+     "tema": "n. 685 per frequenza"
+    },
+    {
+     "id": "Q0687",
+     "it": "venuta",
+     "tema": "n. 687 per frequenza"
+    },
+    {
+     "id": "Q0688",
+     "it": "scelta",
+     "tema": "n. 688 per frequenza"
+    },
+    {
+     "id": "Q0690",
+     "it": "portare",
+     "tema": "n. 690 per frequenza"
+    },
+    {
+     "id": "Q0691",
+     "it": "assolutamente",
+     "tema": "n. 691 per frequenza"
+    },
+    {
+     "id": "Q0692",
+     "it": "molte",
+     "tema": "n. 692 per frequenza"
+    },
+    {
+     "id": "Q0695",
+     "it": "scoperto",
+     "tema": "n. 695 per frequenza"
+    },
+    {
+     "id": "Q0696",
+     "it": "fatti",
+     "tema": "n. 696 per frequenza"
+    },
+    {
+     "id": "Q0700",
+     "it": "prigione",
+     "tema": "n. 700 per frequenza"
+    },
+    {
+     "id": "Q0701",
+     "it": "giornata",
+     "tema": "n. 701 per frequenza"
+    },
+    {
+     "id": "Q0702",
+     "it": "piuttosto",
+     "tema": "n. 702 per frequenza"
+    },
+    {
+     "id": "Q0704",
+     "it": "aspettare",
+     "tema": "n. 704 per frequenza"
+    },
+    {
+     "id": "Q0706",
+     "it": "arrivare",
+     "tema": "n. 706 per frequenza"
+    },
+    {
+     "id": "Q0707",
+     "it": "lungo",
+     "tema": "n. 707 per frequenza"
+    },
+    {
+     "id": "Q0709",
+     "it": "avvocato",
+     "tema": "n. 709 per frequenza"
+    },
+    {
+     "id": "Q0710",
+     "it": "deciso",
+     "tema": "n. 710 per frequenza"
+    },
+    {
+     "id": "Q0711",
+     "it": "sarai",
+     "tema": "n. 711 per frequenza"
+    },
+    {
+     "id": "Q0714",
+     "it": "dieci",
+     "tema": "n. 714 per frequenza"
+    },
+    {
+     "id": "Q0715",
+     "it": "stupido",
+     "tema": "n. 715 per frequenza"
+    },
+    {
+     "id": "Q0716",
+     "it": "usare",
+     "tema": "n. 716 per frequenza"
+    },
+    {
+     "id": "Q0717",
+     "it": "dello",
+     "tema": "n. 717 per frequenza"
+    },
+    {
+     "id": "Q0718",
+     "it": "cielo",
+     "tema": "n. 718 per frequenza"
+    },
+    {
+     "id": "Q0719",
+     "it": "guardare",
+     "tema": "n. 719 per frequenza"
+    },
+    {
+     "id": "Q0720",
+     "it": "bagno",
+     "tema": "n. 720 per frequenza"
+    },
+    {
+     "id": "Q0721",
+     "it": "aria",
+     "tema": "n. 721 per frequenza"
+    },
+    {
+     "id": "Q0722",
+     "it": "voce",
+     "tema": "n. 722 per frequenza"
+    },
+    {
+     "id": "Q0724",
+     "it": "vuol",
+     "tema": "n. 724 per frequenza"
+    },
+    {
+     "id": "Q0725",
+     "it": "giù",
+     "tema": "n. 725 per frequenza"
+    },
+    {
+     "id": "Q0726",
+     "it": "conosci",
+     "tema": "n. 726 per frequenza"
+    },
+    {
+     "id": "Q0727",
+     "it": "benissimo",
+     "tema": "n. 727 per frequenza"
+    },
+    {
+     "id": "Q0731",
+     "it": "restare",
+     "tema": "n. 731 per frequenza"
+    },
+    {
+     "id": "Q0732",
+     "it": "chiamare",
+     "tema": "n. 732 per frequenza"
+    },
+    {
+     "id": "Q0733",
+     "it": "poter",
+     "tema": "n. 733 per frequenza"
+    },
+    {
+     "id": "Q0734",
+     "it": "campo",
+     "tema": "n. 734 per frequenza"
+    },
+    {
+     "id": "Q0735",
+     "it": "luce",
+     "tema": "n. 735 per frequenza"
+    },
+    {
+     "id": "Q0738",
+     "it": "giovane",
+     "tema": "n. 738 per frequenza"
+    },
+    {
+     "id": "Q0740",
+     "it": "fra",
+     "tema": "n. 740 per frequenza"
+    },
+    {
+     "id": "Q0741",
+     "it": "provare",
+     "tema": "n. 741 per frequenza"
+    },
+    {
+     "id": "Q0742",
+     "it": "minuto",
+     "tema": "n. 742 per frequenza"
+    },
+    {
+     "id": "Q0744",
+     "it": "lontano",
+     "tema": "n. 744 per frequenza"
+    },
+    {
+     "id": "Q0745",
+     "it": "gruppo",
+     "tema": "n. 745 per frequenza"
+    },
+    {
+     "id": "Q0747",
+     "it": "arrivo",
+     "tema": "n. 747 per frequenza"
+    },
+    {
+     "id": "Q0748",
+     "it": "gran",
+     "tema": "n. 748 per frequenza"
+    },
+    {
+     "id": "Q0750",
+     "it": "cerca",
+     "tema": "n. 750 per frequenza"
+    },
+    {
+     "id": "Q0751",
+     "it": "passo",
+     "tema": "n. 751 per frequenza"
+    },
+    {
+     "id": "Q0758",
+     "it": "onore",
+     "tema": "n. 758 per frequenza"
+    },
+    {
+     "id": "Q0759",
+     "it": "aiutare",
+     "tema": "n. 759 per frequenza"
+    },
+    {
+     "id": "Q0760",
+     "it": "verità",
+     "tema": "n. 760 per frequenza"
+    },
+    {
+     "id": "Q0764",
+     "it": "alto",
+     "tema": "n. 764 per frequenza"
+    },
+    {
+     "id": "Q0765",
+     "it": "giu",
+     "tema": "n. 765 per frequenza"
+    },
+    {
+     "id": "Q0767",
+     "it": "futuro",
+     "tema": "n. 767 per frequenza"
+    },
+    {
+     "id": "Q0770",
+     "it": "cibo",
+     "tema": "n. 770 per frequenza"
+    },
+    {
+     "id": "Q0771",
+     "it": "fretta",
+     "tema": "n. 771 per frequenza"
+    },
+    {
+     "id": "Q0773",
+     "it": "finalmente",
+     "tema": "n. 773 per frequenza"
+    },
+    {
+     "id": "Q0775",
+     "it": "odio",
+     "tema": "n. 775 per frequenza"
+    },
+    {
+     "id": "Q0779",
+     "it": "incidente",
+     "tema": "n. 779 per frequenza"
+    },
+    {
+     "id": "Q0782",
+     "it": "intenzione",
+     "tema": "n. 782 per frequenza"
+    },
+    {
+     "id": "Q0783",
+     "it": "speciale",
+     "tema": "n. 783 per frequenza"
+    },
+    {
+     "id": "Q0784",
+     "it": "cambiare",
+     "tema": "n. 784 per frequenza"
+    },
+    {
+     "id": "Q0785",
+     "it": "vera",
+     "tema": "n. 785 per frequenza"
+    },
+    {
+     "id": "Q0786",
+     "it": "camera",
+     "tema": "n. 786 per frequenza"
+    },
+    {
+     "id": "Q0788",
+     "it": "semplice",
+     "tema": "n. 788 per frequenza"
+    },
+    {
+     "id": "Q0790",
+     "it": "riguardo",
+     "tema": "n. 790 per frequenza"
+    },
+    {
+     "id": "Q0792",
+     "it": "aspetto",
+     "tema": "n. 792 per frequenza"
+    },
+    {
+     "id": "Q0793",
+     "it": "viaggio",
+     "tema": "n. 793 per frequenza"
+    },
+    {
+     "id": "Q0794",
+     "it": "chiaro",
+     "tema": "n. 794 per frequenza"
+    },
+    {
+     "id": "Q0795",
+     "it": "chiamata",
+     "tema": "n. 795 per frequenza"
+    },
+    {
+     "id": "Q0796",
+     "it": "bocca",
+     "tema": "n. 796 per frequenza"
+    },
+    {
+     "id": "Q0797",
+     "it": "permesso",
+     "tema": "n. 797 per frequenza"
+    },
+    {
+     "id": "Q0800",
+     "it": "giocare",
+     "tema": "n. 800 per frequenza"
+    },
+    {
+     "id": "Q0801",
+     "it": "ordine",
+     "tema": "n. 801 per frequenza"
+    },
+    {
+     "id": "Q0802",
+     "it": "circa",
+     "tema": "n. 802 per frequenza"
+    },
+    {
+     "id": "Q0804",
+     "it": "finire",
+     "tema": "n. 804 per frequenza"
+    },
+    {
+     "id": "Q0806",
+     "it": "natale",
+     "tema": "n. 806 per frequenza"
+    },
+    {
+     "id": "Q0808",
+     "it": "direi",
+     "tema": "n. 808 per frequenza"
+    },
+    {
+     "id": "Q0813",
+     "it": "mattina",
+     "tema": "n. 813 per frequenza"
+    },
+    {
+     "id": "Q0816",
+     "it": "sistema",
+     "tema": "n. 816 per frequenza"
+    },
+    {
+     "id": "Q0818",
+     "it": "fondo",
+     "tema": "n. 818 per frequenza"
+    },
+    {
+     "id": "Q0826",
+     "it": "milioni",
+     "tema": "n. 826 per frequenza"
+    },
+    {
+     "id": "Q0827",
+     "it": "soltanto",
+     "tema": "n. 827 per frequenza"
+    },
+    {
+     "id": "Q0828",
+     "it": "armi",
+     "tema": "n. 828 per frequenza"
+    },
+    {
+     "id": "Q0830",
+     "it": "fermo",
+     "tema": "n. 830 per frequenza"
+    },
+    {
+     "id": "Q0831",
+     "it": "mese",
+     "tema": "n. 831 per frequenza"
+    },
+    {
+     "id": "Q0833",
+     "it": "cristo",
+     "tema": "n. 833 per frequenza"
+    },
+    {
+     "id": "Q0836",
+     "it": "controllare",
+     "tema": "n. 836 per frequenza"
+    },
+    {
+     "id": "Q0837",
+     "it": "appuntamento",
+     "tema": "n. 837 per frequenza"
+    },
+    {
+     "id": "Q0840",
+     "it": "vecchia",
+     "tema": "n. 840 per frequenza"
+    },
+    {
+     "id": "Q0844",
+     "it": "grado",
+     "tema": "n. 844 per frequenza"
+    },
+    {
+     "id": "Q0846",
+     "it": "nave",
+     "tema": "n. 846 per frequenza"
+    },
+    {
+     "id": "Q0850",
+     "it": "libero",
+     "tema": "n. 850 per frequenza"
+    },
+    {
+     "id": "Q0851",
+     "it": "stronzo",
+     "tema": "n. 851 per frequenza"
+    },
+    {
+     "id": "Q0854",
+     "it": "segreto",
+     "tema": "n. 854 per frequenza"
+    },
+    {
+     "id": "Q0855",
+     "it": "colpo",
+     "tema": "n. 855 per frequenza"
+    },
+    {
+     "id": "Q0856",
+     "it": "faceva",
+     "tema": "n. 856 per frequenza"
+    },
+    {
+     "id": "Q0858",
+     "it": "porto",
+     "tema": "n. 858 per frequenza"
+    },
+    {
+     "id": "Q0859",
+     "it": "oppure",
+     "tema": "n. 859 per frequenza"
+    },
+    {
+     "id": "Q0860",
+     "it": "completamente",
+     "tema": "n. 860 per frequenza"
+    },
+    {
+     "id": "Q0862",
+     "it": "lista",
+     "tema": "n. 862 per frequenza"
+    },
+    {
+     "id": "Q0865",
+     "it": "assassino",
+     "tema": "n. 865 per frequenza"
+    },
+    {
+     "id": "Q0867",
+     "it": "finché",
+     "tema": "n. 867 per frequenza"
+    },
+    {
+     "id": "Q0869",
+     "it": "ormai",
+     "tema": "n. 869 per frequenza"
+    },
+    {
+     "id": "Q0871",
+     "it": "generale",
+     "tema": "n. 871 per frequenza"
+    },
+    {
+     "id": "Q0873",
+     "it": "tenere",
+     "tema": "n. 873 per frequenza"
+    },
+    {
+     "id": "Q0877",
+     "it": "consiglio",
+     "tema": "n. 877 per frequenza"
+    },
+    {
+     "id": "Q0880",
+     "it": "semplicemente",
+     "tema": "n. 880 per frequenza"
+    },
+    {
+     "id": "Q0881",
+     "it": "zio",
+     "tema": "n. 881 per frequenza"
+    },
+    {
+     "id": "Q0882",
+     "it": "centro",
+     "tema": "n. 882 per frequenza"
+    },
+    {
+     "id": "Q0883",
+     "it": "specie",
+     "tema": "n. 883 per frequenza"
+    },
+    {
+     "id": "Q0884",
+     "it": "mille",
+     "tema": "n. 884 per frequenza"
+    },
+    {
+     "id": "Q0885",
+     "it": "sogno",
+     "tema": "n. 885 per frequenza"
+    },
+    {
+     "id": "Q0889",
+     "it": "brutto",
+     "tema": "n. 889 per frequenza"
+    },
+    {
+     "id": "Q0893",
+     "it": "sole",
+     "tema": "n. 893 per frequenza"
+    },
+    {
+     "id": "Q0895",
+     "it": "legge",
+     "tema": "n. 895 per frequenza"
+    },
+    {
+     "id": "Q0896",
+     "it": "spesso",
+     "tema": "n. 896 per frequenza"
+    },
+    {
+     "id": "Q0900",
+     "it": "volevi",
+     "tema": "n. 900 per frequenza"
+    },
+    {
+     "id": "Q0903",
+     "it": "gentile",
+     "tema": "n. 903 per frequenza"
+    },
+    {
+     "id": "Q0905",
+     "it": "ve",
+     "tema": "n. 905 per frequenza"
+    },
+    {
+     "id": "Q0907",
+     "it": "zitto",
+     "tema": "n. 907 per frequenza"
+    },
+    {
+     "id": "Q0908",
+     "it": "incontro",
+     "tema": "n. 908 per frequenza"
+    },
+    {
+     "id": "Q0909",
+     "it": "farà",
+     "tema": "n. 909 per frequenza"
+    },
+    {
+     "id": "Q0911",
+     "it": "rapporto",
+     "tema": "n. 911 per frequenza"
+    },
+    {
+     "id": "Q0912",
+     "it": "errore",
+     "tema": "n. 912 per frequenza"
+    },
+    {
+     "id": "Q0915",
+     "it": "pagare",
+     "tema": "n. 915 per frequenza"
+    },
+    {
+     "id": "Q0917",
+     "it": "occhiata",
+     "tema": "n. 917 per frequenza"
+    },
+    {
+     "id": "Q0918",
+     "it": "risposta",
+     "tema": "n. 918 per frequenza"
+    },
+    {
+     "id": "Q0919",
+     "it": "presa",
+     "tema": "n. 919 per frequenza"
+    },
+    {
+     "id": "Q0920",
+     "it": "servizio",
+     "tema": "n. 920 per frequenza"
+    },
+    {
+     "id": "Q0921",
+     "it": "medico",
+     "tema": "n. 921 per frequenza"
+    },
+    {
+     "id": "Q0924",
+     "it": "caro",
+     "tema": "n. 924 per frequenza"
+    },
+    {
+     "id": "Q0925",
+     "it": "schifo",
+     "tema": "n. 925 per frequenza"
+    },
+    {
+     "id": "Q0926",
+     "it": "avrai",
+     "tema": "n. 926 per frequenza"
+    },
+    {
+     "id": "Q0928",
+     "it": "saresti",
+     "tema": "n. 928 per frequenza"
+    },
+    {
+     "id": "Q0929",
+     "it": "personale",
+     "tema": "n. 929 per frequenza"
+    },
+    {
+     "id": "Q0934",
+     "it": "addosso",
+     "tema": "n. 934 per frequenza"
+    },
+    {
+     "id": "Q0936",
+     "it": "poteva",
+     "tema": "n. 936 per frequenza"
+    },
+    {
+     "id": "Q0937",
+     "it": "pieno",
+     "tema": "n. 937 per frequenza"
+    },
+    {
+     "id": "Q0938",
+     "it": "diverso",
+     "tema": "n. 938 per frequenza"
+    },
+    {
+     "id": "Q0939",
+     "it": "vestiti",
+     "tema": "n. 939 per frequenza"
+    },
+    {
+     "id": "Q0940",
+     "it": "sparato",
+     "tema": "n. 940 per frequenza"
+    },
+    {
+     "id": "Q0941",
+     "it": "realtà",
+     "tema": "n. 941 per frequenza"
+    },
+    {
+     "id": "Q0942",
+     "it": "do",
+     "tema": "n. 942 per frequenza"
+    },
+    {
+     "id": "Q0943",
+     "it": "sarò",
+     "tema": "n. 943 per frequenza"
+    },
+    {
+     "id": "Q0944",
+     "it": "normale",
+     "tema": "n. 944 per frequenza"
+    },
+    {
+     "id": "Q0945",
+     "it": "fame",
+     "tema": "n. 945 per frequenza"
+    },
+    {
+     "id": "Q0946",
+     "it": "programma",
+     "tema": "n. 946 per frequenza"
+    },
+    {
+     "id": "Q0947",
+     "it": "nonna",
+     "tema": "n. 947 per frequenza"
+    },
+    {
+     "id": "Q0952",
+     "it": "avevamo",
+     "tema": "n. 952 per frequenza"
+    },
+    {
+     "id": "Q0954",
+     "it": "posizione",
+     "tema": "n. 954 per frequenza"
+    },
+    {
+     "id": "Q0956",
+     "it": "rimanere",
+     "tema": "n. 956 per frequenza"
+    },
+    {
+     "id": "Q0957",
+     "it": "compagnia",
+     "tema": "n. 957 per frequenza"
+    },
+    {
+     "id": "Q0958",
+     "it": "proposito",
+     "tema": "n. 958 per frequenza"
+    },
+    {
+     "id": "Q0961",
+     "it": "ricorda",
+     "tema": "n. 961 per frequenza"
+    },
+    {
+     "id": "Q0963",
+     "it": "prende",
+     "tema": "n. 963 per frequenza"
+    },
+    {
+     "id": "Q0965",
+     "it": "avevano",
+     "tema": "n. 965 per frequenza"
+    },
+    {
+     "id": "Q0967",
+     "it": "chiuso",
+     "tema": "n. 967 per frequenza"
+    },
+    {
+     "id": "Q0968",
+     "it": "terribile",
+     "tema": "n. 968 per frequenza"
+    },
+    {
+     "id": "Q0969",
+     "it": "ritardo",
+     "tema": "n. 969 per frequenza"
+    },
+    {
+     "id": "Q0970",
+     "it": "attento",
+     "tema": "n. 970 per frequenza"
+    },
+    {
+     "id": "Q0974",
+     "it": "dimenticato",
+     "tema": "n. 974 per frequenza"
+    },
+    {
+     "id": "Q0975",
+     "it": "bisogna",
+     "tema": "n. 975 per frequenza"
+    },
+    {
+     "id": "Q0976",
+     "it": "impossibile",
+     "tema": "n. 976 per frequenza"
+    },
+    {
+     "id": "Q0977",
+     "it": "cioè",
+     "tema": "n. 977 per frequenza"
+    },
+    {
+     "id": "Q0980",
+     "it": "arma",
+     "tema": "n. 980 per frequenza"
+    },
+    {
+     "id": "Q0989",
+     "it": "guai",
+     "tema": "n. 989 per frequenza"
+    },
+    {
+     "id": "Q0990",
+     "it": "intorno",
+     "tema": "n. 990 per frequenza"
+    },
+    {
+     "id": "Q0992",
+     "it": "manca",
+     "tema": "n. 992 per frequenza"
+    },
+    {
+     "id": "Q0994",
+     "it": "grosso",
+     "tema": "n. 994 per frequenza"
+    },
+    {
+     "id": "Q0996",
+     "it": "dolce",
+     "tema": "n. 996 per frequenza"
+    },
+    {
+     "id": "Q0998",
+     "it": "cervello",
+     "tema": "n. 998 per frequenza"
+    },
+    {
+     "id": "Q0999",
+     "it": "coraggio",
+     "tema": "n. 999 per frequenza"
+    },
+    {
+     "id": "Q1001",
+     "it": "peccato",
+     "tema": "n. 1001 per frequenza"
+    },
+    {
+     "id": "Q1002",
+     "it": "questione",
+     "tema": "n. 1002 per frequenza"
+    },
+    {
+     "id": "Q1005",
+     "it": "guardi",
+     "tema": "n. 1005 per frequenza"
+    },
+    {
+     "id": "Q1007",
+     "it": "sala",
+     "tema": "n. 1007 per frequenza"
+    },
+    {
+     "id": "Q1013",
+     "it": "compleanno",
+     "tema": "n. 1013 per frequenza"
+    },
+    {
+     "id": "Q1014",
+     "it": "potrebbero",
+     "tema": "n. 1014 per frequenza"
+    },
+    {
+     "id": "Q1015",
+     "it": "relazione",
+     "tema": "n. 1015 per frequenza"
+    },
+    {
+     "id": "Q1016",
+     "it": "cliente",
+     "tema": "n. 1016 per frequenza"
+    },
+    {
+     "id": "Q1017",
+     "it": "spalle",
+     "tema": "n. 1017 per frequenza"
+    },
+    {
+     "id": "Q1019",
+     "it": "parti",
+     "tema": "n. 1019 per frequenza"
+    },
+    {
+     "id": "Q1020",
+     "it": "vale",
+     "tema": "n. 1020 per frequenza"
+    },
+    {
+     "id": "Q1023",
+     "it": "sicuramente",
+     "tema": "n. 1023 per frequenza"
+    },
+    {
+     "id": "Q1024",
+     "it": "appartamento",
+     "tema": "n. 1024 per frequenza"
+    },
+    {
+     "id": "Q1026",
+     "it": "saremo",
+     "tema": "n. 1026 per frequenza"
+    },
+    {
+     "id": "Q1027",
+     "it": "denaro",
+     "tema": "n. 1027 per frequenza"
+    },
+    {
+     "id": "Q1028",
+     "it": "riuscito",
+     "tema": "n. 1028 per frequenza"
+    },
+    {
+     "id": "Q1029",
+     "it": "continuare",
+     "tema": "n. 1029 per frequenza"
+    },
+    {
+     "id": "Q1030",
+     "it": "serata",
+     "tema": "n. 1030 per frequenza"
+    },
+    {
+     "id": "Q1031",
+     "it": "nero",
+     "tema": "n. 1031 per frequenza"
+    },
+    {
+     "id": "Q1032",
+     "it": "vestito",
+     "tema": "n. 1032 per frequenza"
+    },
+    {
+     "id": "Q1033",
+     "it": "carta",
+     "tema": "n. 1033 per frequenza"
+    },
+    {
+     "id": "Q1036",
+     "it": "bastardo",
+     "tema": "n. 1036 per frequenza"
+    },
+    {
+     "id": "Q1037",
+     "it": "potevo",
+     "tema": "n. 1037 per frequenza"
+    },
+    {
+     "id": "Q1038",
+     "it": "iniziare",
+     "tema": "n. 1038 per frequenza"
+    },
+    {
+     "id": "Q1039",
+     "it": "lavora",
+     "tema": "n. 1039 per frequenza"
+    },
+    {
+     "id": "Q1040",
+     "it": "otto",
+     "tema": "n. 1040 per frequenza"
+    },
+    {
+     "id": "Q1041",
+     "it": "conosciuto",
+     "tema": "n. 1041 per frequenza"
+    },
+    {
+     "id": "Q1045",
+     "it": "negozio",
+     "tema": "n. 1045 per frequenza"
+    },
+    {
+     "id": "Q1048",
+     "it": "partita",
+     "tema": "n. 1048 per frequenza"
+    },
+    {
+     "id": "Q1050",
+     "it": "spazio",
+     "tema": "n. 1050 per frequenza"
+    },
+    {
+     "id": "Q1052",
+     "it": "notizia",
+     "tema": "n. 1052 per frequenza"
+    },
+    {
+     "id": "Q1053",
+     "it": "tempi",
+     "tema": "n. 1053 per frequenza"
+    },
+    {
+     "id": "Q1054",
+     "it": "linea",
+     "tema": "n. 1054 per frequenza"
+    },
+    {
+     "id": "Q1059",
+     "it": "uh",
+     "tema": "n. 1059 per frequenza"
+    },
+    {
+     "id": "Q1060",
+     "it": "poliziotto",
+     "tema": "n. 1060 per frequenza"
+    },
+    {
+     "id": "Q1061",
+     "it": "scappare",
+     "tema": "n. 1061 per frequenza"
+    },
+    {
+     "id": "Q1062",
+     "it": "fronte",
+     "tema": "n. 1062 per frequenza"
+    },
+    {
+     "id": "Q1063",
+     "it": "vinto",
+     "tema": "n. 1063 per frequenza"
+    },
+    {
+     "id": "Q1065",
+     "it": "tranquillo",
+     "tema": "n. 1065 per frequenza"
+    },
+    {
+     "id": "Q1066",
+     "it": "silenzio",
+     "tema": "n. 1066 per frequenza"
+    },
+    {
+     "id": "Q1068",
+     "it": "fossero",
+     "tema": "n. 1068 per frequenza"
+    },
+    {
+     "id": "Q1069",
+     "it": "simile",
+     "tema": "n. 1069 per frequenza"
+    },
+    {
+     "id": "Q1070",
+     "it": "pezzi",
+     "tema": "n. 1070 per frequenza"
+    },
+    {
+     "id": "Q1071",
+     "it": "calma",
+     "tema": "n. 1071 per frequenza"
+    },
+    {
+     "id": "Q1072",
+     "it": "santo",
+     "tema": "n. 1072 per frequenza"
+    },
+    {
+     "id": "Q1074",
+     "it": "pena",
+     "tema": "n. 1074 per frequenza"
+    },
+    {
+     "id": "Q1078",
+     "it": "scoprire",
+     "tema": "n. 1078 per frequenza"
+    },
+    {
+     "id": "Q1079",
+     "it": "altrimenti",
+     "tema": "n. 1079 per frequenza"
+    },
+    {
+     "id": "Q1080",
+     "it": "diceva",
+     "tema": "n. 1080 per frequenza"
+    },
+    {
+     "id": "Q1081",
+     "it": "luogo",
+     "tema": "n. 1081 per frequenza"
+    },
+    {
+     "id": "Q1082",
+     "it": "lettera",
+     "tema": "n. 1082 per frequenza"
+    },
+    {
+     "id": "Q1084",
+     "it": "salvare",
+     "tema": "n. 1084 per frequenza"
+    },
+    {
+     "id": "Q1085",
+     "it": "canzone",
+     "tema": "n. 1085 per frequenza"
+    },
+    {
+     "id": "Q1086",
+     "it": "vengono",
+     "tema": "n. 1086 per frequenza"
+    },
+    {
+     "id": "Q1087",
+     "it": "pubblico",
+     "tema": "n. 1087 per frequenza"
+    },
+    {
+     "id": "Q1089",
+     "it": "corso",
+     "tema": "n. 1089 per frequenza"
+    },
+    {
+     "id": "Q1091",
+     "it": "regalo",
+     "tema": "n. 1091 per frequenza"
+    },
+    {
+     "id": "Q1095",
+     "it": "né",
+     "tema": "n. 1095 per frequenza"
+    },
+    {
+     "id": "Q1098",
+     "it": "missione",
+     "tema": "n. 1098 per frequenza"
+    },
+    {
+     "id": "Q1100",
+     "it": "salute",
+     "tema": "n. 1100 per frequenza"
+    },
+    {
+     "id": "Q1101",
+     "it": "farebbe",
+     "tema": "n. 1101 per frequenza"
+    },
+    {
+     "id": "Q1103",
+     "it": "dura",
+     "tema": "n. 1103 per frequenza"
+    },
+    {
+     "id": "Q1106",
+     "it": "avremmo",
+     "tema": "n. 1106 per frequenza"
+    },
+    {
+     "id": "Q1109",
+     "it": "pericolo",
+     "tema": "n. 1109 per frequenza"
+    },
+    {
+     "id": "Q1110",
+     "it": "entro",
+     "tema": "n. 1110 per frequenza"
+    },
+    {
+     "id": "Q1113",
+     "it": "freddo",
+     "tema": "n. 1113 per frequenza"
+    },
+    {
+     "id": "Q1120",
+     "it": "dunque",
+     "tema": "n. 1120 per frequenza"
+    },
+    {
+     "id": "Q1121",
+     "it": "guardia",
+     "tema": "n. 1121 per frequenza"
+    },
+    {
+     "id": "Q1127",
+     "it": "casino",
+     "tema": "n. 1127 per frequenza"
+    },
+    {
+     "id": "Q1129",
+     "it": "caccia",
+     "tema": "n. 1129 per frequenza"
+    },
+    {
+     "id": "Q1132",
+     "it": "lavori",
+     "tema": "n. 1132 per frequenza"
+    },
+    {
+     "id": "Q1134",
+     "it": "certamente",
+     "tema": "n. 1134 per frequenza"
+    },
+    {
+     "id": "Q1139",
+     "it": "ballo",
+     "tema": "n. 1139 per frequenza"
+    },
+    {
+     "id": "Q1141",
+     "it": "birra",
+     "tema": "n. 1141 per frequenza"
+    },
+    {
+     "id": "Q1146",
+     "it": "governo",
+     "tema": "n. 1146 per frequenza"
+    },
+    {
+     "id": "Q1148",
+     "it": "oro",
+     "tema": "n. 1148 per frequenza"
+    },
+    {
+     "id": "Q1149",
+     "it": "duro",
+     "tema": "n. 1149 per frequenza"
+    },
+    {
+     "id": "Q1150",
+     "it": "cucina",
+     "tema": "n. 1150 per frequenza"
+    },
+    {
+     "id": "Q1151",
+     "it": "decisione",
+     "tema": "n. 1151 per frequenza"
+    },
+    {
+     "id": "Q1152",
+     "it": "anima",
+     "tema": "n. 1152 per frequenza"
+    },
+    {
+     "id": "Q1153",
+     "it": "forma",
+     "tema": "n. 1153 per frequenza"
+    },
+    {
+     "id": "Q1157",
+     "it": "occasione",
+     "tema": "n. 1157 per frequenza"
+    },
+    {
+     "id": "Q1158",
+     "it": "stanotte",
+     "tema": "n. 1158 per frequenza"
+    },
+    {
+     "id": "Q1160",
+     "it": "droga",
+     "tema": "n. 1160 per frequenza"
+    },
+    {
+     "id": "Q1161",
+     "it": "possibilità",
+     "tema": "n. 1161 per frequenza"
+    },
+    {
+     "id": "Q1163",
+     "it": "necessario",
+     "tema": "n. 1163 per frequenza"
+    },
+    {
+     "id": "Q1164",
+     "it": "avremo",
+     "tema": "n. 1164 per frequenza"
+    },
+    {
+     "id": "Q1166",
+     "it": "borsa",
+     "tema": "n. 1166 per frequenza"
+    },
+    {
+     "id": "Q1168",
+     "it": "palle",
+     "tema": "n. 1168 per frequenza"
+    },
+    {
+     "id": "Q1169",
+     "it": "nonno",
+     "tema": "n. 1169 per frequenza"
+    },
+    {
+     "id": "Q1170",
+     "it": "piena",
+     "tema": "n. 1170 per frequenza"
+    },
+    {
+     "id": "Q1171",
+     "it": "attacco",
+     "tema": "n. 1171 per frequenza"
+    },
+    {
+     "id": "Q1174",
+     "it": "colpito",
+     "tema": "n. 1174 per frequenza"
+    },
+    {
+     "id": "Q1177",
+     "it": "reale",
+     "tema": "n. 1177 per frequenza"
+    },
+    {
+     "id": "Q1178",
+     "it": "comprare",
+     "tema": "n. 1178 per frequenza"
+    },
+    {
+     "id": "Q1179",
+     "it": "inferno",
+     "tema": "n. 1179 per frequenza"
+    },
+    {
+     "id": "Q1181",
+     "it": "diciamo",
+     "tema": "n. 1181 per frequenza"
+    },
+    {
+     "id": "Q1182",
+     "it": "regina",
+     "tema": "n. 1182 per frequenza"
+    },
+    {
+     "id": "Q1184",
+     "it": "aperto",
+     "tema": "n. 1184 per frequenza"
+    },
+    {
+     "id": "Q1186",
+     "it": "braccio",
+     "tema": "n. 1186 per frequenza"
+    },
+    {
+     "id": "Q1195",
+     "it": "scrivere",
+     "tema": "n. 1195 per frequenza"
+    },
+    {
+     "id": "Q1197",
+     "it": "paziente",
+     "tema": "n. 1197 per frequenza"
+    },
+    {
+     "id": "Q1200",
+     "it": "livello",
+     "tema": "n. 1200 per frequenza"
+    },
+    {
+     "id": "Q1202",
+     "it": "ia",
+     "tema": "n. 1202 per frequenza"
+    },
+    {
+     "id": "Q1203",
+     "it": "lunga",
+     "tema": "n. 1203 per frequenza"
+    },
+    {
+     "id": "Q1205",
+     "it": "viva",
+     "tema": "n. 1205 per frequenza"
+    },
+    {
+     "id": "Q1206",
+     "it": "spettacolo",
+     "tema": "n. 1206 per frequenza"
+    },
+    {
+     "id": "Q1207",
+     "it": "usa",
+     "tema": "n. 1207 per frequenza"
+    },
+    {
+     "id": "Q1208",
+     "it": "visita",
+     "tema": "n. 1208 per frequenza"
+    },
+    {
+     "id": "Q1212",
+     "it": "diventato",
+     "tema": "n. 1212 per frequenza"
+    },
+    {
+     "id": "Q1213",
+     "it": "mica",
+     "tema": "n. 1213 per frequenza"
+    },
+    {
+     "id": "Q1216",
+     "it": "processo",
+     "tema": "n. 1216 per frequenza"
+    },
+    {
+     "id": "Q1217",
+     "it": "mare",
+     "tema": "n. 1217 per frequenza"
+    },
+    {
+     "id": "Q1218",
+     "it": "direttore",
+     "tema": "n. 1218 per frequenza"
+    },
+    {
+     "id": "Q1222",
+     "it": "comprato",
+     "tema": "n. 1222 per frequenza"
+    },
+    {
+     "id": "Q1223",
+     "it": "classe",
+     "tema": "n. 1223 per frequenza"
+    },
+    {
+     "id": "Q1225",
+     "it": "cambio",
+     "tema": "n. 1225 per frequenza"
+    },
+    {
+     "id": "Q1226",
+     "it": "scorsa",
+     "tema": "n. 1226 per frequenza"
+    },
+    {
+     "id": "Q1228",
+     "it": "bianco",
+     "tema": "n. 1228 per frequenza"
+    },
+    {
+     "id": "Q1229",
+     "it": "tavolo",
+     "tema": "n. 1229 per frequenza"
+    },
+    {
+     "id": "Q1230",
+     "it": "stagione",
+     "tema": "n. 1230 per frequenza"
+    },
+    {
+     "id": "Q1231",
+     "it": "dite",
+     "tema": "n. 1231 per frequenza"
+    },
+    {
+     "id": "Q1233",
+     "it": "dannazione",
+     "tema": "n. 1233 per frequenza"
+    },
+    {
+     "id": "Q1235",
+     "it": "sergente",
+     "tema": "n. 1235 per frequenza"
+    },
+    {
+     "id": "Q1236",
+     "it": "incinta",
+     "tema": "n. 1236 per frequenza"
+    },
+    {
+     "id": "Q1237",
+     "it": "rotto",
+     "tema": "n. 1237 per frequenza"
+    },
+    {
+     "id": "Q1240",
+     "it": "rispondere",
+     "tema": "n. 1240 per frequenza"
+    },
+    {
+     "id": "Q1241",
+     "it": "contento",
+     "tema": "n. 1241 per frequenza"
+    },
+    {
+     "id": "Q1242",
+     "it": "conoscere",
+     "tema": "n. 1242 per frequenza"
+    },
+    {
+     "id": "Q1243",
+     "it": "inglese",
+     "tema": "n. 1243 per frequenza"
+    },
+    {
+     "id": "Q1244",
+     "it": "volo",
+     "tema": "n. 1244 per frequenza"
+    },
+    {
+     "id": "Q1247",
+     "it": "differenza",
+     "tema": "n. 1247 per frequenza"
+    },
+    {
+     "id": "Q1249",
+     "it": "passi",
+     "tema": "n. 1249 per frequenza"
+    },
+    {
+     "id": "Q1252",
+     "it": "codice",
+     "tema": "n. 1252 per frequenza"
+    },
+    {
+     "id": "Q1253",
+     "it": "lato",
+     "tema": "n. 1253 per frequenza"
+    },
+    {
+     "id": "Q1255",
+     "it": "maggiore",
+     "tema": "n. 1255 per frequenza"
+    },
+    {
+     "id": "Q1260",
+     "it": "carne",
+     "tema": "n. 1260 per frequenza"
+    },
+    {
+     "id": "Q1262",
+     "it": "star",
+     "tema": "n. 1262 per frequenza"
+    },
+    {
+     "id": "Q1263",
+     "it": "umano",
+     "tema": "n. 1263 per frequenza"
+    },
+    {
+     "id": "Q1270",
+     "it": "avrà",
+     "tema": "n. 1270 per frequenza"
+    },
+    {
+     "id": "Q1271",
+     "it": "vorrebbe",
+     "tema": "n. 1271 per frequenza"
+    },
+    {
+     "id": "Q1272",
+     "it": "caldo",
+     "tema": "n. 1272 per frequenza"
+    },
+    {
+     "id": "Q1273",
+     "it": "pelle",
+     "tema": "n. 1273 per frequenza"
+    },
+    {
+     "id": "Q1276",
+     "it": "leggere",
+     "tema": "n. 1276 per frequenza"
+    },
+    {
+     "id": "Q1277",
+     "it": "comandante",
+     "tema": "n. 1277 per frequenza"
+    },
+    {
+     "id": "Q1279",
+     "it": "avrebbero",
+     "tema": "n. 1279 per frequenza"
+    },
+    {
+     "id": "Q1280",
+     "it": "pomeriggio",
+     "tema": "n. 1280 per frequenza"
+    },
+    {
+     "id": "Q1282",
+     "it": "farei",
+     "tema": "n. 1282 per frequenza"
+    },
+    {
+     "id": "Q1284",
+     "it": "mostro",
+     "tema": "n. 1284 per frequenza"
+    },
+    {
+     "id": "Q1285",
+     "it": "destra",
+     "tema": "n. 1285 per frequenza"
+    },
+    {
+     "id": "Q1286",
+     "it": "luna",
+     "tema": "n. 1286 per frequenza"
+    },
+    {
+     "id": "Q1289",
+     "it": "pericoloso",
+     "tema": "n. 1289 per frequenza"
+    },
+    {
+     "id": "Q1291",
+     "it": "affare",
+     "tema": "n. 1291 per frequenza"
+    },
+    {
+     "id": "Q1294",
+     "it": "vino",
+     "tema": "n. 1294 per frequenza"
+    },
+    {
+     "id": "Q1296",
+     "it": "presente",
+     "tema": "n. 1296 per frequenza"
+    },
+    {
+     "id": "Q1299",
+     "it": "caffè",
+     "tema": "n. 1299 per frequenza"
+    },
+    {
+     "id": "Q1300",
+     "it": "barca",
+     "tema": "n. 1300 per frequenza"
+    },
+    {
+     "id": "Q1301",
+     "it": "maledizione",
+     "tema": "n. 1301 per frequenza"
+    },
+    {
+     "id": "Q1304",
+     "it": "lezione",
+     "tema": "n. 1304 per frequenza"
+    },
+    {
+     "id": "Q1305",
+     "it": "intero",
+     "tema": "n. 1305 per frequenza"
+    },
+    {
+     "id": "Q1306",
+     "it": "dia",
+     "tema": "n. 1306 per frequenza"
+    },
+    {
+     "id": "Q1307",
+     "it": "partire",
+     "tema": "n. 1307 per frequenza"
+    },
+    {
+     "id": "Q1311",
+     "it": "alta",
+     "tema": "n. 1311 per frequenza"
+    },
+    {
+     "id": "Q1318",
+     "it": "data",
+     "tema": "n. 1318 per frequenza"
+    },
+    {
+     "id": "Q1319",
+     "it": "sposato",
+     "tema": "n. 1319 per frequenza"
+    },
+    {
+     "id": "Q1321",
+     "it": "sembrare",
+     "tema": "n. 1321 per frequenza"
+    },
+    {
+     "id": "Q1322",
+     "it": "treno",
+     "tema": "n. 1322 per frequenza"
+    },
+    {
+     "id": "Q1323",
+     "it": "radio",
+     "tema": "n. 1323 per frequenza"
+    },
+    {
+     "id": "Q1325",
+     "it": "comune",
+     "tema": "n. 1325 per frequenza"
+    },
+    {
+     "id": "Q1326",
+     "it": "cattivo",
+     "tema": "n. 1326 per frequenza"
+    },
+    {
+     "id": "Q1328",
+     "it": "smettere",
+     "tema": "n. 1328 per frequenza"
+    },
+    {
+     "id": "Q1333",
+     "it": "responsabile",
+     "tema": "n. 1333 per frequenza"
+    },
+    {
+     "id": "Q1334",
+     "it": "abbiano",
+     "tema": "n. 1334 per frequenza"
+    },
+    {
+     "id": "Q1337",
+     "it": "bomba",
+     "tema": "n. 1337 per frequenza"
+    },
+    {
+     "id": "Q1341",
+     "it": "pochi",
+     "tema": "n. 1341 per frequenza"
+    },
+    {
+     "id": "Q1342",
+     "it": "san",
+     "tema": "n. 1342 per frequenza"
+    },
+    {
+     "id": "Q1346",
+     "it": "segno",
+     "tema": "n. 1346 per frequenza"
+    },
+    {
+     "id": "Q1356",
+     "it": "speranza",
+     "tema": "n. 1356 per frequenza"
+    },
+    {
+     "id": "Q1357",
+     "it": "rischio",
+     "tema": "n. 1357 per frequenza"
+    },
+    {
+     "id": "Q1359",
+     "it": "rosso",
+     "tema": "n. 1359 per frequenza"
+    },
+    {
+     "id": "Q1361",
+     "it": "combattere",
+     "tema": "n. 1361 per frequenza"
+    },
+    {
+     "id": "Q1362",
+     "it": "tocca",
+     "tema": "n. 1362 per frequenza"
+    },
+    {
+     "id": "Q1363",
+     "it": "operazione",
+     "tema": "n. 1363 per frequenza"
+    },
+    {
+     "id": "Q1364",
+     "it": "zia",
+     "tema": "n. 1364 per frequenza"
+    },
+    {
+     "id": "Q1366",
+     "it": "gamba",
+     "tema": "n. 1366 per frequenza"
+    },
+    {
+     "id": "Q1367",
+     "it": "biglietto",
+     "tema": "n. 1367 per frequenza"
+    },
+    {
+     "id": "Q1370",
+     "it": "vorresti",
+     "tema": "n. 1370 per frequenza"
+    },
+    {
+     "id": "Q1371",
+     "it": "vincere",
+     "tema": "n. 1371 per frequenza"
+    },
+    {
+     "id": "Q1372",
+     "it": "gambe",
+     "tema": "n. 1372 per frequenza"
+    },
+    {
+     "id": "Q1373",
+     "it": "pressione",
+     "tema": "n. 1373 per frequenza"
+    },
+    {
+     "id": "Q1375",
+     "it": "seguito",
+     "tema": "n. 1375 per frequenza"
+    },
+    {
+     "id": "Q1376",
+     "it": "nascosto",
+     "tema": "n. 1376 per frequenza"
+    },
+    {
+     "id": "Q1377",
+     "it": "maestro",
+     "tema": "n. 1377 per frequenza"
+    },
+    {
+     "id": "Q1381",
+     "it": "sarebbero",
+     "tema": "n. 1381 per frequenza"
+    },
+    {
+     "id": "Q1384",
+     "it": "vite",
+     "tema": "n. 1384 per frequenza"
+    },
+    {
+     "id": "Q1385",
+     "it": "scherzo",
+     "tema": "n. 1385 per frequenza"
+    },
+    {
+     "id": "Q1387",
+     "it": "finta",
+     "tema": "n. 1387 per frequenza"
+    },
+    {
+     "id": "Q1390",
+     "it": "banca",
+     "tema": "n. 1390 per frequenza"
+    },
+    {
+     "id": "Q1391",
+     "it": "aprire",
+     "tema": "n. 1391 per frequenza"
+    },
+    {
+     "id": "Q1392",
+     "it": "potesse",
+     "tema": "n. 1392 per frequenza"
+    },
+    {
+     "id": "Q1394",
+     "it": "indirizzo",
+     "tema": "n. 1394 per frequenza"
+    },
+    {
+     "id": "Q1395",
+     "it": "tale",
+     "tema": "n. 1395 per frequenza"
+    },
+    {
+     "id": "Q1396",
+     "it": "ottenere",
+     "tema": "n. 1396 per frequenza"
+    },
+    {
+     "id": "Q1397",
+     "it": "potessi",
+     "tema": "n. 1397 per frequenza"
+    },
+    {
+     "id": "Q1399",
+     "it": "esperienza",
+     "tema": "n. 1399 per frequenza"
+    },
+    {
+     "id": "Q1400",
+     "it": "portata",
+     "tema": "n. 1400 per frequenza"
+    },
+    {
+     "id": "Q1401",
+     "it": "messa",
+     "tema": "n. 1401 per frequenza"
+    },
+    {
+     "id": "Q1403",
+     "it": "piangere",
+     "tema": "n. 1403 per frequenza"
+    },
+    {
+     "id": "Q1406",
+     "it": "scorso",
+     "tema": "n. 1406 per frequenza"
+    },
+    {
+     "id": "Q1410",
+     "it": "sud",
+     "tema": "n. 1410 per frequenza"
+    },
+    {
+     "id": "Q1417",
+     "it": "serie",
+     "tema": "n. 1417 per frequenza"
+    },
+    {
+     "id": "Q1424",
+     "it": "prezzo",
+     "tema": "n. 1424 per frequenza"
+    },
+    {
+     "id": "Q1426",
+     "it": "arrabbiato",
+     "tema": "n. 1426 per frequenza"
+    },
+    {
+     "id": "Q1428",
+     "it": "verrà",
+     "tema": "n. 1428 per frequenza"
+    },
+    {
+     "id": "Q1429",
+     "it": "orribile",
+     "tema": "n. 1429 per frequenza"
+    },
+    {
+     "id": "Q1431",
+     "it": "ritorno",
+     "tema": "n. 1431 per frequenza"
+    },
+    {
+     "id": "Q1434",
+     "it": "enorme",
+     "tema": "n. 1434 per frequenza"
+    },
+    {
+     "id": "Q1437",
+     "it": "passaggio",
+     "tema": "n. 1437 per frequenza"
+    },
+    {
+     "id": "Q1438",
+     "it": "imparare",
+     "tema": "n. 1438 per frequenza"
+    },
+    {
+     "id": "Q1439",
+     "it": "progetto",
+     "tema": "n. 1439 per frequenza"
+    },
+    {
+     "id": "Q1440",
+     "it": "danno",
+     "tema": "n. 1440 per frequenza"
+    },
+    {
+     "id": "Q1442",
+     "it": "colpevole",
+     "tema": "n. 1442 per frequenza"
+    },
+    {
+     "id": "Q1443",
+     "it": "ragazzino",
+     "tema": "n. 1443 per frequenza"
+    },
+    {
+     "id": "Q1447",
+     "it": "mossa",
+     "tema": "n. 1447 per frequenza"
+    },
+    {
+     "id": "Q1450",
+     "it": "destino",
+     "tema": "n. 1450 per frequenza"
+    },
+    {
+     "id": "Q1453",
+     "it": "correre",
+     "tema": "n. 1453 per frequenza"
+    },
+    {
+     "id": "Q1456",
+     "it": "colazione",
+     "tema": "n. 1456 per frequenza"
+    },
+    {
+     "id": "Q1457",
+     "it": "collo",
+     "tema": "n. 1457 per frequenza"
+    },
+    {
+     "id": "Q1458",
+     "it": "difesa",
+     "tema": "n. 1458 per frequenza"
+    },
+    {
+     "id": "Q1461",
+     "it": "fiducia",
+     "tema": "n. 1461 per frequenza"
+    },
+    {
+     "id": "Q1466",
+     "it": "capisce",
+     "tema": "n. 1466 per frequenza"
+    },
+    {
+     "id": "Q1467",
+     "it": "ristorante",
+     "tema": "n. 1467 per frequenza"
+    },
+    {
+     "id": "Q1469",
+     "it": "laboratorio",
+     "tema": "n. 1469 per frequenza"
+    },
+    {
+     "id": "Q1470",
+     "it": "scegliere",
+     "tema": "n. 1470 per frequenza"
+    },
+    {
+     "id": "Q1471",
+     "it": "comando",
+     "tema": "n. 1471 per frequenza"
+    },
+    {
+     "id": "Q1473",
+     "it": "arte",
+     "tema": "n. 1473 per frequenza"
+    },
+    {
+     "id": "Q1475",
+     "it": "discorso",
+     "tema": "n. 1475 per frequenza"
+    },
+    {
+     "id": "Q1476",
+     "it": "nove",
+     "tema": "n. 1476 per frequenza"
+    },
+    {
+     "id": "Q1478",
+     "it": "segnale",
+     "tema": "n. 1478 per frequenza"
+    },
+    {
+     "id": "Q1480",
+     "it": "fortunato",
+     "tema": "n. 1480 per frequenza"
+    },
+    {
+     "id": "Q1482",
+     "it": "carriera",
+     "tema": "n. 1482 per frequenza"
+    },
+    {
+     "id": "Q1483",
+     "it": "blu",
+     "tema": "n. 1483 per frequenza"
+    },
+    {
+     "id": "Q1484",
+     "it": "cominciare",
+     "tema": "n. 1484 per frequenza"
+    },
+    {
+     "id": "Q1485",
+     "it": "muro",
+     "tema": "n. 1485 per frequenza"
+    },
+    {
+     "id": "Q1487",
+     "it": "tranne",
+     "tema": "n. 1487 per frequenza"
+    },
+    {
+     "id": "Q1489",
+     "it": "proteggere",
+     "tema": "n. 1489 per frequenza"
+    },
+    {
+     "id": "Q1491",
+     "it": "dubbio",
+     "tema": "n. 1491 per frequenza"
+    },
+    {
+     "id": "Q1493",
+     "it": "stazione",
+     "tema": "n. 1493 per frequenza"
+    },
+    {
+     "id": "Q1495",
+     "it": "giustizia",
+     "tema": "n. 1495 per frequenza"
+    },
+    {
+     "id": "Q1497",
+     "it": "odore",
+     "tema": "n. 1497 per frequenza"
+    },
+    {
+     "id": "Q1501",
+     "it": "contrario",
+     "tema": "n. 1501 per frequenza"
+    },
+    {
+     "id": "Q1502",
+     "it": "terzo",
+     "tema": "n. 1502 per frequenza"
+    },
+    {
+     "id": "Q1503",
+     "it": "preoccupare",
+     "tema": "n. 1503 per frequenza"
+    },
+    {
+     "id": "Q1504",
+     "it": "locale",
+     "tema": "n. 1504 per frequenza"
+    },
+    {
+     "id": "Q1506",
+     "it": "faranno",
+     "tema": "n. 1506 per frequenza"
+    },
+    {
+     "id": "Q1507",
+     "it": "battaglia",
+     "tema": "n. 1507 per frequenza"
+    },
+    {
+     "id": "Q1515",
+     "it": "spirito",
+     "tema": "n. 1515 per frequenza"
+    },
+    {
+     "id": "Q1516",
+     "it": "seduto",
+     "tema": "n. 1516 per frequenza"
+    },
+    {
+     "id": "Q1519",
+     "it": "lingua",
+     "tema": "n. 1519 per frequenza"
+    },
+    {
+     "id": "Q1520",
+     "it": "dipartimento",
+     "tema": "n. 1520 per frequenza"
+    },
+    {
+     "id": "Q1522",
+     "it": "massimo",
+     "tema": "n. 1522 per frequenza"
+    },
+    {
+     "id": "Q1524",
+     "it": "riunione",
+     "tema": "n. 1524 per frequenza"
+    },
+    {
+     "id": "Q1526",
+     "it": "rumore",
+     "tema": "n. 1526 per frequenza"
+    },
+    {
+     "id": "Q1527",
+     "it": "torta",
+     "tema": "n. 1527 per frequenza"
+    },
+    {
+     "id": "Q1529",
+     "it": "dirò",
+     "tema": "n. 1529 per frequenza"
+    },
+    {
+     "id": "Q1532",
+     "it": "turno",
+     "tema": "n. 1532 per frequenza"
+    },
+    {
+     "id": "Q1536",
+     "it": "potrai",
+     "tema": "n. 1536 per frequenza"
+    },
+    {
+     "id": "Q1539",
+     "it": "punti",
+     "tema": "n. 1539 per frequenza"
+    },
+    {
+     "id": "Q1540",
+     "it": "fiori",
+     "tema": "n. 1540 per frequenza"
+    },
+    {
+     "id": "Q1546",
+     "it": "coppia",
+     "tema": "n. 1546 per frequenza"
+    },
+    {
+     "id": "Q1551",
+     "it": "grave",
+     "tema": "n. 1551 per frequenza"
+    },
+    {
+     "id": "Q1553",
+     "it": "memoria",
+     "tema": "n. 1553 per frequenza"
+    },
+    {
+     "id": "Q1558",
+     "it": "naso",
+     "tema": "n. 1558 per frequenza"
+    },
+    {
+     "id": "Q1560",
+     "it": "nemico",
+     "tema": "n. 1560 per frequenza"
+    },
+    {
+     "id": "Q1561",
+     "it": "mangia",
+     "tema": "n. 1561 per frequenza"
+    },
+    {
+     "id": "Q1562",
+     "it": "chiudere",
+     "tema": "n. 1562 per frequenza"
+    },
+    {
+     "id": "Q1564",
+     "it": "colonnello",
+     "tema": "n. 1564 per frequenza"
+    },
+    {
+     "id": "Q1565",
+     "it": "palla",
+     "tema": "n. 1565 per frequenza"
+    },
+    {
+     "id": "Q1569",
+     "it": "costa",
+     "tema": "n. 1569 per frequenza"
+    },
+    {
+     "id": "Q1572",
+     "it": "scatola",
+     "tema": "n. 1572 per frequenza"
+    },
+    {
+     "id": "Q1574",
+     "it": "albero",
+     "tema": "n. 1574 per frequenza"
+    },
+    {
+     "id": "Q1577",
+     "it": "razza",
+     "tema": "n. 1577 per frequenza"
+    },
+    {
+     "id": "Q1578",
+     "it": "anello",
+     "tema": "n. 1578 per frequenza"
+    },
+    {
+     "id": "Q1582",
+     "it": "ferita",
+     "tema": "n. 1582 per frequenza"
+    },
+    {
+     "id": "Q1588",
+     "it": "arresto",
+     "tema": "n. 1588 per frequenza"
+    },
+    {
+     "id": "Q1591",
+     "it": "dà",
+     "tema": "n. 1591 per frequenza"
+    },
+    {
+     "id": "Q1592",
+     "it": "soldato",
+     "tema": "n. 1592 per frequenza"
+    },
+    {
+     "id": "Q1598",
+     "it": "colore",
+     "tema": "n. 1598 per frequenza"
+    },
+    {
+     "id": "Q1599",
+     "it": "basso",
+     "tema": "n. 1599 per frequenza"
+    },
+    {
+     "id": "Q1600",
+     "it": "uso",
+     "tema": "n. 1600 per frequenza"
+    },
+    {
+     "id": "Q1606",
+     "it": "preferito",
+     "tema": "n. 1606 per frequenza"
+    },
+    {
+     "id": "Q1608",
+     "it": "utile",
+     "tema": "n. 1608 per frequenza"
+    },
+    {
+     "id": "Q1609",
+     "it": "cattiva",
+     "tema": "n. 1609 per frequenza"
+    },
+    {
+     "id": "Q1611",
+     "it": "sparare",
+     "tema": "n. 1611 per frequenza"
+    },
+    {
+     "id": "Q1615",
+     "it": "ascoltare",
+     "tema": "n. 1615 per frequenza"
+    },
+    {
+     "id": "Q1617",
+     "it": "decidere",
+     "tema": "n. 1617 per frequenza"
+    },
+    {
+     "id": "Q1618",
+     "it": "professore",
+     "tema": "n. 1618 per frequenza"
+    },
+    {
+     "id": "Q1619",
+     "it": "fidanzato",
+     "tema": "n. 1619 per frequenza"
+    },
+    {
+     "id": "Q1620",
+     "it": "sensazione",
+     "tema": "n. 1620 per frequenza"
+    },
+    {
+     "id": "Q1622",
+     "it": "legale",
+     "tema": "n. 1622 per frequenza"
+    },
+    {
+     "id": "Q1624",
+     "it": "compito",
+     "tema": "n. 1624 per frequenza"
+    },
+    {
+     "id": "Q1630",
+     "it": "corte",
+     "tema": "n. 1630 per frequenza"
+    },
+    {
+     "id": "Q1632",
+     "it": "pesce",
+     "tema": "n. 1632 per frequenza"
+    },
+    {
+     "id": "Q1636",
+     "it": "incontrare",
+     "tema": "n. 1636 per frequenza"
+    },
+    {
+     "id": "Q1637",
+     "it": "nato",
+     "tema": "n. 1637 per frequenza"
+    },
+    {
+     "id": "Q1640",
+     "it": "conta",
+     "tema": "n. 1640 per frequenza"
+    },
+    {
+     "id": "Q1642",
+     "it": "breve",
+     "tema": "n. 1642 per frequenza"
+    },
+    {
+     "id": "Q1643",
+     "it": "risolvere",
+     "tema": "n. 1643 per frequenza"
+    },
+    {
+     "id": "Q1645",
+     "it": "povero",
+     "tema": "n. 1645 per frequenza"
+    },
+    {
+     "id": "Q1650",
+     "it": "opera",
+     "tema": "n. 1650 per frequenza"
+    },
+    {
+     "id": "Q1653",
+     "it": "ballare",
+     "tema": "n. 1653 per frequenza"
+    },
+    {
+     "id": "Q1654",
+     "it": "bacio",
+     "tema": "n. 1654 per frequenza"
+    },
+    {
+     "id": "Q1656",
+     "it": "funzionato",
+     "tema": "n. 1656 per frequenza"
+    },
+    {
+     "id": "Q1657",
+     "it": "bordo",
+     "tema": "n. 1657 per frequenza"
+    },
+    {
+     "id": "Q1658",
+     "it": "sbaglio",
+     "tema": "n. 1658 per frequenza"
     }
    ]
   },

@@ -2342,32 +2342,45 @@ function tokenizza(t) {
     parlaItaliano(bottone.getAttribute("data-testo"));
   });
 
-  // --- La revisione (0.51) ---------------------------------------------------
-  // Una carta alla volta: l'italiano, la proposta del motore (calcolata quando
-  // si genera la pagina), e tre risposte. Le risposte restano in questo browser
-  // finche' non si inviano; partono come righe di correzione, le stesse del
-  // traduttore: «si'» e' una correzione uguale alla proposta, «no» porta la
-  // forma giusta, «non so» non manda niente. Le altre forme vanno nella nota.
+  // --- La revisione (0.51, aperta a tutti dalla 0.52) ------------------------
+  // Chi risponde dice chi e' (nome, paese, varieta', consenso) e poi gioca in
+  // due modi: «controlla» (la proposta del motore: si dice cosi'?) e «traduci»
+  // (solo l'italiano: come lo dici tu?). Le risposte restano in questo browser
+  // e diventano righe di correzione, le stesse del traduttore, firmate con il
+  // nome di chi ha risposto. Chi non ha un token le manda con il menu del
+  // telefono (WhatsApp, posta...) a chi cura il progetto, che le incolla qui e
+  // le invia con il suo token: la pagina non chiama nessuno senza token, e la
+  // riga di rete resta una (`apriSegnalazione`).
   var CHIAVE_REVISIONE = "traduttore-ferrarese-revisione";
-  var RIGHE_PER_SEGNALAZIONE = 80;
+  var RIGHE_PER_SEGNALAZIONE = 80, RIGHE_PER_POSTA = 20;
   function statoRevisione() {
-    var vuoto = { risposte: {}, punti: 0, serie: 0, migliore: 0, gruppo: "" };
+    var vuoto = { risposte: {}, punti: 0, serie: 0, migliore: 0, modo: "controlla",
+                  gruppi: {}, consenso: false };
     try {
       var letto = JSON.parse(window.localStorage.getItem(CHIAVE_REVISIONE) || "null");
-      if (letto && letto.risposte) return letto;
+      if (letto && letto.risposte) {
+        letto.gruppi = letto.gruppi || {};
+        if (letto.gruppo && !letto.gruppi.controlla) letto.gruppi.controlla = letto.gruppo;
+        letto.modo = letto.modo === "traduci" ? "traduci" : "controlla";
+        return letto;
+      }
     } catch (e) { /* niente */ }
     return vuoto;
   }
   function salvaRevisione(stato) {
     try { window.localStorage.setItem(CHIAVE_REVISIONE, JSON.stringify(stato)); } catch (e) { /* niente */ }
   }
+  // La chiave di una risposta: l'id della domanda, con «T:» davanti nel modo
+  // «traduci», perche' la stessa domanda si puo' fare nei due modi.
+  function chiaveRisposta(modo, id) { return (modo === "traduci" ? "T:" : "") + id; }
+  function idDellaChiave(chiave) { return chiave.indexOf("T:") === 0 ? chiave.slice(2) : chiave; }
   // La riga di una risposta: la stessa forma di `rigaCorrezione`, che
   // `correzioni importa` legge. Una risposta «non so» non ha riga.
-  function rigaRevisione(domanda, risposta, imp, versione) {
+  function rigaRevisione(domanda, risposta, imp, versione, modo) {
     if (!risposta || risposta.esito === "nonso") return null;
-    var ferrarese = risposta.esito === "si" ? domanda.p : (risposta.ferrarese || "").trim();
+    var ferrarese = risposta.esito === "si" ? (risposta.proposta || domanda.p) : (risposta.ferrarese || "").trim();
     if (!ferrarese) return null;
-    var nota = ["revisione " + domanda.id];
+    var nota = [(modo === "traduci" ? "traduci " : "revisione ") + domanda.id];
     if ((risposta.altre || "").trim()) nota.push("altre forme in " + (imp.varieta || VARIETA_PREDEFINITA) + ": " + risposta.altre.trim());
     if ((risposta.nota || "").trim()) nota.push(risposta.nota.trim());
     var riga = { tipo: "correzione", data: risposta.data || oggiIso(),
@@ -2378,64 +2391,127 @@ function tokenizza(t) {
     if ((imp.luogo || "").trim()) riga.luogo = imp.luogo.trim();
     return riga;
   }
+  // Le righe dentro un messaggio incollato: come `correzioni.righe_dal_testo`.
+  function righeDalTesto(testo) {
+    var trovate = [], viste = {};
+    (testo || "").split(/\r?\n/).forEach(function (riga) {
+      riga = riga.trim().replace(/^`+|`+$/g, "");
+      if (riga.charAt(0) !== "{") return;
+      var o;
+      try { o = JSON.parse(riga); } catch (e) { return; }
+      if (!o || o.tipo !== "correzione" || !(o.chi || "").trim() ||
+          !(o.italiano || "").trim() || !(o.ferrarese || "").trim()) return;
+      var k = [o.chi, o.italiano, o.ferrarese, o.nota || ""].join("|");
+      if (viste[k]) return;
+      viste[k] = true; trovate.push(o);
+    });
+    return trovate;
+  }
+  // Manda le righe a GitHub a lotti, una segnalazione per lotto, in fila.
+  function inviaALotti(token, righe, titolo, prima, ognuno) {
+    var lotti = [];
+    for (var i = 0; i < righe.length; i += RIGHE_PER_SEGNALAZIONE) lotti.push(righe.slice(i, i + RIGHE_PER_SEGNALAZIONE));
+    var fatte = [];
+    return lotti.reduce(function (catena, lotto, n) {
+      return catena.then(function () {
+        return apriSegnalazione(token, titolo(lotto, n, lotti.length),
+          prima + "\n\n```json\n" + lotto.map(function (r) { return JSON.stringify(r); }).join("\n") + "\n```\n"
+        ).then(function (j) { fatte.push(j); if (ognuno) ognuno(lotto, j); });
+      });
+    }, Promise.resolve()).then(function () { return fatte; });
+  }
+  function nomiDi(righe) {
+    var nomi = [];
+    righe.forEach(function (r) { if (nomi.indexOf(r.chi) < 0) nomi.push(r.chi); });
+    return nomi.length > 3 ? nomi.slice(0, 3).join(", ") + " e altri" : nomi.join(", ");
+  }
   function revisione() {
     // La revisione parte solo dove c'e' la sua sezione e le sue domande: sulle
     // altre pagine (e nel confronto di `controlla_equivalenza.py`, che simula
     // il documento) non fa niente.
     var radice = document.getElementById("revisione");
     if (!radice || !DATI.revisione) return;
-    var gruppi = ((DATI.revisione || {}).gruppi) || [];
+    var gruppi = DATI.revisione.gruppi || [];
     var perId = {};
     gruppi.forEach(function (g) { g.domande.forEach(function (d) { perId[d.id] = d; }); });
     var stato = statoRevisione();
-    var corrente = null, modo = "scegli", indietro = [];
+    var corrente = null, scrivendo = false, indietro = [], ultimoLotto = [];
+    var PREDEFINITI = { controlla: "frasi", traduci: "situazioni" };  // chiavi dei gruppi
 
+    function modo() { return stato.modo; }
+    function chiave(id) { return chiaveRisposta(modo(), id); }
     function gruppoScelto() {
-      for (var i = 0; i < gruppi.length; i++) if (gruppi[i].chiave === stato.gruppo) return gruppi[i];
-      return null;
+      var c = stato.gruppi[modo()] || PREDEFINITI[modo()];
+      for (var i = 0; i < gruppi.length; i++) if (gruppi[i].chiave === c) return gruppi[i];
+      return gruppi[0] || null;
     }
-    function fatte(g) { return g.domande.filter(function (d) { return stato.risposte[d.id]; }).length; }
+    function fatte(g) { return g.domande.filter(function (d) { return stato.risposte[chiave(d.id)]; }).length; }
     function inCoda() {
-      return Object.keys(stato.risposte).filter(function (id) {
-        var r = stato.risposte[id]; return perId[id] && !r.inviata && r.esito !== "nonso";
+      return Object.keys(stato.risposte).filter(function (k) {
+        var r = stato.risposte[k];
+        return perId[idDellaChiave(k)] && !r.inviata && !r.mandata && r.esito !== "nonso";
       });
     }
-    function righe() {
-      var imp = leggiImpostazioni(), versione = (DATI.correzione || {}).versione || "";
-      return inCoda().map(function (id) {
-        return rigaRevisione(perId[id], stato.risposte[id], imp, versione);
-      }).filter(Boolean);
+    function rigaDi(k, imp) {
+      var versione = (DATI.correzione || {}).versione || "";
+      return rigaRevisione(perId[idDellaChiave(k)], stato.risposte[k], imp, versione,
+                           k.indexOf("T:") === 0 ? "traduci" : "controlla");
+    }
+    function righe(chiavi) {
+      var imp = leggiImpostazioni();
+      return (chiavi || inCoda()).map(function (k) { return rigaDi(k, imp); }).filter(Boolean);
+    }
+    function identita() {
+      var imp = leggiImpostazioni();
+      return !!((imp.chi || "").trim() && stato.consenso);
+    }
+    function mostra() {
+      var chi = identita();
+      document.getElementById("revChiSei").hidden = chi;
+      document.getElementById("revGioco").hidden = !chi;
+      if (!chi) {
+        var imp = leggiImpostazioni();
+        el("revConsenso").checked = !!stato.consenso;
+        if (!imp.chi) document.getElementById("chiCorregge").focus();
+        return;
+      }
+      prossima();
     }
     function conti() {
       el("revPunti").textContent = String(stato.punti);
       el("revSerie").textContent = String(stato.serie) + (stato.migliore ? " (record " + stato.migliore + ")" : "");
       el("revRisposte").textContent = String(Object.keys(stato.risposte).length);
-      var coda = inCoda().length;
-      el("revCoda").textContent = String(coda);
-      el("revInvia").disabled = !coda;
+      el("revCoda").textContent = String(inCoda().length);
       var imp = leggiImpostazioni();
-      el("revChi").innerHTML = imp.chi
-        ? "Firmi come <b>" + scappa(imp.chi) + "</b> (" + scappa((DATI.nomi_varieta || {})[imp.varieta || VARIETA_PREDEFINITA] || imp.varieta || "") + ")"
-        : '<span class="errore">Scrivi il tuo nome qui sotto, in «Chi sei»: le risposte si firmano.</span>';
+      el("revChi").innerHTML = "Rispondi come <b>" + scappa(imp.chi || "") + "</b>" +
+        (imp.luogo ? " da " + scappa(imp.luogo) : "") + " (" +
+        scappa((DATI.nomi_varieta || {})[imp.varieta || VARIETA_PREDEFINITA] || imp.varieta || "") +
+        ') &middot; <a href="#" id="revCambia">non sei tu?</a>';
+      var cambia = document.getElementById("revCambia");
+      if (cambia) cambia.addEventListener("click", function (e) {
+        e.preventDefault(); stato.consenso = false; salvaRevisione(stato); mostra();
+      });
+      el("revModoControlla").setAttribute("aria-pressed", modo() === "controlla" ? "true" : "false");
+      el("revModoTraduci").setAttribute("aria-pressed", modo() === "traduci" ? "true" : "false");
       el("righeRevisione").value = righe().map(function (r) { return JSON.stringify(r); }).join("\n");
     }
     function disegnaGruppi() {
       var contenitore = el("revGruppi");
       contenitore.innerHTML = "";
+      var scelto = gruppoScelto();
       gruppi.forEach(function (g) {
         var b = document.createElement("button");
         b.type = "button"; b.className = "gruppo";
-        b.setAttribute("aria-pressed", g.chiave === stato.gruppo ? "true" : "false");
+        b.setAttribute("aria-pressed", g === scelto ? "true" : "false");
         var n = fatte(g);
         b.innerHTML = scappa(g.titolo) + (n === g.domande.length ? " &#10003;" : "") +
           "<small>" + n + " su " + g.domande.length + "</small>";
         b.addEventListener("click", function () {
-          stato.gruppo = g.chiave; salvaRevisione(stato); indietro = []; prossima();
+          stato.gruppi[modo()] = g.chiave; salvaRevisione(stato); indietro = []; prossima();
         });
         contenitore.appendChild(b);
       });
-      var g = gruppoScelto();
-      el("revAvanzamento").style.width = g ? (100 * fatte(g) / g.domande.length) + "%" : "0";
+      el("revAvanzamento").style.width = scelto ? (100 * fatte(scelto) / scelto.domande.length) + "%" : "0";
     }
     function propostaHtml(d) {
       var buchi = (d.b || []).map(function (x) { return x.toLowerCase(); });
@@ -2444,61 +2520,71 @@ function tokenizza(t) {
         return buchi.indexOf(pulito) >= 0 ? '<span class="buco" title="il traduttore non la sa">' + scappa(pezzo) + "</span>" : scappa(pezzo);
       }).join("");
     }
+    function campiScrivi(domandaTesto, r, valore) {
+      return '<div class="scrivi"><p class="chiede"><b>' + domandaTesto + "</b></p>" +
+        '<label>In ferrarese<input type="text" id="revForma" autocomplete="off" autocapitalize="none"></label>' +
+        '<label>Altri modi di dirlo (facoltativo, separati da virgola)<input type="text" id="revAltre" autocomplete="off" autocapitalize="none"></label>' +
+        '<label>Nota (facoltativa)<input type="text" id="revNota" autocomplete="off" placeholder="es. lo diceva mia nonna, in campagna si dice..."></label>' +
+        '<div class="scelte"><button type="button" class="si" id="revSalva">Salva<kbd>Invio</kbd></button>' +
+        '<button type="button" id="revNonSo">Non so</button>' +
+        '<button type="button" id="revAnnulla">' + (modo() === "traduci" ? "Salta" : "Indietro<kbd>Esc</kbd>") + "</button></div></div>";
+    }
+    function agganciaScrivi(d, valore) {
+      var r = stato.risposte[chiave(d.id)] || {};
+      document.getElementById("revForma").value = r.ferrarese || valore || "";
+      document.getElementById("revAltre").value = r.altre || "";
+      document.getElementById("revNota").value = r.nota || "";
+      document.getElementById("revSalva").addEventListener("click", salvaScritta);
+      document.getElementById("revNonSo").addEventListener("click", function () { rispondi("nonso"); });
+      document.getElementById("revAnnulla").addEventListener("click", function () {
+        if (modo() === "traduci") { salta(); } else { scrivendo = false; carta(d); }
+      });
+      var campo = document.getElementById("revForma");
+      campo.focus(); campo.select();
+    }
     function carta(d) {
       var c = el("revCarta");
       c.classList.remove("entra"); void c.offsetWidth; c.classList.add("entra");
       var g = gruppoScelto();
       var testa = '<div class="tema">' + scappa(g ? g.titolo : "") + (d.t ? " &middot; " + scappa(d.t) : "") + "</div>" +
-        '<div class="domanda">' + scappa(d.it) + "</div>" +
-        '<div class="piccolo">Il traduttore dice:</div><div class="proposta">' + propostaHtml(d) + "</div>";
-      if (modo === "scrivi") {
-        var r = stato.risposte[d.id] || {};
-        c.innerHTML = testa + '<div class="scrivi">' +
-          (d.b ? '<p class="chiede">Le parole in rosso il traduttore non le sa. <b>Come lo dici tu?</b></p>' : '<p class="chiede"><b>Come lo dici tu?</b></p>') +
-          '<label>In ferrarese<input type="text" id="revForma" autocomplete="off"></label>' +
-          '<label>Altri modi di dirlo in citt&agrave; (facoltativo, separati da virgola)<input type="text" id="revAltre" autocomplete="off"></label>' +
-          '<label>Nota (facoltativa)<input type="text" id="revNota" autocomplete="off" placeholder="es. in campagna si dice..."></label>' +
-          '<div class="scelte"><button type="button" class="si" id="revSalva">Salva<kbd>Invio</kbd></button>' +
-          '<button type="button" id="revAnnulla">Indietro<kbd>Esc</kbd></button>' +
-          '<button type="button" id="revNonSo">Non so<kbd>3</kbd></button></div></div>';
-        document.getElementById("revForma").value = r.ferrarese || (d.b ? "" : d.p);
-        document.getElementById("revAltre").value = r.altre || "";
-        document.getElementById("revNota").value = r.nota || "";
-        document.getElementById("revSalva").addEventListener("click", salvaScritta);
-        document.getElementById("revAnnulla").addEventListener("click", function () { modo = "scegli"; carta(d); });
+        '<div class="domanda">' + scappa(d.it) + "</div>";
+      var torna = indietro.length ? '<p class="piccolo"><a href="#" id="revIndietro">torna alla carta di prima</a></p>' : "";
+      if (modo() === "traduci") {
+        c.innerHTML = testa + campiScrivi("Come lo dici in ferrarese?") + torna;
+        agganciaScrivi(d, "");
+      } else if (scrivendo) {
+        c.innerHTML = testa + '<div class="piccolo">Il traduttore dice:</div><div class="proposta">' + propostaHtml(d) + "</div>" +
+          campiScrivi(d.b ? "Le parole in rosso il traduttore non le sa. Come lo dici tu?" : "Come lo dici tu?") + torna;
+        agganciaScrivi(d, d.b ? "" : d.p);
+      } else {
+        c.innerHTML = testa + '<div class="piccolo">Il traduttore dice:</div><div class="proposta">' + propostaHtml(d) + "</div>" +
+          '<p class="chiede"><b>In ferrarese si dice cos&igrave;?</b></p><div class="scelte">' +
+          (d.b ? "" : '<button type="button" class="si" id="revSi">S&igrave;<kbd>1</kbd></button>') +
+          '<button type="button" class="no" id="revNo">' + (d.b ? "Lo scrivo io" : "No, si dice&hellip;") + "<kbd>2</kbd></button>" +
+          '<button type="button" id="revNonSo">Non so<kbd>3</kbd></button></div>' +
+          '<p class="piccolo">' + (d.b ? "" : '<a href="#" id="revSiAltre">S&igrave;, ma si dice anche in altri modi</a>') + "</p>" + torna;
+        if (!d.b) {
+          document.getElementById("revSi").addEventListener("click", function () { rispondi("si"); });
+          document.getElementById("revSiAltre").addEventListener("click", function (e) {
+            e.preventDefault(); scrivendo = true; carta(d);
+          });
+        }
+        document.getElementById("revNo").addEventListener("click", function () { scrivendo = true; carta(d); });
         document.getElementById("revNonSo").addEventListener("click", function () { rispondi("nonso"); });
-        var campo = document.getElementById("revForma");
-        campo.focus(); campo.select();
-        return;
       }
-      c.innerHTML = testa + '<p class="chiede"><b>In ferrarese si dice cos&igrave;?</b></p>' +
-        '<div class="scelte">' +
-        (d.b ? "" : '<button type="button" class="si" id="revSi">S&igrave;<kbd>1</kbd></button>') +
-        '<button type="button" class="no" id="revNo">' + (d.b ? "Lo scrivo io" : "No, si dice&hellip;") + '<kbd>2</kbd></button>' +
-        '<button type="button" id="revNonSo">Non so<kbd>3</kbd></button></div>' +
-        '<p class="piccolo">' + (d.b ? "" : '<a href="#" id="revSiAltre">S&igrave;, ma si dice anche in altri modi</a> &middot; ') +
-        (indietro.length ? '<a href="#" id="revIndietro">torna alla carta di prima</a>' : "") + "</p>";
-      if (!d.b) {
-        document.getElementById("revSi").addEventListener("click", function () { rispondi("si"); });
-        document.getElementById("revSiAltre").addEventListener("click", function (e) {
-          e.preventDefault(); stato.risposte[d.id] = { esito: "si", proposta: d.p }; modo = "scrivi"; carta(d);
-        });
-      }
-      document.getElementById("revNo").addEventListener("click", function () { modo = "scrivi"; carta(d); });
-      document.getElementById("revNonSo").addEventListener("click", function () { rispondi("nonso"); });
-      var torna = document.getElementById("revIndietro");
-      if (torna) torna.addEventListener("click", function (e) { e.preventDefault(); tornaIndietro(); });
+      var link = document.getElementById("revIndietro");
+      if (link) link.addEventListener("click", function (e) { e.preventDefault(); tornaIndietro(); });
     }
     function festa(testo) {
       el("revFesta").innerHTML = '<div class="festa">' + testo + "</div>";
       window.setTimeout(function () { el("revFesta").innerHTML = ""; }, 3500);
     }
     function registra(d, risposta, punti) {
-      var prima = stato.risposte[d.id];
+      var k = chiave(d.id), prima = stato.risposte[k];
       risposta.data = oggiIso();
       if (!risposta.proposta) risposta.proposta = d.p;
-      stato.risposte[d.id] = risposta;
-      if (!prima || prima.esito === undefined) {
+      stato.risposte[k] = risposta;
+      if (!prima || prima.esito === "nonso") {
         stato.punti += punti;
         stato.serie += 1;
         if (stato.serie > stato.migliore) stato.migliore = stato.serie;
@@ -2507,90 +2593,193 @@ function tokenizza(t) {
       indietro.push(d.id);
       var totale = Object.keys(stato.risposte).length;
       var g = gruppoScelto();
-      if (g && fatte(g) === g.domande.length) festa("Hai finito «" + scappa(g.titolo) + "»: grazie! Ricordati di premere <b>Invia</b>.");
+      if (g && fatte(g) === g.domande.length) festa("Hai finito «" + scappa(g.titolo) + "»: grazie! Ricordati di premere <b>Manda le risposte</b>.");
       else if (totale % 25 === 0) festa(totale + " risposte! Ogni risposta &egrave; una parola in pi&ugrave; che il traduttore sa davvero.");
       else if (stato.serie && stato.serie % 10 === 0) festa(stato.serie + " di fila!");
     }
     function rispondi(esito) {
       if (!corrente) return;
+      el("revEsito").innerHTML = "";
       if (esito === "nonso") {
         stato.serie = 0;
-        stato.risposte[corrente.id] = { esito: "nonso", data: oggiIso() };
+        stato.risposte[chiave(corrente.id)] = { esito: "nonso", data: oggiIso() };
         salvaRevisione(stato); indietro.push(corrente.id);
       } else {
         registra(corrente, { esito: "si", proposta: corrente.p }, 10);
       }
       prossima();
     }
+    function salta() {
+      // Saltare non e' rispondere: la carta torna alla fine del giro.
+      if (!corrente) return;
+      stato.saltate = stato.saltate || {};
+      stato.saltate[chiave(corrente.id)] = true;
+      salvaRevisione(stato); prossima();
+    }
     function salvaScritta() {
       var forma = (document.getElementById("revForma").value || "").trim();
       var altre = (document.getElementById("revAltre").value || "").trim();
       var nota = (document.getElementById("revNota").value || "").trim();
       if (!forma) { el("revEsito").innerHTML = '<p class="errore">Scrivi come si dice, oppure premi «Non so».</p>'; return; }
-      el("revEsito").innerHTML = "";
-      var uguale = forma === corrente.p;
-      registra(corrente, { esito: uguale ? "si" : "no", ferrarese: uguale ? "" : forma,
-                           altre: altre, nota: nota, proposta: corrente.p },
-               uguale ? 10 + (altre ? 5 : 0) : 15);
+      var d = corrente;
+      if (modo() === "traduci") {
+        registra(d, { esito: "tradotta", ferrarese: forma, altre: altre, nota: nota, proposta: d.p }, 15 + (altre ? 5 : 0));
+        var uguale = forma.toLowerCase() === d.p.toLowerCase();
+        el("revEsito").innerHTML = '<p class="piccolo">' + (uguale
+          ? "&#10003; Anche il traduttore dice cos&igrave;."
+          : "Il traduttore diceva: &laquo;" + scappa(d.p) + "&raquo;. Adesso lo sa da te.") + "</p>";
+      } else {
+        el("revEsito").innerHTML = "";
+        var conferma = forma === d.p;
+        registra(d, { esito: conferma ? "si" : "no", ferrarese: conferma ? "" : forma,
+                      altre: altre, nota: nota, proposta: d.p },
+                 conferma ? 10 + (altre ? 5 : 0) : 15);
+      }
       prossima();
     }
     function tornaIndietro() {
       var id = indietro.pop();
       if (!id || !perId[id]) return;
-      corrente = perId[id]; modo = stato.risposte[id] && stato.risposte[id].esito === "no" ? "scrivi" : "scegli";
+      corrente = perId[id];
+      var r = stato.risposte[chiave(id)];
+      scrivendo = !!(r && r.esito === "no");
       disegnaGruppi(); conti(); carta(corrente);
     }
     function prossima() {
-      modo = "scegli";
+      scrivendo = false;
       disegnaGruppi(); conti();
       var g = gruppoScelto();
-      if (!g) { corrente = null; el("revCarta").innerHTML = '<span class="vuoto">Scegli un gruppo qui sopra: si comincia da dove si vuole.</span>'; return; }
+      if (!g) { corrente = null; el("revCarta").innerHTML = '<span class="vuoto">Scegli un gruppo qui sopra.</span>'; return; }
+      var saltate = stato.saltate || {}, prima = null;
       corrente = null;
       for (var i = 0; i < g.domande.length; i++) {
-        if (!stato.risposte[g.domande[i].id]) { corrente = g.domande[i]; break; }
+        var k = chiave(g.domande[i].id);
+        if (stato.risposte[k]) continue;
+        if (saltate[k]) { if (!prima) prima = g.domande[i]; continue; }
+        corrente = g.domande[i]; break;
+      }
+      if (!corrente && prima) {
+        // Finito il giro, si ricomincia dalle saltate.
+        g.domande.forEach(function (d) { delete saltate[chiave(d.id)]; });
+        salvaRevisione(stato);
+        corrente = prima;
       }
       if (!corrente) {
-        el("revCarta").innerHTML = "<p><b>Gruppo finito.</b> Scegline un altro, oppure premi <b>Invia</b> per mandare le risposte.</p>";
+        el("revCarta").innerHTML = "<p><b>Gruppo finito.</b> Scegline un altro, oppure premi <b>Manda le risposte</b>.</p>";
         return;
       }
       carta(corrente);
     }
-    function invia() {
+    // --- mandare -------------------------------------------------------------
+    function messaggio(chiavi) {
+      var imp = leggiImpostazioni(), r = righe(chiavi);
+      return "Risposte per il traduttore ferrarese, da " + (imp.chi || "").trim() +
+        (imp.luogo ? " (" + imp.luogo.trim() + ")" : "") + ": " + r.length + " risposte.\n" +
+        "Chi cura il progetto le incolla nella pagina Revisione, in «Per chi cura il progetto».\n\n" +
+        r.map(function (x) { return JSON.stringify(x); }).join("\n") + "\n";
+    }
+    function segnaMandate(chiavi) {
+      var oggi = oggiIso();
+      chiavi.forEach(function (k) { if (stato.risposte[k]) stato.risposte[k].mandata = oggi; });
+      ultimoLotto = chiavi.slice();
+      salvaRevisione(stato); conti();
+      el("revManda").innerHTML = "<p><b>Fatto: " + chiavi.length + " risposte.</b> Grazie! " +
+        (inCoda().length ? "Ne restano " + inCoda().length + ": premi di nuovo «Manda le risposte». " : "") +
+        '<a href="#" id="revRimetti">Non sono partite? Rimettile in coda</a></p>';
+      document.getElementById("revRimetti").addEventListener("click", function (e) {
+        e.preventDefault();
+        ultimoLotto.forEach(function (k) { if (stato.risposte[k]) delete stato.risposte[k].mandata; });
+        salvaRevisione(stato); conti(); manda();
+      });
+    }
+    function manda() {
+      var coda = inCoda(), pannello = el("revManda");
+      pannello.hidden = false;
+      if (!coda.length) { pannello.innerHTML = "<p>Non ci sono risposte nuove da mandare.</p>"; return; }
       var imp = leggiImpostazioni();
-      var tutte = inCoda();
-      if (!tutte.length) return;
-      if (!(imp.chi || "").trim()) {
-        el("revImpostazioni").open = true;
-        el("revEsito").innerHTML = '<p class="errore">Prima scrivi il tuo nome in «Chi sei» e premi Salva: le risposte si firmano.</p>';
+      if (imp.token && (DATI.correzione || {}).api) {
+        pannello.innerHTML = "<p>Invio di " + coda.length + " risposte a GitHub&hellip;</p>";
+        var perRiga = coda.map(function (k) { return { k: k, r: rigaDi(k, imp) }; }).filter(function (x) { return x.r; });
+        inviaALotti(imp.token, perRiga.map(function (x) { return x.r; }),
+          function (lotto) { return "Revisione: " + lotto.length + " risposte di " + nomiDi(lotto); },
+          "Risposte inviate dalla pagina della revisione.",
+          function (lotto, j) {
+            perRiga.splice(0, lotto.length).forEach(function (x) { stato.risposte[x.k].inviata = j.number; });
+            salvaRevisione(stato); conti();
+          }
+        ).then(function (fatte) {
+          pannello.innerHTML = "<p>Inviate: " + fatte.map(function (j) {
+            return '<a href="' + scappa(j.html_url) + '" target="_blank" rel="noopener">segnalazione #' + j.number + "</a>";
+          }).join(", ") + ". Il workflow le archivia da verificare.</p>";
+          festa("Inviate! Grazie, " + scappa(imp.chi.trim()) + ".");
+        }).catch(function (errore) {
+          conti();
+          pannello.innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) +
+            "). Le risposte non inviate restano qui: riprova.</p>";
+        });
         return;
       }
-      if (!imp.token || !(DATI.correzione || {}).api) {
-        el("revImpostazioni").open = true;
-        el("revEsito").innerHTML = '<p class="errore">Manca il token: mettilo in «Chi sei» e premi Salva. Intanto puoi copiare o scaricare le righe.</p>';
-        return;
-      }
-      var lotto = tutte.slice(0, RIGHE_PER_SEGNALAZIONE);
-      var versione = (DATI.correzione || {}).versione || "";
-      var testo = lotto.map(function (id) { return JSON.stringify(rigaRevisione(perId[id], stato.risposte[id], imp, versione)); }).join("\n");
-      el("revEsito").innerHTML = "<p>Invio di " + lotto.length + " risposte&hellip;</p>";
-      el("revInvia").disabled = true;
-      apriSegnalazione(imp.token, "Revisione: " + lotto.length + " risposte di " + imp.chi.trim(),
-        "Risposte inviate dalla pagina della revisione.\n\n```json\n" + testo + "\n```\n"
-      ).then(function (j) {
-        lotto.forEach(function (id) { stato.risposte[id].inviata = j.number; });
-        salvaRevisione(stato); conti();
-        var resto = inCoda().length;
-        el("revEsito").innerHTML = '<p>Inviate: <a href="' + scappa(j.html_url) + '" target="_blank" rel="noopener">segnalazione #' + j.number +
-          "</a>. Il workflow le archivia da verificare." + (resto ? " Ne restano " + resto + ": premi di nuovo Invia." : "") + "</p>";
-        festa("Inviate! Grazie, " + scappa(imp.chi.trim()) + ".");
+      var posta = coda.slice(0, RIGHE_PER_POSTA);
+      pannello.innerHTML = "<p>Hai <b>" + coda.length + " risposte</b>. Mandale a chi cura il progetto, come preferisci: " +
+        "lui le aggiunge al traduttore con il tuo nome.</p><div class=\"riga\">" +
+        (navigator.share ? '<button type="button" class="si" id="revCondividi"><b>Condividi</b> (WhatsApp, posta&hellip;)</button>' : "") +
+        '<a class="bottone" id="revPosta" href="mailto:?subject=' + encodeURIComponent("Risposte per il traduttore ferrarese") +
+        "&body=" + encodeURIComponent(messaggio(posta)) + '">Posta' +
+        (coda.length > posta.length ? " (le prime " + posta.length + ")" : "") + "</a>" +
+        '<button type="button" id="revCopiaMessaggio">Copia il messaggio</button></div>';
+      var condividi = document.getElementById("revCondividi");
+      if (condividi) condividi.addEventListener("click", function () {
+        var chiavi = coda.slice();
+        navigator.share({ title: "Risposte per il traduttore ferrarese", text: messaggio(chiavi) })
+          .then(function () { segnaMandate(chiavi); })
+          .catch(function () { /* annullato: restano in coda */ });
+      });
+      document.getElementById("revPosta").addEventListener("click", function () {
+        window.setTimeout(function () { segnaMandate(posta); }, 300);
+      });
+      document.getElementById("revCopiaMessaggio").addEventListener("click", function () {
+        var chiavi = coda.slice(), testo = messaggio(chiavi);
+        var fatto = function () { segnaMandate(chiavi); el("revManda").insertAdjacentHTML("afterbegin",
+          "<p>Copiato: incollalo in un messaggio a chi cura il progetto.</p>"); };
+        if (navigator.clipboard) navigator.clipboard.writeText(testo).then(fatto, function () {
+          el("righeRevisione").value = testo; el("revCura").open = true; });
+        else { el("righeRevisione").value = testo; el("revCura").open = true; }
+      });
+    }
+    function inviaRicevute() {
+      var imp = leggiImpostazioni(), esito = el("revEsitoRicevute");
+      var ricevute = righeDalTesto(el("revRicevute").value);
+      if (!ricevute.length) { esito.innerHTML = '<p class="errore">Nel testo incollato non trovo righe di risposta.</p>'; return; }
+      if (!imp.token || !(DATI.correzione || {}).api) { esito.innerHTML = '<p class="errore">Prima salva il token qui sopra.</p>'; return; }
+      esito.innerHTML = "<p>Invio di " + ricevute.length + " risposte di " + scappa(nomiDi(ricevute)) + "&hellip;</p>";
+      inviaALotti(imp.token, ricevute,
+        function (lotto) { return "Risposte di " + nomiDi(lotto) + ": " + lotto.length; },
+        "Risposte ricevute da chi non ha un account, inviate da " + (imp.chi || CHI_PREDEFINITO) + " dalla pagina della revisione."
+      ).then(function (fatte) {
+        el("revRicevute").value = "";
+        esito.innerHTML = "<p>Inviate " + ricevute.length + " risposte: " + fatte.map(function (j) {
+          return '<a href="' + scappa(j.html_url) + '" target="_blank" rel="noopener">#' + j.number + "</a>";
+        }).join(", ") + ". Restano firmate da chi le ha date.</p>";
       }).catch(function (errore) {
-        conti();
-        el("revEsito").innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) +
-          "). Le risposte restano qui: riprova, oppure copia o scarica le righe.</p>";
+        esito.innerHTML = '<p class="errore">Invio non riuscito (' + scappa(String(errore.message || errore)) + ").</p>";
       });
     }
 
-    el("revInvia").addEventListener("click", invia);
+    el("revComincia").addEventListener("click", function () {
+      var nome = (el("chiCorregge").value || "").trim();
+      var problemi = [];
+      if (nome.length < 3) problemi.push("scrivi il tuo nome e cognome");
+      if (!el("revConsenso").checked) problemi.push("serve il consenso: senza il nome una risposta non e' una fonte");
+      if (problemi.length) { el("revChiEsito").innerHTML = '<p class="errore">' + problemi.map(scappa).join("<br>") + "</p>"; return; }
+      el("revChiEsito").innerHTML = "";
+      salvaImpostazioni();
+      stato.consenso = true; salvaRevisione(stato);
+      mostra();
+    });
+    el("revModoControlla").addEventListener("click", function () { stato.modo = "controlla"; salvaRevisione(stato); indietro = []; el("revEsito").innerHTML = ""; prossima(); });
+    el("revModoTraduci").addEventListener("click", function () { stato.modo = "traduci"; salvaRevisione(stato); indietro = []; el("revEsito").innerHTML = ""; prossima(); });
+    el("revInvia").addEventListener("click", manda);
+    el("revInviaRicevute").addEventListener("click", inviaRicevute);
     el("salvaImpostazioni").addEventListener("click", function () { window.setTimeout(conti, 0); });
     el("revCopia").addEventListener("click", function () {
       conti();
@@ -2604,27 +2793,26 @@ function tokenizza(t) {
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     });
     el("revAzzera").addEventListener("click", function () {
-      if (!window.confirm || !window.confirm("Cancellare da questo browser tutte le risposte e i punti? Quelle gia' inviate restano su GitHub.")) return;
-      stato = { risposte: {}, punti: 0, serie: 0, migliore: 0, gruppo: stato.gruppo };
+      if (!window.confirm || !window.confirm("Cancellare da questo browser tutte le risposte e i punti? Quelle gia' mandate restano.")) return;
+      stato = { risposte: {}, punti: 0, serie: 0, migliore: 0, modo: stato.modo, gruppi: stato.gruppi, consenso: stato.consenso };
       salvaRevisione(stato); indietro = []; prossima();
     });
     document.addEventListener("keydown", function (e) {
       if (!corrente || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (document.getElementById("revGioco").hidden) return;
       var nelCampo = e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
-      if (modo === "scrivi") {
-        if (e.key === "Enter" && nelCampo && e.target.id && e.target.id.indexOf("rev") === 0) { e.preventDefault(); salvaScritta(); }
-        else if (e.key === "Escape") { modo = "scegli"; carta(corrente); }
+      if (modo() === "traduci" || scrivendo) {
+        if (e.key === "Enter" && nelCampo && /^rev(Forma|Altre|Nota)$/.test(e.target.id || "")) { e.preventDefault(); salvaScritta(); }
+        else if (e.key === "Escape" && scrivendo) { scrivendo = false; carta(corrente); }
         return;
       }
       if (nelCampo) return;
       if ((e.key === "1" || e.key === "s") && !corrente.b) rispondi("si");
-      else if (e.key === "2" || e.key === "n") { modo = "scrivi"; carta(corrente); e.preventDefault(); }
+      else if (e.key === "2" || e.key === "n") { scrivendo = true; carta(corrente); e.preventDefault(); }
       else if (e.key === "3" || e.key === "?") rispondi("nonso");
       else if (e.key === "Backspace" || e.key === "ArrowLeft") { e.preventDefault(); tornaIndietro(); }
     });
-    if (!gruppoScelto() && gruppi.length) stato.gruppo = gruppi[0].chiave;
-    if (!leggiImpostazioni().chi) el("revImpostazioni").open = true;
-    prossima();
+    mostra();
   }
 
   // Si disegna solo quello che la pagina contiene davvero. Ogni funzione

@@ -551,6 +551,16 @@ def controlla_verbi(verbi, fonti=None, percorso: str = None) -> list:
         per_casella.setdefault(chiave, []).append(riga)
     for chiave, gruppo in sorted(per_casella.items()):
         fonti_diverse = {r["fonte"] for r in gruppo}
+        # Dalla 0.53: due fonti che scrivono la **stessa** forma principale non
+        # sono in disaccordo, si confermano («vòl» di S015 e di S027).
+        principali = {}
+        for r in gruppo:
+            if not r.get("variante_di"):
+                principali.setdefault(r["fonte"], set()).add(
+                    verbi_modulo.chiave_italiano(r["forma"]))
+        insiemi = list(principali.values())
+        if len(insiemi) > 1 and all(v == insiemi[0] for v in insiemi):
+            continue
         if len(fonti_diverse) > 1:
             forme = ", ".join("%s (%s)" % (r["forma"], r["fonte"])
                               for r in gruppo)

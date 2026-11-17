@@ -101,6 +101,12 @@
       "varieta": "cittadino",
       "attendibilita": "M",
       "motivo": "Il testo descrive il ferrarese e ne distingue i distretti, ma le parole che traduce non portano la zona; le voci sono del ferrarese cittadino per scelta nostra, dichiarata come memoria. Le parole che il testo attribuisce a una zona lo dicono nella fonte della voce."
+    },
+    {
+      "fonte": "S027",
+      "varieta": "cittadino",
+      "attendibilita": "D",
+      "motivo": "L'autore lo dichiara: «mi sono attenuto alla parlata delle zone più vicine a Ferrara e in particolare al vocabolario del Ferri» (Biolcati 1980, pag. 9). Dove una forma e' del contado o della citta' lo dice la grammatica stessa (pag. 109: la seconda singolare in -i e il condizionale in -ìa sono dell'area cittadina), e la riga lo porta nella nota."
     }
   ],
   "altre_zone": [

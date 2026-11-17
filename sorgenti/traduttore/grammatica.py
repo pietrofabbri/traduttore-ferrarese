@@ -59,7 +59,8 @@ def carica(percorso: str = None) -> dict:
     if percorso in _cache:
         return _cache[percorso]
     dati = {"articoli": {}, "parole": {}, "genere": {}, "plurali": [],
-            "irregolari": {}}
+            "irregolari": {}, "negazione": {}, "domande": {},
+            "pronomi_atoni": {}}
     if os.path.exists(percorso):
         with io.open(percorso, encoding="utf-8") as f:
             grezzo = json.load(f)
@@ -70,6 +71,10 @@ def carica(percorso: str = None) -> dict:
         dati["plurali"] = grezzo.get("plurali", [])
         dati["irregolari"] = {r["singolare"]: r
                               for r in grezzo.get("plurali_irregolari", [])}
+        dati["negazione"] = grezzo.get("negazione") or {}
+        dati["pronomi_atoni"] = grezzo.get("pronomi_atoni") or {}
+        for r in grezzo.get("domande", []):
+            dati["domande"].setdefault(r["italiano"], []).append(r)
     _cache[percorso] = dati
     return dati
 
@@ -147,8 +152,8 @@ def parola_fissa(parola: str, seguente_italiano: str):
     k = _chiave(parola)
     riga = dati["parole"].get(k)
     if riga is not None:
-        return riga["ferrarese"], "%s di S015 (%s)" % (riga["categoria"],
-                                                       riga["dove"])
+        return riga["ferrarese"], "%s di %s (%s)" % (
+            riga["categoria"], riga.get("fonte", "S015"), riga["dove"])
     riga = dati["genere"].get(k)
     if riga is not None:
         g = genere(seguente_italiano)
@@ -309,3 +314,149 @@ def nomi_propri(testo: str) -> dict:
             continue
         propri[parola.lower()] = parola
     return propri
+
+
+# --- la negazione e la domanda diretta (0.53, S027) ----------------------------
+#
+# Biolcati, «Lèzar e scrìvar» (1980), pag. 142-144: «non» e' «an», che si fonde
+# con la particella soggetto del verbo («mi an», «ti t'an», «lu al n'», «lór i
+# n'»), e «di solito» vuole «brisa» o un'altra parola negativa; fra i due «s'in-
+# terpone una sola voce verbale, anche se questa e' un tempo composto». Pag.
+# 104-105: nella domanda la particella va dopo il verbo («Ti at jé bón» → «Jét
+# bón?»). Le due regole lavorano sulle unita' gia' tradotte, dopo il secondo
+# passaggio, e si leggono in `dati/grammatica.json` (`negazione`, `domande`).
+
+ORIGINI_VERBO = ("verbo", "analogia")
+_PRONOMI_DOMANDA = {"io": ("1sing", ""), "tu": ("2sing", ""),
+                    "lui": ("3sing", "m"), "egli": ("3sing", "m"),
+                    "lei": ("3sing", "f"), "ella": ("3sing", "f"),
+                    "noi": ("1plur", ""), "voi": ("2plur", ""),
+                    "loro": ("3plur", ""), "essi": ("3plur", ""),
+                    "esse": ("3plur", "")}
+_ACCENTO_APOSTROFO = {"a": "à", "e": "è", "i": "ì", "o": "ò", "u": "ù"}
+
+
+def _parola_it(testo: str) -> str:
+    """La parola italiana come chiave, con l'accento («e'» → «è»)."""
+    t = _chiave(testo).strip(" .,;:!?«»\"")
+    if len(t) > 1 and t.endswith("'") and t[-2] in _ACCENTO_APOSTROFO:
+        t = t[:-2] + _ACCENTO_APOSTROFO[t[-2]]
+    return t
+
+
+def _proclitica(testo: str, tabella: dict):
+    """(proclitica, resto) se la forma ferrarese comincia con una particella."""
+    for p in sorted(tabella, key=len, reverse=True):
+        if p.endswith("'"):
+            if testo.startswith(p) and len(testo) > len(p):
+                return p, testo[len(p):]
+        elif testo.startswith(p + " "):
+            return p, testo[len(p) + 1:]
+    return None
+
+
+def negazione(risultati: list, confidenza: float) -> list:
+    """Il verbo con quello che gli sta davanti: «non» e i pronomi atoni.
+
+    Per ogni verbo che porta la particella soggetto («a véd», «al dis»), si
+    guarda indietro: un pronome atono italiano («lo», «mi», «si»...) e prima
+    ancora «non». Il pronome prende la forma di S027 (pag. 94-97) secondo la
+    particella e la lettera che segue; «non» diventa la particella negativa
+    (pag. 142-144) e «brisa» va dopo il verbo, se la frase non ha gia' una
+    parola negativa. Due pronomi di fila («me lo») restano come sono: la fonte
+    li tabella a parte e il motore non li compone.
+    """
+    dati = carica()
+    neg, atoni = dati["negazione"], dati["pronomi_atoni"]
+    if not neg or not risultati:
+        return risultati
+    forme = (atoni or {}).get("forme", {})
+    particelle = (atoni or {}).get("particelle", {})
+    parole = [w for testo, *_ in risultati for w in _parola_it(testo).split()]
+    gia_negativa = any(w in neg["parole_negative"] for w in parole)
+    nuovi = list(risultati)
+    for j, (v_testo, v_tradotto, v_origine, v_conf, v_dettaglio) in \
+            enumerate(risultati):
+        if v_origine not in ORIGINI_VERBO:
+            continue
+        k = j - 1
+        pronome = None
+        if k >= 0 and _parola_it(risultati[k][0]) in forme:
+            pronome, k = k, k - 1
+        if k >= 0 and _parola_it(risultati[k][0]) in forme:
+            continue
+        nega = k >= 0 and _parola_it(risultati[k][0]) == "non"
+        if pronome is None and not nega:
+            continue
+        trovata = _proclitica(v_tradotto, neg["proclitiche"])
+        if trovata is None:
+            continue
+        particella, verbo = trovata
+        dettagli = []
+        if pronome is not None:
+            f = forme[_parola_it(risultati[pronome][0])]
+            ctx = "voc" if contesto(verbo) == "vocale" else "cons"
+            if not nega and particella in ("a", "aj"):
+                atono = f["a_" + ctx]
+            elif nega:
+                atono = f["dopo_" + ctx]
+            else:
+                atono = particelle.get(particella, particella) + " " + \
+                    f["dopo_" + ctx]
+            nuovi[pronome] = (risultati[pronome][0], atono, "grammatica",
+                              confidenza, "pronome atono di %s (%s), con la "
+                              "particella «%s» del verbo: «%s»"
+                              % (atoni["fonte"], atoni["dove"], particella,
+                                 atono))
+            dettagli.append("pronome")
+        if nega:
+            seguente = nuovi[pronome][1] if pronome is not None else verbo
+            ctx = "vocale" if contesto(seguente) == "vocale" else "consonante"
+            forma = neg["proclitiche"][particella][ctx]
+            dettaglio = ("negazione di %s (%s): la particella «%s» del verbo "
+                         "diventa «%s»" % (neg["fonte"], neg["dove"],
+                                            particella, forma))
+            if not gia_negativa:
+                verbo = verbo + " " + neg["brisa"]
+                dettaglio += ", e «%s» va dopo il verbo" % neg["brisa"]
+            nuovi[k] = (risultati[k][0], forma, "grammatica", confidenza,
+                        dettaglio)
+        nuovi[j] = (v_testo, verbo, v_origine, v_conf, v_dettaglio)
+    return nuovi
+
+
+def domanda(risultati: list, testo: str, confidenza: float) -> list:
+    """Una domanda diretta: il verbo prende la forma interrogativa attestata.
+
+    Solo le forme che la fonte scrive (`domande`), e solo quando la persona e'
+    certa: dal pronome italiano che precede, o perche' la parola italiana ha
+    una persona sola. «sono» senza pronome (io o loro?) resta com'e'. Una
+    domanda negativa resta com'e': la fonte non ne da' la regola.
+    """
+    domande = carica()["domande"]
+    if not domande or not (testo or "").rstrip().endswith("?"):
+        return risultati
+    if any(_parola_it(t) == "non" for t, *_ in risultati):
+        return risultati
+    nuovi = list(risultati)
+    for j, (t, _, _, _, _) in enumerate(risultati):
+        righe = domande.get(_parola_it(t))
+        if not righe:
+            continue
+        persona, genere = _PRONOMI_DOMANDA.get(
+            _parola_it(risultati[j - 1][0]) if j else "", ("", ""))
+        scelte = [r for r in righe if not persona or r["persona"] == persona]
+        if not persona and len({r["persona"] for r in scelte}) > 1:
+            return risultati
+        if genere:
+            scelte = [r for r in scelte if r["genere"] in (genere, "")] or scelte
+        else:
+            scelte = [r for r in scelte if r["genere"] != "f"] or scelte
+        if not scelte:
+            return risultati
+        r = scelte[0]
+        nuovi[j] = (t, r["ferrarese"], "grammatica", confidenza,
+                    "domanda di %s (%s): la particella va dopo il verbo, "
+                    "«%s»" % (r["fonte"], r["dove"], r["scritto_dalla_fonte"]))
+        return nuovi
+    return risultati

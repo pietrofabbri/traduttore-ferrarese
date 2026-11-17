@@ -47,6 +47,7 @@ sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
 sys.path.insert(0, os.path.join(RADICE, "raccolta"))
 
 from da_paradigmi import _tabella, converti  # noqa: E402
+import da_biolcati  # noqa: E402
 
 USCITA = os.path.join(RADICE, "dati", "grammatica.json")
 FONTE = "S015"
@@ -296,12 +297,23 @@ def costruisci() -> dict:
     sostituiti = {a["italiano"] for a in ARTICOLI_S011}
     articoli = [a for a in articoli if a["italiano"] not in sostituiti] + [
         dict(a, fonte="S011", dove=DOVE_S011) for a in ARTICOLI_S011]
+    # Dalla 0.53: le preposizioni articolate di S027 (Biolcati, pag. 160-163),
+    # che S015 non tabella. Sono gia' nella grafia del progetto.
+    gia = {a["italiano"] for a in articoli}
+    articoli += [{"italiano": it, "genere": "", "numero": "",
+                  "consonante": cons, "vocale": voc,
+                  "scritto_dalla_fonte": scritto,
+                  "fonte": da_biolcati.ID_FONTE,
+                  "dove": "pag. %d, «Preposizioni semplici e articolate»" % pag}
+                 for it, cons, voc, pag, scritto in da_biolcati.PREPOSIZIONI
+                 if it not in gia]
     genere = [dict(g, m=resa(g["m"]), f=resa(g["f"]), fonte=FONTE,
                    dove="§4 «Sostantivi e aggettivi»") for g in SECONDO_GENERE]
     return {
         "_nota": "Le parole della grammatica di S015 (Bigoni, «Il Ferrarese», "
                  "§4): articoli, pronomi, possessivi, dimostrativi, numeri, "
-                 "giorni e mesi. File GENERATO da raccolta/da_grammatica.py, "
+                 "giorni e mesi; di S011 (di, una); di S027 (Biolcati 1980: "
+                 "preposizioni articolate, con, per, negazione, domanda). File GENERATO da raccolta/da_grammatica.py, "
                  "non si modifica a mano. Le forme sono nella grafia del "
                  "progetto (dati/conversione_bigoni.json); quella della fonte "
                  "e' in forma_fonte. Gli articoli dipendono dalla parola "
@@ -310,7 +322,22 @@ def costruisci() -> dict:
         "fonte": FONTE,
         "articoli": articoli,
         "secondo_genere": genere,
-        "parole": [dict(p, fonte=FONTE) for p in parole],
+        "parole": [dict(p, fonte=FONTE) for p in parole] + [
+            {"italiano": it, "ferrarese": fe, "forma_fonte": fe,
+             "categoria": cat, "fonte": da_biolcati.ID_FONTE,
+             "dove": "pag. %d, «Preposizioni semplici e articolate»: %s"
+             % (pag, scritto)}
+            for it, fe, cat, pag, scritto in da_biolcati.PAROLE
+            if it not in {p["italiano"] for p in parole}],
+        # Dalla 0.53 (S027, Biolcati): la negazione e la domanda diretta. Il
+        # motore le applica in un terzo passaggio (grammatica.negazione e
+        # grammatica.domanda, copia nella pagina).
+        "negazione": da_biolcati.NEGAZIONE,
+        "pronomi_atoni": da_biolcati.PRONOMI_ATONI,
+        "domande": [{"italiano": it, "persona": pers, "genere": gen,
+                     "ferrarese": fe, "fonte": da_biolcati.ID_FONTE,
+                     "dove": "pag. %d" % pag, "scritto_dalla_fonte": scritto}
+                    for it, pers, gen, fe, pag, scritto in da_biolcati.DOMANDE],
         "plurali": [dict(p, fonte=FONTE, dove="§4 «Sostantivi e aggettivi»")
                     for p in PLURALI] + PLURALI_S011,
         "plurali_irregolari": [dict(p, fonte=FONTE,

@@ -362,6 +362,19 @@
       "licenza_verificata": false,
       "uso": "Non usata.",
       "nota": "Segnalata dal titolare del progetto il 2026-11-07. Il sito chiede ai programmi di non leggerlo (robots.txt), e il progetto non lo aggira: la pagina non e' stata letta. Un articolo di giornale e' un testo protetto; le parole che cita, con la loro traduzione, possono entrare se il titolare ne incolla il testo e l'articolo dichiara da dove le prende. **2026-11-09:** il titolare dichiara di aver controllato il contenuto e che e' ferrarese corretto. Manca il testo: va incollato, perche' il sito non si legge con un programma. **2026-11-09:** il titolare non trova piu' l'articolo: la fonte e' irreperibile e resta esclusa."
+    },
+    {
+      "id": "S027",
+      "titolo": "Lèzar e scrìvar. Grammatica del dialetto ferrarese",
+      "autore": "Beniamino Biolcati",
+      "anno": 1980,
+      "tipo": "grammatica",
+      "luogo": "Casa Editrice ALBA, Ferrara 1980 (finito di stampare nell'ottobre 1980 presso Tecnoprint, Bologna); copia del titolare del progetto",
+      "stato": "acquisita",
+      "licenza": "tutti i diritti riservati",
+      "licenza_verificata": true,
+      "uso": "Non si copia: il libro non e' nel repository. Come per S016, si consulta e si cita: dalla 0.53 entrano solo fatti linguistici, ognuno con la pagina — i paradigmi di èssar, avér, lavàr, rìdar, finìr, partìr e le forme dei verbi irregolari (dati/verbi.jsonl), i participi passati irregolari, le preposizioni articolate, «con» e «per», la regola della negazione, i pronomi atoni davanti al verbo e le forme della domanda diretta (dati/grammatica.json). Li scrive raccolta/da_biolcati.py, che tiene la trascrizione casella per casella.",
+      "nota": "Consegnata dal titolare del progetto il 2026-11-17 come scansione (92 immagini di pagine doppie, 184 pagine). L'autore, nato a Codigoro nel 1910 e da vent'anni a Ferrara, dichiara di essersi «attenuto alla parlata delle zone più vicine a Ferrara e in particolare al vocabolario del Ferri» (pag. 9): la varieta' e' il cittadino. E' la prima grammatica intera del progetto, e chiude tre buchi dichiarati: la negazione (pag. 142-144: «an...brisa», la particella soggetto che si fonde con «an», «brisa» dopo la sola voce verbale), le preposizioni articolate che S015 non tabella (pag. 160-163) e la domanda diretta (pag. 104-105). Le tabelle sono state lette sulle immagini e non con l'OCR. Dove la fonte e S015 dicono due forme diverse per la stessa casella (al condizionale S015 scrive «parlaré», S027 «parlarév» e, in citta', «parlarìa»), le due righe restano entrambe e vince S015, che c'era prima: la differenza e' un dato, e la sceglie un parlante con una correzione."
     }
   ]
 }

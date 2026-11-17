@@ -4260,7 +4260,7 @@ class TestLeFormeVerbali(unittest.TestCase):
         # Una forma senza «dove» non si puo' controllare: chi la legge fra
         # vent'anni non puo' tornare a guardare la pagina.
         for riga in self.righe:
-            self.assertIn(riga["fonte"], ("S001", "S015"), riga["id"])
+            self.assertIn(riga["fonte"], ("S001", "S015", "S027"), riga["id"])
             self.assertTrue(riga["dove"].strip(), riga["id"])
             self.assertTrue(riga["nota"].strip(), riga["id"])
             self.assertEqual(riga["attendibilita"], "I", riga["id"])
@@ -4312,8 +4312,8 @@ class TestLeFormeVerbali(unittest.TestCase):
         # essere visibile dove si legge la forma, non in una nota una volta sola.
         noi = [r for r in self.righe if r["persona"] == "1plur"]
         self.assertTrue(noi)
-        self.assertEqual({r["fonte"] for r in noi}, {"S001", "S015"},
-                         "il disaccordo dichiarato deve restare fra le due fonti")
+        self.assertTrue({"S001", "S015"} <= {r["fonte"] for r in noi},
+                        "il disaccordo dichiarato deve restare fra le due fonti")
         for riga in [r for r in noi if r["fonte"] == "S001"]:
             self.assertIn("disaccordo", riga["nota"].lower(),
                           "la riga di S001 non dichiara il disaccordo: %s"
@@ -4714,6 +4714,77 @@ class TestRevisione(unittest.TestCase):
         self.assertEqual(motore.traduci("ho mangiato", IT_FE).testo, "aj ò magnà")
 
 
+class TestLaGrammaticaDiBiolcati(unittest.TestCase):
+    """S027, Biolcati 1980 (0.53): verbi, preposizioni, negazione, domande."""
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.cli import carica
+        cls.motore = carica()
+        from traduttore import verbi
+        cls.righe = [r for r in verbi.leggi()[1] if r["fonte"] == "S027"]
+
+    def _t(self, frase):
+        return self.motore.traduci(frase, IT_FE).testo
+
+    def test_ogni_riga_cita_la_casella_e_la_pagina(self):
+        self.assertGreater(len(self.righe), 600)
+        for r in self.righe:
+            scritto = r["scritto_dalla_fonte"].replace("(", "").replace(")", "")
+            self.assertIn(r["forma"].replace("(", "").replace(")", ""),
+                          scritto, r["id"])
+            self.assertTrue(r["dove"].startswith("pag. "), r["id"])
+            self.assertEqual(r["attendibilita"], "I", r["id"])
+
+    def test_il_refuso_resta_fuori(self):
+        # «nu a pertén» (pag. 128) non si scrive al posto di «partén»
+        self.assertFalse([r for r in self.righe if r["forma"] == "pertén"])
+
+    def test_i_verbi_irregolari(self):
+        self.assertEqual(self._t("io vado"), "mi a vagh")
+        self.assertEqual(self._t("ho visto"), "aj ò vist")
+        self.assertEqual(self._t("noi dobbiamo"), "nu a duvén")
+
+    def test_la_seconda_singolare_cittadina_in_i(self):
+        # pag. 109: «nell'area cittadina» la desinenza in -i
+        self.assertEqual(self._t("tu ridi"), "ti at ridi")
+
+    def test_le_preposizioni_articolate(self):
+        self.assertEqual(self._t("la casa del nonno"), "la cà dal nonn")
+        self.assertIn("int la", self._t("il gatto è nella scatola"))
+        self.assertIn("cón la", self._t("parlo con la mamma"))
+
+    def test_la_negazione(self):
+        self.assertEqual(self._t("io non voglio niente"), "mi an vój gnént")
+        self.assertEqual(self._t("tu non hai visto"), "ti an t'a brisa vist")
+        self.assertEqual(self._t("non lo so"), "a n'al sò brisa")
+        self.assertEqual(self._t("non l'ho più visto"), "an l'ò più vist")
+
+    def test_i_pronomi_atoni(self):
+        self.assertEqual(self._t("lo vedo"), "al véd")
+        self.assertEqual(self._t("l'ho visto"), "a l'ò vist")
+        self.assertEqual(self._t("lui mi dice"), "lu al m'dis")
+        # «ci» e' anche luogo: non si tocca
+        self.assertTrue(self._t("ci vado").startswith("ghe"))
+
+    def test_la_domanda(self):
+        self.assertEqual(self._t("hai visto mio fratello?"),
+                         "hat vist mié dèd")
+        self.assertEqual(self._t("sei stanco?"), "jét stanch")
+        self.assertEqual(self._t("lei ha mangiato?"), "lié hàla magnà")
+        # «sono» senza pronome: io o loro? resta com'e'
+        self.assertTrue(self._t("che ore sono?").endswith("són"))
+        # senza punto di domanda non e' una domanda
+        self.assertEqual(self._t("hai fame"), "at a fam")
+
+    def test_la_fonte_e_registrata(self):
+        fonti = json.load(io.open(os.path.join(RADICE, "dati", "fonti.json"),
+                                  encoding="utf-8"))["fonti"]
+        s027 = [f for f in fonti if f["id"] == "S027"][0]
+        self.assertEqual(s027["licenza"], "tutti i diritti riservati")
+        self.assertIn("non e' nel repository", s027["uso"])
+
+
 class TestParticipiFuturiENomi(unittest.TestCase):
     """Participi e futuri per analogia, nomi propri (0.50)."""
 
@@ -4732,11 +4803,13 @@ class TestParticipiFuturiENomi(unittest.TestCase):
         self.assertTrue(self._t("abbiamo mangiati").endswith("magnà"))
 
     def test_il_participio_della_terza_resta_un_buco(self):
-        # «lèt» per «letto» e' irregolare: per «creduto» la fonte non dice
-        self.assertTrue(self._t("ho creduto").endswith("creduto"))
+        # «creduto» dalla 0.53 c'e' (S027, «cardù», pag. 151); «temuto» no
+        self.assertTrue(self._t("ho temuto").endswith("temuto"))
 
     def test_il_futuro_sincopato(self):
-        self.assertEqual(self._t("io andrò"), "mi a andarò")
+        # «io andrò» e' attestato da S027 («andrò», pag. 145); le altre persone
+        # vengono dal modello
+        self.assertEqual(self._t("io parlerò"), "mi a parlarò")
         self.assertEqual(self._t("noi andremo"), "nu a andarén")
 
     def test_le_celle_derivate_sono_dichiarate(self):
@@ -4747,7 +4820,9 @@ class TestParticipiFuturiENomi(unittest.TestCase):
         self.assertIn("rò", [c["it"] for c in derivate])
 
     def test_un_nome_proprio_resta(self):
-        self.assertEqual(self._t("mi chiamo Luca"), "mi a ciam Luca")
+        # «mi chiamo»: il pronome atono si fonde con la particella (S027,
+        # pag. 94 e 137, «Mi am lav»)
+        self.assertEqual(self._t("mi chiamo Luca"), "am ciam Luca")
         self.assertTrue(self._t("vado a Ferrara").endswith("Ferrara"))
         from traduttore import grammatica
         self.assertEqual(grammatica.nomi_propri("Ferrara. Poi Luca"),
@@ -4777,7 +4852,9 @@ class TestLaSceltaFraLeVoci(unittest.TestCase):
 
     def test_una_funzionale_non_verificata_non_risponde(self):
         self.assertEqual(self._t("che"), "che")           # non «brancài»
-        self.assertEqual(self._t("per"), "per")           # non «bàia»
+        # «per» non e' «bàia» (voce non verificata): dalla 0.53 risponde la
+        # grammatica di Biolcati (S027, pag. 163), «par»
+        self.assertEqual(self._t("per"), "par")
         # la voce resta, e dal ferrarese si trova
         self.assertTrue(self.motore.glossario.cerca_ferrarese("brancài"))
 
@@ -5108,9 +5185,11 @@ class TestLaGrammaticaDiS015(unittest.TestCase):
             dati = json.load(f)
         self.assertGreaterEqual(len(dati["parole"]), 80)
         for riga in dati["parole"] + dati["articoli"]:
-            # S015 (Bigoni) e, dalla 0.47, S011 (Tréb dal Tridèl)
-            self.assertIn(riga["fonte"], ("S015", "S011"), riga["italiano"])
-            self.assertTrue(riga["dove"].startswith(("§4", "«Scrìvar")),
+            # S015 (Bigoni), dalla 0.47 S011 (Tréb dal Tridèl), dalla 0.53
+            # S027 (Biolcati, con la pagina)
+            self.assertIn(riga["fonte"], ("S015", "S011", "S027"),
+                          riga["italiano"])
+            self.assertTrue(riga["dove"].startswith(("§4", "«Scrìvar", "pag. ")),
                             riga["italiano"])
 
     def test_l_elisione_si_separa_e_si_riunisce(self):
@@ -5492,7 +5571,11 @@ class TestIParadigmiDiS015(unittest.TestCase):
                       self.verbi.carica()["sistema"].get("fuori", []))
 
     def test_ogni_riga_dei_paradigmi_cita_la_sua_casella(self):
-        paradigmi = [r for r in self.righe if r.get("forma_fonte")]
+        # Le righe di S015; quelle di S027 hanno il loro controllo
+        # (`TestLaGrammaticaDiBiolcati`), perche' la casella si scrive con le
+        # parentesi e la proclitica a volte non c'e' («nu avén», pag. 115).
+        paradigmi = [r for r in self.righe if r.get("forma_fonte")
+                     and r["fonte"] == "S015"]
         self.assertGreater(len(paradigmi), 400)
         for riga in paradigmi:
             self.assertIn(riga["forma_fonte"].replace("[", "").replace("]", ""),

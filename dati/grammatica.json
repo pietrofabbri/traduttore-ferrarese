@@ -1,5 +1,5 @@
 {
- "_nota": "Le parole della grammatica di S015 (Bigoni, «Il Ferrarese», §4): articoli, pronomi, possessivi, dimostrativi, numeri, giorni e mesi. File GENERATO da raccolta/da_grammatica.py, non si modifica a mano. Le forme sono nella grafia del progetto (dati/conversione_bigoni.json); quella della fonte e' in forma_fonte. Gli articoli dipendono dalla parola ferrarese che segue: il motore li sceglie in un secondo passaggio (sorgenti/traduttore/grammatica.py).",
+ "_nota": "Le parole della grammatica di S015 (Bigoni, «Il Ferrarese», §4): articoli, pronomi, possessivi, dimostrativi, numeri, giorni e mesi; di S011 (di, una); di S027 (Biolcati 1980: preposizioni articolate, con, per, negazione, domanda). File GENERATO da raccolta/da_grammatica.py, non si modifica a mano. Le forme sono nella grafia del progetto (dati/conversione_bigoni.json); quella della fonte e' in forma_fonte. Gli articoli dipendono dalla parola ferrarese che segue: il motore li sceglie in un secondo passaggio (sorgenti/traduttore/grammatica.py).",
  "fonte": "S015",
  "articoli": [
   {
@@ -121,6 +121,316 @@
    "scritto_dalla_fonte": "davanti a vocale è n' (n'èrba un'erba, n'idèa un'idea).",
    "fonte": "S011",
    "dove": "«Scrìvar e lèźar al fraréś», Osservazioni"
+  },
+  {
+   "italiano": "del",
+   "genere": "",
+   "numero": "",
+   "consonante": "dal",
+   "vocale": "dl'",
+   "scritto_dalla_fonte": "del, dello = dal, dl' ... La vita dl'òm.",
+   "fonte": "S027",
+   "dove": "pag. 160, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dello",
+   "genere": "",
+   "numero": "",
+   "consonante": "dal",
+   "vocale": "dl'",
+   "scritto_dalla_fonte": "del, dello = dal, dl'",
+   "fonte": "S027",
+   "dove": "pag. 160, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "della",
+   "genere": "",
+   "numero": "",
+   "consonante": "dla",
+   "vocale": "dl'",
+   "scritto_dalla_fonte": "della = dla, dl' ... La fin dl'ultma pagina.",
+   "fonte": "S027",
+   "dove": "pag. 160, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dei",
+   "genere": "",
+   "numero": "",
+   "consonante": "di",
+   "vocale": "di",
+   "scritto_dalla_fonte": "dei, degli = di",
+   "fonte": "S027",
+   "dove": "pag. 160, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "degli",
+   "genere": "",
+   "numero": "",
+   "consonante": "di",
+   "vocale": "di",
+   "scritto_dalla_fonte": "dei, degli = di",
+   "fonte": "S027",
+   "dove": "pag. 160, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "delle",
+   "genere": "",
+   "numero": "",
+   "consonante": "dil",
+   "vocale": "dgl'",
+   "scritto_dalla_fonte": "delle = dil, dgli, dgl' ... Al gh'ha dgl'idèi.",
+   "fonte": "S027",
+   "dove": "pag. 160, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "al",
+   "genere": "",
+   "numero": "",
+   "consonante": "al",
+   "vocale": "a l'",
+   "scritto_dalla_fonte": "al = al ... allo = al, a l' ... A l'òm.",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "allo",
+   "genere": "",
+   "numero": "",
+   "consonante": "al",
+   "vocale": "a l'",
+   "scritto_dalla_fonte": "allo = al, a l'",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "alla",
+   "genere": "",
+   "numero": "",
+   "consonante": "a la",
+   "vocale": "a l'",
+   "scritto_dalla_fonte": "alla = a la, a l', ala, al' ... A l'ho dit a l'amiga.",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "ai",
+   "genere": "",
+   "numero": "",
+   "consonante": "ai",
+   "vocale": "ai",
+   "scritto_dalla_fonte": "ai, agli = ai, a i",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "agli",
+   "genere": "",
+   "numero": "",
+   "consonante": "ai",
+   "vocale": "ai",
+   "scritto_dalla_fonte": "ai, agli = ai, a i",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "alle",
+   "genere": "",
+   "numero": "",
+   "consonante": "a il",
+   "vocale": "a gl'",
+   "scritto_dalla_fonte": "alle = a il, al, a gli, a gl' ... A gl'inglési.",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dal",
+   "genere": "",
+   "numero": "",
+   "consonante": "dal",
+   "vocale": "da l'",
+   "scritto_dalla_fonte": "dal = dal ... dallo = dal, da l'",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dallo",
+   "genere": "",
+   "numero": "",
+   "consonante": "dal",
+   "vocale": "da l'",
+   "scritto_dalla_fonte": "dallo = dal, da l'",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dalla",
+   "genere": "",
+   "numero": "",
+   "consonante": "dala",
+   "vocale": "da l'",
+   "scritto_dalla_fonte": "dalla = dala, dal', da la, da l' ... A són andà da l'amiga.",
+   "fonte": "S027",
+   "dove": "pag. 161, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dai",
+   "genere": "",
+   "numero": "",
+   "consonante": "dai",
+   "vocale": "dai",
+   "scritto_dalla_fonte": "dai = dai, da i ... dagli = dai, da i",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dagli",
+   "genere": "",
+   "numero": "",
+   "consonante": "dai",
+   "vocale": "dai",
+   "scritto_dalla_fonte": "dagli = dai, da i",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "dalle",
+   "genere": "",
+   "numero": "",
+   "consonante": "da il",
+   "vocale": "da gl'",
+   "scritto_dalla_fonte": "dalle = da il, dal, da gli (dagli), da gl' ... Da gl'inglési.",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "nel",
+   "genere": "",
+   "numero": "",
+   "consonante": "int al",
+   "vocale": "int l'",
+   "scritto_dalla_fonte": "nel, nello = int al, int l' ... Int l'òm.",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "nello",
+   "genere": "",
+   "numero": "",
+   "consonante": "int al",
+   "vocale": "int l'",
+   "scritto_dalla_fonte": "nel, nello = int al, int l'",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "nella",
+   "genere": "",
+   "numero": "",
+   "consonante": "int la",
+   "vocale": "int l'",
+   "scritto_dalla_fonte": "nella = int la, int l' ... Int l'anima.",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "nei",
+   "genere": "",
+   "numero": "",
+   "consonante": "int i",
+   "vocale": "int i",
+   "scritto_dalla_fonte": "nei, negli = int i ... Int i òman.",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "negli",
+   "genere": "",
+   "numero": "",
+   "consonante": "int i",
+   "vocale": "int i",
+   "scritto_dalla_fonte": "nei, negli = int i",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "nelle",
+   "genere": "",
+   "numero": "",
+   "consonante": "int il",
+   "vocale": "int gli",
+   "scritto_dalla_fonte": "nelle = int il, int gli ... Int gli urécc.",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "sul",
+   "genere": "",
+   "numero": "",
+   "consonante": "sul",
+   "vocale": "su l'",
+   "scritto_dalla_fonte": "sul, sullo = sul, su l', ssl', s'al, sal",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "sullo",
+   "genere": "",
+   "numero": "",
+   "consonante": "sul",
+   "vocale": "su l'",
+   "scritto_dalla_fonte": "sul, sullo = sul, su l'",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "sulla",
+   "genere": "",
+   "numero": "",
+   "consonante": "su la",
+   "vocale": "su l'",
+   "scritto_dalla_fonte": "sulla = su la, su l', ssla ... Su l'asta.",
+   "fonte": "S027",
+   "dove": "pag. 162, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "sui",
+   "genere": "",
+   "numero": "",
+   "consonante": "sui",
+   "vocale": "sui",
+   "scritto_dalla_fonte": "sui, sugli = sui, su i",
+   "fonte": "S027",
+   "dove": "pag. 163, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "sugli",
+   "genere": "",
+   "numero": "",
+   "consonante": "sui",
+   "vocale": "sui",
+   "scritto_dalla_fonte": "sui, sugli = sui, su i",
+   "fonte": "S027",
+   "dove": "pag. 163, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "sulle",
+   "genere": "",
+   "numero": "",
+   "consonante": "su il",
+   "vocale": "su gl'",
+   "scritto_dalla_fonte": "sulle = su il, sil, su gli, su gl' ... Su gl'ìsul.",
+   "fonte": "S027",
+   "dove": "pag. 163, «Preposizioni semplici e articolate»"
+  },
+  {
+   "italiano": "col",
+   "genere": "",
+   "numero": "",
+   "consonante": "cól",
+   "vocale": "co' l'",
+   "scritto_dalla_fonte": "con il, con lo, col = cón al, cón l', cól, co' l' ... Co' l'ànim cuntént.",
+   "fonte": "S027",
+   "dove": "pag. 163, «Preposizioni semplici e articolate»"
   }
  ],
  "secondo_genere": [
@@ -888,6 +1198,367 @@
    "categoria": "mese",
    "dove": "§4, tabella «Mesi»",
    "fonte": "S015"
+  },
+  {
+   "italiano": "con",
+   "ferrarese": "cón",
+   "forma_fonte": "cón",
+   "categoria": "preposizione",
+   "fonte": "S027",
+   "dove": "pag. 163, «Preposizioni semplici e articolate»: con = cón, co'"
+  },
+  {
+   "italiano": "per",
+   "ferrarese": "par",
+   "forma_fonte": "par",
+   "categoria": "preposizione",
+   "fonte": "S027",
+   "dove": "pag. 163, «Preposizioni semplici e articolate»: per = par, pr'"
+  }
+ ],
+ "negazione": {
+  "fonte": "S027",
+  "dove": "pag. 142-144, «Forma negativa»",
+  "regola": "«an...brisa = non... mica» ... il suo corrispondente «an, a n'» vuole di solito essere accompagnato da «brisa» o da un altro avverbio negativo ... fra i due elementi negativi «an... brisa» s'interpone una sola voce verbale, anche se questa è un tempo composto.",
+  "esempi": [
+   "Mi an véi brisa partir.",
+   "Ti an t'ha brisa vist.",
+   "Lu al n'ha gnént.",
+   "A n'al véd più.",
+   "Mi an l'ho più vist.",
+   "A n'è brisa véra.",
+   "Ti t'an vo' gnént.",
+   "Nu an vlén gnént."
+  ],
+  "proclitiche": {
+   "a": {
+    "consonante": "an",
+    "vocale": "a n'"
+   },
+   "aj": {
+    "consonante": "an",
+    "vocale": "a n'"
+   },
+   "at": {
+    "consonante": "t'an",
+    "vocale": "an t'"
+   },
+   "al": {
+    "consonante": "al n'",
+    "vocale": "al n'"
+   },
+   "l'": {
+    "consonante": "al n'",
+    "vocale": "al n'"
+   },
+   "la": {
+    "consonante": "la n'",
+    "vocale": "la n'"
+   },
+   "i": {
+    "consonante": "i n'",
+    "vocale": "i n'"
+   },
+   "j": {
+    "consonante": "i n'",
+    "vocale": "i n'"
+   }
+  },
+  "brisa": "brisa",
+  "parole_negative": [
+   "niente",
+   "nulla",
+   "mai",
+   "nessuno",
+   "nessuna",
+   "più",
+   "piu'",
+   "neanche",
+   "nemmeno",
+   "neppure",
+   "affatto",
+   "mica",
+   "né",
+   "ne'"
+  ],
+  "clitici": [
+   "lo",
+   "la",
+   "li",
+   "le",
+   "l'",
+   "mi",
+   "ti",
+   "ci",
+   "vi",
+   "si",
+   "ne",
+   "gli",
+   "me",
+   "te",
+   "ce",
+   "ve",
+   "se",
+   "glielo",
+   "gliela",
+   "me lo",
+   "te lo"
+  ]
+ },
+ "pronomi_atoni": {
+  "fonte": "S027",
+  "dove": "pag. 94-97, «Particelle pronominali semplici»",
+  "forme": {
+   "mi": {
+    "a_cons": "am",
+    "a_voc": "a m'",
+    "dopo_cons": "m'",
+    "dopo_voc": "m'"
+   },
+   "ti": {
+    "a_cons": "at",
+    "a_voc": "a t'",
+    "dopo_cons": "t'",
+    "dopo_voc": "t'"
+   },
+   "lo": {
+    "a_cons": "al",
+    "a_voc": "a l'",
+    "dopo_cons": "al",
+    "dopo_voc": "l'"
+   },
+   "l'": {
+    "a_cons": "al",
+    "a_voc": "a l'",
+    "dopo_cons": "al",
+    "dopo_voc": "l'"
+   },
+   "la": {
+    "a_cons": "a la",
+    "a_voc": "a l'",
+    "dopo_cons": "la",
+    "dopo_voc": "l'"
+   },
+   "li": {
+    "a_cons": "a i",
+    "a_voc": "a i",
+    "dopo_cons": "i",
+    "dopo_voc": "i"
+   },
+   "gli": {
+    "a_cons": "agh",
+    "a_voc": "a gh'",
+    "dopo_cons": "gh'",
+    "dopo_voc": "gh'"
+   },
+   "si": {
+    "a_cons": "as",
+    "a_voc": "a s'",
+    "dopo_cons": "s'",
+    "dopo_voc": "s'"
+   },
+   "ne": {
+    "a_cons": "in",
+    "a_voc": "a n'",
+    "dopo_cons": "in",
+    "dopo_voc": "n'"
+   }
+  },
+  "esempi": [
+   "Mi al véd bén.",
+   "A l'ho vist.",
+   "Am dit al parché?",
+   "A m'arcòrd (am arcòrd).",
+   "Lu al m'dis.",
+   "Lór i t'véd.",
+   "A t'ho dit la vrità.",
+   "A la véd.",
+   "A i véd bén.",
+   "Agh vói bén.",
+   "Al s'è malà.",
+   "Lu al v'dis.",
+   "I n'ha dscórss."
+  ],
+  "particelle": {
+   "at": "at",
+   "al": "al",
+   "l'": "al",
+   "la": "la",
+   "i": "i",
+   "j": "i"
+  }
+ },
+ "domande": [
+  {
+   "italiano": "sono",
+   "persona": "1sing",
+   "genere": "",
+   "ferrarese": "sónia",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Mi a són bón. → Sónia bón?"
+  },
+  {
+   "italiano": "ho",
+   "persona": "1sing",
+   "genere": "",
+   "ferrarese": "hòia",
+   "fonte": "S027",
+   "dove": "pag. 94",
+   "scritto_dalla_fonte": "Hòia rasón o no?"
+  },
+  {
+   "italiano": "sei",
+   "persona": "2sing",
+   "genere": "",
+   "ferrarese": "jét",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Ti at jé bón. → Jét bón?"
+  },
+  {
+   "italiano": "hai",
+   "persona": "2sing",
+   "genere": "",
+   "ferrarese": "hat",
+   "fonte": "S027",
+   "dove": "pag. 94",
+   "scritto_dalla_fonte": "Hat fam?"
+  },
+  {
+   "italiano": "vuoi",
+   "persona": "2sing",
+   "genere": "",
+   "ferrarese": "vót",
+   "fonte": "S027",
+   "dove": "pag. 94",
+   "scritto_dalla_fonte": "Còsa vót?"
+  },
+  {
+   "italiano": "puoi",
+   "persona": "2sing",
+   "genere": "",
+   "ferrarese": "póssat",
+   "fonte": "S027",
+   "dove": "pag. 104",
+   "scritto_dalla_fonte": "Póssat dirl'a mié fradèl?"
+  },
+  {
+   "italiano": "è",
+   "persona": "3sing",
+   "genere": "m",
+   "ferrarese": "èl",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "L'è véra. → Èl véra?"
+  },
+  {
+   "italiano": "è",
+   "persona": "3sing",
+   "genere": "f",
+   "ferrarese": "èla",
+   "fonte": "S027",
+   "dove": "pag. 95",
+   "scritto_dalla_fonte": "Èla bòna o cativa?"
+  },
+  {
+   "italiano": "ha",
+   "persona": "3sing",
+   "genere": "m",
+   "ferrarese": "hal",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Mario hal dit la vrità?"
+  },
+  {
+   "italiano": "ha",
+   "persona": "3sing",
+   "genere": "f",
+   "ferrarese": "hàla",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Maria hàla dit la vrità?"
+  },
+  {
+   "italiano": "dice",
+   "persona": "3sing",
+   "genere": "m",
+   "ferrarese": "dìsal",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Gigi dìsal la vrità?"
+  },
+  {
+   "italiano": "dice",
+   "persona": "3sing",
+   "genere": "f",
+   "ferrarese": "dìsla",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Luisa dìsla la vrità?"
+  },
+  {
+   "italiano": "parliamo",
+   "persona": "1plur",
+   "genere": "",
+   "ferrarese": "parlégna",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Nu parlégna (parlénia) bén?"
+  },
+  {
+   "italiano": "mangiate",
+   "persona": "2plur",
+   "genere": "",
+   "ferrarese": "magnèv",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Vu a magnè. → Magnèv?"
+  },
+  {
+   "italiano": "volete",
+   "persona": "2plur",
+   "genere": "",
+   "ferrarese": "vliv",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Vu a vli partìr. → Vliv partìr?"
+  },
+  {
+   "italiano": "avete",
+   "persona": "2plur",
+   "genere": "",
+   "ferrarese": "iv",
+   "fonte": "S027",
+   "dove": "pag. 96",
+   "scritto_dalla_fonte": "Iv vist? Iv santì?"
+  },
+  {
+   "italiano": "venite",
+   "persona": "2plur",
+   "genere": "",
+   "ferrarese": "gniv",
+   "fonte": "S027",
+   "dove": "pag. 96",
+   "scritto_dalla_fonte": "Gniv o no?"
+  },
+  {
+   "italiano": "hanno",
+   "persona": "3plur",
+   "genere": "",
+   "ferrarese": "hai",
+   "fonte": "S027",
+   "dove": "pag. 105",
+   "scritto_dalla_fonte": "Lór i ha magnà. → Hai magnà?"
+  },
+  {
+   "italiano": "sono",
+   "persona": "3plur",
+   "genere": "",
+   "ferrarese": "èi",
+   "fonte": "S027",
+   "dove": "pag. 97",
+   "scritto_dalla_fonte": "Èi stà lór?"
   }
  ],
  "plurali": [

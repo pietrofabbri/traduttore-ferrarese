@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.52
+versione: 0.53
 data: 2026-11-05
 ---
 
@@ -23,6 +23,30 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.53 — 2026-11-17 · La grammatica di Biolcati: verbi, negazione, domande
+
+**Perché.** Il titolare ha consegnato la scansione di «Lèzar e scrìvar» di
+Beniamino Biolcati (1980), la prima grammatica intera del ferrarese che il progetto
+abbia: chiude i tre buchi che aspettavano una fonte, la negazione, le preposizioni
+articolate e la domanda, e da' le forme dei verbi irregolari che mancavano.
+
+- **La fonte S027**, «tutti i diritti riservati»: non entra nel repository, entrano
+  i fatti con la pagina (come S016). `raccolta/da_biolcati.py` tiene la trascrizione,
+  fatta sulle immagini; un refuso evidente («nu a pertén», pag. 128) resta fuori.
+- **667 forme verbali** in `dati/verbi.jsonl`: sei paradigmi interi, i verbi
+  irregolari, 87 participi. «io vado» → `mi a vagh`, «ho visto» → `aj ò vist`.
+- **Le preposizioni articolate**, «con» e «per» in `dati/grammatica.json`.
+- **Il terzo passaggio** del motore (Python e pagina): la negazione «an...brisa»
+  fusa con la particella del verbo, i pronomi atoni davanti al verbo, la domanda
+  diretta con le forme attestate.
+- **F16** avvisa solo quando due fonti scrivono forme diverse per la stessa casella,
+  non quando si confermano.
+
+**Verifiche.** 453 test (erano 444): le righe di S027 citano casella e pagina, il
+refuso resta fuori, verbi irregolari, preposizioni, negazione, pronomi atoni,
+domande, la fonte registrata. Equivalenza Python e pagina su 63 frasi, 0
+divergenze.
 
 ## 0.52 — 2026-11-15 · La revisione aperta a tutti, e «Traduci tu»
 

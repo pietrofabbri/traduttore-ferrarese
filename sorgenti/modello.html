@@ -1293,7 +1293,7 @@ function tokenizza(t) {
   function parolaFissa(parola, seguenteIt) {
     var k = chiaveGr(parola), r = GRAMMATICA.parole[k];
     if (r) return { testo: r.ferrarese, origine: "grammatica", confidenza: DATI.origine.grammatica,
-                    dettaglio: r.categoria + " di S015 (" + r.dove + ")" };
+                    dettaglio: r.categoria + " di " + (r.fonte || "S015") + " (" + r.dove + ")" };
     r = GRAMMATICA.genere[k];
     if (r) {
       var f = /e$/.test(normale(seguenteIt || "").trim());
@@ -1317,6 +1317,106 @@ function tokenizza(t) {
     });
     return unita;
   }
+  // --- la negazione, i pronomi atoni e la domanda (0.53, S027) ---------------
+  // Copia di `grammatica.negazione` e `grammatica.domanda`: il terzo passaggio.
+  var ORIGINI_VERBO = ["verbo", "analogia"];
+  var PRONOMI_DOMANDA = { io: ["1sing", ""], tu: ["2sing", ""], lui: ["3sing", "m"],
+    egli: ["3sing", "m"], lei: ["3sing", "f"], ella: ["3sing", "f"], noi: ["1plur", ""],
+    voi: ["2plur", ""], loro: ["3plur", ""], essi: ["3plur", ""], esse: ["3plur", ""] };
+  var ACCENTO_APOSTROFO = { a: "\u00e0", e: "\u00e8", i: "\u00ec", o: "\u00f2", u: "\u00f9" };
+  function parolaIt(testo) {
+    var t = chiaveGr(testo).replace(/^[ .,;:!?\u00ab\u00bb"]+|[ .,;:!?\u00ab\u00bb"]+$/g, "");
+    if (t.length > 1 && t.charAt(t.length - 1) === "'" && ACCENTO_APOSTROFO[t.charAt(t.length - 2)]) {
+      t = t.slice(0, -2) + ACCENTO_APOSTROFO[t.charAt(t.length - 2)];
+    }
+    return t;
+  }
+  function procliticaDi(testo, tabella) {
+    var chiavi = Object.keys(tabella).sort(function (a, b) { return b.length - a.length; });
+    for (var i = 0; i < chiavi.length; i++) {
+      var p = chiavi[i];
+      if (p.charAt(p.length - 1) === "'") {
+        if (testo.indexOf(p) === 0 && testo.length > p.length) return [p, testo.slice(p.length)];
+      } else if (testo.indexOf(p + " ") === 0) {
+        return [p, testo.slice(p.length + 1)];
+      }
+    }
+    return null;
+  }
+  function negazione(unita) {
+    var g = DATI.grammatica || {}, neg = g.negazione || {}, atoni = g.pronomi_atoni || {};
+    if (!neg.proclitiche || !unita.length) return unita;
+    var forme = atoni.forme || {}, particelle = atoni.particelle || {};
+    var giaNegativa = unita.some(function (u) {
+      return parolaIt(u.testo).split(" ").some(function (w) { return neg.parole_negative.indexOf(w) !== -1; });
+    });
+    var conf = DATI.origine.grammatica;
+    var originali = unita.map(function (u) { return { testo: u.testo, risposta: u.risposta }; });
+    originali.forEach(function (v, j) {
+      if (ORIGINI_VERBO.indexOf(v.risposta.origine) === -1) return;
+      var k = j - 1, pronome = -1;
+      if (k >= 0 && forme.hasOwnProperty(parolaIt(originali[k].testo))) { pronome = k; k -= 1; }
+      if (k >= 0 && forme.hasOwnProperty(parolaIt(originali[k].testo))) return;
+      var nega = k >= 0 && parolaIt(originali[k].testo) === "non";
+      if (pronome === -1 && !nega) return;
+      var trovata = procliticaDi(v.risposta.testo, neg.proclitiche);
+      if (!trovata) return;
+      var particella = trovata[0], verbo = trovata[1];
+      if (pronome !== -1) {
+        var f = forme[parolaIt(originali[pronome].testo)];
+        var ctxP = contestoGr(verbo) === "vocale" ? "voc" : "cons", atono;
+        if (!nega && (particella === "a" || particella === "aj")) atono = f["a_" + ctxP];
+        else if (nega) atono = f["dopo_" + ctxP];
+        else atono = (particelle[particella] || particella) + " " + f["dopo_" + ctxP];
+        unita[pronome].risposta = { testo: atono, origine: "grammatica", confidenza: conf,
+          dettaglio: "pronome atono di " + atoni.fonte + " (" + atoni.dove + "), con la particella \u00ab" +
+            particella + "\u00bb del verbo: \u00ab" + atono + "\u00bb" };
+      }
+      if (nega) {
+        var seguente = pronome !== -1 ? unita[pronome].risposta.testo : verbo;
+        var ctx = contestoGr(seguente) === "vocale" ? "vocale" : "consonante";
+        var forma = neg.proclitiche[particella][ctx];
+        var dettaglio = "negazione di " + neg.fonte + " (" + neg.dove + "): la particella \u00ab" +
+          particella + "\u00bb del verbo diventa \u00ab" + forma + "\u00bb";
+        if (!giaNegativa) {
+          verbo = verbo + " " + neg.brisa;
+          dettaglio += ", e \u00ab" + neg.brisa + "\u00bb va dopo il verbo";
+        }
+        unita[k].risposta = { testo: forma, origine: "grammatica", confidenza: conf, dettaglio: dettaglio };
+      }
+      var r = v.risposta;
+      unita[j].risposta = { testo: verbo, origine: r.origine, confidenza: r.confidenza, dettaglio: r.dettaglio };
+    });
+    return unita;
+  }
+  function domanda(unita, testo) {
+    var righe = (DATI.grammatica || {}).domande || [];
+    if (!righe.length || !/\?\s*$/.test(testo || "")) return unita;
+    if (unita.some(function (u) { return parolaIt(u.testo) === "non"; })) return unita;
+    for (var j = 0; j < unita.length; j++) {
+      var chiave = parolaIt(unita[j].testo);
+      var trovate = righe.filter(function (r) { return r.italiano === chiave; });
+      if (!trovate.length) continue;
+      var pg = (j > 0 && PRONOMI_DOMANDA[parolaIt(unita[j - 1].testo)]) || ["", ""];
+      var persona = pg[0], genere = pg[1];
+      var scelte = trovate.filter(function (r) { return !persona || r.persona === persona; });
+      var persone = {};
+      scelte.forEach(function (r) { persone[r.persona] = true; });
+      if (!persona && Object.keys(persone).length > 1) return unita;
+      var filtrate = genere
+        ? scelte.filter(function (r) { return r.genere === genere || r.genere === ""; })
+        : scelte.filter(function (r) { return r.genere !== "f"; });
+      if (filtrate.length) scelte = filtrate;
+      if (!scelte.length) return unita;
+      var r = scelte[0];
+      unita[j].risposta = { testo: r.ferrarese, origine: "grammatica", confidenza: DATI.origine.grammatica,
+        dettaglio: "domanda di " + r.fonte + " (" + r.dove + "): la particella va dopo il verbo, \u00ab" +
+          r.scritto_dalla_fonte + "\u00bb" };
+      return unita;
+    }
+    return unita;
+  }
+
   // I plurali: copia di `grammatica.singolari`, `plurale_ferrarese`, `plurale`.
   function singolari(parola) {
     var g = DATI.grammatica || {}, w = normale(parola || "").trim();
@@ -1777,7 +1877,12 @@ function tokenizza(t) {
                    risposta: risolvi(pezzo, direzione, testo, persona, seguente) });
       iToken += a ? a.quante : 1;
     }
-    if (direzione === "it-fe") secondoPassaggio(unita);
+    if (direzione === "it-fe") {
+      secondoPassaggio(unita);
+      // Il terzo passaggio (0.53, S027): la negazione e la domanda.
+      negazione(unita);
+      domanda(unita, testo);
+    }
     return unita;
   }
 

@@ -891,6 +891,11 @@ def costruisci(radice: str = None, web_dir: str = None) -> list:
                 dati["grammatica"] = {k: grezzo[k] for k in
                                       ("articoli", "parole", "secondo_genere",
                                        "plurali", "plurali_irregolari")}
+                # La negazione e la domanda di S027 (0.53).
+                dati["grammatica"]["negazione"] = grezzo.get("negazione") or {}
+                dati["grammatica"]["pronomi_atoni"] = \
+                    grezzo.get("pronomi_atoni") or {}
+                dati["grammatica"]["domande"] = grezzo.get("domande") or []
                 # Le liste di grammatica italiana vengono dal modulo, non sono
                 # scritte una seconda volta nella pagina.
                 dati["grammatica"]["non_plurali"] = sorted(

@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.52
+versione: 0.53
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -910,10 +910,47 @@ I plurali: una parola che il glossario non ha può essere il plurale di una che 
 plurale ferrarese si fa con le regole di S015. Anche questo è ricavato: origine
 `plurale`, confidenza 0,60.
 
+## La grammatica di Biolcati: la negazione, i pronomi, le domande
+
+Dalla 0.53 il progetto ha una grammatica intera: Beniamino Biolcati, «Lèzar e
+scrìvar. Grammatica del dialetto ferrarese» (ALBA, Ferrara 1980), fonte **S027**.
+Il libro è protetto e non è nel repository: come per S016 si consulta e si cita, e
+ne entrano solo i fatti linguistici, ognuno con la pagina. Li scrive
+`raccolta/da_biolcati.py`, che tiene la trascrizione delle tabelle casella per
+casella (lette sulle immagini, non con l'OCR).
+
+- **I verbi** (`dati/verbi.jsonl`, 667 righe): i paradigmi interi di *èssar*, *avér*,
+  *lavàr*, *rìdar*, *finìr*, *partìr* (pag. 112-131), le forme dei verbi irregolari
+  (*andàr*, *dar*, *star*, *duvér*, *putér*, *savér*, *vlér*, *far*, *dir*, *vgnir*,
+  *védar*, *tór*... pag. 145-150) e 87 participi passati irregolari (pag. 151-154).
+  «io vado» è `mi a vagh`, «ho visto» `aj ò vist`. Dove S015 scrive già la stessa
+  casella vince S015, e le due forme restano (controllo F16, che dalla 0.53 avvisa
+  solo quando le forme sono diverse).
+- **Le preposizioni articolate** (pag. 160-163), che S015 non tabella: «del» `dal`,
+  «della» `dla`, «nella» `int la`, «sul» `sul`, «col» `cól`; e «con» `cón`, «per»
+  `par`.
+- **La negazione** (pag. 142-144): «non» diventa `an` e si fonde con la particella
+  del verbo (`mi an`, `ti t'an`, `lu al n'`, `lór i n'`), e `brisa` va dopo la sola
+  voce verbale, anche nei tempi composti, se la frase non ha già un'altra parola
+  negativa: «tu non hai visto» → `ti an t'a brisa vist`, «io non voglio niente» →
+  `mi an vój gnént`.
+- **I pronomi atoni davanti al verbo** (pag. 94-97): «lo vedo» → `al véd`, «l'ho
+  visto» → `a l'ò vist`, «lui mi dice» → `lu al m'dis`, «non lo so» → `a n'al sò
+  brisa`. «ci», «vi» e «le» restano come prima: sono anche luogo, o «a lei», e una
+  parola per volta non si distinguono.
+- **La domanda diretta** (pag. 104-105): la particella va dopo il verbo, con le
+  forme che il libro scrive: «hai visto mio fratello?» → `hat vist mié dèd` (pag.
+  144), «sei stanco?» → `jét stanch`, «lei ha mangiato?» → `lié hàla magnà`. Quando
+  la persona non è certa («sono» senza pronome) la frase resta com'è.
+
+La negazione, i pronomi e la domanda sono un **terzo passaggio** del motore, dopo
+gli articoli (`grammatica.negazione`, `grammatica.domanda`, copia nella pagina), e
+leggono le loro tabelle in `dati/grammatica.json`.
+
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 444 test
+python3 prove/test_traduttore.py     # 453 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

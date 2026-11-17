@@ -280,6 +280,10 @@ class Motore:
             i += 1
         if direzione == IT_FE:
             risultati = self._secondo_passaggio(risultati)
+            # Il terzo passaggio (0.53, S027): la negazione e la domanda.
+            risultati = grammatica.negazione(risultati, ORIGINE["grammatica"])
+            risultati = grammatica.domanda(risultati, testo,
+                                           ORIGINE["grammatica"])
         return risultati
 
     def _contestuale(self, parola: str, ctx: str, seguente_italiano: str):

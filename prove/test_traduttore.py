@@ -4625,7 +4625,7 @@ class TestLaBarraELaHome(unittest.TestCase):
         for file, _ in costruisci_web.NAVIGAZIONE:
             self.assertIn('href="%s"' % file, barra)
         # una fetta del glossario accende «Glossario»
-        self.assertIn('href="glossario.html" class="qui"',
+        self.assertIn('href="glossario.html" class="nasconde-telefono qui"',
                       costruisci_web._navigazione("glossario-05.html"))
 
     def test_la_home_porta_al_traduttore_e_a_contribuire(self):
@@ -4726,7 +4726,7 @@ class TestRevisione(unittest.TestCase):
         testo = open(os.path.join(RADICE, "web", "revisione.html"),
                      encoding="utf-8").read()
         for parte in ('id="revChiSei"', 'id="revConsenso"', "Ho almeno 18 anni",
-                      'id="revModoTraduci"', 'id="revRicevute"'):
+                      'id="revModo"', 'id="revRicevute"'):
             self.assertIn(parte, testo)
 
     def test_i_gruppi_per_tradurre_ci_sono(self):

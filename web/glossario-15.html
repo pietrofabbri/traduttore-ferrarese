@@ -48,9 +48,17 @@
   button:hover { background: #f0ead9; }
   input[type="search"] { width: 100%; max-width: 30rem; font-size: 1rem; }
   /* Sul telefono l'id della voce occupa una colonna che non serve a chi legge. */
+  /* Sul telefono la tabella del glossario tiene solo quello che si legge:
+     la parola, l'italiano, il significato di oggi e la fonte. */
   @media (max-width: 560px) {
-    #tabellaGlossario th:first-child, #tabellaGlossario td:first-child { display: none; }
+    #tabellaGlossario th:nth-child(1), #tabellaGlossario td:nth-child(1),
+    #tabellaGlossario th:nth-child(5), #tabellaGlossario td:nth-child(5),
+    #tabellaGlossario th:nth-child(6), #tabellaGlossario td:nth-child(6),
+    #tabellaGlossario th:nth-child(7), #tabellaGlossario td:nth-child(7) { display: none; }
+    #tabellaGlossario table { font-size: .9rem; }
   }
+  #tabellaGlossario { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .riga #cercaGlossario { flex: 1 1 12rem; }
   button.primario { background: var(--glossario); border-color: var(--glossario);
     color: #fff; font-weight: 600; padding: .55rem 1.3rem; }
   button.primario:hover { background: #17573f; }
@@ -64,6 +72,17 @@
   .etichetta-risultato { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em;
     color: var(--tacchino); font-family: system-ui, sans-serif; }
   details.piega > summary { cursor: pointer; color: var(--tacchino); font-size: .9rem; margin: .6rem 0; }
+  details.piega.dentro > summary { font-size: .82rem; margin: .2rem 0 0; font-family: system-ui, sans-serif; }
+  details.piega.dentro[open] > summary { margin-bottom: .5rem; }
+  .buchi-conto { color: var(--nessuna); }
+  textarea#testo { min-height: 3.6rem; }
+  .comandi { margin: .5rem 0 .8rem; }
+  .comandi select { min-height: 2.6rem; border-radius: 8px; }
+  @media (max-width: 520px) {
+    h1 { font-size: 1.35rem; margin-top: .8rem; }
+    .occhiello { font-size: .85rem; margin-bottom: 1rem; }
+    .comandi button, .comandi select { flex: 1 1 auto; }
+  }
   button[aria-pressed="true"] { background: var(--inchiostro); color: #fff; border-color: var(--inchiostro); }
   .risposta {
     border: 1px solid var(--bordo); border-radius: 10px;
@@ -89,7 +108,8 @@
     background: #f5f1e6; padding: .4rem .6rem; border-radius: 4px;
     white-space: pre-wrap; margin-top: .6rem;
   }
-  .avviso { border-left: 4px solid var(--nessuna); background: #fdf3f3; padding: .5rem .8rem; margin-top: .8rem; font-size: .95rem; }
+  .avviso { border-left: 3px solid var(--nessuna); background: #fdf3f3; padding: .35rem .7rem; margin-top: .6rem;
+    font-size: .82rem; color: var(--tacchino); font-family: system-ui, sans-serif; border-radius: 0 6px 6px 0; }
   .avviso.ok { border-color: var(--glossario); background: #f1f8f4; }
   .legenda { display: flex; flex-wrap: wrap; gap: .8rem; margin: .8rem 0; font-size: .85rem; }
   .legenda span { display: inline-flex; align-items: center; gap: .3rem; }
@@ -210,9 +230,16 @@
     background: #fff; border: 1px solid var(--bordo); border-radius: 10px;
     box-shadow: 0 6px 24px rgba(0,0,0,.12); padding: .4rem; min-width: 13rem; }
   nav details.altro > div a { display: block; }
+  /* Sul telefono una riga sola: il nome, Traduci, Contribuisci e il menu
+     (il Glossario passa nel menu). */
+  nav .solo-telefono { display: none; }
   @media (max-width: 520px) {
-    nav .marchio { flex-basis: 100%; }
-    nav details.altro { margin-left: auto; }
+    nav { flex-wrap: nowrap; gap: .1rem; padding: .45rem 1rem; }
+    nav .marchio small { display: none; }
+    nav a { padding: .35rem .5rem; font-size: .92rem; }
+    nav .nasconde-telefono { display: none; }
+    nav .solo-telefono { display: block; }
+    nav details.altro > summary { padding: .35rem .45rem; }
   }
 
   /* L'indice delle fette del glossario: una lettera, un collegamento. */
@@ -221,6 +248,12 @@
     border: 1px solid var(--bordo); border-radius: 3px;
     color: var(--tacchino); text-decoration: none; font-size: .85rem; }
   .fetta:hover { background: #f5f1e6; }
+  .scegli-fetta { display: flex; gap: .4rem; align-items: center; margin: .3rem 0; }
+  .scegli-fetta select { flex: 1; max-width: 22rem; min-height: 2.6rem; border-radius: 8px; font-size: 1rem; }
+  .freccia-fetta { display: inline-flex; align-items: center; justify-content: center; width: 2.6rem; height: 2.6rem;
+    border: 1px solid var(--bordo); border-radius: 8px; background: #fff; text-decoration: none;
+    font-size: 1.4rem; color: var(--inchiostro); }
+  .freccia-fetta.spenta { color: var(--bordo); }
   .fetta.qui { background: var(--tacchino); color: #fff;
     border-color: var(--tacchino); font-weight: 700; }
 </style>
@@ -230,8 +263,8 @@
   <nav id="navigazione"><a class="marchio" href="index.html">Ferrarese<small>traduttore e glossario</small></a>
     <a href="traduttore.html">Traduci</a>
     <a href="revisione.html" class="cta">Contribuisci</a>
-    <a href="glossario.html" class="qui" aria-current="page">Glossario</a>
-    <details class="altro"><summary>Altro</summary><div><a href="index.html">Il progetto</a><a href="regole.html">Le regole</a><a href="frasi.html">Frasi e proverbi</a><a href="suoni.html">Varietà e suoni</a><a href="verifica.html">Verifica a campione</a></div></details></nav>
+    <a href="glossario.html" class="nasconde-telefono qui" aria-current="page">Glossario</a>
+    <details class="altro"><summary>Altro</summary><div><a href="glossario.html" class="solo-telefono qui" aria-current="page">Glossario</a><a href="index.html">Il progetto</a><a href="regole.html">Le regole</a><a href="frasi.html">Frasi e proverbi</a><a href="suoni.html">Varietà e suoni</a><a href="verifica.html">Verifica a campione</a></div></details></nav>
 
   <h1>Glossario &ndash; G–I</h1>
   <p class="occhiello">Fetta 15 di 39: 500 voci da giurnaliér a imbruscbirss.</p>
@@ -239,8 +272,20 @@
 
 
 
+
+
+  <!-- pagina:fette -->
+  <!-- DIFETTO CORRETTO, e il commento resta perche' la forma e' facilissima da
+     rifare: questo blocco era dentro quello `index`, quindi spariva da tutte
+     le pagini che non prendono `index` — cioe' da tutte le fette del
+     glossario, che sono le pagine che lo usano. Le sezioni non si annidano,
+     e questa la' dentro l'altra e' stato un blocco che nessuna pagina
+     mostrava. -->
+  <div id="fette"></div>
+  <!-- /pagina:fette -->
+
   <!-- pagina:glossario -->
-  <h2>Il glossario</h2>
+  <!-- 0.55: niente secondo titolo: la pagina ha gia' il suo -->
   <div class="riga">
     <input type="search" id="cercaGlossario" placeholder="Cerca una parola, in ferrarese o in italiano" size="40">
     <select id="filtroVarietaGlossario">
@@ -269,17 +314,6 @@
 
 
 
-
-
-  <!-- pagina:fette -->
-  <!-- DIFETTO CORRETTO, e il commento resta perche' la forma e' facilissima da
-     rifare: questo blocco era dentro quello `index`, quindi spariva da tutte
-     le pagini che non prendono `index` — cioe' da tutte le fette del
-     glossario, che sono le pagine che lo usano. Le sezioni non si annidano,
-     e questa la' dentro l'altra e' stato un blocco che nessuna pagina
-     mostrava. -->
-  <div id="fette"></div>
-  <!-- /pagina:fette -->
 
 
 
@@ -1745,11 +1779,12 @@ function tokenizza(t) {
       }
       box.innerHTML = '<div class="etichetta-risultato">' + scappa(direzione === "it-fe" ? "In ferrarese" : "In italiano") + '</div>' +
         '<div class="traduzione-grande" id="traduzioneTesto">' + scappa(resa) + '</div>' +
+        '<details class="piega dentro"><summary>Frase intera dal corpus, con la fonte</summary>' +
         '<div class="riga-parola"><span class="originale">' + scappa(testo) +
         '</span> &rarr; <span class="parola corpo">' + scappa(resa) + '</span></div>' +
         rigaSuonaCorpus +
         '<div class="dettaglio">frase intera dal corpus, ' + scappa(gemella.id) + ': ' + scappa(gemella.fonte || "senza fonte") +
-        ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div>';
+        ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div></details>';
       avviso.innerHTML = '<div class="avviso ok">La frase era gia\' nel corpus, con la sua fonte. Non e\' stata ricostruita parola per parola.</div>';
       ricorda(testo, direzione, resa, [{ italiano: testo, proposto: resa,
                                          origine: "corpo", voce: gemella.id }]);
@@ -1782,11 +1817,13 @@ function tokenizza(t) {
     box.innerHTML =
       '<div class="etichetta-risultato">' + scappa(direzione === "it-fe" ? "In ferrarese" : "In italiano") + '</div>' +
       '<div class="traduzione-grande" id="traduzioneTesto">' + scappa(traduzione) + '</div>' +
-      '<div class="etichetta-risultato">Parola per parola</div>' +
+      '<details class="piega dentro"><summary>Parola per parola e fonti' +
+      (buchi ? ' &middot; <span class="buchi-conto">' + buchi + (buchi > 1 ? " parole" : " parola") + ' senza fonte</span>' : "") +
+      '</summary>' +
       '<div class="riga-parola">' + righe.join(" ") + '</div>' +
       (direzione === "it-fe" ? rigaSuona(risultati) : '') +
       '<div class="dettaglio">confidenza ' + confidenza.toFixed(2) +
-      (buchi ? "  -  " + buchi + (buchi > 1 ? " parole" : " parola") + " senza fonte" : "") + '</div>';
+      (buchi ? "  -  " + buchi + (buchi > 1 ? " parole" : " parola") + " senza fonte" : "") + '</div></details>';
 
     if (buchi) {
       // Il buco dei verbi e' **uno solo per traduzione** e parla del progetto,
@@ -2359,24 +2396,33 @@ function tokenizza(t) {
     // 0.54: detto per chi cerca una parola, non per chi pesa le pagine.
     var spiegazione = (voci ? voci.toLocaleString("it-IT") + " parole, divise in " : "Le parole, divise in ") +
       fette.length + " pagine per lettera: scegli quella da cui comincia la parola che cerchi.";
-    var parti = ['<p class="occhiello" style="margin:.2rem 0 .6rem">',
-      scappa(spiegazione), '</p><p class="riga">'];
+    // 0.55: un menu a tendina con le lettere, e le frecce per la pagina
+    // prima e dopo; i collegamenti restano (dentro «tutte le lettere») per chi
+    // non ha lo scripting o vuole vederle tutte.
+    var opzioni = ['<option value="">' + (qui ? "" : "Scegli la lettera\u2026") + "</option>"];
+    var tutte = [];
     for (var i = 0; i < fette.length; i++) {
-      parti.push('<a class="fetta' + (fette[i].numero === qui ? " qui" : "") +
-        '" href="' + scappa(fette[i].file) + '">' + scappa(fette[i].lettera) +
-        "</a>");
+      opzioni.push('<option value="' + scappa(fette[i].file) + '"' +
+        (fette[i].numero === qui ? " selected" : "") + ">" +
+        scappa(fette[i].lettera) + "</option>");
+      tutte.push('<a class="fetta' + (fette[i].numero === qui ? " qui" : "") +
+        '" href="' + scappa(fette[i].file) + '">' + scappa(fette[i].lettera) + "</a>");
     }
-    parti.push("</p>");
-    if (qui && qui > 1) {
-      parti.splice(1, 0, '<p class="riga"><a href="' +
-        scappa(fette[qui - 2].file) + '">&larr; ' +
-        scappa(fette[qui - 2].lettera) + "</a></p>");
-    }
-    if (qui && qui < fette.length) {
-      parti.push('<p class="riga"><a href="' + scappa(fette[qui].file) +
-        '">' + scappa(fette[qui].lettera) + " &rarr;</a></p>");
-    }
-    el("fette").innerHTML = parti.join("");
+    if (qui) opzioni.shift();
+    var prima = qui && qui > 1 ? '<a class="freccia-fetta" href="' + scappa(fette[qui - 2].file) +
+      '" title="' + scappa(fette[qui - 2].lettera) + '">&lsaquo;</a>' : '<span class="freccia-fetta spenta">&lsaquo;</span>';
+    var dopo = qui && qui < fette.length ? '<a class="freccia-fetta" href="' + scappa(fette[qui].file) +
+      '" title="' + scappa(fette[qui].lettera) + '">&rsaquo;</a>' : '<span class="freccia-fetta spenta">&rsaquo;</span>';
+    el("fette").innerHTML =
+      '<div class="scegli-fetta">' + (qui ? prima : "") +
+      '<select id="sceltaFetta" aria-label="Lettera del glossario">' + opzioni.join("") + "</select>" +
+      (qui ? dopo : "") + "</div>" +
+      (qui ? "" : '<p class="occhiello" style="margin:.4rem 0 .2rem">' + scappa(spiegazione) + "</p>") +
+      '<details class="piega"><summary>Tutte le lettere</summary><p class="riga">' + tutte.join("") + "</p></details>";
+    var scelta = document.getElementById("sceltaFetta");
+    if (scelta) scelta.addEventListener("change", function () {
+      if (this.value) window.location.href = this.value;
+    });
   }
 
   function pannello() {
@@ -2478,10 +2524,10 @@ function tokenizza(t) {
     if (el("testo").value.trim()) traduci();
   });
   // Gli esempi: un tocco riempie il campo e traduce.
-  el("esempi").addEventListener("click", function (e) {
-    var b = e.target;
-    if (!b || !b.getAttribute || !b.getAttribute("data-frase")) return;
-    el("testo").value = b.getAttribute("data-frase");
+  el("esempi").addEventListener("change", function () {
+    if (!this.value) return;
+    el("testo").value = this.value;
+    this.value = "";
     traduci();
   });
   el("copiaTraduzione").addEventListener("click", function () {
@@ -2637,7 +2683,7 @@ function tokenizza(t) {
     var perId = {};
     gruppi.forEach(function (g) { g.domande.forEach(function (d) { perId[d.id] = d; }); });
     var stato = statoRevisione();
-    var corrente = null, scrivendo = false, indietro = [], ultimoLotto = [];
+    var corrente = null, scrivendo = false, indietro = [], ultimoLotto = [], apriAltri = false;
     // 0.54: un collegamento puo' aprire la pagina in un modo e in un gruppo:
     // «revisione.html#traduci», «revisione.html#controlla», «#traduci-parole».
     try {
@@ -2705,27 +2751,22 @@ function tokenizza(t) {
       if (cambia) cambia.addEventListener("click", function (e) {
         e.preventDefault(); stato.consenso = false; salvaRevisione(stato); mostra();
       });
-      el("revModoControlla").setAttribute("aria-pressed", modo() === "controlla" ? "true" : "false");
-      el("revModoTraduci").setAttribute("aria-pressed", modo() === "traduci" ? "true" : "false");
+      el("revModo").value = modo();
+      var coda = inCoda().length;
+      el("revInvia").disabled = !coda;
       el("righeRevisione").value = righe().map(function (r) { return JSON.stringify(r); }).join("\n");
     }
     function disegnaGruppi() {
-      var contenitore = el("revGruppi");
-      contenitore.innerHTML = "";
+      // 0.55: i gruppi in un menu a tendina, con quante risposte ha ognuno
+      var scelta = el("revGruppo");
       var scelto = gruppoScelto();
-      gruppi.forEach(function (g) {
-        var b = document.createElement("button");
-        b.type = "button"; b.className = "gruppo";
-        b.setAttribute("aria-pressed", g === scelto ? "true" : "false");
-        var n = fatte(g);
-        b.innerHTML = scappa(g.titolo) + (n === g.domande.length ? " &#10003;" : "") +
-          "<small>" + n + " su " + g.domande.length + "</small>";
-        b.addEventListener("click", function () {
-          stato.gruppi[modo()] = g.chiave; salvaRevisione(stato); indietro = []; prossima();
-        });
-        contenitore.appendChild(b);
-      });
+      scelta.innerHTML = gruppi.map(function (g) {
+        var n = fatte(g), tutti = n === g.domande.length;
+        return '<option value="' + scappa(g.chiave) + '"' + (g === scelto ? " selected" : "") + ">" +
+          scappa(g.titolo) + " \u2014 " + (tutti ? "\u2713 finito" : n + "/" + g.domande.length) + "</option>";
+      }).join("");
       el("revAvanzamento").style.width = scelto ? (100 * fatte(scelto) / scelto.domande.length) + "%" : "0";
+      el("revFatte").textContent = scelto ? fatte(scelto) + " su " + scelto.domande.length : "";
     }
     function propostaHtml(d) {
       var buchi = (d.b || []).map(function (x) { return x.toLowerCase(); });
@@ -2737,8 +2778,9 @@ function tokenizza(t) {
     function campiScrivi(domandaTesto, r, valore) {
       return '<div class="scrivi"><p class="chiede"><b>' + domandaTesto + "</b></p>" +
         '<label>In ferrarese<input type="text" id="revForma" autocomplete="off" autocapitalize="none"></label>' +
-        '<label>Altri modi di dirlo (facoltativo, separati da virgola)<input type="text" id="revAltre" autocomplete="off" autocapitalize="none"></label>' +
-        '<label>Nota (facoltativa)<input type="text" id="revNota" autocomplete="off" placeholder="es. lo diceva mia nonna, in campagna si dice..."></label>' +
+        '<details class="piega" id="revPiuCampi"><summary>+ altri modi di dirlo, o una nota</summary>' +
+        '<label>Altri modi di dirlo (separati da virgola)<input type="text" id="revAltre" autocomplete="off" autocapitalize="none"></label>' +
+        '<label>Nota<input type="text" id="revNota" autocomplete="off" placeholder="es. lo diceva mia nonna, in campagna si dice..."></label></details>' +
         '<div class="scelte"><button type="button" class="si" id="revSalva">Salva<kbd>Invio</kbd></button>' +
         '<button type="button" id="revNonSo">Non so</button>' +
         '<button type="button" id="revAnnulla">' + (modo() === "traduci" ? "Salta" : "Indietro<kbd>Esc</kbd>") + "</button></div></div>";
@@ -2748,6 +2790,7 @@ function tokenizza(t) {
       document.getElementById("revForma").value = r.ferrarese || valore || "";
       document.getElementById("revAltre").value = r.altre || "";
       document.getElementById("revNota").value = r.nota || "";
+      if (r.altre || r.nota || apriAltri) document.getElementById("revPiuCampi").open = true;
       document.getElementById("revSalva").addEventListener("click", salvaScritta);
       document.getElementById("revNonSo").addEventListener("click", function () { rispondi("nonso"); });
       document.getElementById("revAnnulla").addEventListener("click", function () {
@@ -2755,6 +2798,7 @@ function tokenizza(t) {
       });
       var campo = document.getElementById("revForma");
       campo.focus(); campo.select();
+      if (apriAltri) { document.getElementById("revAltre").focus(); apriAltri = false; }
     }
     function carta(d) {
       var c = el("revCarta");
@@ -2780,7 +2824,7 @@ function tokenizza(t) {
         if (!d.b) {
           document.getElementById("revSi").addEventListener("click", function () { rispondi("si"); });
           document.getElementById("revSiAltre").addEventListener("click", function (e) {
-            e.preventDefault(); scrivendo = true; carta(d);
+            e.preventDefault(); scrivendo = true; apriAltri = true; carta(d);
           });
         }
         document.getElementById("revNo").addEventListener("click", function () { scrivendo = true; carta(d); });
@@ -2990,8 +3034,29 @@ function tokenizza(t) {
       stato.consenso = true; salvaRevisione(stato);
       mostra();
     });
-    el("revModoControlla").addEventListener("click", function () { stato.modo = "controlla"; salvaRevisione(stato); indietro = []; el("revEsito").innerHTML = ""; prossima(); });
-    el("revModoTraduci").addEventListener("click", function () { stato.modo = "traduci"; salvaRevisione(stato); indietro = []; el("revEsito").innerHTML = ""; prossima(); });
+    el("revModo").addEventListener("change", function () {
+      stato.modo = this.value === "traduci" ? "traduci" : "controlla";
+      salvaRevisione(stato); indietro = []; el("revEsito").innerHTML = ""; prossima();
+    });
+    el("revGruppo").addEventListener("change", function () {
+      stato.gruppi[modo()] = this.value; salvaRevisione(stato); indietro = []; prossima();
+    });
+    // «Per chi cura il progetto» si apre solo quando serve: dal menu, dal
+    // collegamento sotto, o da solo se in questo browser c'e' gia' un token.
+    function apriCura(e) {
+      if (e) e.preventDefault();
+      var cura = document.getElementById("revCura");
+      cura.hidden = false; cura.open = true;
+      var menu = document.querySelector("#revisione .menu-punti");
+      if (menu) menu.open = false;
+      cura.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    el("revApriCura").addEventListener("click", apriCura);
+    el("revApriCura2").addEventListener("click", apriCura);
+    if (leggiImpostazioni().token) {
+      document.getElementById("revCura").hidden = false;
+      el("revLinkCura").hidden = true;
+    }
     el("revInvia").addEventListener("click", manda);
     el("revInviaRicevute").addEventListener("click", inviaRicevute);
     el("salvaImpostazioni").addEventListener("click", function () { window.setTimeout(conti, 0); });

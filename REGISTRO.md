@@ -45,7 +45,8 @@ traduzione arrivava con tutti i suoi dettagli aperti.
 - **La barra sul telefono** sta su una riga: Ferrarese, Traduci, Contribuisci e il
   menu, dove passa il Glossario.
 
-**Verifiche.** 455 test; motore invariato, equivalenza 63 frasi, 0 divergenze.
+**Verifiche.** 455 test (erano 455): la pagina cambia, il motore no;
+equivalenza Python e pagina su 63 frasi, 0 divergenze.
 
 ## 0.54 — 2026-11-18 · Un sito che si capisce al primo sguardo
 

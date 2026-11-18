@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.53
+versione: 0.54
 data: 2026-11-05
 ---
 
@@ -23,6 +23,34 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.54 — 2026-11-18 · Un sito che si capisce al primo sguardo
+
+**Perché.** Chi apriva il sito trovava trentanove fette del glossario e una fila
+di numeri, e una barra di otto collegamenti tutti uguali: per tradurre una frase
+o per aiutare bisognava sapere gia' dove andare.
+
+- **La barra in alto**: «Ferrarese» porta alla home, poi le tre cose che si fanno —
+  **Traduci**, **Contribuisci** (in evidenza), **Glossario** — e il resto in
+  «Altro». La pagina in cui si e' e' segnata, e una fetta accende «Glossario».
+- **La home**: prima un campo per tradurre e degli esempi, poi l'invito a
+  contribuire, il glossario e le regole; i numeri del progetto dopo, in riquadri
+  leggibili (prima «19073voci», attaccati).
+- **Il traduttore**: Invio traduce (Maiuscolo+Invio va a capo), esempi da toccare,
+  il pulsante che inverte la direzione detto chiaro, la traduzione grande in cima e
+  poi parola per parola (a sinistra della freccia ora c'e' la parola di partenza:
+  prima ripeteva quella tradotta), «Copia la traduzione», la legenda piegata sotto,
+  `traduttore.html?q=...` traduce la frase dell'indirizzo.
+- **Contribuisci** (la pagina della revisione): il nome nella barra e nel titolo,
+  «Comincia» e «Manda le risposte» come pulsanti principali, i gruppi in una riga
+  che scorre sul telefono perche' la carta resti nella prima schermata, e i
+  collegamenti diretti `revisione.html#traduci`, `#controlla`, `#traduci-parole`.
+- Comandi in un carattere senza grazie, pulsanti piu' grandi da toccare, il bordo
+  di fuoco visibile da tastiera; il glossario sul telefono nasconde la colonna
+  dell'id e il campo di ricerca non esce dallo schermo.
+
+**Verifiche.** 455 test (erano 453): la barra e la home. Il motore non cambia:
+equivalenza Python e pagina su 63 frasi, 0 divergenze.
 
 ## 0.53 — 2026-11-17 · La grammatica di Biolcati: verbi, negazione, domande
 

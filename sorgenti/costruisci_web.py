@@ -132,16 +132,18 @@ CAMPI_MOTORE = ("id", "fe", "it", "varianti", "campo", "varieta",
 # tornino: una sezione senza pagina e' codice che nessuno vedra' mai.
 PAGINE = (
     {"file": "index.html", "chiave": "index",
-     "titolo": "Il progetto",
-     "occhiello": "Che cosa sa il motore, che cosa non sa, e da dove si comincia.",
+     "titolo": "Il ferrarese, parola per parola",
+     "occhiello": "Traduci dall'italiano al ferrarese e ritorno: ogni parola dice da "
+                  "che libro o da che persona viene. E se parli ferrarese, puoi "
+                  "insegnarlo al traduttore.",
      "sezioni": ("fette", "index")},
     {"file": "traduttore.html", "chiave": "traduttore",
      "titolo": "Traduttore",
-     "occhiello": "Traduce parola per parola e dice da dove viene ogni parola.",
+     "occhiello": "Scrivi una frase e premi Invio: ogni parola dice da dove viene, e quello che non si sa resta scritto, non inventato.",
      "sezioni": ("traduttore",)},
     {"file": "glossario.html", "chiave": "glossario",
      "titolo": "Il glossario",
-     "occhiello": "Le voci sono a fette: si apre la lettera e si cerca dentro.",
+     "occhiello": "Scegli la lettera da cui comincia la parola, poi cercala nella pagina.",
      "sezioni": ("fette",)},
     {"file": "frasi.html", "chiave": "frasi",
      "titolo": "Coppie e proverbi",
@@ -167,23 +169,25 @@ PAGINE = (
     # risposte partono come correzioni. Non ha glossario nel blocco dati: le
     # proposte le calcola il motore qui, quando si genera la pagina.
     {"file": "revisione.html", "chiave": "revisione",
-     "titolo": "Revisione",
-     "occhiello": "Chiunque parli ferrarese puo' insegnarlo al traduttore: una carta alla volta, senza account.",
+     "titolo": "Contribuisci",
+     "occhiello": "Parli ferrarese? Insegnalo al traduttore: una frase alla volta, dal telefono, senza account.",
      "sezioni": ("revisione",)},
 )
 
 # La barra di navigazione: l'ordine in cui le pagine si presentano, e la
 # voce «verso» per il glossario, che non e' una pagina sola ma un indice.
 NAVIGAZIONE = (
-    ("index.html", "Il progetto"),
-    ("traduttore.html", "Traduttore"),
+    ("traduttore.html", "Traduci"),
+    ("revisione.html", "Contribuisci"),
     ("glossario.html", "Glossario"),
-    ("frasi.html", "Coppie e proverbi"),
-    ("suoni.html", "Varieta' e suoni"),
+    ("index.html", "Il progetto"),
     ("regole.html", "Le regole"),
-    ("verifica.html", "Verifica"),
-    ("revisione.html", "Revisione"),
+    ("frasi.html", "Frasi e proverbi"),
+    ("suoni.html", "Varietà e suoni"),
+    ("verifica.html", "Verifica a campione"),
 )
+# Le voci sempre visibili nella barra (0.54); le altre stanno in «Altro».
+NAVIGAZIONE_PRINCIPALE = ("traduttore.html", "revisione.html", "glossario.html")
 
 
 # I nomi che la pagina usa e i nomi che la classe `Voce` ha. Sono diversi per
@@ -549,10 +553,28 @@ def _sezioni(modello: str, tenute: tuple) -> str:
 
 
 def _navigazione(pagina: str) -> str:
-    parti = ['<span class="titolo-nav">Pagine</span>']
+    """La barra in alto: il nome del sito, tre azioni, e «Altro» (0.54)."""
+    if pagina.startswith("glossario-"):
+        pagina = "glossario.html"
+    parti = ['<a class="marchio" href="index.html">Ferrarese'
+             '<small>traduttore e glossario</small></a>']
+    altre = []
     for file, testo in NAVIGAZIONE:
-        qui = ' class="qui"' if file == pagina else ""
-        parti.append('<a href="%s"%s>%s</a>' % (file, qui, testo))
+        classi = []
+        if file == pagina:
+            classi.append("qui")
+        if file == "revisione.html":
+            classi.append("cta")
+        attributi = ' class="%s"' % " ".join(classi) if classi else ""
+        if file == pagina:
+            attributi += ' aria-current="page"'
+        link = '<a href="%s"%s>%s</a>' % (file, attributi, testo)
+        if file in NAVIGAZIONE_PRINCIPALE:
+            parti.append(link)
+        else:
+            altre.append(link)
+    parti.append('<details class="altro"><summary>Altro</summary><div>%s'
+                 '</div></details>' % "".join(altre))
     return "\n    ".join(parti)
 
 

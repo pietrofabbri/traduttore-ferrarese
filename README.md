@@ -1,6 +1,6 @@
 ---
 titolo: Traduttore italiano-ferrarese
-versione: 0.53
+versione: 0.54
 data: 2026-11-05
 autore: progetto «I cinque duchi»
 ---
@@ -950,7 +950,7 @@ leggono le loro tabelle in `dati/grammatica.json`.
 ## I controlli
 
 ```bash
-python3 prove/test_traduttore.py     # 453 test
+python3 prove/test_traduttore.py     # 455 test
 python3 prove/ci_locale.py           # i passi del workflow, in locale
 python3 prove/scanner.py             # caratteri sbagliati nei file tracciati
 python3 raccolta/copertura.py        # quanto italiano copre il glossario

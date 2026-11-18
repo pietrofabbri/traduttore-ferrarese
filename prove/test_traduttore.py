@@ -4604,6 +4604,39 @@ def _testo_dei_dati(pagina: str) -> str:
     return json.dumps(dati_della_pagina(pagina), ensure_ascii=False)
 
 
+class TestLaBarraELaHome(unittest.TestCase):
+    """0.54: le tre azioni sempre visibili, la home che porta al traduttore."""
+
+    def _pagina(self, nome):
+        percorso = os.path.join(RADICE, "web", nome)
+        if not os.path.exists(percorso):
+            self.skipTest("il sito non e' stato generato")
+        return open(percorso, encoding="utf-8").read()
+
+    def test_la_barra_ha_le_tre_azioni_e_il_resto_in_altro(self):
+        sys.path.insert(0, os.path.join(RADICE, "sorgenti"))
+        import costruisci_web
+        barra = costruisci_web._navigazione("frasi.html")
+        for file in costruisci_web.NAVIGAZIONE_PRINCIPALE:
+            self.assertIn('href="%s"' % file, barra.split("<details")[0])
+        self.assertIn('class="cta"', barra)              # «Contribuisci»
+        self.assertIn('aria-current="page"', barra)      # dove si e'
+        # nessuna pagina sparisce: le altre sono in «Altro»
+        for file, _ in costruisci_web.NAVIGAZIONE:
+            self.assertIn('href="%s"' % file, barra)
+        # una fetta del glossario accende «Glossario»
+        self.assertIn('href="glossario.html" class="qui"',
+                      costruisci_web._navigazione("glossario-05.html"))
+
+    def test_la_home_porta_al_traduttore_e_a_contribuire(self):
+        home = self._pagina("index.html")
+        self.assertIn('action="traduttore.html"', home)
+        self.assertIn('traduttore.html?q=', home)
+        self.assertIn('href="revisione.html"', home)
+        traduttore = self._pagina("traduttore.html")
+        self.assertIn("URLSearchParams", traduttore)       # legge ?q=
+
+
 class TestRevisione(unittest.TestCase):
     """La pagina della revisione (0.51): domande, proposte, righe."""
 

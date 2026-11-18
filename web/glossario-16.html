@@ -23,28 +23,54 @@
     background: var(--fondo); color: var(--inchiostro);
     line-height: 1.55;
   }
-  main { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-  h1 { font-size: 1.6rem; margin: 0 0 .2rem; }
+  /* 0.54: i comandi (bottoni, campi, barra) in un carattere senza grazie, piu'
+     facile da leggere piccolo e sul telefono; il testo resta con le grazie. */
+  button, input, select, textarea, nav, .comandi, .esempi, .scheda-eroe span {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 46rem; margin: 0 auto; padding: 0 1rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 1.2rem 0 .2rem; line-height: 1.2; }
+  a { color: var(--glossario); }
+  :focus-visible { outline: 3px solid #e2b33f; outline-offset: 2px; }
   h2 { font-size: 1.05rem; margin: 2rem 0 .5rem; border-bottom: 1px solid var(--bordo); padding-bottom: .2rem; }
   .occhiello { color: var(--tacchino); font-size: .9rem; margin: 0 0 1.5rem; }
   textarea {
-    width: 100%; min-height: 5.5rem; padding: .6rem;
-    border: 1px solid var(--bordo); border-radius: 4px;
-    font-family: inherit; font-size: 1rem; background: #fff; color: inherit;
+    width: 100%; min-height: 5.5rem; padding: .7rem .8rem;
+    border: 1px solid var(--bordo); border-radius: 8px;
+    font-size: 1.1rem; background: #fff; color: inherit;
   }
   .riga { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .6rem 0 1rem; }
   button, select, input[type="search"] {
-    font-family: inherit; font-size: .95rem; padding: .4rem .7rem;
-    border: 1px solid var(--bordo); border-radius: 4px;
+    font-size: .95rem; padding: .5rem .85rem; min-height: 2.6rem;
+    border: 1px solid var(--bordo); border-radius: 8px;
     background: #fff; color: inherit; cursor: pointer;
   }
   button:hover { background: #f0ead9; }
+  input[type="search"] { width: 100%; max-width: 30rem; font-size: 1rem; }
+  /* Sul telefono l'id della voce occupa una colonna che non serve a chi legge. */
+  @media (max-width: 560px) {
+    #tabellaGlossario th:first-child, #tabellaGlossario td:first-child { display: none; }
+  }
+  button.primario { background: var(--glossario); border-color: var(--glossario);
+    color: #fff; font-weight: 600; padding: .55rem 1.3rem; }
+  button.primario:hover { background: #17573f; }
+  .esempi { font-size: .85rem; color: var(--tacchino); margin: -.3rem 0 1rem; }
+  .esempi a, .esempi button { display: inline-block; margin: .2rem .3rem .2rem 0;
+    padding: .25rem .65rem; min-height: 0; border: 1px solid var(--bordo);
+    border-radius: 999px; background: #fff; color: var(--inchiostro);
+    text-decoration: none; font-size: .85rem; }
+  .esempi a:hover, .esempi button:hover { border-color: var(--glossario); }
+  .traduzione-grande { font-size: 1.45rem; line-height: 1.35; margin: .1rem 0 .6rem; }
+  .etichetta-risultato { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--tacchino); font-family: system-ui, sans-serif; }
+  details.piega > summary { cursor: pointer; color: var(--tacchino); font-size: .9rem; margin: .6rem 0; }
   button[aria-pressed="true"] { background: var(--inchiostro); color: #fff; border-color: var(--inchiostro); }
   .risposta {
-    border: 1px solid var(--bordo); border-radius: 4px;
-    padding: .8rem; background: #fff; min-height: 3rem;
+    border: 1px solid var(--bordo); border-radius: 10px;
+    padding: 1rem; background: #fff; min-height: 3rem;
   }
-  .riga-parola { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .5rem; }
+  .riga-parola { display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin-bottom: .5rem; }
+  .coppia-parola { white-space: nowrap; }
   .parola { border-bottom: 3px solid; padding-bottom: 1px; cursor: help; }
   .parola.glossario { border-color: var(--glossario); }
   .parola.corpo { border-color: var(--corpus); }
@@ -83,8 +109,28 @@
   #tabellaGlossario { overflow-x: auto; }
   #tabellaGlossario table { font-size: .82rem; }
   #tabellaGlossario th, #tabellaGlossario td { padding: .3rem .3rem; }
-  .pannello { display: flex; flex-wrap: wrap; gap: 1.2rem; font-size: .9rem; }
-  .pannello div strong { display: block; font-size: 1.3rem; }
+  .pannello { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: .6rem; font-size: .9rem; }
+  .pannello div { background: #fff; border: 1px solid var(--bordo); border-radius: 10px;
+    padding: .6rem .8rem; font-size: 1.25rem; font-weight: 600; line-height: 1.2; }
+  .pannello div span { display: block; font-size: .78rem; font-weight: 400;
+    color: var(--tacchino); font-family: system-ui, sans-serif; }
+  /* La home (0.54): prima quello che si fa, poi i numeri. */
+  .eroe { margin: .4rem 0 1.5rem; }
+  .cerca-eroe { display: flex; gap: .5rem; margin: .4rem 0 .8rem; }
+  .cerca-eroe input { flex: 1; min-width: 0; font-size: 1.1rem; padding: .7rem .9rem;
+    border: 1px solid var(--bordo); border-radius: 10px; background: #fff; }
+  .schede-eroe { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: .7rem; margin-top: 1rem; }
+  .scheda-eroe { display: block; padding: 1rem 1.1rem; border: 1px solid var(--bordo);
+    border-radius: 12px; background: #fff; color: var(--inchiostro); text-decoration: none; }
+  .scheda-eroe:hover { border-color: var(--glossario); }
+  .scheda-eroe b { display: block; font-size: 1.1rem; margin-bottom: .3rem; }
+  .scheda-eroe span { display: block; font-size: .9rem; color: var(--tacchino); }
+  .scheda-eroe.evidente { background: var(--glossario); border-color: var(--glossario);
+    grid-column: 1 / -1; }
+  .scheda-eroe.evidente b, .scheda-eroe.evidente span { color: #fff; }
+  .scheda-eroe .vai { margin-top: .6rem; font-weight: 600; }
   /* La trascrizione IPA e' monospaziata e senza maiuscolette ambigue: si
      guarda, non si decora. */
   .ipa { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
@@ -138,14 +184,36 @@
   /* La navigazione. Il sito e' ramificato, e su `file://` l'unico modo per
      passare da una pagina all'altra e' un collegamento: quindi la barra deve
      dire dove si va, non solo da dove si viene. */
-  nav { margin: .8rem 0 1.4rem; padding: .5rem .7rem; background: #f7f3e8;
-    border: 1px solid var(--bordo); border-radius: 4px; font-size: .9rem; }
-  nav a { color: var(--tacchino); text-decoration: none; margin-right: .9rem;
-    white-space: nowrap; }
-  nav a:hover { text-decoration: underline; }
-  nav a.qui { font-weight: 700; text-decoration: underline; }
-  nav .titolo-nav { color: #6b6255; font-size: .8rem; text-transform: uppercase;
-    letter-spacing: .06em; margin-right: .3rem; }
+  /* 0.54: una barra in alto. Le tre cose che si fanno (tradurre, contribuire,
+     cercare una parola) sono sempre visibili; le altre pagine stanno in
+     «Altro», un <details> che si apre senza codice. */
+  nav { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
+    margin: 0 -1rem; padding: .55rem 1rem; background: #f3eddf;
+    border-bottom: 1px solid var(--bordo); font-size: .95rem; position: relative; }
+  nav a { color: var(--inchiostro); text-decoration: none; white-space: nowrap;
+    padding: .35rem .6rem; border-radius: 8px; }
+  nav a:hover { background: #e9e1cd; }
+  nav a.qui { background: #e2d8bf; font-weight: 600; }
+  nav .marchio { font-weight: 700; margin-right: auto; padding-left: 0; }
+  nav .marchio:hover { background: none; }
+  nav .marchio small { display: block; font-weight: 400; font-size: .7rem;
+    color: var(--tacchino); letter-spacing: .04em; }
+  nav a.cta { background: var(--glossario); color: #fff; font-weight: 600; }
+  nav a.cta:hover, nav a.cta.qui { background: #17573f; color: #fff; }
+  nav details.altro { position: relative; }
+  nav details.altro > summary { list-style: none; cursor: pointer; padding: .35rem .6rem;
+    border-radius: 8px; color: var(--tacchino); }
+  nav details.altro > summary::-webkit-details-marker { display: none; }
+  nav details.altro > summary::after { content: " \25BE"; }
+  nav details.altro[open] > summary { background: #e9e1cd; }
+  nav details.altro > div { position: absolute; right: 0; top: 2.4rem; z-index: 10;
+    background: #fff; border: 1px solid var(--bordo); border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.12); padding: .4rem; min-width: 13rem; }
+  nav details.altro > div a { display: block; }
+  @media (max-width: 520px) {
+    nav .marchio { flex-basis: 100%; }
+    nav details.altro { margin-left: auto; }
+  }
 
   /* L'indice delle fette del glossario: una lettera, un collegamento. */
   .riga .fetta, p .fetta { display: inline-block; min-width: 1.5rem;
@@ -159,18 +227,14 @@
 </head>
 <body>
 <main>
+  <nav id="navigazione"><a class="marchio" href="index.html">Ferrarese<small>traduttore e glossario</small></a>
+    <a href="traduttore.html">Traduci</a>
+    <a href="revisione.html" class="cta">Contribuisci</a>
+    <a href="glossario.html" class="qui" aria-current="page">Glossario</a>
+    <details class="altro"><summary>Altro</summary><div><a href="index.html">Il progetto</a><a href="regole.html">Le regole</a><a href="frasi.html">Frasi e proverbi</a><a href="suoni.html">Varietà e suoni</a><a href="verifica.html">Verifica a campione</a></div></details></nav>
+
   <h1>Glossario &ndash; I</h1>
   <p class="occhiello">Fetta 16 di 39: 500 voci da imbtunàda a infezión.</p>
-
-  <nav id="navigazione"><span class="titolo-nav">Pagine</span>
-    <a href="index.html">Il progetto</a>
-    <a href="traduttore.html">Traduttore</a>
-    <a href="glossario.html">Glossario</a>
-    <a href="frasi.html">Coppie e proverbi</a>
-    <a href="suoni.html">Varieta' e suoni</a>
-    <a href="regole.html">Le regole</a>
-    <a href="verifica.html">Verifica</a>
-    <a href="revisione.html">Revisione</a></nav>
 
 
 
@@ -178,13 +242,15 @@
   <!-- pagina:glossario -->
   <h2>Il glossario</h2>
   <div class="riga">
-    <input type="search" id="cercaGlossario" placeholder="cerca in questa fetta (ferrarese o italiano)" size="40">
+    <input type="search" id="cercaGlossario" placeholder="Cerca una parola, in ferrarese o in italiano" size="40">
     <select id="filtroVarietaGlossario">
       <option value="">tutte le varieta'</option>
     </select>
   </div>
   <div id="tabellaGlossario"></div>
   <!-- /pagina:glossario -->
+
+
 
 
 
@@ -1649,6 +1715,8 @@ function tokenizza(t) {
 
     var token = tokenizza(testo);
     if (!token.length) { box.innerHTML = '<span class="vuoto">Nessuna parola riconosciuta.</span>'; return; }
+    var azioni = document.getElementById("azioniRisultato");
+    if (azioni) azioni.hidden = false;
 
     // Una frase che il corpus contiene per intero non viene smembrata: si
     // restituisce come e' stata trovata. Smembrarla produrrebbe una traduzione
@@ -1675,9 +1743,10 @@ function tokenizza(t) {
           dettaglio: "", ipa: ipaCorpus
         }]);
       }
-      box.innerHTML = '<div class="riga-parola"><span class="originale">' + scappa(testo) +
+      box.innerHTML = '<div class="etichetta-risultato">' + scappa(direzione === "it-fe" ? "In ferrarese" : "In italiano") + '</div>' +
+        '<div class="traduzione-grande" id="traduzioneTesto">' + scappa(resa) + '</div>' +
+        '<div class="riga-parola"><span class="originale">' + scappa(testo) +
         '</span> &rarr; <span class="parola corpo">' + scappa(resa) + '</span></div>' +
-        '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(resa) + '</div>' +
         rigaSuonaCorpus +
         '<div class="dettaglio">frase intera dal corpus, ' + scappa(gemella.id) + ': ' + scappa(gemella.fonte || "senza fonte") +
         ' - confidenza ' + DATI.origine.corpo_frase.toFixed(2) + '</div>';
@@ -1698,10 +1767,12 @@ function tokenizza(t) {
     });
     var confidenza = peso ? totale / peso : 0;
 
+    // 0.54: a sinistra della freccia la parola di partenza (prima ripeteva
+    // la parola tradotta, e «hat → hat» non diceva niente).
     var righe = risultati.map(function (r, i) {
-      return '<span class="originale">' + scappa(r.testo) + '</span> &rarr; ' +
+      return '<span class="coppia-parola"><span class="originale">' + scappa(unita[i].testo) + '</span> &rarr; ' +
         '<span class="parola ' + r.origine + '" title="' + scappa(ETICHETTE[r.origine] + ": " + r.dettaglio) + '">' +
-        scappa(r.testo) + '</span>';
+        scappa(r.testo) + '</span></span>';
     });
     var traduzione = unisci(risultati.map(function (r) { return r.testo; }));
     ricorda(testo, direzione, traduzione, unita.map(function (u) {
@@ -1709,8 +1780,10 @@ function tokenizza(t) {
                origine: u.risposta.origine, voce: u.risposta.id || "" };
     }));
     box.innerHTML =
+      '<div class="etichetta-risultato">' + scappa(direzione === "it-fe" ? "In ferrarese" : "In italiano") + '</div>' +
+      '<div class="traduzione-grande" id="traduzioneTesto">' + scappa(traduzione) + '</div>' +
+      '<div class="etichetta-risultato">Parola per parola</div>' +
       '<div class="riga-parola">' + righe.join(" ") + '</div>' +
-      '<div><strong>' + scappa(direzione === "it-fe" ? "ferrarese" : "italiano") + ':</strong> ' + scappa(traduzione) + '</div>' +
       (direzione === "it-fe" ? rigaSuona(risultati) : '') +
       '<div class="dettaglio">confidenza ' + confidenza.toFixed(2) +
       (buchi ? "  -  " + buchi + (buchi > 1 ? " parole" : " parola") + " senza fonte" : "") + '</div>';
@@ -2283,10 +2356,9 @@ function tokenizza(t) {
     if (!fette.length) return;
     var qui = DATI.fetta;
     var voci = DATI.conteggi ? DATI.conteggi.voci : 0;
-    var spiegazione = fette.length + " fette, " + voci + " voci in tutto. " +
-      "Ogni fetta e\u0027 una pagina a se\u0027 stante: il glossario intero " +
-      "sono 5,6 megabyte, e una pagina che si apre subito vale piu\u0027 di " +
-      "una pagina che si carica tutta.";
+    // 0.54: detto per chi cerca una parola, non per chi pesa le pagine.
+    var spiegazione = (voci ? voci.toLocaleString("it-IT") + " parole, divise in " : "Le parole, divise in ") +
+      fette.length + " pagine per lettera: scegli quella da cui comincia la parola che cerchi.";
     var parti = ['<p class="occhiello" style="margin:.2rem 0 .6rem">',
       scappa(spiegazione), '</p><p class="riga">'];
     for (var i = 0; i < fette.length; i++) {
@@ -2392,14 +2464,39 @@ function tokenizza(t) {
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     });
   })();
+  // 0.54: Invio traduce (Maiuscolo+Invio va a capo, come in una chat).
   el("testo").addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) traduci();
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); traduci(); }
   });
   el("direzione").addEventListener("click", function () {
     direzione = direzione === "it-fe" ? "fe-it" : "it-fe";
-    this.textContent = "Direzione: " + (direzione === "it-fe" ? "italiano → ferrarese" : "ferrarese → italiano");
+    this.innerHTML = (direzione === "it-fe" ? "Italiano &rarr; Ferrarese" : "Ferrarese &rarr; Italiano") + " &nbsp;&#8646;";
     this.setAttribute("aria-pressed", direzione === "fe-it" ? "true" : "false");
+    el("testo").placeholder = direzione === "it-fe"
+      ? "Scrivi una frase in italiano e premi Invio"
+      : "Scrivi una frase in ferrarese e premi Invio";
+    if (el("testo").value.trim()) traduci();
   });
+  // Gli esempi: un tocco riempie il campo e traduce.
+  el("esempi").addEventListener("click", function (e) {
+    var b = e.target;
+    if (!b || !b.getAttribute || !b.getAttribute("data-frase")) return;
+    el("testo").value = b.getAttribute("data-frase");
+    traduci();
+  });
+  el("copiaTraduzione").addEventListener("click", function () {
+    var t = el("traduzioneTesto").textContent || "", bottone = this;
+    if (navigator.clipboard && t) navigator.clipboard.writeText(t).then(function () {
+      bottone.textContent = "Copiata";
+      window.setTimeout(function () { bottone.textContent = "Copia la traduzione"; }, 1500);
+    }, function () {});
+  });
+  // «traduttore.html?q=...»: la home manda qui la frase da tradurre.
+  (function () {
+    var q = "";
+    try { q = new URLSearchParams(window.location.search).get("q") || ""; } catch (e) { q = ""; }
+    if (q && document.getElementById("testo")) { el("testo").value = q; traduci(); }
+  })();
   el("cercaGlossario").addEventListener("input", function () {
     tabellaGlossario(this.value.trim());
   });
@@ -2541,6 +2638,18 @@ function tokenizza(t) {
     gruppi.forEach(function (g) { g.domande.forEach(function (d) { perId[d.id] = d; }); });
     var stato = statoRevisione();
     var corrente = null, scrivendo = false, indietro = [], ultimoLotto = [];
+    // 0.54: un collegamento puo' aprire la pagina in un modo e in un gruppo:
+    // «revisione.html#traduci», «revisione.html#controlla», «#traduci-parole».
+    try {
+      var ancora = (window.location.hash || "").replace("#", "").split("-");
+      if (ancora[0] === "traduci" || ancora[0] === "controlla") {
+        stato.modo = ancora[0];
+        if (ancora[1] && gruppi.some(function (g) { return g.chiave === ancora[1]; })) {
+          stato.gruppi[stato.modo] = ancora[1];
+        }
+        salvaRevisione(stato);
+      }
+    } catch (e) { /* senza indirizzo, come prima */ }
     var PREDEFINITI = { controlla: "frasi", traduci: "situazioni" };  // chiavi dei gruppi
 
     function modo() { return stato.modo; }
@@ -2780,7 +2889,7 @@ function tokenizza(t) {
       var imp = leggiImpostazioni(), r = righe(chiavi);
       return "Risposte per il traduttore ferrarese, da " + (imp.chi || "").trim() +
         (imp.luogo ? " (" + imp.luogo.trim() + ")" : "") + ": " + r.length + " risposte.\n" +
-        "Chi cura il progetto le incolla nella pagina Revisione, in «Per chi cura il progetto».\n\n" +
+        "Chi cura il progetto le incolla nella pagina Contribuisci, in «Per chi cura il progetto».\n\n" +
         r.map(function (x) { return JSON.stringify(x); }).join("\n") + "\n";
     }
     function segnaMandate(chiavi) {

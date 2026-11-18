@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.54
+versione: 0.55
 data: 2026-11-05
 ---
 
@@ -23,6 +23,30 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.55 — 2026-11-18 · Piu' compatto: a schermo solo quello che serve
+
+**Perché.** Le schermate erano dispersive: sul telefono la carta da rispondere
+finiva sotto otto pulsanti di gruppo, il glossario cominciava con 39 lettere, la
+traduzione arrivava con tutti i suoi dettagli aperti.
+
+- **Contribuisci**: una riga sola di comandi — due menu a tendina (come rispondere,
+  quale gruppo, con quante risposte ha), «Manda» che si accende solo quando c'e'
+  qualcosa da mandare, e il menu «⋯» con chi sei, come funziona e la parte per chi
+  cura il progetto (che compare solo se si chiede, o se c'e' gia' un token). I
+  punti in una riga piccola sotto la barra; «altri modi di dirlo» e la nota piegati.
+- **Traduttore**: gli esempi in un menu a tendina; sotto la traduzione solo
+  «Parola per parola e fonti», piegato, con quante parole non hanno fonte; gli
+  avvisi in piccolo.
+- **Glossario**: la lettera in un menu a tendina con le frecce per la pagina prima e
+  dopo, in cima alla pagina; sul telefono la tabella tiene parola, italiano,
+  significato di oggi e fonte, e scorre di lato.
+- **Home**: i numeri del progetto piegati in «Il progetto in numeri».
+- **La barra sul telefono** sta su una riga: Ferrarese, Traduci, Contribuisci e il
+  menu, dove passa il Glossario.
+
+**Verifiche.** 455 test (erano 455): la pagina cambia, il motore no;
+equivalenza Python e pagina su 63 frasi, 0 divergenze.
 
 ## 0.54 — 2026-11-18 · Un sito che si capisce al primo sguardo
 

@@ -553,14 +553,16 @@ def _sezioni(modello: str, tenute: tuple) -> str:
 
 
 def _navigazione(pagina: str) -> str:
-    """La barra in alto: il nome del sito, tre azioni, e «Altro» (0.54)."""
+    """La barra in alto: il nome del sito, tre azioni, e «Altro» (0.54).
+
+    Dalla 0.55 sul telefono la barra sta su una riga: il Glossario esce dalla
+    riga (`nasconde-telefono`) e compare in cima al menu (`solo-telefono`).
+    """
     if pagina.startswith("glossario-"):
         pagina = "glossario.html"
-    parti = ['<a class="marchio" href="index.html">Ferrarese'
-             '<small>traduttore e glossario</small></a>']
-    altre = []
-    for file, testo in NAVIGAZIONE:
-        classi = []
+
+    def collegamento(file, testo, *classi):
+        classi = list(classi)
         if file == pagina:
             classi.append("qui")
         if file == "revisione.html":
@@ -568,11 +570,19 @@ def _navigazione(pagina: str) -> str:
         attributi = ' class="%s"' % " ".join(classi) if classi else ""
         if file == pagina:
             attributi += ' aria-current="page"'
-        link = '<a href="%s"%s>%s</a>' % (file, attributi, testo)
-        if file in NAVIGAZIONE_PRINCIPALE:
-            parti.append(link)
+        return '<a href="%s"%s>%s</a>' % (file, attributi, testo)
+
+    parti = ['<a class="marchio" href="index.html">Ferrarese'
+             '<small>traduttore e glossario</small></a>']
+    altre = []
+    for file, testo in NAVIGAZIONE:
+        if file == "glossario.html":
+            parti.append(collegamento(file, testo, "nasconde-telefono"))
+            altre.insert(0, collegamento(file, testo, "solo-telefono"))
+        elif file in NAVIGAZIONE_PRINCIPALE:
+            parti.append(collegamento(file, testo))
         else:
-            altre.append(link)
+            altre.append(collegamento(file, testo))
     parti.append('<details class="altro"><summary>Altro</summary><div>%s'
                  '</div></details>' % "".join(altre))
     return "\n    ".join(parti)

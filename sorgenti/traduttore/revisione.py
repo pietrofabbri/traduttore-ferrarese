@@ -39,11 +39,72 @@ def proposta(motore, italiano: str) -> dict:
     return {"proposta": risposta.testo, "buchi": buchi}
 
 
+# Il gruppo delle letture dubbie (0.56). Le parole frequenti la cui risposta
+# viene **solo** da una lettura OCR non verificata e non confermata (il Ferri e
+# il Nannini), e la cui forma somiglia poco alla parola italiana. Non e' una
+# prova che siano sbagliate: `zó` per «giù» e `dré` per «dietro» sono giuste e
+# ci sono. E' il punto in cui un errore costa di piu' (una parola frequente
+# sbagliata rovina ogni frase in cui compare) e in cui nessuna fonte trascritta
+# a mano puo' fare da controllo: quindi lo si chiede prima. Il gruppo si
+# calcola a ogni generazione della pagina e si svuota da solo: una conferma o
+# una correzione promossa toglie la parola.
+GRUPPI_FREQUENTI = ("parole", "parole700")
+SOGLIA_DUBBIA = 0.6
+CHIAVE_DUBBIE = "dubbie"
+
+
+def lettura_dubbia(motore, italiano: str):
+    """La voce OCR dubbia che risponde per `italiano` da sola, o None."""
+    import difflib
+    from . import glossario as G
+    from .motore import IT_FE
+    risposta = motore.traduci(italiano, IT_FE)
+    if len(risposta.per_corrispondenza) != 1:
+        return None
+    _, tradotto, origine, _, dettaglio = risposta.per_corrispondenza[0]
+    if origine != "glossario":
+        return None
+    voce = motore.glossario.per_id(dettaglio.split()[0])
+    if voce is None or not G.letta_con_ocr(voce) or voce.conferme:
+        return None
+    somiglianza = difflib.SequenceMatcher(
+        None, G.forma_confrontabile(tradotto),
+        G.forma_confrontabile(italiano)).ratio()
+    return voce if somiglianza < SOGLIA_DUBBIA else None
+
+
+def gruppo_dubbie(motore, domande: dict) -> dict:
+    """Le domande dei gruppi di parole frequenti che poggiano su una lettura
+    dubbia, nell'ordine di frequenza. Gli id sono quelli delle domande: una
+    risposta data qui vale anche nel gruppo da cui la domanda viene."""
+    scelte = []
+    for gruppo in domande.get("gruppi", []):
+        if gruppo.get("chiave") not in GRUPPI_FREQUENTI:
+            continue
+        for d in gruppo.get("domande", []):
+            voce = lettura_dubbia(motore, d["it"])
+            if voce is not None:
+                scelte.append(dict(d, tema="letto con l'OCR: %s, %s"
+                                   % (voce.id, (voce.fonte or "")[:60])))
+    return {"chiave": CHIAVE_DUBBIE, "titolo": "Le letture piu' dubbie",
+            "spiegazione": ("Parole frequenti per cui il traduttore ha solo "
+                            "una lettura automatica (OCR) di un vocabolario "
+                            "antico, che nessuna altra fonte conferma e che "
+                            "somiglia poco all'italiano. Alcune sono giuste, "
+                            "altre sono righe del libro lette male: un «si'» "
+                            "o una correzione qui valgono piu' che altrove."),
+            "domande": scelte}
+
+
 def per_la_pagina(motore, domande: dict = None) -> dict:
     """I gruppi con la proposta del motore accanto a ogni domanda."""
     domande = domande if domande is not None else leggi()
     gruppi = []
-    for gruppo in domande.get("gruppi", []):
+    sorgenti = list(domande.get("gruppi", []))
+    dubbie = gruppo_dubbie(motore, domande)
+    if dubbie["domande"]:
+        sorgenti.insert(1, dubbie)
+    for gruppo in sorgenti:
         righe = []
         for d in gruppo.get("domande", []):
             p = proposta(motore, d["it"])

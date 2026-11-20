@@ -327,6 +327,8 @@ def nomi_propri(testo: str) -> dict:
 # passaggio, e si leggono in `dati/grammatica.json` (`negazione`, `domande`).
 
 ORIGINI_VERBO = ("verbo", "analogia")
+# La confidenza di un buco, come `ORIGINE["nessuna"]` in `motore.py`.
+ORIGINE_BUCO = 0.0
 _PRONOMI_DOMANDA = {"io": ("1sing", ""), "tu": ("2sing", ""),
                     "lui": ("3sing", "m"), "egli": ("3sing", "m"),
                     "lei": ("3sing", "f"), "ella": ("3sing", "f"),
@@ -403,12 +405,28 @@ def negazione(risultati: list, confidenza: float) -> list:
             else:
                 atono = particelle.get(particella, particella) + " " + \
                     f["dopo_" + ctx]
-            nuovi[pronome] = (risultati[pronome][0], atono, "grammatica",
-                              confidenza, "pronome atono di %s (%s), con la "
-                              "particella «%s» del verbo: «%s»"
-                              % (atoni["fonte"], atoni["dove"], particella,
-                                 atono))
-            dettagli.append("pronome")
+            pezzi = atono.split()
+            if len(pezzi) == 2 and pezzi[0] == pezzi[1]:
+                # «nessuno lo sa» dava `nissùn al al sa` (0.56): la tabella
+                # applicata a una combinazione che la fonte non scrive. Negli
+                # esempi di pag. 94-97 il pronome segue la particella «a» («Mi
+                # al véd») o e' diverso da lei («Lu al m'dis»): la particella
+                # ripetuta non c'e', e non si indovina. Resta un buco.
+                nuovi[pronome] = (
+                    risultati[pronome][0], risultati[pronome][0], "nessuna",
+                    ORIGINE_BUCO, "pronome atono con la particella «%s» del "
+                    "verbo: %s (%s) non scrive questa combinazione, e la "
+                    "tabella darebbe «%s»" % (particella, atoni["fonte"],
+                                              atoni["dove"], atono))
+                # La particella resta al verbo: senza pronome e' sua.
+                verbo = v_tradotto
+            else:
+                nuovi[pronome] = (risultati[pronome][0], atono, "grammatica",
+                                  confidenza, "pronome atono di %s (%s), con "
+                                  "la particella «%s» del verbo: «%s»"
+                                  % (atoni["fonte"], atoni["dove"], particella,
+                                     atono))
+                dettagli.append("pronome")
         if nega:
             seguente = nuovi[pronome][1] if pronome is not None else verbo
             ctx = "vocale" if contesto(seguente) == "vocale" else "consonante"

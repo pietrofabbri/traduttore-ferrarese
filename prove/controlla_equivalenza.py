@@ -61,6 +61,14 @@ from traduttore.varieta import Varieta  # noqa: E402
 # conosce per intero. Se manca uno di questi tre casi il confronto non
 # dice niente.
 FRASI = [
+    # 0.56: la locuzione parola per parola («me lo» non e' «melo»), il verbo
+    # dopo un pronome soggetto o atono, gli omografi, la particella ripetuta
+    # che resta un buco, la parita' fra voci del Ferri («dio»).
+    ("it-fe", "me lo dai?"),
+    ("it-fe", "tu sei bravo e tu dai fiori"),
+    ("it-fe", "dai fiori a sei amici"),
+    ("it-fe", "nessuno lo sa"),
+    ("it-fe", "grazie a dio"),
     # La grafia unica (0.42): le voci di Bigoni lette all'italiana, la c e la
     # g dure davanti alla desinenza, la forma della fonte che si cerca.
     ("it-fe", "noi cerchiamo un amico"),

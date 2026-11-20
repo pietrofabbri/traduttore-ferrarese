@@ -274,8 +274,9 @@ class Motore:
             persona = (verbi.persona_del_soggetto(token[i - 1])
                        if i > 0 and direzione == IT_FE else "")
             seguente = token[i + 1] if i + 1 < len(token) else ""
+            clitico = (direzione == IT_FE and verbi.dopo_un_clitico(token, i))
             tradotto, origine, confidenza, dettaglio = self._risolvi_una(
-                parola, frase, direzione, contesto, persona, seguente)
+                parola, frase, direzione, contesto, persona, seguente, clitico)
             risultati.append((parola, tradotto, origine, confidenza, dettaglio))
             i += 1
         if direzione == IT_FE:
@@ -347,13 +348,38 @@ class Motore:
         """
         for quante in range(min(LUNGHEZZA_MAX_LOCUZIONE, len(token) - i), 1, -1):
             testo = " ".join(token[i:i + quante])
-            if self.glossario.cerca(testo, direzione):
+            # La chiave toglie gli spazi: «me lo» e «melo» si incontrano. Una
+            # locuzione vale solo se una voce la scrive con le stesse parole.
+            if self.glossario.cerca(testo, direzione) and \
+                    self.glossario.e_locuzione(testo, direzione):
                 return testo, quante
         return None
 
     def _risolvi_una(self, parola: str, frase: str, direzione: str, contesto,
-                     persona: str = "", seguente: str = "") -> tuple:
+                     persona: str = "", seguente: str = "",
+                     dopo_clitico: bool = False) -> tuple:
         """Risolve un token e restituisce (tradotto, origine, confidenza, dettaglio)."""
+
+        # Le forme verbali si cercano una volta sola: servono qui, al livello
+        # 0 bis, nei due casi in cui una casella di una tabella di
+        # coniugazione vince sul glossario (`verbi.prima_del_glossario`), e al
+        # livello 2 bis.
+        attestata = (verbi.dall_italiano(parola, persona=persona)
+                     if direzione == IT_FE else {"forma": ""})
+
+        # Livello 0 bis (0.56): un verbo con un indizio di verbo — il pronome
+        # soggetto della sua persona, o un pronome atono subito prima — vince
+        # anche sulle parole fisse della grammatica. Fino alla 0.55 «tu sei
+        # bravo» usciva `ti sié brav` (il numero 6 di S015) e «me lo dai» con
+        # la preposizione articolata «da i».
+        # Con un indizio si cercano anche gli omografi («dai», «sia»), che
+        # senza indizio restano fuori perche' sono anche parole funzionali.
+        if direzione == IT_FE and (persona or dopo_clitico):
+            indiziata = (attestata if attestata["forma"] else
+                         verbi.dall_italiano(parola, persona=persona,
+                                             omografi=True))
+            if verbi.indizio_di_verbo(indiziata, persona, dopo_clitico):
+                return self._forma_verbale(indiziata)
 
         # Livello 0: le regole di frase (0.40). Vengono solo da correzioni di
         # parlanti promosse, e dicono una cosa che il glossario non puo' dire:
@@ -371,11 +397,6 @@ class Motore:
                 return (fissa[0], "grammatica", ORIGINE["grammatica"],
                         fissa[1])
 
-        # Le forme verbali si cercano una volta sola: servono qui, nei due casi
-        # in cui una casella di una tabella di coniugazione vince sul glossario
-        # (`verbi.prima_del_glossario`), e al livello 2 bis.
-        attestata = (verbi.dall_italiano(parola, persona=persona)
-                     if direzione == IT_FE else {"forma": ""})
         if verbi.prima_del_glossario(attestata, parola, persona):
             return self._forma_verbale(attestata)
         # Anche un verbo per analogia vince sul nome del glossario quando un

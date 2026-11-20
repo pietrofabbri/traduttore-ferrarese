@@ -187,6 +187,10 @@ class Voce:
                      + list(self.varianti))
         uscita = []
         for pezzo in pezzi:
+            # Un pezzo senza spazi ne' apostrofi non puo' essere di piu' parole:
+            # non serve tokenizzarlo, ed e' il caso di quasi tutte le voci.
+            if not re.search(r"[\s'’-]", pezzo or ""):
+                continue
             f = firma(pezzo)
             if " " in f and f not in uscita:
                 uscita.append(f)
@@ -266,10 +270,10 @@ class Glossario:
     def indizza(self) -> None:
         self._per_ferrarese = {}
         self._per_italiano = {}
-        self._locuzioni = {"it": set(), "fe": set()}
+        # Le locuzioni si calcolano alla prima domanda (`e_locuzione`): il
+        # glossario si carica molte volte e quasi mai serve.
+        self._locuzioni = None
         for voce in self.voci:
-            for lato in ("it", "fe"):
-                self._locuzioni[lato].update(voce.locuzioni(lato))
             for k in voce.chiavi_ferrarese():
                 if k:
                     self._per_ferrarese.setdefault(k, []).append(voce)
@@ -307,6 +311,11 @@ class Glossario:
 
     def e_locuzione(self, testo: str, direzione: str = IT_FE) -> bool:
         """Qualche voce ha `testo` come forma di piu' parole, parola per parola."""
+        if self._locuzioni is None:
+            self._locuzioni = {"it": set(), "fe": set()}
+            for voce in self.voci:
+                for l in ("it", "fe"):
+                    self._locuzioni[l].update(voce.locuzioni(l))
         lato = "it" if direzione == IT_FE else "fe"
         return firma(testo) in self._locuzioni[lato]
 
@@ -491,13 +500,22 @@ def priorita(voce, chiave_indice: str = None, lato: str = "it") -> tuple:
         uscita = voce.principale_italiano or voce.italiano or ""
     primaria = 0 if (chiave_indice is None or
                      normalizza.chiave(principale) == chiave_indice) else 1
-    iniziale_cercata = normalizza.chiave(principale)[:1]
-    iniziale_resa = normalizza.chiave(uscita)[:1]
+    iniziale_cercata, iniziale_resa = _iniziali(voce, lato, principale, uscita)
     return (0 if voce.corregge else 1, primaria,
             1 if " " in uscita.strip() else 0,
             0 if voce.attendibilita == "D" else 1, -len(voce.conferme),
             1 if letta_con_ocr(voce) else 0,
             0 if iniziale_cercata and iniziale_cercata == iniziale_resa else 1)
+
+
+def _iniziali(voce, lato: str, principale: str, uscita: str) -> tuple:
+    """La prima lettera della chiave dei due lati, calcolata una volta per voce:
+    `priorita` si chiama a ogni confronto dell'ordinamento."""
+    memoria = voce.__dict__.setdefault("_iniziali", {})
+    if lato not in memoria:
+        memoria[lato] = (normalizza.chiave(principale)[:1],
+                         normalizza.chiave(uscita)[:1])
+    return memoria[lato]
 
 
 def letta_con_ocr(voce) -> bool:

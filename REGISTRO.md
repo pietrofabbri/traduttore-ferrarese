@@ -75,7 +75,10 @@ irregolari per analogia.
 
 **Verifiche.** 466 test (erano 455): undici sugli errori noti e sui loro parenti.
 Equivalenza Python e pagina su 68 frasi, 0 divergenze (cinque frasi nuove).
-`verifica`: 0 errori, 74 avvisi.
+`verifica`: 0 errori, 74 avvisi. Le locuzioni si calcolano alla prima domanda e le
+iniziali una volta per voce: il glossario si carica come nella 0.55 (0,9 s), mentre
+la prima versione di questo rilascio lo rallentava di mezzo secondo, e la suite,
+che lo carica decine di volte, di un minuto.
 
 ## 0.55 — 2026-11-18 · Piu' compatto: a schermo solo quello che serve
 

@@ -961,6 +961,17 @@ function tokenizza(t) {
     }
     return sicuro;
   }
+  // Copia di `verbi.seguito_singolare` (0.57): «sei» e «dai» davanti a un
+  // singolare non sono il numero e la preposizione, sono il verbo.
+  var VOGLIONO_IL_PLURALE = ["sei", "dai"];
+  var SINGOLARI_SICURI = ["il", "lo", "la", "l'", "un", "una", "uno", "un'",
+                          "a", "in", "di", "da", "con", "su", "per"];
+  function seguitoSingolare(parola, seguente) {
+    if (VOGLIONO_IL_PLURALE.indexOf(normale(parola || "").trim()) === -1) return false;
+    var k = normale(seguente || "").trim();
+    if (SINGOLARI_SICURI.indexOf(k) !== -1) return true;
+    return k.length >= 3 && /^[a-z\u00e0-\u00ff]+$/.test(k) && "oa".indexOf(k.charAt(k.length - 1)) !== -1;
+  }
   function indizioDiVerbo(riga, persona, dopoClitico) {
     if (!riga) return false;
     if (persona && riga.persona === persona) return true;
@@ -1553,6 +1564,7 @@ function tokenizza(t) {
     var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
     // Livello 0 bis (0.56), copia di `motore.py`: con un indizio di verbo la
     // casella vince anche sulle parole fisse; si cercano anche gli omografi.
+    if (verso === "it-fe" && seguitoSingolare(parola, seguente)) dopoClitico = true;
     if (verso === "it-fe" && (persona || dopoClitico)) {
       var indiziata = verbale || formaVerbale(parola, persona, true);
       if (indizioDiVerbo(indiziata, persona, dopoClitico)) return rispostaVerbo(indiziata);

@@ -7321,5 +7321,37 @@ class TestGliErroriNotiDella055(unittest.TestCase):
         self.assertEqual(pagina["gruppi"][1]["chiave"], revisione.CHIAVE_DUBBIE)
 
 
+
+class TestSeiEDaiDavantiAUnSingolare(unittest.TestCase):
+    """0.57: «sei» il numero e «dai» la preposizione vogliono un plurale.
+
+    Davanti a un singolare sono il verbo. E' l'accordo dell'italiano: «sei
+    mele» e' un numero, «sei bravo» no.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.cli import carica
+        cls.motore = carica()
+
+    def _ferrarese(self, frase):
+        return self.motore.traduci(frase).testo
+
+    def test_davanti_a_un_singolare_e_il_verbo(self):
+        self.assertEqual(self._ferrarese("sei bravo"), "at jé brav")
+        self.assertEqual(self._ferrarese("sei a casa"), "at jé a cà")
+        self.assertTrue(self._ferrarese("dai un bacio").startswith("at da"))
+
+    def test_davanti_a_un_plurale_resta_quello_che_era(self):
+        self.assertTrue(self._ferrarese("sei mele").startswith("sié"))
+        self.assertTrue(self._ferrarese("dai bambini").startswith("dai"))
+
+    def test_la_regola_guarda_solo_sei_e_dai(self):
+        from traduttore import verbi
+        self.assertTrue(verbi.seguito_singolare("sei", "bravo"))
+        self.assertFalse(verbi.seguito_singolare("sei", "mele"))
+        self.assertFalse(verbi.seguito_singolare("tre", "bravo"))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

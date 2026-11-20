@@ -221,6 +221,27 @@ def dopo_un_clitico(token: list, i: int) -> bool:
     return sicuro
 
 
+# Le parole che fuori dal verbo vogliono un plurale dopo di se' (0.57): «sei» il
+# numero («sei mele») e «dai» la preposizione articolata, «da i» («dai
+# bambini»). Se cio' che segue e' chiaramente singolare non possono essere
+# quelle, e sono il verbo: «sei bravo», «sei a casa», «dai un bacio». E'
+# l'accordo dell'italiano, non una regola del ferrarese.
+VOGLIONO_IL_PLURALE = {"sei", "dai"}
+SINGOLARI_SICURI = {"il", "lo", "la", "l'", "un", "una", "uno", "un'",
+                    "a", "in", "di", "da", "con", "su", "per"}
+
+
+def seguito_singolare(parola: str, seguente: str) -> bool:
+    """`parola` e' «sei» o «dai» e la parola che segue e' singolare: un
+    articolo o una preposizione singolare, o una parola in -o o in -a."""
+    if normalizza.normale(parola or "").strip() not in VOGLIONO_IL_PLURALE:
+        return False
+    k = normalizza.normale(seguente or "").strip()
+    if k in SINGOLARI_SICURI:
+        return True
+    return len(k) >= 3 and k.isalpha() and k[-1] in "oa"
+
+
 def indizio_di_verbo(attestata: dict, persona: str, dopo_clitico: bool) -> bool:
     """La forma della tabella vince anche sulle parole fisse della grammatica
     (numeri, articoli, preposizioni) quando un indizio dice che e' un verbo:

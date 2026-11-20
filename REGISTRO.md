@@ -1,6 +1,6 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.56
+versione: 0.57
 data: 2026-11-20
 ---
 
@@ -23,6 +23,31 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.57 — 2026-11-20 · «sei bravo» e' un verbo anche senza «tu»
+
+- **«sei» e «dai» davanti a un singolare sono il verbo.** Fuori dal verbo «sei» e'
+  il numero e «dai» e' «da i»: tutti e due vogliono un plurale dopo («sei mele»,
+  «dai bambini»). Se cio' che segue e' un articolo o una preposizione singolare, o
+  una parola in -o o in -a, non possono essere quelli, e sono il verbo: «sei
+  bravo» → `at jé brav`, «sei a casa» → `at jé a cà`, «dai un bacio» → `at da un
+  bàs`. E' l'accordo dell'italiano, come l'indizio del pronome atono della 0.56
+  (`verbi.seguito_singolare`; in pagina `seguitoSingolare`). Sulle 1974 domande
+  della revisione non cambia niente: il caso non c'e'.
+- **`AGENTS.md` §6**: il punto 9 (le tre grafie) e' segnato come risposto dalla
+  0.42, il punto 6 conta le pagine vere (47), il punto 12 registra il patto nuovo.
+- **`ascolto-ferrarese`** legge il fratello alla 0.56 e non piu' alla 0.34: il
+  glossario e' passato da 17370 a 19073 righe, le coppie da 48 a 52, e il viaggio
+  di andata e ritorno resta al 96%.
+
+**Che cosa si e' guardato e non si e' toccato**, perche' non lo si puo' decidere
+senza una fonte o un parlante: il femminile degli aggettivi («bella», «calda»:
+nessuna fonte del repository dichiara la regola); le forme con l'accento sulla
+radice dei verbi in -o- e -e- («costa», «lavora»: `cósta` o `còsta`?); gli
+omografi veri fra le parole frequenti («stia» → `capunàra`, la stia dei polli).
+
+**Verifiche.** 469 test (erano 466). Equivalenza Python e pagina su 70 frasi, 0
+divergenze. `verifica`: 0 errori.
 
 ## 0.56 — 2026-11-20 · Gli errori noti: «me lo» non e' «melo», e «tu sei» e' un verbo
 

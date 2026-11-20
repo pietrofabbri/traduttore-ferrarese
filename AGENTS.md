@@ -73,7 +73,7 @@ un dizionario che non esiste.
 cd traduttore-ferrarese
 export PYTHONPATH=sorgenti
 python3 -m traduttore.cli verbi            # le forme verbali attestate e i buchi
-python3 prove/test_traduttore.py           # 466 test
+python3 prove/test_traduttore.py           # 469 test
 python3 -m traduttore.cli italiano         # che cos'e' una parola in
                                            # italiano, e il buco
 python3 prove/ci_locale.py                 # i passi del workflow, in locale
@@ -290,7 +290,7 @@ lavorare:
    segno ortografico distingue «ardiglione», che e' arcaico, da «cane», che
    non lo e'. La domanda che resta aperta e' se il progetto debba comprare un
    vocabolario che marchi l'obsoleto, o se basta la definizione.
-6. **Le quarantadue pagine sono giuste?** Il sito e' stato diviso perche' la
+6. **Le quarantasette pagine sono giuste?** Il sito e' stato diviso perche' la
    pagina unica pesava 6,2 megabyte, e la divisione ha funzionato. Restano
    pero' due scelte che sono di Pietro e non dello script: `VOCI_PER_FETTA` in
    `costruisci_web.py` e' 500 e da li' dipende quanto pesa una pagina, e la
@@ -339,8 +339,13 @@ lavorare:
    Ferri e non risolve la domanda per il Ferri: e' un elenco che si costruisce
    con le correzioni, una regola alla volta.
 
-9. **Il glossario e' scritto in tre grafie, e nessuna e' dichiarata quella di
-   riferimento.** (Aperta il 2026-10-06.) Il campo `ferrarese` contiene la
+9. ~~**Il glossario e' scritto in tre grafie, e nessuna e' dichiarata quella di
+   riferimento.**~~ **Risposto il 2026-11-05 (0.42): una grafia sola,
+   all'italiana**, scelta da chi usa il sito. Le voci di Bigoni si convertono
+   alla lettura con `sorgenti/traduttore/grafia.py` e `dati/glossario.jsonl`
+   resta come la fonte lo scrive (§4 bis); la precisione di Bigoni resta nella
+   pronuncia IPA. Il testo qui sotto e' la domanda com'era, per la storia.
+   (Aperta il 2026-10-06.) Il campo `ferrarese` contiene la
    forma come la scrive la fonte: la grafia del Ferri 1889 (S004, 10387 voci),
    l'alfabeto fonetico di Bigoni (S006, 6352 voci, di cui 3400 con segni come
    `ŋ`, `ɣ`, `š`) e la grafia di Musacchi (S020, 631 voci). Il risultato e'
@@ -394,6 +399,8 @@ lavorare:
     CI di la' senza che questo repository lo sapesse. Ora il fratello dichiara
     il commit che legge (vedi il suo README): cambiare i dati qui non rompe
     niente di la', e aggiornare il patto e' una scelta esplicita.
+    Il 2026-11-20 il patto e' stato portato dalla 0.34 alla 0.56 (glossario
+    19073 righe, coppie 52): il viaggio di andata e ritorno resta al 96%.
 
 ## 7. Il rapporto con «I cinque duchi»
 

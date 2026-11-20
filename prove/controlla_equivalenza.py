@@ -69,6 +69,9 @@ FRASI = [
     ("it-fe", "dai fiori a sei amici"),
     ("it-fe", "nessuno lo sa"),
     ("it-fe", "grazie a dio"),
+    # 0.57: «sei» e «dai» davanti a un singolare sono il verbo.
+    ("it-fe", "sei bravo e sei a casa, ma sei mele sono sei frutti"),
+    ("it-fe", "dai un bacio ai bambini e dai fiori alla mamma"),
     # La grafia unica (0.42): le voci di Bigoni lette all'italiana, la c e la
     # g dure davanti alla desinenza, la forma della fonte che si cerca.
     ("it-fe", "noi cerchiamo un amico"),

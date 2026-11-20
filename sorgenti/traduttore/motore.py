@@ -374,6 +374,10 @@ class Motore:
         # la preposizione articolata «da i».
         # Con un indizio si cercano anche gli omografi («dai», «sia»), che
         # senza indizio restano fuori perche' sono anche parole funzionali.
+        # Dalla 0.57 vale come pronome atono anche un singolare dopo «sei» e
+        # «dai», che come numero e come preposizione vogliono un plurale.
+        if direzione == IT_FE and verbi.seguito_singolare(parola, seguente):
+            dopo_clitico = True
         if direzione == IT_FE and (persona or dopo_clitico):
             indiziata = (attestata if attestata["forma"] else
                          verbi.dall_italiano(parola, persona=persona,

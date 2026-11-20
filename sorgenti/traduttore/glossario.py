@@ -151,6 +151,16 @@ class Voce:
         calligrafia»). Il campo intero resta una chiave, quindi una voce il cui
         italiano e' davvero una lettera sola si trova lo stesso.
         """
+        chiavi = []
+        for pezzo in self._pezzi_resi(testo, principale):
+            k = normalizza.chiave(pezzo)
+            if k and k not in chiavi:
+                chiavi.append(k)
+        return chiavi
+
+    @staticmethod
+    def _pezzi_resi(testo: str, principale: str) -> list:
+        """I pezzi da cui `_chiavi_resi` fa le chiavi, ancora con gli spazi."""
         pezzi = []
         if (testo or "").strip():
             pezzi.append(testo.strip())
@@ -158,12 +168,33 @@ class Voce:
                   if len(normalizza.chiave(p)) > 1]
         if (principale or "").strip():
             pezzi.append(principale.strip())
-        chiavi = []
+        return pezzi
+
+    def locuzioni(self, lato: str) -> list:
+        """Le forme di piu' parole della voce, come sequenze di chiavi (0.56).
+
+        La chiave toglie gli spazi, quindi «me lo» e «melo» hanno la stessa
+        chiave: senza questo elenco «me lo dai?» diventava `pumar dai`, perche'
+        il Nannini traduce «melo» (l'albero) con `pumar`. Un accorpamento di
+        piu' parole vale solo se la voce ha davvero una forma di piu' parole
+        con le stesse parole (`firma`).
+        """
+        if lato == "it":
+            pezzi = self._pezzi_resi(self.italiano, self.principale_italiano)
+        else:
+            pezzi = (self._pezzi_resi(self.ferrarese, self.principale_ferrarese)
+                     + self._pezzi_resi(self.grafia_fonte, "")
+                     + list(self.varianti))
+        uscita = []
         for pezzo in pezzi:
-            k = normalizza.chiave(pezzo)
-            if k and k not in chiavi:
-                chiavi.append(k)
-        return chiavi
+            # Un pezzo senza spazi ne' apostrofi non puo' essere di piu' parole:
+            # non serve tokenizzarlo, ed e' il caso di quasi tutte le voci.
+            if not re.search(r"[\s'’-]", pezzo or ""):
+                continue
+            f = firma(pezzo)
+            if " " in f and f not in uscita:
+                uscita.append(f)
+        return uscita
 
     def chiavi_ferrarese(self) -> list:
         # I pezzi del lato ferrarese vengono dai `varianti` dichiarati a mano
@@ -239,6 +270,9 @@ class Glossario:
     def indizza(self) -> None:
         self._per_ferrarese = {}
         self._per_italiano = {}
+        # Le locuzioni si calcolano alla prima domanda (`e_locuzione`): il
+        # glossario si carica molte volte e quasi mai serve.
+        self._locuzioni = None
         for voce in self.voci:
             for k in voce.chiavi_ferrarese():
                 if k:
@@ -274,6 +308,16 @@ class Glossario:
 
     def cerca_italiano(self, forma: str) -> list:
         return list(self._per_italiano.get(normalizza.chiave(forma), []))
+
+    def e_locuzione(self, testo: str, direzione: str = IT_FE) -> bool:
+        """Qualche voce ha `testo` come forma di piu' parole, parola per parola."""
+        if self._locuzioni is None:
+            self._locuzioni = {"it": set(), "fe": set()}
+            for voce in self.voci:
+                for l in ("it", "fe"):
+                    self._locuzioni[l].update(voce.locuzioni(l))
+        lato = "it" if direzione == IT_FE else "fe"
+        return firma(testo) in self._locuzioni[lato]
 
     def cerca(self, forma: str, direzione: str = IT_FE) -> list:
         if direzione == IT_FE:
@@ -384,6 +428,17 @@ def famiglia_della_fonte(fonte: str) -> str:
     return (fonte or "")[:40]
 
 
+def firma(testo: str) -> str:
+    """Le chiavi delle parole di `testo`, separate da uno spazio (0.56).
+
+    E' la chiave di una locuzione che ricorda dove finiscono le parole:
+    `firma("me lo") == "me lo"`, `firma("melo") == "melo"`. La copia della
+    pagina e' `firma` in `modello.html`.
+    """
+    return " ".join(k for k in (normalizza.chiave(p)
+                                for p in normalizza.tokenizza(testo or "")) if k)
+
+
 def forma_confrontabile(forma: str) -> str:
     k = normalizza.chiave(forma or "").replace("j", "i").replace("h", "")
     return re.sub(r"(.)\1+", r"\1", k)
@@ -427,7 +482,13 @@ def priorita(voce, chiave_indice: str = None, lato: str = "it") -> tuple:
     5. le voci confermate da piu' fonti;
     6. una voce trascritta a mano prima di una letta con l'OCR (`letta_con_ocr`):
        per «strada» `stràda` di Bigoni e non `striida`, che e' il Ferri letto
-       male.
+       male;
+    7. (0.56) a parita' di tutto il resto, la voce la cui forma comincia con
+       la stessa lettera della parola cercata. Per «dio» il Ferri da' tre voci
+       uguali in tutto: `Dio`, `Ssgnór` e `Assèdi`, che e' «Assedio» spezzato
+       dall'OCR in «asse|dio». Non e' una prova, e' una preferenza fra voci
+       che nessun altro criterio separa: non toglie nessuna voce e non ne
+       inventa nessuna.
 
     A parita' resta l'ordine del file.
     """
@@ -439,10 +500,22 @@ def priorita(voce, chiave_indice: str = None, lato: str = "it") -> tuple:
         uscita = voce.principale_italiano or voce.italiano or ""
     primaria = 0 if (chiave_indice is None or
                      normalizza.chiave(principale) == chiave_indice) else 1
+    iniziale_cercata, iniziale_resa = _iniziali(voce, lato, principale, uscita)
     return (0 if voce.corregge else 1, primaria,
             1 if " " in uscita.strip() else 0,
             0 if voce.attendibilita == "D" else 1, -len(voce.conferme),
-            1 if letta_con_ocr(voce) else 0)
+            1 if letta_con_ocr(voce) else 0,
+            0 if iniziale_cercata and iniziale_cercata == iniziale_resa else 1)
+
+
+def _iniziali(voce, lato: str, principale: str, uscita: str) -> tuple:
+    """La prima lettera della chiave dei due lati, calcolata una volta per voce:
+    `priorita` si chiama a ogni confronto dell'ordinamento."""
+    memoria = voce.__dict__.setdefault("_iniziali", {})
+    if lato not in memoria:
+        memoria[lato] = (normalizza.chiave(principale)[:1],
+                         normalizza.chiave(uscita)[:1])
+    return memoria[lato]
 
 
 def letta_con_ocr(voce) -> bool:

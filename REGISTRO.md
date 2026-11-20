@@ -1,7 +1,7 @@
 ---
 titolo: Registro delle modifiche
-versione: 0.55
-data: 2026-11-05
+versione: 0.56
+data: 2026-11-20
 ---
 
 # Registro delle modifiche
@@ -23,6 +23,62 @@ codice, e che si perde per sempre se non la si scrive qui.
    `sorgenti/traduttore/__init__.py`, e la frontmatter di `README.md`;
 3. una modifica che cambia i dati cambia la versione **anche se non cambia una
    riga di codice**, perché cambia quello che il progetto sa.
+
+## 0.56 — 2026-11-20 · Gli errori noti: «me lo» non e' «melo», e «tu sei» e' un verbo
+
+**Perché.** Il passaggio di consegne della 0.55 elencava errori noti del motore
+su frasi vere. Le cause erano quattro, diverse, e una ne nascondeva altre.
+
+- **La locuzione si confronta parola per parola.** La chiave toglie gli spazi,
+  quindi «me lo» e «melo» avevano la stessa chiave: «me lo dai?» usciva `pumar dai`
+  (il melo del Nannini). Confrontando prima e dopo tutte le 1974 domande della
+  revisione si sono visti i parenti: «come sta tua madre?» → `stàtua`, «con te» →
+  `cònt` (il conte), «te lo dico» → `tel` (il telo), «di vino» → `divìn`. Ora un
+  accorpamento vale solo se una voce ha la stessa sequenza di parole
+  (`glossario.firma`, `Glossario.e_locuzione`; in pagina `firma`, `IDX.locIt`).
+- **Un verbo con un indizio di verbo vince anche sulle parole fisse.** «tu sei
+  bravo» usciva `ti sié brav`, il numero 6 della tabella di S015, perché il
+  controllo del pronome soggetto veniva dopo. Ora viene prima, e c'e' un secondo
+  indizio: un pronome atono subito prima («me lo dai», «te ne vai»), che in
+  italiano sta solo davanti a un verbo. Contano solo i pronomi che non possono
+  essere altro (mi, ti, ci, vi, si, ne, me, te, ce, ve): «la porta» resta un
+  nome. Con un indizio si cercano anche le righe `omografo` di
+  `dati/verbi.jsonl` («dai», «sia»), che senza indizio restano fuori:
+  «tu dai» → `ti at da`, «dai fiori» resta `dai fior`.
+- **La particella ripetuta e' un buco.** «nessuno lo sa» dava `nissùn al al sa`:
+  la tabella dei pronomi atoni di S027 applicata a una combinazione che la fonte
+  non scrive (negli esempi di pag. 94-97 il pronome segue «a», o e' diverso dalla
+  particella). Ora «lo» resta un buco dichiarato e il verbo tiene la sua
+  particella: `nissùn lo al sa`, da rivedere.
+- **A parita' fra voci, la forma che comincia con la stessa lettera** (settimo
+  criterio di `glossario.priorita`). Per «dio» il Ferri da' tre voci uguali in
+  tutto, e la prima del file era `Assèdi`, cioe' «Assedio» spezzato dall'OCR in
+  «asse|dio». Non toglie e non inventa niente: sceglie fra voci attestate che
+  nessun altro criterio separa. Effetto sulle 1974 domande: «dio» → `dio`,
+  «diavolo» → `diàvul` (era `barlìch`), «fortunato» → `furtunin` (era `animeti`),
+  «scherzo» → `schèrz` (era `derìdar`).
+- **Le letture più dubbie vanno a un parlante**, non a un filtro. Un filtro
+  automatico non distingue `scutianella` per «tempo» (una riga del Nannini letta
+  male) da `zó` per «giù» (giusta, e solo nel Ferri): toglierle tutte farebbe
+  buchi dove c'e' la risposta giusta. La pagina di revisione ha un gruppo nuovo,
+  **«Le letture più dubbie»**, calcolato a ogni generazione: le parole frequenti la
+  cui risposta viene solo da una lettura OCR non confermata e somiglia poco
+  all'italiano (`revisione.gruppo_dubbie`, soglia 0,6). Oggi sono 31; il gruppo si
+  svuota da solo quando arrivano conferme o correzioni.
+
+**Che cosa non e' cambiato.** Le 23 risposte diverse su 1974 domande sono tutte
+quelle elencate qui sopra o loro parenti; nessun'altra. Restano aperti, come nel
+passaggio: «sei» senza pronome (puo' essere il numero, e il motore non indovina),
+l'ordine dei pronomi atoni in fila («me lo dai?» → `mi at al da`, che la fonte non
+tabella), «ci», «vi», «le» davanti al verbo, il futuro e l'imperfetto dei verbi
+irregolari per analogia.
+
+**Verifiche.** 466 test (erano 455): undici sugli errori noti e sui loro parenti.
+Equivalenza Python e pagina su 68 frasi, 0 divergenze (cinque frasi nuove).
+`verifica`: 0 errori, 74 avvisi. Le locuzioni si calcolano alla prima domanda e le
+iniziali una volta per voce: il glossario si carica come nella 0.55 (0,9 s), mentre
+la prima versione di questo rilascio lo rallentava di mezzo secondo, e la suite,
+che lo carica decine di volte, di un minuto.
 
 ## 0.55 — 2026-11-18 · Piu' compatto: a schermo solo quello che serve
 

@@ -796,6 +796,33 @@
     return chiavi;
   }
 
+  // Copia di `glossario.firma` (0.56): le chiavi delle parole, separate da
+  // uno spazio. «me lo» e «melo» hanno la stessa chiave ma non la stessa firma.
+  function firma(testo) {
+    return tokenizza(testo || "").map(chiave).filter(function (k) { return k; }).join(" ");
+  }
+  // Copia di `Voce.locuzioni`: le forme di piu' parole, come firme.
+  function pezziResi(testo, principale) {
+    var pezzi = [];
+    if ((testo || "").trim()) pezzi.push(testo.trim());
+    (testo || "").split(/[,;]/).forEach(function (p) {
+      if (chiave(p).length > 1) pezzi.push(p.trim());
+    });
+    if ((principale || "").trim()) pezzi.push(principale.trim());
+    return pezzi;
+  }
+  function locuzioniDi(v, lato) {
+    var pezzi = lato === "it" ? pezziResi(v.it, v.principale_it)
+      : pezziResi(v.fe, v.principale_fe).concat(pezziResi(v.grafia_fonte, ""))
+          .concat(v.varianti || []);
+    var uscita = [];
+    pezzi.forEach(function (p) {
+      var f = firma(p);
+      if (f.indexOf(" ") !== -1 && uscita.indexOf(f) === -1) uscita.push(f);
+    });
+    return uscita;
+  }
+
   function priorita(v, k, lato) {
     var principale = lato === "it" ? (v.principale_it || String(v.it || "").split(",")[0])
                                    : (v.principale_fe || String(v.fe || "").split(",")[0]);
@@ -803,7 +830,10 @@
     return [v.corregge ? 0 : 1, chiave(principale) === k ? 0 : 1,
             String(uscita).trim().indexOf(" ") !== -1 ? 1 : 0,
             v.attendibilita === "D" ? 0 : 1,
-            -((v.conferme || []).length), v.ocr ? 1 : 0];
+            -((v.conferme || []).length), v.ocr ? 1 : 0,
+            // 0.56: a parita', la forma che comincia con la stessa lettera.
+            (chiave(principale || "").charAt(0) &&
+             chiave(principale || "").charAt(0) === chiave(uscita).charAt(0)) ? 0 : 1];
   }
   var FUNZIONALI_IT = ["che", "per", "di", "a", "da", "in", "con", "su", "tra", "fra",
     "il", "lo", "la", "i", "gli", "le", "un", "una", "uno", "e", "o", "ma", "se", "non",
@@ -816,8 +846,10 @@
   }
 
   function indice() {
-    var perIt = {}, perFe = {};
+    var perIt = {}, perFe = {}, locIt = {}, locFe = {};
     VOCI.forEach(function (v) {
+      locuzioniDi(v, "it").forEach(function (f) { locIt[f] = true; });
+      locuzioniDi(v, "fe").forEach(function (f) { locFe[f] = true; });
       // La forma della fonte (0.42, `grafia.py`): chi scrive «kaŋtàr» trova
       // la voce che si legge «cantàr».
       chiaviResi(v.fe, v.principale_fe).concat(v.grafia_fonte ? chiaviResi(v.grafia_fonte, "") : [])
@@ -843,7 +875,7 @@
         });
       });
     });
-    return { perIt: perIt, perFe: perFe };
+    return { perIt: perIt, perFe: perFe, locIt: locIt, locFe: locFe };
   }
   var IDX = indice();
   var direzione = "it-fe";
@@ -882,6 +914,17 @@
   });
   Object.keys(IDX.verbi).forEach(function (k) {
     IDX.verbi[k].sort(function (a, b) { return a.rango - b.rango; });
+  });
+  // Gli omografi («dai», «sia»), cercati solo con un indizio di verbo (0.56).
+  // Copia di `verbi.per_omografo`.
+  IDX.verbiOmografi = {};
+  Object.keys((DATI.verbi || {}).per_omografo || {}).forEach(function (parola) {
+    var k = chiaveItaliano(parola);
+    if (!k) return;
+    IDX.verbiOmografi[k] = (IDX.verbiOmografi[k] || []).concat(DATI.verbi.per_omografo[parola]);
+  });
+  Object.keys(IDX.verbiOmografi).forEach(function (k) {
+    IDX.verbiOmografi[k].sort(function (a, b) { return a.rango - b.rango; });
   });
 
   // L'indice delle coppie **e dei proverbi** per frase intera, nelle due
@@ -1042,8 +1085,9 @@ function tokenizza(t) {
   }
   // Copia di `verbi.dall_italiano`: la prima riga nell'ordine dichiarato, o
   // la prima della persona annunciata dal pronome.
-  function formaVerbale(parola, persona) {
+  function formaVerbale(parola, persona, omografi) {
     var righe = IDX.verbi[chiaveItaliano(parola)] || [];
+    if (!righe.length && omografi) righe = IDX.verbiOmografi[chiaveItaliano(parola)] || [];
     if (!righe.length) return null;
     var scelta = righe[0];
     if (persona) {
@@ -1055,6 +1099,24 @@ function tokenizza(t) {
   }
   // Copia di `verbi.prima_del_glossario`: i due casi in cui la casella di una
   // tabella di coniugazione vince sul glossario.
+  // Copia di `verbi.dopo_un_clitico` e `verbi.indizio_di_verbo` (0.56): un
+  // pronome atono subito prima dice che la parola e' un verbo.
+  var CLITICI_SICURI = ["mi", "ti", "ci", "vi", "si", "ne", "me", "te", "ce", "ve"];
+  var CLITICI_AMBIGUI = ["lo", "la", "li", "le", "gli", "se"];
+  function dopoUnClitico(token, i) {
+    var sicuro = false;
+    for (var j = i - 1; j >= 0; j--) {
+      var k = normale(token[j] || "").trim();
+      if (CLITICI_SICURI.indexOf(k) !== -1) sicuro = true;
+      else if (CLITICI_AMBIGUI.indexOf(k) === -1) break;
+    }
+    return sicuro;
+  }
+  function indizioDiVerbo(riga, persona, dopoClitico) {
+    if (!riga) return false;
+    if (persona && riga.persona === persona) return true;
+    return !!dopoClitico;
+  }
   function primaDelGlossario(riga, parola, persona) {
     if (!riga) return false;
     if (persona && riga.persona === persona) return true;
@@ -1091,7 +1153,10 @@ function tokenizza(t) {
     var indice = verso === "it-fe" ? IDX.perIt : IDX.perFe;
     for (var quante = Math.min(LUNGHEZZA_MAX_LOCUZIONE, token.length - i); quante > 1; quante--) {
       var testo = token.slice(i, i + quante).join(" ");
-      if ((indice[chiave(testo)] || []).length) return { testo: testo, quante: quante };
+      // Copia di `_accorpa`: la locuzione deve esserci parola per parola.
+      var locuzioni = verso === "it-fe" ? IDX.locIt : IDX.locFe;
+      if ((indice[chiave(testo)] || []).length && locuzioni[firma(testo)])
+        return { testo: testo, quante: quante };
     }
     return null;
   }
@@ -1293,6 +1358,17 @@ function tokenizza(t) {
         if (!nega && (particella === "a" || particella === "aj")) atono = f["a_" + ctxP];
         else if (nega) atono = f["dopo_" + ctxP];
         else atono = (particelle[particella] || particella) + " " + f["dopo_" + ctxP];
+        var pezziA = atono.split(" ");
+        // Copia di `grammatica.negazione` (0.56): la particella ripetuta
+        // («al al») la fonte non la scrive, e resta un buco.
+        if (pezziA.length === 2 && pezziA[0] === pezziA[1]) {
+          unita[pronome].risposta = { testo: unita[pronome].testo, origine: "nessuna", confidenza: 0,
+            dettaglio: "pronome atono con la particella \u00ab" + particella + "\u00bb del verbo: " +
+              atoni.fonte + " (" + atoni.dove + ") non scrive questa combinazione, e la tabella darebbe \u00ab" +
+              atono + "\u00bb" };
+          // La particella resta al verbo: senza pronome e' sua.
+          verbo = v.risposta.testo;
+        } else
         unita[pronome].risposta = { testo: atono, origine: "grammatica", confidenza: conf,
           dettaglio: "pronome atono di " + atoni.fonte + " (" + atoni.dove + "), con la particella \u00ab" +
             particella + "\u00bb del verbo: \u00ab" + atono + "\u00bb" };
@@ -1580,7 +1656,7 @@ function tokenizza(t) {
     return testo;
   }
 
-  function risolvi(parola, verso, frase, persona, seguente) {
+  function risolvi(parola, verso, frase, persona, seguente, dopoClitico) {
     // Livello 2a: la frase intera. E' il caso forte e viene prima di tutto.
     var gemella = fraseGemella(frase, verso);
     if (gemella) {
@@ -1625,13 +1701,19 @@ function tokenizza(t) {
     // Livello 0: le parole funzionali, come in `motore.py`. Il primo
     // passaggio guarda la parola italiana che segue; `secondoPassaggio` rifa'
     // la scelta con quella ferrarese.
+    var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
+    // Livello 0 bis (0.56), copia di `motore.py`: con un indizio di verbo la
+    // casella vince anche sulle parole fisse; si cercano anche gli omografi.
+    if (verso === "it-fe" && (persona || dopoClitico)) {
+      var indiziata = verbale || formaVerbale(parola, persona, true);
+      if (indizioDiVerbo(indiziata, persona, dopoClitico)) return rispostaVerbo(indiziata);
+    }
     if (verso === "it-fe") {
       var scelta = contestuale(parola, contestoGr(seguente), seguente);
       if (scelta) return scelta;
       var fissa = parolaFissa(parola, seguente);
       if (fissa) return fissa;
     }
-    var verbale = verso === "it-fe" ? formaVerbale(parola, persona) : null;
     if (primaDelGlossario(verbale, parola, persona)) return rispostaVerbo(verbale);
     // Copia di `motore.py`: anche un verbo per analogia vince sul nome del
     // glossario quando un pronome soggetto della stessa persona lo precede.
@@ -1798,8 +1880,9 @@ function tokenizza(t) {
       var persona = (direzione === "it-fe" && iToken > 0)
         ? personaDelSoggetto(token[iToken - 1]) : "";
       var seguente = a ? "" : (token[iToken + 1] || "");
+      var clitico = !a && direzione === "it-fe" && dopoUnClitico(token, iToken);
       unita.push({ testo: pezzo, indice: iToken,
-                   risposta: risolvi(pezzo, direzione, testo, persona, seguente) });
+                   risposta: risolvi(pezzo, direzione, testo, persona, seguente, clitico) });
       iToken += a ? a.quante : 1;
     }
     if (direzione === "it-fe") {

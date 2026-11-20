@@ -7218,5 +7218,108 @@ class TestVerificaACampione(unittest.TestCase):
         self.assertLessEqual(len(chiamate), 1)
 
 
+
+class TestGliErroriNotiDella055(unittest.TestCase):
+    """Gli errori noti del passaggio di consegne della 0.55, e i loro parenti.
+
+    Ognuno e' un difetto vero, trovato su una frase vera: la regressione e'
+    scritta sulla frase, perche' e' la frase che un parlante vede.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        from traduttore.cli import carica
+        cls.motore = carica()
+
+    def _ferrarese(self, frase):
+        return self.motore.traduci(frase).testo
+
+    # --- la locuzione si confronta parola per parola ---------------------
+
+    def test_me_lo_non_e_melo(self):
+        # La chiave toglie gli spazi: «me lo» e «melo» (l'albero, `pumar` del
+        # Nannini) avevano la stessa chiave, e «me lo dai?» usciva `pumar dai`.
+        from traduttore.glossario import firma
+        self.assertEqual(firma("me lo"), "me lo")
+        self.assertNotEqual(firma("me lo"), firma("melo"))
+        self.assertFalse(self.motore.glossario.e_locuzione("me lo"))
+        self.assertNotIn("pumar", self._ferrarese("me lo dai?"))
+
+    def test_gli_altri_parenti_dello_stesso_difetto(self):
+        # Trovati confrontando le 1974 domande della revisione prima e dopo:
+        # «sta tua» era «statua», «con te» il conte, «di vino» «divino».
+        self.assertNotIn("stàtua", self._ferrarese("come sta tua madre?"))
+        self.assertNotIn("cònt", self._ferrarese("con te"))
+        self.assertNotIn("divìn", self._ferrarese("un bicchiere di vino rosso"))
+
+    def test_una_locuzione_vera_si_accorpa_ancora(self):
+        self.assertTrue(self.motore.glossario.e_locuzione("con calma"))
+        self.assertEqual(self._ferrarese("con calma"), "a bada")
+
+    # --- il verbo con un indizio di verbo ----------------------------------
+
+    def test_tu_sei_e_il_verbo_e_non_il_numero(self):
+        self.assertIn("at jé", self._ferrarese("tu sei bravo"))
+        self.assertNotIn("sié", self._ferrarese("tu sei bravo"))
+
+    def test_senza_indizio_sei_resta_il_numero(self):
+        # Senza pronome «sei» puo' essere il numero, e il motore non indovina.
+        self.assertIn("sié", self._ferrarese("sei mele"))
+
+    def test_un_omografo_e_un_verbo_solo_con_un_indizio(self):
+        # «dai» e' un omografo dichiarato in `dati/verbi.jsonl`: senza indizio
+        # resta la preposizione articolata, con il pronome soggetto o con un
+        # pronome atono davanti e' il verbo.
+        self.assertTrue(self._ferrarese("dai fiori").startswith("dai"))
+        self.assertEqual(self._ferrarese("tu dai"), "ti at da")
+        self.assertIn("at", self._ferrarese("me lo dai").split())
+
+    def test_un_articolo_davanti_non_e_un_indizio(self):
+        from traduttore import verbi
+        self.assertFalse(verbi.dopo_un_clitico(["la", "porta"], 1))
+        self.assertTrue(verbi.dopo_un_clitico(["me", "lo", "dai"], 2))
+        self.assertEqual(self._ferrarese("la porta"), "la pòrta")
+
+    # --- la particella ripetuta e' un buco ---------------------------------
+
+    def test_al_al_non_si_scrive(self):
+        risposta = self.motore.traduci("nessuno lo sa")
+        self.assertNotIn("al al", risposta.testo)
+        self.assertIn("lo", risposta.buchi)
+        # Il verbo tiene la sua particella: senza pronome e' sua.
+        self.assertTrue(risposta.testo.endswith("al sa"), risposta.testo)
+
+    def test_le_combinazioni_della_fonte_restano(self):
+        self.assertEqual(self._ferrarese("io lo vedo"), "mi al véd")
+        self.assertEqual(self._ferrarese("lui mi dice"), "lu al m'dis")
+
+    # --- la parita' fra voci del Ferri ---------------------------------------
+
+    def test_dio_non_e_assedio_spezzato(self):
+        # V0811 `Assèdi` e' «Assedio» letto «asse|dio»: tre voci del Ferri
+        # uguali in tutto, e vince quella che comincia con la stessa lettera.
+        corrispondenze = self.motore.traduci("dio").per_corrispondenza
+        self.assertTrue(corrispondenze[0][4].startswith("V2572"),
+                        corrispondenze[0][4])
+
+    # --- le letture dubbie vanno a un parlante -------------------------------
+
+    def test_il_gruppo_delle_letture_dubbie(self):
+        from traduttore import revisione
+        domande = revisione.leggi()
+        gruppo = revisione.gruppo_dubbie(self.motore, domande)
+        parole = {d["it"] for d in gruppo["domande"]}
+        self.assertIn("tempo", parole)      # `scutianella`, Nannini
+        self.assertIn("modo", parole)       # `sgalmiedra`, Nannini
+        self.assertNotIn("dio", parole)     # ora risponde `Dio`
+        # Gli id sono quelli delle domande da cui vengono: la risposta vale
+        # in tutti e due i gruppi.
+        tutti = {d["id"] for g in domande["gruppi"] for d in g["domande"]}
+        self.assertTrue({d["id"] for d in gruppo["domande"]} <= tutti)
+        # Nella pagina viene secondo, subito dopo le frasi.
+        pagina = revisione.per_la_pagina(self.motore, domande)
+        self.assertEqual(pagina["gruppi"][1]["chiave"], revisione.CHIAVE_DUBBIE)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

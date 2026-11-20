@@ -483,12 +483,17 @@ def _verbi(solo_numeri: bool = False) -> dict:
     # mandato come `rango`: la pagina non ricalcola le preferenze, le legge.
     # Gli omografi («dai», «sia») non vanno, come non vanno nell'indice di
     # Python.
-    ordinate = verbi_modulo.ordina(
-        [r for r in dati["righe"] if not r.get("omografo")
-         and (r.get("italiano") or "").strip()], dati["sistema"])
-    per_italiano = {}
-    for rango, riga in enumerate(ordinate):
-        per_italiano.setdefault(riga["italiano"], []).append({
+    def _indice(omografi: bool) -> dict:
+        ordinate = verbi_modulo.ordina(
+            [r for r in dati["righe"] if bool(r.get("omografo")) == omografi
+             and (r.get("italiano") or "").strip()], dati["sistema"])
+        indice = {}
+        for rango, riga in enumerate(ordinate):
+            indice.setdefault(riga["italiano"], []).append(_casella(riga, rango))
+        return indice
+
+    def _casella(riga: dict, rango: int) -> dict:
+        return {
             "forma": riga["forma"],
             "testo": verbi_modulo.con_soggetto(riga),
             "persona": riga.get("persona", ""),
@@ -502,8 +507,11 @@ def _verbi(solo_numeri: bool = False) -> dict:
             "nota": "" if riga.get("scritto_dalla_fonte") else
                     riga.get("nota", ""),
             "rango": rango,
-        })
-    numeri.update({"per_italiano": per_italiano,
+        }
+    numeri.update({"per_italiano": _indice(False),
+                   # Gli omografi («dai», «sia»), cercati solo con un indizio
+                   # di verbo (0.56), come `verbi.per_omografo`.
+                   "per_omografo": _indice(True),
                    "pronomi": verbi_modulo.PRONOMI_SOGGETTO,
                    # La tabella dei verbi modello per la coniugazione per
                    # analogia: calcolata qui, letta dalla pagina (0.41).

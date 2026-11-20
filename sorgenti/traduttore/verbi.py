@@ -89,6 +89,9 @@ def carica(percorso: str = PERCORSO) -> dict:
     sistema, righe = leggi(percorso)
     per_forma = {}
     per_italiano = {}
+    # Gli omografi hanno un indice loro (0.56): si cercano solo quando un
+    # indizio dice che la parola e' un verbo (`indizio_di_verbo`).
+    per_omografo = {}
     for riga in righe:
         chiave = chiave_forma(riga["lemma"], riga["persona"], riga["tempo"],
                               riga.get("clitico", ""))
@@ -97,14 +100,18 @@ def carica(percorso: str = PERCORSO) -> dict:
         # il motore traduce parola per parola, e ogni «dai» diventerebbe un
         # verbo. La riga resta nel file, con il campo che lo dice.
         if riga.get("omografo"):
+            k = chiave_italiano(riga.get("italiano") or "")
+            if k:
+                per_omografo.setdefault(k, []).append(riga)
             continue
         k = chiave_italiano(riga.get("italiano") or "")
         if k:
             per_italiano.setdefault(k, []).append(riga)
-    for k in per_italiano:
-        per_italiano[k] = ordina(per_italiano[k], sistema)
+    for indice in (per_italiano, per_omografo):
+        for k in indice:
+            indice[k] = ordina(indice[k], sistema)
     risultato = {"sistema": sistema, "righe": righe, "per_forma": per_forma,
-                 "per_italiano": per_italiano}
+                 "per_italiano": per_italiano, "per_omografo": per_omografo}
     if percorso == PERCORSO:
         _cache = risultato
     return risultato
@@ -187,6 +194,42 @@ def prima_del_glossario(attestata: dict, parola: str, persona: str) -> bool:
     if persona and attestata["riga"].get("persona") == persona:
         return True
     return accentata(parola)
+
+
+# I pronomi atoni dell'italiano (0.56). Un verbo finito e' l'unica parola che
+# puo' seguire un pronome atono: «me lo dai», «ti sei». E' grammatica
+# dell'italiano, non del ferrarese, e non chiede una fonte. Contano solo quelli
+# che non possono essere altro: «lo», «la», «li», «le», «gli» sono anche
+# articoli («la porta» e' quasi sempre un nome) e «se» e' anche congiunzione,
+# quindi stanno nella fila ma da soli non bastano.
+CLITICI_SICURI = {"mi", "ti", "ci", "vi", "si", "ne", "me", "te", "ce", "ve"}
+CLITICI_AMBIGUI = {"lo", "la", "li", "le", "gli", "se"}
+
+
+def dopo_un_clitico(token: list, i: int) -> bool:
+    """`token[i]` viene subito dopo una fila di pronomi atoni con almeno uno
+    che non puo' essere un articolo («me lo dai», «te ne vai»)."""
+    j = i - 1
+    sicuro = False
+    while j >= 0:
+        k = normalizza.normale(token[j] or "").strip()
+        if k in CLITICI_SICURI:
+            sicuro = True
+        elif k not in CLITICI_AMBIGUI:
+            break
+        j -= 1
+    return sicuro
+
+
+def indizio_di_verbo(attestata: dict, persona: str, dopo_clitico: bool) -> bool:
+    """La forma della tabella vince anche sulle parole fisse della grammatica
+    (numeri, articoli, preposizioni) quando un indizio dice che e' un verbo:
+    «tu sei bravo» non e' «tu sei (6) bravo», «me lo dai» non e' «da i»."""
+    if not attestata.get("forma"):
+        return False
+    if persona and attestata["riga"].get("persona") == persona:
+        return True
+    return dopo_clitico
 
 
 def persona_del_soggetto(parola: str) -> str:
@@ -273,7 +316,7 @@ def coniuga(lemma: str, persona: str, tempo: str,
 
 
 def dall_italiano(parola: str, percorso: str = PERCORSO,
-                  persona: str = "") -> dict:
+                  persona: str = "", omografi: bool = False) -> dict:
     """Dalla parola **italiana** coniugata alla forma ferrarese attestata.
 
     Non e' il inverso di `coniuga()` e non pretende di esserlo: qui la parola
@@ -288,6 +331,8 @@ def dall_italiano(parola: str, percorso: str = PERCORSO,
     """
     dati = carica(percorso)
     righe = dati["per_italiano"].get(chiave_italiano(parola))
+    if not righe and omografi:
+        righe = dati["per_omografo"].get(chiave_italiano(parola))
     if not righe:
         quante = len(dati["per_italiano"])
         return {"forma": "", "testo": "", "problema": "nessuna fonte coniuga "
